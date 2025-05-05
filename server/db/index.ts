@@ -1,35 +1,36 @@
+// server/db/index.ts
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
-import * as dotenv from 'dotenv';
+import { useRuntimeConfig } from '#imports'; // Use Nuxt's runtime config
 
-dotenv.config({ path: '.env' }); // Ensure .env is loaded
+// Get the database path from runtime configuration (e.g., defined in nuxt.config.ts or .env)
+const config = useRuntimeConfig();
+// Ensure DATABASE_URL is defined in your .env or nuxt.config.ts runtimeConfig
+// You might need to adjust 'databaseUrl' if you named it differently in your runtime config
+let sqlitePath = config.public?.databaseUrl || config.databaseUrl || process.env.DATABASE_URL;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not set.');
+if (!sqlitePath) {
+  // Provide a default path or throw a more specific error
+  console.warn('DATABASE_URL not found in runtime config or environment variables. Defaulting to ./db.sqlite');
+  // Defaulting might be okay for dev, but consider throwing an error for production
+  // throw new Error("DATABASE_URL is not configured in runtimeConfig or environment variables.");
+  sqlitePath = './db.sqlite'; // Example default path
 }
 
-// Ensure the directory for the SQLite file exists if it's a file path
-// Note: better-sqlite3 creates the file if it doesn't exist, but not the directory.
-// This simple check assumes a file path; adjust if using ':memory:' etc.
-if (process.env.DATABASE_URL !== ':memory:') {
-  const fs = require('fs');
-  const path = require('path');
-  const dbPath = path.resolve(process.env.DATABASE_URL);
-  const dbDir = path.dirname(dbPath);
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-    console.log(`Created database directory: ${dbDir}`);
-  }
+// Log the path being used for debugging
+console.log(`Connecting to SQLite database at: ${sqlitePath}`);
+
+const sqlite = new Database(sqlitePath);
+
+// Optional: Enable WAL mode for better concurrency
+try {
+  sqlite.pragma('journal_mode = WAL');
+  console.log('SQLite WAL mode enabled.');
+} catch (error) {
+  console.error('Failed to enable WAL mode:', error);
 }
 
-const sqlite = new Database(process.env.DATABASE_URL);
-console.log(`Connected to SQLite database at: ${process.env.DATABASE_URL}`);
+export const db = drizzle(sqlite, { schema, logger: process.env.NODE_ENV === 'development' }); // Enable logger in dev
 
-// Enable WAL mode for better concurrency
-sqlite.pragma('journal_mode = WAL');
-
-export const db = drizzle(sqlite, { schema, logger: true }); // Enable logger for query debugging
-
-// Export the schema along with the db instance
-export * from './schema';
+export { schema }; // Also export the schema if needed elsewhere

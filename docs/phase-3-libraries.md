@@ -2,18 +2,18 @@
 
 ### Tasks
 
-* [ ] `POST /api/libraries` to add a directory
-* [ ] `GET /api/libraries` to list libraries
-* [ ] Scanner script:
+* [x] `POST /api/libraries` to add a directory
+* [x] `GET /api/libraries` to list libraries
+* [x] Scanner script:
 
-  * Recursively walk folder
-  * Use `music-metadata` to read:
+  * [x] Recursively walk folder
+  * [x] Use `music-metadata` to read:
 
     * Title, artist, album, genre, duration, year, album art
-  * Save album art locally or in DB
-  * Prevent duplicate artists/albums/tracks
-  * Associate library entry with current user
-* [ ] UI to trigger manual rescan
+  * [x] Save album art locally or in DB
+  * [x] Prevent duplicate artists/albums/tracks
+  * [x] Associate library entry with current user (Handled via scan trigger)
+* [x] UI to trigger manual rescan
 
 ### Clarification Questions
 

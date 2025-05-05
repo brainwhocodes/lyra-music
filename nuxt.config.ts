@@ -11,8 +11,11 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
-    '@nuxtjs/tailwindcss'
   ],
+  runtimeConfig: {
+    jwtSecret: process.env.JWT_SECRET || 'development-secret',
+
+  },
   vite: {
     plugins: [tailwindcss()]
   }

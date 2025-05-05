@@ -14,6 +14,13 @@ CREATE TABLE `artists` (
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `media_folders` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`path` text NOT NULL,
+	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `media_folders_path_unique` ON `media_folders` (`path`);--> statement-breakpoint
 CREATE TABLE `media_libraries` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` integer,
@@ -50,12 +57,14 @@ CREATE TABLE `tracks` (
 	`duration` integer,
 	`track_number` integer,
 	`path` text NOT NULL,
+	`file_path` text NOT NULL,
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`album_id`) REFERENCES `albums`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `tracks_path_unique` ON `tracks` (`path`);--> statement-breakpoint
+CREATE UNIQUE INDEX `tracks_file_path_unique` ON `tracks` (`file_path`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text NOT NULL,

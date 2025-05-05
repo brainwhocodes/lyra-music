@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c6c3d24f-7eab-4711-a002-1a6b75a03761",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "ec54b003-ec70-43ac-99fc-e22dc6cd76f6",
+  "prevId": "c6c3d24f-7eab-4711-a002-1a6b75a03761",
   "tables": {
     "albums": {
       "name": "albums",
@@ -347,15 +347,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "album_id": {
-          "name": "album_id",
+        "artist_id": {
+          "name": "artist_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "artist_id": {
-          "name": "artist_id",
+        "album_id": {
+          "name": "album_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -368,8 +368,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "duration": {
-          "name": "duration",
+        "year": {
+          "name": "year",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -377,6 +377,20 @@
         },
         "track_number": {
           "name": "track_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "disk_number": {
+          "name": "disk_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -422,19 +436,6 @@
         }
       },
       "foreignKeys": {
-        "tracks_album_id_albums_id_fk": {
-          "name": "tracks_album_id_albums_id_fk",
-          "tableFrom": "tracks",
-          "tableTo": "albums",
-          "columnsFrom": [
-            "album_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "tracks_artist_id_artists_id_fk": {
           "name": "tracks_artist_id_artists_id_fk",
           "tableFrom": "tracks",
@@ -446,6 +447,19 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tracks_album_id_albums_id_fk": {
+          "name": "tracks_album_id_albums_id_fk",
+          "tableFrom": "tracks",
+          "tableTo": "albums",
+          "columnsFrom": [
+            "album_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

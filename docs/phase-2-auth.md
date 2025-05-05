@@ -2,11 +2,11 @@
 
 ### Tasks
 
-* [ ] `/api/auth/register` – create new user
-* [ ] `/api/auth/login` – return JWT
-* [ ] Auth middleware
-* [ ] Add session context to each request
-* [ ] UI login form & registration page
+* [x] `/api/auth/register` – create new user
+* [x] `/api/auth/login` – return JWT
+* [x] Auth middleware
+* [x] Add session context to each request
+* [x] UI login form & registration page
 
 ### Clarification Questions
 
