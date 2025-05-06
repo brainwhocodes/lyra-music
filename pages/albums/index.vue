@@ -30,10 +30,21 @@
             class="aspect-square object-cover w-full" 
             @error="onImageError"
             />
-            <!-- Basic placeholder using CSS if no artPath and no placeholder file -->
-            <!-- <div v-else class="aspect-square w-full bg-base-300 flex items-center justify-center">
-              <svg class="w-1/2 h-1/2 text-base-content opacity-20" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V4a1 1 0 00-.804-.98zM7 6.18v6.934A4.316 4.316 0 006.99 14.006 4.369 4.369 0 005 14c-.94 0-1.791.41-2.364 1.088A2.99 2.99 0 015 15c.94 0 1.791.41 2.364 1.088A2.99 2.99 0 017 17c.01-.002.01-.004.01-.006V6.18zM17 14.114V4.82l-8 1.6v6.694A4.37 4.37 0 0015 12c.94 0 1.791.41 2.364 1.088A2.99 2.99 0 0117 15c.94 0 1.791.41 2.364 1.088A2.99 2.99 0 0117 17v-2.886z"></path></svg>
-            </div> -->
+            <!-- Overlay structure matching image more closely (on hover) -->
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <!-- Blurred Bottom Overlay -->
+              <div class="absolute bottom-0 left-0 right-0 h-20 backdrop-blur-sm bg-gray-900/70 flex items-center justify-end p-3">
+                 <!-- Play Button -->
+                <button 
+                  @click.stop="playAlbum(album.id)" 
+                  title="Play Album" 
+                  class="w-12 h-12 flex items-center justify-center rounded-xl hover:brightness-90 focus:outline-none" 
+                  style="background-color: #FF6347;" 
+                >
+                  <Icon name="material-symbols:play-arrow-rounded" class="w-8 h-8 text-black" />
+                </button>
+              </div>
+            </div>
         </figure>
         <div class="card-body">
           <h2 class="card-title text-sm truncate" :title="album.title">{{ album.title }}</h2>
@@ -49,6 +60,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { usePlayerStore } from '~/stores/player';
+import type { Track } from '~/stores/player'; // For playAlbum
 
 // Apply the sidebar layout
 definePageMeta({
@@ -136,6 +149,39 @@ function goToAlbum(albumId: number) {
 function onImageError(event: Event) {
   const target = event.target as HTMLImageElement;
   target.src = '/placeholder-cover.png'; // Path to your placeholder image in public dir
+}
+
+// Function to play a specific album
+async function playAlbum(albumId: number): Promise<void> {
+  try {
+    // Fetch the full album details, which should include tracks
+    // Uses the specific album endpoint: /api/albums/[id]/index.get.ts
+    const albumDetails = await $fetch(`/api/albums/${albumId}`);
+
+    // Basic check for tracks array
+    if (albumDetails && Array.isArray(albumDetails.tracks) && albumDetails.tracks.length > 0) {
+      // Map tracks to the structure expected by the player store
+      const tracksForPlayer: Track[] = albumDetails.tracks.map((t: any) => ({
+         id: t.id,
+         title: t.title ?? 'Unknown Track',
+         artistName: t.artist_name ?? albumDetails.artist_name ?? 'Unknown Artist',
+         albumTitle: t.album_title ?? albumDetails.title ?? 'Unknown Album',
+         filePath: t.file_path, // Ensure this is the correct property name
+         duration: t.duration ?? 0,
+         coverPath: albumDetails.cover_path, // Use cover_path from album details
+         albumId: albumDetails.id,
+         artistId: albumDetails.artist_id,
+      }));
+      const playerStore = usePlayerStore();
+      playerStore.loadQueue(tracksForPlayer);
+    } else {
+      console.warn(`No tracks found or invalid track data for album ${albumId}`, albumDetails);
+      // Optionally: Notify user that the album couldn't be played
+    }
+  } catch (err) {
+    console.error(`Error fetching or playing album ${albumId}:`, err);
+    // Optionally: Notify user about the error
+  }
 }
 
 </script>
