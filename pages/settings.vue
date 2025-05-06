@@ -124,6 +124,11 @@
 </template>
 
 <script setup lang="ts">
+// Apply the sidebar layout
+definePageMeta({
+  layout: 'sidebar-layout'
+});
+
 import { ref, onMounted } from 'vue';
 import type { Ref } from 'vue'; // Import Ref type
 

@@ -4,8 +4,8 @@ import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto'; // Import crypto for hashing
 import * as mm from 'music-metadata'; // Already installed dependency
 import { db } from '~/server/db';
-import { artists, albums, tracks, NewTrack, NewAlbum, NewArtist } from '~/server/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { artists, albums, tracks, NewTrack, NewAlbum } from '~/server/db/schema';
+import { eq, sql, and } from 'drizzle-orm';
 
 // Supported audio file extensions
 const SUPPORTED_EXTENSIONS: ReadonlySet<string> = new Set(['.mp3', '.flac', '.m4a', '.ogg', '.wav', '.aac']); // Add more as needed
@@ -83,6 +83,7 @@ interface PendingTrackData {
     diskNumber?: number; // Expect undefined for optional
     duration?: number;
     filePath: string;
+    path: string; // Duplicate path to satisfy NOT NULL constraint
 }
 
 
@@ -104,6 +105,7 @@ const processAlbumFolder = async (folderPath: string): Promise<{ scanned: number
 
     try {
         // 1. Find audio files directly within this folder
+        console.log(`[Scanner Debug] Reading directory: ${folderPath}`); // <<< ADDED LOG
         const folderItems = await fs.readdir(folderPath, { withFileTypes: true });
         const audioFilesInFolder: string[] = [];
         for (const item of folderItems) {
@@ -125,6 +127,7 @@ const processAlbumFolder = async (folderPath: string): Promise<{ scanned: number
         for (const filePath of audioFilesInFolder) {
             scanned++;
             try {
+                console.log(`[Scanner Debug] Parsing metadata for: ${filePath}`); // <<< ADDED LOG
                 const metadata = await mm.parseFile(filePath, { duration: true });
                 const { common, format } = metadata;
 
@@ -164,11 +167,12 @@ const processAlbumFolder = async (folderPath: string): Promise<{ scanned: number
                     title: common.title,
                     artistId: trackArtist.id, // Track artist ID
                     genre: common.genre?.[0],
-                    year: common.year ?? albumData?.year, // Fallback to album year
+                    year: (common.year ?? albumData?.year) || undefined, // Fallback to album year
                     trackNumber: (common.track.no === null || common.track.no === undefined) ? undefined : common.track.no,
                     diskNumber: (common.disk.no === null || common.disk.no === undefined) ? undefined : common.disk.no,
                     duration: format.duration ? Math.round(format.duration) : undefined,
                     filePath: filePath,
+                    path: filePath, // Use filePath value for 'path' column
                 };
                 trackInsertList.push(track);
 
@@ -187,7 +191,10 @@ const processAlbumFolder = async (folderPath: string): Promise<{ scanned: number
         // 4. Find or Create Album
         try {
             let [album] = await db.select().from(albums)
-                .where(sql`${albums.title} = ${albumData.title} AND ${albums.artistId} = ${albumData.albumArtistId}`)
+                .where(and(
+                    eq(albums.title, albumData.title),
+                    eq(albums.artistId, albumData.albumArtistId)
+                ))
                 .limit(1);
 
             if (!album) {
@@ -229,10 +236,25 @@ const processAlbumFolder = async (folderPath: string): Promise<{ scanned: number
 
             if (tracksToInsert.length > 0) {
                 try {
-                    // Consider batching if track lists are very large
-                    await db.insert(tracks).values(tracksToInsert);
+                    console.log(`Inserting ${tracksToInsert.length} new tracks for album ID ${albumId}...`);
+                    // Map the PendingTrackData to the NewTrack structure expected by Drizzle
+                    const insertData: NewTrack[] = tracksToInsert.map(t => ({
+                        title: t.title,
+                        artistId: t.artistId,
+                        albumId: albumId, // Use the determined albumId
+                        genre: t.genre,
+                        year: t.year,
+                        trackNumber: t.trackNumber,
+                        diskNumber: t.diskNumber,
+                        duration: t.duration,
+                        filePath: t.filePath,
+                        path: t.path, // Ensure 'path' field is included here
+                        // createdAt is handled by DB default
+                    }));
+
+                    await db.insert(tracks).values(insertData);
                     added += tracksToInsert.length;
-                     console.log(`Added ${tracksToInsert.length} new tracks for album ID ${albumId}`);
+                    console.log(`Successfully added ${tracksToInsert.length} tracks for album ID ${albumId}.`);
                 } catch (dbError: any) {
                     console.error(`Database error inserting tracks for album ID ${albumId}: ${dbError.message}`);
                     errors++; // Count insert error

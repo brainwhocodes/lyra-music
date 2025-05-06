@@ -28,20 +28,29 @@
             <th v-if="!albumId">Album</th> 
             <th v-if="!artistId">Artist</th>
             <th class="text-right">Duration</th>
+            <th class="w-16"></th>
           </tr>
         </thead>
         <tbody>
           <tr 
             v-for="track in tracks" 
             :key="track.id" 
-            class="hover cursor-pointer"
-            @click="playTrack(track)"
+            class="hover"
             >
             <td>{{ track.trackNumber || '-' }}</td>
             <td>{{ track.title }}</td>
             <td v-if="!albumId">{{ track.albumTitle || 'Unknown Album' }}</td>
             <td v-if="!artistId">{{ track.artistName || 'Unknown Artist' }}</td>
             <td class="text-right">{{ formatDuration(track.duration) }}</td>
+            <td>
+              <button 
+                class="btn btn-ghost btn-xs btn-circle"
+                @click.stop="playTrack(track)" 
+                title="Play track"
+              >
+                 <Icon name="material-symbols:play-arrow-rounded" class="w-5 h-5" />
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -53,7 +62,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { usePlayerState } from '~/composables/usePlayerState';
+import { usePlayerStore } from '~/stores/player';
+
+// Apply the sidebar layout
+definePageMeta({
+  layout: 'sidebar-layout'
+});
 
 // Define type for track data
 interface Track {
@@ -71,7 +85,7 @@ interface Track {
 }
 
 const route = useRoute();
-const { setTrack } = usePlayerState();
+const playerStore = usePlayerStore();
 
 // State
 const tracks = ref<Track[]>([]);
@@ -141,10 +155,13 @@ function formatDuration(seconds: number | null): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-// Placeholder for playing a track (to be implemented with player state)
+// Play track using the Pinia store
 function playTrack(track: Track) {
-  console.log('TracksPage: Calling setTrack for -', track.title);
-  setTrack(track); // Use the composable function
+  playerStore.playTrack({
+    id: track.id,
+    title: track.title,
+    artistName: track.artistName || undefined // Pass optional fields
+  }); 
 }
 
 </script>

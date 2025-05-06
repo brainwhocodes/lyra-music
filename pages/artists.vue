@@ -37,6 +37,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
+// Apply the sidebar layout
+definePageMeta({
+  layout: 'sidebar-layout'
+});
+
 // Define type for artist data
 interface Artist {
   id: number;

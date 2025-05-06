@@ -2,16 +2,17 @@
 
 ### Tasks
 
-* [ ] `/api/library/tracks` – filter by title, artist, genre, album
-* [ ] `/api/library/albums` – list albums with art
-* [ ] `/api/library/artists` – list artists and albums
-* [ ] `/api/library/genres` – list unique genres
+* [x] `/api/tracks` – filter by title, artist, genre, album (Currently filters by artistId, albumId, title, genre, etc.)
+* [x] `/api/albums` – list albums with art
+* [ ] `/api/artists` – list artists and albums (Currently lists only artists)
+* [x] `/api/genres` – list unique genres
 * [ ] UI:
 
-  * Search bar
-  * Album grid view
-  * Artist discography page
-  * Genre tags
+  * [x] Search bar (Filters album titles in library view)
+  * [x] Album grid view
+  * [x] Artist discography page (Navigates to filtered album view)
+  * [x] Genre tags
+* [x] Implement basic audio playback
 
 ### Clarification Questions
 

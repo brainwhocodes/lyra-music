@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
 import { useRuntimeConfig } from '#imports'; // Use Nuxt's runtime config
+import path from 'node:path'; // Added import
 
 // Get the database path from runtime configuration (e.g., defined in nuxt.config.ts or .env)
 const config = useRuntimeConfig();
@@ -18,7 +19,15 @@ if (!sqlitePath) {
   sqlitePath = './db.sqlite'; // Example default path
 }
 
-// Log the path being used for debugging
+// --- Added: Test Environment Check ---
+if (process.env.NODE_ENV === 'test') {
+  // Construct path relative to project root (where process.cwd() usually points)
+  sqlitePath = path.join(process.cwd(), 'server', 'tests', 'integration', 'scanner', 'test-db.sqlite');
+  console.log(`NODE_ENV is 'test', using test database at: ${sqlitePath}`);
+}
+// --- End Added Check ---
+
+// Log the path being used for debugging (will show test path when NODE_ENV=test)
 console.log(`Connecting to SQLite database at: ${sqlitePath}`);
 
 const sqlite = new Database(sqlitePath);

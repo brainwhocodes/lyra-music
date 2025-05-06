@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
     // More robust validation might be needed depending on security requirements.
     // For Windows, check for common invalid characters.
     // For cross-platform, adjust accordingly.
-    const invalidChars = /[<>:"|?*]/;
+    // Removed colon ':' as it's valid for drive letters (e.g., C:)
+    const invalidChars = /[<>"|?*]/; // Removed ':'
     if (invalidChars.test(path)) {
        throw createError({
         statusCode: 400,

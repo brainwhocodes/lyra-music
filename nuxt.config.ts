@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
+    '@pinia/nuxt', // Add Pinia module
   ],
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'development-secret',
