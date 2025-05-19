@@ -4,9 +4,14 @@ import { ref, computed, watch } from 'vue';
 
 // Define the structure of a Track object (adjust based on your actual track data)
 // We might fetch this from the /api/tracks endpoint later
-interface Track {
+export interface Track {
   id: number;
   title: string;
+  albumId: number;
+  trackNumber: number | null;
+  filePath: string;
+  artistId: number | null; // Made nullable to match database schema
+  duration: number;
   artistName?: string; // Optional fields as needed
   albumTitle?: string;
   // Add other relevant fields like duration if available directly
@@ -29,7 +34,8 @@ export const usePlayerStore = defineStore('player', () => {
   // Computed property for the current track
   const currentTrack = computed<Track | null>(() => {
     if (currentQueueIndex.value >= 0 && currentQueueIndex.value < queue.value.length) {
-      return queue.value[currentQueueIndex.value];
+      const track = queue.value[currentQueueIndex.value];
+      return track;
     }
     return null;
   });
@@ -226,6 +232,7 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const loadQueue = (tracks: Track[]) => {
+    console.log('[PlayerStore] loadQueue called with tracks:', tracks.map(t => t.id));
     originalQueue.value = [...tracks]; // Always store original order
 
     // Set the active queue based on shuffle state
@@ -237,8 +244,10 @@ export const usePlayerStore = defineStore('player', () => {
 
     // Only proceed if the queue is not empty
     if (queue.value.length > 0) {
-      console.log(`Loading queue with ${queue.value.length} tracks. Shuffled: ${isShuffled.value}`);
+      console.log(`[PlayerStore] Loading queue with ${queue.value.length} tracks. Shuffled: ${isShuffled.value}`);
+      const oldIndex = currentQueueIndex.value;
       currentQueueIndex.value = 0; // Start from the beginning
+      console.log(`[PlayerStore] loadQueue: currentQueueIndex changed from ${oldIndex} to ${currentQueueIndex.value}`);
       _setupAudioElement();        // Setup the first track
     } else {
       console.warn("loadQueue called with empty track list or result. Resetting player.");
@@ -250,9 +259,14 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const playFromQueue = (index: number) => {
+    console.log('[PlayerStore] playFromQueue called with index:', index, 'current queue length:', queue.value.length);
     if (index >= 0 && index < queue.value.length) {
+      const oldIndex = currentQueueIndex.value;
       currentQueueIndex.value = index;
+      console.log(`[PlayerStore] playFromQueue: currentQueueIndex changed from ${oldIndex} to ${currentQueueIndex.value}`);
       _setupAudioElement();
+    } else {
+      console.warn('[PlayerStore] playFromQueue: index out of bounds or queue empty.');
     }
   };
 

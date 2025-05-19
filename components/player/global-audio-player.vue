@@ -1,7 +1,7 @@
 <template>
   <div 
     v-if="playerStore.currentTrack"
-    class="fixed bottom-0 left-0 right-0 bg-base-300 text-base-content p-3 shadow-inner z-50 flex items-center gap-4"
+    class="fixed bottom-0 left-0 right-0 bg-base-300 text-base-content p-3 shadow-inner z-50 flex items-center gap-4 h-25"
   >
     <!-- Track Info -->
     <div class="flex-1 min-w-0">
@@ -16,7 +16,7 @@
     <!-- Playback Controls -->
     <div class="flex items-center gap-2">
       <button 
-        class="btn btn-ghost btn-sm btn-circle"
+        class="btn btn-ghost btn-xl btn-circle"
         @click="playerStore.playPrevious"
         :disabled="!playerStore.canPlayPrevious || playerStore.isLoading"
         title="Previous Track"
@@ -24,14 +24,14 @@
         <Icon name="material-symbols:skip-previous-rounded" class="w-6 h-6" />
       </button>
       <button 
-        class="btn btn-ghost btn-sm btn-circle"
+        class="btn btn-ghost btn-xl btn-circle"
         :class="{'text-primary': playerStore.isShuffled}" 
         @click="playerStore.toggleShuffle"
         title="Toggle Shuffle"
       >
         <Icon name="material-symbols:shuffle-rounded" class="w-5 h-5" />
       </button>
-      <button class="btn btn-ghost btn-sm btn-circle" @click="playerStore.togglePlayPause">
+      <button class="btn btn-ghost btn-xl btn-circle" @click="playerStore.togglePlayPause">
         <Icon 
           v-if="playerStore.isLoading"
           name="svg-spinners:180-ring-with-bg"
@@ -49,7 +49,7 @@
         />
       </button>
       <button 
-        class="btn btn-ghost btn-sm btn-circle"
+        class="btn btn-ghost btn-xl btn-circle"
         @click="playerStore.playNext"
         :disabled="!playerStore.canPlayNext || playerStore.isLoading"
         title="Next Track"
@@ -57,7 +57,7 @@
         <Icon name="material-symbols:skip-next-rounded" class="w-6 h-6" />
       </button>
       <button 
-        class="btn btn-ghost btn-sm btn-circle"
+        class="btn btn-ghost btn-xl btn-circle"
         :class="{'text-primary': playerStore.repeatMode !== 'none'}" 
         @click="playerStore.toggleRepeatMode"
         :title="`Repeat Mode: ${playerStore.repeatMode}`"
@@ -67,7 +67,7 @@
       </button>
       <NuxtLink
         to="/queue"
-        class="btn btn-ghost btn-sm btn-circle"
+        class="btn btn-ghost btn-xl btn-circle"
         title="Show Current Queue"
       >
         <Icon name="material-symbols:queue-music-rounded" class="w-5 h-5" />
@@ -82,7 +82,7 @@
          min="0" 
          :max="playerStore.duration || 0"
          :value="playerStore.currentTime"
-         class="range range-primary range-xs flex-1"
+         class="range range-primary flex-1"
          :disabled="!playerStore.duration || playerStore.isLoading"
          @input="handleSeek"
        />
@@ -112,7 +112,7 @@
         max="1" 
         step="0.01" 
         :value="playerStore.volume"
-        class="range range-xs w-20"
+        class="range w-50"
         @input="handleVolumeChange"
       />
     </div>
@@ -152,7 +152,7 @@ const handleVolumeChange = (event: Event) => {
 
 <style scoped>
 /* Add any specific styles if needed */
-.range-xs {
-  height: 0.5rem; /* Adjust size for daisyUI range */
+.range-md {
+  height: 0.rem; /* Adjust size for daisyUI range */
 }
 </style>
