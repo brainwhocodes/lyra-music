@@ -9,11 +9,6 @@
       <slot />
     </main>
 
-    <ClientOnly>
-    <!-- Persistent Audio Player -->
-    <AudioPlayer />
-    </ClientOnly>
-
   </div>
 </template>
 

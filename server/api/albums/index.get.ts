@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     let dbQuery = db.selectDistinct({
       id: albums.id,
       title: albums.title,
-      artPath: albums.artPath,
+      coverPath: albums.artPath,
       createdAt: albums.createdAt,
       artistId: artists.id,
       artistName: artists.name

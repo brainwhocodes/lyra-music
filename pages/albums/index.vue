@@ -16,40 +16,40 @@
     </div>
 
     <!-- Album List/Grid -->
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
       <div 
         v-for="album in albums" 
         :key="album.id" 
-        class="card card-compact bg-base-200 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+        class="card card-border bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
         @click="goToAlbum(album.id)"
         >
         <figure>
           <img 
-            :src="getCoverArtUrl(album.artPath)" 
+            :src="getCoverArtUrl(album.coverPath)" 
             :alt="album.title" 
             class="aspect-square object-cover w-full" 
             @error="onImageError"
             />
-            <!-- Overlay structure matching image more closely (on hover) -->
-            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <!-- Blurred Bottom Overlay -->
-              <div class="absolute bottom-0 left-0 right-0 h-20 backdrop-blur-sm bg-gray-900/70 flex items-center justify-end p-3">
-                 <!-- Play Button -->
-                <button 
-                  @click.stop="playAlbum(album.id)" 
-                  title="Play Album" 
-                  class="w-12 h-12 flex items-center justify-center rounded-xl hover:brightness-90 focus:outline-none" 
-                  style="background-color: #FF6347;" 
-                >
-                  <Icon name="material-symbols:play-arrow-rounded" class="w-8 h-8 text-black" />
-                </button>
-              </div>
-            </div>
         </figure>
-        <div class="card-body">
-          <h2 class="card-title text-sm truncate" :title="album.title">{{ album.title }}</h2>
-          <p class="text-xs truncate" :title="album.artistName || 'Unknown Artist'">{{ album.artistName || 'Unknown Artist' }}</p>
-          <p class="text-xs text-gray-500">{{ album.year || '' }}</p>
+        <!-- Play Button -->
+        <button 
+          @click.stop="playAlbum(album.id)" 
+          :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album.id ? 'Pause Album' : 'Play Album'" 
+          class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none" 
+          style="background-color: #FF6347;" 
+        >
+        <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album.id && currentAlbumLoading" />
+          <Icon name="material-symbols:play-arrow-rounded" 
+           v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album.id" 
+           class="w-8! h-8! text-white" />
+          <Icon name="material-symbols:pause-rounded"  v-else class="w-8! h-8! text-white" />
+        </button>
+        <div class="card-body flex justify-end">
+          <div>
+            <h2 class="card-title text-lg truncate" :title="album.title">{{ album.title }}</h2>
+            <p class="text-xs truncate" :title="album.artistName || 'Unknown Artist'">{{ album.artistName || 'Unknown Artist' }}</p>
+            <p class="text-xs text-gray-500">{{ album.year || '' }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -61,22 +61,100 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
-import type { Track } from '~/stores/player'; // For playAlbum
-
+import type { Album } from '~/types/album';
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
 });
 
-// Define type for album data
-interface Album {
-  id: number;
-  title: string;
-  year: number | null;
-  artPath: string | null;
-  artistId: number | null;
-  artistName: string | null; // Included from join
+const playerStore = usePlayerStore();
+
+const currentAlbum = ref<Album | null>(null);
+const currentAlbumLoading = ref<boolean>(false);
+const albumIdLoading = ref<number | null>(null);
+
+// New function to fetch and map album details
+async function fetchAlbumDetailsById(id: number): Promise<Album | null> {
+  currentAlbumLoading.value = true;
+  albumIdLoading.value = id;
+  let fetchedAlbum: Album | null = null;
+
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
+    const apiResponse = await $fetch(`/api/albums/${id}`) as any;
+
+    if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
+      const tracksForPlayer: Track[] = apiResponse.tracks.map((t: any) => ({
+        id: t.id,
+        title: t.title ?? 'Unknown Track',
+        artistName: t.artist_name ?? apiResponse.artist_name ?? 'Unknown Artist',
+        albumTitle: t.album_title ?? apiResponse.title ?? 'Unknown Album',
+        filePath: t.file_path,
+        duration: t.duration ?? 0,
+        coverPath: apiResponse.cover_path,
+        albumId: apiResponse.id,
+        artistId: apiResponse.artist_id ?? -1,
+        trackNumber: t.track_number ?? t.trackNumber ?? null,
+      }));
+      fetchedAlbum = {
+        id: apiResponse.id,
+        title: apiResponse.title,
+        year: apiResponse.year,
+        coverPath: apiResponse.cover_path,
+        artistId: apiResponse.artist_id ?? -1,
+        artistName: apiResponse.artist_name ?? 'Unknown Artist',
+        tracks: tracksForPlayer,
+      };
+    } else {
+      console.warn(`No tracks found or invalid track data for album ${id}`, apiResponse);
+    }
+  } catch (err) {
+    console.error(`Error fetching or playing album ${id}:`, err);
+    fetchedAlbum = null; // Ensure it's null on error
+  } finally {
+    currentAlbumLoading.value = false;
+  }
+  return fetchedAlbum;
 }
+
+// Function to play a specific album
+const playAlbum = async (albumId: number): Promise<void> => {
+  let albumDataForPlayback: Album | null = null;
+
+  // Case 1: The requested albumId is already loaded in currentAlbum.value
+  if (currentAlbum.value && currentAlbum.value.id === albumId) {
+    albumDataForPlayback = currentAlbum.value;
+  } else {
+    // Case 2: Need to fetch a new album
+    // Pause current playback if it's ongoing
+    if (playerStore.isPlaying) {
+      playerStore.togglePlayPause();
+    }
+    const newlyFetchedAlbum = await fetchAlbumDetailsById(albumId);
+    currentAlbum.value = newlyFetchedAlbum; 
+    albumDataForPlayback = newlyFetchedAlbum;
+  }
+
+  // --- Playback Logic --- 
+  if (!albumDataForPlayback || !albumDataForPlayback.tracks || albumDataForPlayback.tracks.length === 0) {
+    return; 
+  }
+
+  const trackIndex = 0; 
+  const trackToPlay = albumDataForPlayback.tracks[trackIndex];
+
+  if (playerStore.currentTrack?.id === trackToPlay.id) {
+    playerStore.togglePlayPause();
+    return;
+  }
+
+  const playerQueueAlbumId = playerStore.queue.length > 0 ? playerStore.queue[0].albumId : null;
+  if (playerQueueAlbumId !== albumDataForPlayback.id) {
+    playerStore.loadQueue(albumDataForPlayback.tracks);
+  }
+  
+  playerStore.playFromQueue(trackIndex);
+}; 
 
 // Function to get cover art URL (adjust path as needed)
 function getCoverArtUrl(artPath: string | null): string {
@@ -150,40 +228,6 @@ function onImageError(event: Event) {
   const target = event.target as HTMLImageElement;
   target.src = '/placeholder-cover.png'; // Path to your placeholder image in public dir
 }
-
-// Function to play a specific album
-async function playAlbum(albumId: number): Promise<void> {
-  try {
-    // Fetch the full album details, which should include tracks
-    // Uses the specific album endpoint: /api/albums/[id]/index.get.ts
-    const albumDetails = await $fetch(`/api/albums/${albumId}`);
-
-    // Basic check for tracks array
-    if (albumDetails && Array.isArray(albumDetails.tracks) && albumDetails.tracks.length > 0) {
-      // Map tracks to the structure expected by the player store
-      const tracksForPlayer: Track[] = albumDetails.tracks.map((t: any) => ({
-         id: t.id,
-         title: t.title ?? 'Unknown Track',
-         artistName: t.artist_name ?? albumDetails.artist_name ?? 'Unknown Artist',
-         albumTitle: t.album_title ?? albumDetails.title ?? 'Unknown Album',
-         filePath: t.file_path, // Ensure this is the correct property name
-         duration: t.duration ?? 0,
-         coverPath: albumDetails.cover_path, // Use cover_path from album details
-         albumId: albumDetails.id,
-         artistId: albumDetails.artist_id,
-      }));
-      const playerStore = usePlayerStore();
-      playerStore.loadQueue(tracksForPlayer);
-    } else {
-      console.warn(`No tracks found or invalid track data for album ${albumId}`, albumDetails);
-      // Optionally: Notify user that the album couldn't be played
-    }
-  } catch (err) {
-    console.error(`Error fetching or playing album ${albumId}:`, err);
-    // Optionally: Notify user about the error
-  }
-}
-
 </script>
 
 <style scoped>
@@ -191,5 +235,28 @@ async function playAlbum(albumId: number): Promise<void> {
 .card-title {
     white-space: normal; /* Allow wrapping for longer titles */
     overflow-wrap: break-word;
+}
+.album-play-button {
+    background-color: #FF6347;
+    position: absolute;
+    bottom: 18%;
+    right: 5%;
+}
+
+@media screen and (max-width: 1700px) {
+    .album-play-button {
+        bottom: 20%;
+    }
+}
+
+@media screen and (max-width: 1580px) {
+    .album-play-button {
+        bottom: 32%;
+    }
+}
+
+.album-play-button:hover {
+  cursor: pointer;
+    
 }
 </style>

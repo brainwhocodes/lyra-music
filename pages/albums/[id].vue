@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import type { Track } from '~/stores/player';
+import type { Album } from '~/types/album';
 
 const route = useRoute();
 const playerStore = usePlayerStore();
@@ -11,19 +11,22 @@ definePageMeta({
   layout: 'sidebar-layout'
 });
 
-// Define the expected structure from the API endpoint
-interface AlbumDetails {
-  id: number;
-  title: string;
-  year: number | null;
-  cover_path: string | null;
-  artist_id: number;
-  artist_name: string;
-  tracks: Track[];
-}
+
 
 // Fetch album details
-const { data: album, pending, error } = await useFetch<AlbumDetails>(`/api/albums/${albumId.value}`);
+const { data: album, pending, error } = await useFetch<Album>(`/api/albums/${albumId.value}`);
+
+// Create a computed property for tracks that are ready for the player
+const playerReadyTracks = computed(() => {
+  if (!album.value?.tracks) return [];
+  // Provide a fallback for album.value.artist_name itself, though it's typed as string in AlbumDetails
+  const albumArtist = album.value.artistName || 'Unknown Artist'; 
+  return album.value.tracks.map(track => ({
+    ...track,
+    // Prioritize track's own artistName, then album's artist_name, then a final fallback.
+    artistName: track.artistName || albumArtist,
+  }));
+});
 
 console.log(album.value);
 
@@ -47,43 +50,48 @@ const isCurrentAlbumLoaded = computed(() => {
 });
 
 // --- Click handler for the main cover button ---
-const handleCoverClick = (): void => {
-  if (isCurrentAlbumLoaded.value) {
-    playerStore.togglePlayPause();
-  } else {
-    // Load and play this album if tracks exist
-    if (album.value?.tracks) {
-      playerStore.loadQueue(album.value.tracks);
-    }
-  }
-};
-
-// --- Play this album (existing function - can be used by other buttons) ---
 const playAlbum = (): void => {
-  if (album.value?.tracks) {
-    playerStore.loadQueue(album.value.tracks);
+  const trackIndex = 0;
+  if (!album.value?.tracks?.[trackIndex]) return;
+  
+  const track = album.value.tracks[trackIndex];
+  
+  // If the clicked track is ALREADY the current track in the player, just toggle play/pause
+  if (playerStore.currentTrack?.id === track.id) {
+    playerStore.togglePlayPause();
+    return;
   }
+  
+  // If the queue isn't this album (or no track is loaded), load the album queue
+  // isCurrentAlbumLoaded checks if the *album* context is the same.
+  if (!isCurrentAlbumLoaded.value) {
+    playerStore.loadQueue(playerReadyTracks.value);
+  }
+  
+  // Play the selected track (this will set it as current in the store)
+  playerStore.playFromQueue(trackIndex);
 };
 
 // --- Play a specific track (existing function) ---
 const playTrack = (trackIndex: number): void => {
-  debugger;
-  if (album.value?.tracks) {
-    // If the queue isn't already this album, load it first, starting at trackIndex
-    if (!isCurrentAlbumLoaded.value) {
-      if (playerStore.currentQueueIndex.value=== trackIndex) {
-        playerStore.togglePlayPause();
-      } else {
-        playerStore.loadQueue(album.value.tracks, trackIndex);
-      }
-    } else {
-      if (playerStore.currentTrack?.id === trackIndex) {
-        playerStore.togglePlayPause();
-      } else {
-        playerStore.playFromQueue(trackIndex);
-      }
-    }
-  } 
+  if (!album.value?.tracks?.[trackIndex]) return;
+  
+  const track = album.value.tracks[trackIndex];
+  
+  // If the clicked track is ALREADY the current track in the player, just toggle play/pause
+  if (playerStore.currentTrack?.id === track.id) {
+    playerStore.togglePlayPause();
+    return;
+  }
+  
+  // If the queue isn't this album (or no track is loaded), load the album queue
+  // isCurrentAlbumLoaded checks if the *album* context is the same.
+  if (!isCurrentAlbumLoaded.value) {
+    playerStore.loadQueue(playerReadyTracks.value);
+  }
+  
+  // Play the selected track (this will set it as current in the store)
+  playerStore.playFromQueue(trackIndex);
 };
 
 // Format duration helper
@@ -98,7 +106,7 @@ const formatDuration = (seconds: number): string => {
 
 // Set page title
 useHead(() => ({
-  title: album.value ? `${album.value.title} by ${album.value.artist_name}` : 'Album Details'
+  title: album.value ? `${album.value.title} by ${album.value.artistName}` : 'Album Details'
 }));
 
 </script>
@@ -119,50 +127,40 @@ useHead(() => ({
         <!-- Album Cover & Play Button -->
         <div class="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 relative group">
           <img 
-            :src="getCoverArtUrl(album?.cover_path)" 
+            :src="getCoverArtUrl(album?.coverPath)" 
             alt="Album Cover" 
             class="w-full h-full object-cover rounded-lg shadow-lg"
           />
-          <!-- Updated overlay button -->
-          <button 
-              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300 cursor-pointer focus:outline-none"
-              @click="handleCoverClick"
-              :title="isCurrentAlbumLoaded && playerStore.isPlaying ? 'Pause Album' : 'Play Album'"
-            >
-              <Icon 
-                :name="isCurrentAlbumLoaded && playerStore.isPlaying ? 'material-symbols:pause-rounded' : 'material-symbols:play-arrow-rounded'"
-                class="w-20 h-20 text-white" 
-              />
-          </button>
         </div>
         
         <!-- Album Info -->
         <div class="flex-grow text-center md:text-left">
           <h1 class="text-4xl font-bold mb-2">{{ album?.title }}</h1>
           <NuxtLink 
-            v-if="album?.artist_id"
-            :to="`/artists/${album.artist_id}`" 
+            v-if="album?.artistId"
+            :to="`/artists/${album.artistId}`" 
             class="text-2xl text-neutral-content hover:text-primary transition-colors"
             title="View Artist"
           >
-              {{ album?.artist_name ?? 'Unknown Artist' }}
+              {{ album?.artistName ?? 'Unknown Artist' }}
           </NuxtLink>
           <span v-else class="text-2xl text-neutral-content">
-            {{ album?.artist_name ?? 'Unknown Artist' }}
+            {{ album?.artistName ?? 'Unknown Artist' }}
           </span>
           <p v-if="album?.year" class="text-lg text-gray-500 mt-1">{{ album.year }}</p>
           <p v-if="album?.tracks" class="text-sm text-gray-400 mt-2">{{ album.tracks.length }} track{{ album.tracks.length !== 1 ? 's' : '' }}</p>
           <!-- This button still just plays the album from the start -->
           <button class="btn btn-primary mt-4" @click="playAlbum">
-            <Icon name="material-symbols:play-arrow-rounded" class="w-5 h-5 mr-1" />
-            Play Album
+            <Icon name="material-symbols:play-arrow-rounded" class="w-5 h-5 mr-1" v-if="!playerStore.isPlaying" />
+            <Icon name="material-symbols:pause-rounded" class="w-5 h-5 mr-1" v-else />
+            {{  playerStore.isPlaying ? 'Pause Album' : 'Play Album' }}
           </button>
         </div>
       </div>
 
       <!-- Track List -->
       <div>
-        <h2 class="text-2xl font-semibold mb-4">Tracks</h2>
+        <h2 class="text-2xl font-semibold my-4">Tracks</h2>
         <div class="overflow-x-auto">
           <table class="table w-full">
             <tbody>
