@@ -188,7 +188,9 @@ export async function scanLibrary(libraryId: number, libraryPath: string): Promi
         if (!finalAlbumArtPath && metadata.common.picture && metadata.common.picture.length > 0) {
           const picture = metadata.common.picture[0];
           console.log(`  Found embedded cover art (Format: ${picture.format}).`);
-          finalAlbumArtPath = await saveArtToCacheAndGetPath(picture.data, picture.format, 'embedded metadata');
+          // Convert Uint8Array to Buffer before passing to saveArtToCacheAndGetPath
+          const pictureBuffer = Buffer.from(picture.data);
+          finalAlbumArtPath = await saveArtToCacheAndGetPath(pictureBuffer, picture.format, 'embedded metadata');
         }
 
         // 5. Find or Create Album & Update Art
