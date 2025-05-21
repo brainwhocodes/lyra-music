@@ -16,7 +16,7 @@
     </div>
 
     <!-- Album List/Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
+    <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
       <div 
         v-for="album in albums" 
         :key="album.id" 
@@ -239,9 +239,20 @@ function onImageError(event: Event) {
 .album-play-button {
     background-color: #FF6347;
     position: absolute;
-    top: 70%;
+    bottom: 18%;
     right: 5%;
-    transform: translate(-5%, -70%);
+}
+
+@media screen and (max-width: 1700px) {
+    .album-play-button {
+        bottom: 20%;
+    }
+}
+
+@media screen and (max-width: 1580px) {
+    .album-play-button {
+        bottom: 32%;
+    }
 }
 
 .album-play-button:hover {

@@ -1,29 +1,9 @@
 // File: c:/Users/mille/Documents/otogami/server/api/albums/[id].get.ts
 
 import { H3Event } from 'h3';
-import { z } from 'zod';
 import { db } from '~/server/db';
 import { albums, artists, tracks } from '~/server/db/schema';
-import { eq, asc, sql } from 'drizzle-orm';
-
-// Define the expected structure for the response
-const AlbumDetailsSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  year: z.number().nullable(),
-  cover_path: z.string().nullable(),
-  artist_id: z.number(),
-  artist_name: z.string(),
-  tracks: z.array(z.object({
-    id: z.number(),
-    title: z.string(),
-    track_number: z.number().nullable(),
-    duration: z.number(),
-    artist_name: z.string(), // Ensure these exist on your tracks schema or adjust query
-    album_title: z.string(), // Ensure these exist on your tracks schema or adjust query
-    file_path: z.string()
-  }))
-});
+import { eq, asc } from 'drizzle-orm';
 
 export default defineEventHandler(async (event: H3Event) => {
   const albumIdParam = event.context.params?.id;
@@ -77,18 +57,18 @@ export default defineEventHandler(async (event: H3Event) => {
       id: albumData.id,
       title: albumData.title,
       year: albumData.year,
-      cover_path: albumData.cover_path,
-      artist_id: albumData.artist_id,
-      artist_name: albumData.artist_name ?? 'Unknown Artist',
+      coverPath: albumData.cover_path,
+      artistId: albumData.artist_id,
+      artistName: albumData.artist_name ?? 'Unknown Artist',
       tracks: tracksData?.map(track => ({
         id: track.id,
         title: track.title,
-        track_number: track.track_number,
+        trackNumber: track.track_number,
         duration: track.duration,
         // Use albumData for artist/album name as primary source, tracks might not have it
-        artist_name: albumData.artist_name ?? 'Unknown Artist',
-        album_title: albumData.title ?? 'Unknown Album',
-        file_path: track.file_path,
+        artistName: albumData.artist_name ?? 'Unknown Artist',
+        albumTitle: albumData.title ?? 'Unknown Album',
+        filePath: track.file_path,
       })) ?? []
     };
 
