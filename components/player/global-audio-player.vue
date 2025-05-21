@@ -65,13 +65,14 @@
         <Icon v-if="playerStore.repeatMode === 'one'" name="material-symbols:repeat-one-rounded" class="w-5 h-5" />
         <Icon v-else name="material-symbols:repeat-rounded" class="w-5 h-5" />
       </button>
-      <NuxtLink
-        to="/queue"
+      <button
         class="btn btn-ghost btn-xl btn-circle"
-        title="Show Current Queue"
+        :class="{'text-primary': playerStore.isQueueSidebarVisible}"
+        @click="playerStore.toggleQueueSidebar"
+        :title="playerStore.isQueueSidebarVisible ? 'Hide Queue' : 'Show Queue'"
       >
         <Icon name="material-symbols:queue-music-rounded" class="w-5 h-5" />
-      </NuxtLink>
+      </button>
     </div>
 
     <!-- Seek Bar -->

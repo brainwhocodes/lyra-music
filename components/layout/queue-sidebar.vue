@@ -1,0 +1,111 @@
+<script setup lang="ts">
+import { usePlayerStore } from '~/stores/player';
+import type { Track } from '~/stores/player'; // Assuming Track type is exported
+
+const playerStore = usePlayerStore();
+
+const queue = computed(() => playerStore.queue);
+const currentIndex = computed(() => playerStore.currentQueueIndex);
+
+// Function to handle click on a queue item
+const handleClickOnQueueItem = (index: number): void => {
+  if (index === playerStore.currentQueueIndex) {
+    playerStore.togglePlayPause();
+  } else {
+    playerStore.playFromQueue(index);
+  }
+};
+
+// Format duration helper
+const formatDuration = (seconds: number): string => {
+  if (isNaN(seconds) || seconds < 0) {
+    return '0:00';
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+// No need for useHead in a component like this
+// useHead({ title: 'Current Queue' });
+
+</script>
+
+<template>
+  <div class="w-80 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-16 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
+    <h2 class="text-xl font-semibold mb-4">Up Next</h2>
+
+    <div v-if="queue.length > 0" class="flex-grow overflow-y-auto space-y-1 pr-2">
+      <div
+        v-for="(track, index) in queue"
+        :key="`${track.id}-${index}`"
+        class="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer group"
+        :class="{'bg-base-300 text-primary font-semibold': index === currentIndex}"
+        @click="handleClickOnQueueItem(index)"
+      >
+        <div class="w-8 text-center text-xs text-neutral-content/70 mr-2">{{ index + 1 }}</div>
+        <div class="w-8 text-center mr-2">
+          <Icon 
+            v-if="index === currentIndex && playerStore.isPlaying" 
+            name="material-symbols:volume-up-rounded" 
+            class="w-5 h-5 text-primary" 
+            title="Currently Playing"/>
+          <Icon 
+            v-else-if="index === currentIndex && !playerStore.isPlaying" 
+            name="material-symbols:play-arrow-rounded" 
+            class="w-5 h-5 text-primary" 
+            title="Paused - Click to Play"/>
+          <Icon 
+            v-else 
+            name="material-symbols:play-arrow-rounded" 
+            class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-base-content/70" 
+            title="Play this track" />
+        </div>
+        <div class="flex-grow min-w-0">
+          <div class="font-medium text-sm truncate" :title="track.title">{{ track.title }}</div>
+          <div 
+            class="text-xs truncate"
+            :class="index === currentIndex ? 'text-primary/70' : 'text-neutral-content/70'"
+            :title="track.artistName"
+          >
+            {{ track.artistName }}
+          </div>
+        </div>
+        <div class="text-xs ml-2 shrink-0" :class="index === currentIndex ? 'text-primary/90' : 'text-neutral-content/70'">
+          {{ formatDuration(track.duration) }}
+        </div>
+      </div>
+    </div>
+    <div v-else class="flex-grow flex items-center justify-center">
+      <p class="text-center text-neutral-content italic text-sm">Queue is empty.</p>
+    </div>
+
+  </div>
+</template>
+
+<style scoped>
+/* Adjust sidebar height if you have a fixed header/navbar 
+   Assuming a header height of 4rem (16 in Tailwind's default spacing units)
+   And player height of 5rem (pb-20 on main content)
+*/
+.h-screen {
+  height: 100vh; /* Full viewport height */
+}
+
+.pt-16 {
+  padding-top: 4rem; /* Space for a potential fixed navbar */
+}
+
+
+/* Subtle scrollbar for webkit browsers */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>

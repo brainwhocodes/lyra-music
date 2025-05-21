@@ -31,6 +31,9 @@ export const usePlayerStore = defineStore('player', () => {
   const originalQueue = ref<Track[]>([]); // To restore order when shuffle is turned off
   const repeatMode = ref<'none' | 'one' | 'all'>('none');
 
+  // State for Queue Sidebar Visibility
+  const isQueueSidebarVisible = ref<boolean>(false);
+
   // Computed property for the current track
   const currentTrack = computed<Track | null>(() => {
     if (currentQueueIndex.value >= 0 && currentQueueIndex.value < queue.value.length) {
@@ -346,6 +349,19 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
+  // --- Actions for Queue Sidebar ---
+  const showQueueSidebar = (): void => {
+    isQueueSidebarVisible.value = true;
+  };
+
+  const hideQueueSidebar = (): void => {
+    isQueueSidebarVisible.value = false;
+  };
+
+  const toggleQueueSidebar = (): void => {
+    isQueueSidebarVisible.value = !isQueueSidebarVisible.value;
+  };
+
   const _resetState = () => {
     isPlaying.value = false;
     currentTime.value = 0;
@@ -372,20 +388,28 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading,
     isShuffled,
     repeatMode,
+    isQueueSidebarVisible, // Expose new state
+
     // Getters (Computed)
     audioSource,
     canPlayNext,
     canPlayPrevious,
+
     // Actions
     playTrack,
     loadQueue,
     playFromQueue,
     togglePlayPause,
-    toggleShuffle, // Add toggleShuffle action
-    toggleRepeatMode, // Expose toggleRepeatMode
     playNext,
     playPrevious,
     seek,
     setVolume,
+    toggleShuffle,
+    toggleRepeatMode,
+    showQueueSidebar,   // Expose new actions
+    hideQueueSidebar,
+    toggleQueueSidebar,
+
+    // Internal methods exposed for potential direct use or testing (consider if really needed)
   };
 });
