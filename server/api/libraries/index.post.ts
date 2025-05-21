@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { db } from '~/server/db'
-import { mediaLibraries } from '~/server/db/schema'
+import { mediaFolders } from '~/server/db/schema'
 import type { H3Event } from 'h3'
 
 // Input schema validation
@@ -9,14 +9,6 @@ const librarySchema = z.object({
 })
 
 export default defineEventHandler(async (event: H3Event) => {
-  // 1. Ensure user is authenticated
-  const user = event.context.user
-  if (!user || !user.userId) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized: Authentication required.'
-    })
-  }
 
   // 2. Read and validate request body
   const body = await readValidatedBody(event, body => librarySchema.safeParse(body))
@@ -38,9 +30,8 @@ export default defineEventHandler(async (event: H3Event) => {
   try {
     // 3. Insert into database
     const [newLibrary] = await db
-      .insert(mediaLibraries)
+      .insert(mediaFolders)
       .values({
-        userId: user.userId,
         path: libraryPath
       })
       .returning()
@@ -51,8 +42,8 @@ export default defineEventHandler(async (event: H3Event) => {
         statusMessage: 'Internal Server Error: Failed to create library entry.'
       })
     }
-
-    console.log(`Library added for user ${user.userId}: ${libraryPath}`)
+    
+    console.log(`Library added: ${libraryPath}`)
     
     // Set status code to 201 Created
     setResponseStatus(event, 201)

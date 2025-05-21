@@ -27,21 +27,17 @@ Display the scanned music library (artists, albums, tracks) to the user and impl
 *   [ ] Create `pages/albums.vue`: Display a list or grid of albums.
     *   Allow filtering/viewing by artist.
     *   Clicking an album navigates to its tracklist view.
-*   [x] Create `pages/tracks.vue`: Display a list of tracks.
-    *   Allow filtering/viewing by album or artist.
-    *   Show track number, title, duration.
-    *   Clicking a track should initiate playback.
-*   [x] Create `components/audio-player.vue`: A basic audio player component.
+*   [x] Create `components/player/global-audio-player.vue` (formerly `components/audio-player.vue`): A basic audio player component.
     *   Displays current track info (title, artist).
     *   Standard controls: Play/Pause, Seek bar, Volume.
-    *   Uses HTML5 `<audio>` element.
-    *   Integrate into the main layout (e.g., `layouts/default.vue`) so it's persistent across pages.
+    *   Uses HTML5 `<audio>` element (managed by Pinia store).
+    *   Integrate into the main layout (e.g., `layouts/sidebar-layout.vue`) so it's persistent across pages.
 
 ### Logic & Integration
 
-*   [x] Implement state management (e.g., using `useState` or Pinia) for the current playlist and player state.
-*   [x] Update layout (`layouts/default.vue`) to include the `AudioPlayer` component.
-*   [x] Connect track list clicks to update the player state and start playback.
+*   [x] Implement state management (e.g., using Pinia `playerStore`) for the current playlist and player state.
+*   [x] Update layout (`layouts/sidebar-layout.vue`) to include the `global-audio-player.vue` component.
+*   [x] Connect track list clicks (e.g., in `components/layout/queue-sidebar.vue`) to update the player state and start playback.
 
 ## Decisions to Make
 

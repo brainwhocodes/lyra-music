@@ -85,7 +85,11 @@
          :value="playerStore.currentTime"
          class="range range-primary flex-1"
          :disabled="!playerStore.duration || playerStore.isLoading"
-         @input="handleSeek"
+         @mousedown="playerStore.startSeeking()"
+         @touchstart="playerStore.startSeeking()"
+         @input="handleContinuousSeekInput"
+         @mouseup="playerStore.endSeeking()"
+         @touchend="playerStore.endSeeking()"
        />
        <span class="text-xs font-mono">{{ formatTime(playerStore.duration) }}</span>
     </div>
@@ -123,9 +127,10 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const playerStore = usePlayerStore();
+const isDragging = ref(false);
 
 // Helper to format time (e.g., 1:05)
 const formatTime = (seconds: number): string => {
@@ -137,10 +142,10 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Handle seek bar input
-const handleSeek = (event: Event) => {
+// Handle seek bar input during drag
+const handleContinuousSeekInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  playerStore.seek(parseFloat(target.value));
+  playerStore.updateSeekPosition(parseFloat(target.value));
 };
 
 // Handle volume slider input

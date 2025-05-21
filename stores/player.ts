@@ -14,6 +14,7 @@ export interface Track {
   duration: number;
   artistName?: string; // Optional fields as needed
   albumTitle?: string;
+  coverPath?: string | null; // Added to store album cover art URL
   // Add other relevant fields like duration if available directly
 }
 
@@ -33,6 +34,10 @@ export const usePlayerStore = defineStore('player', () => {
 
   // State for Queue Sidebar Visibility
   const isQueueSidebarVisible = ref<boolean>(false);
+
+  // State for Seek Bar Dragging
+  const isUserSeeking = ref<boolean>(false);
+  const wasPlayingBeforeSeek = ref<boolean>(false);
 
   // Computed property for the current track
   const currentTrack = computed<Track | null>(() => {
@@ -196,7 +201,7 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
   const _handleTimeUpdate = () => { 
-    if (audioElement.value) {
+    if (audioElement.value && !isUserSeeking.value) { // Only update if not actively seeking
       currentTime.value = audioElement.value.currentTime;
     }
   };
@@ -362,6 +367,43 @@ export const usePlayerStore = defineStore('player', () => {
     isQueueSidebarVisible.value = !isQueueSidebarVisible.value;
   };
 
+  // --- Actions for Seek Bar Dragging ---
+  const startSeeking = (): void => {
+    if (!audioElement.value) return;
+    isUserSeeking.value = true;
+    wasPlayingBeforeSeek.value = isPlaying.value;
+    if (isPlaying.value) {
+      audioElement.value.pause(); // Pause playback during seek
+    }
+  };
+
+  const updateSeekPosition = (newTime: number): void => {
+    if (!audioElement.value || !isUserSeeking.value) return;
+    // Update our reactive currentTime for the UI
+    currentTime.value = newTime;
+    // Also update the audio element's currentTime directly so the browser's native UI for the range input reflects the change immediately if needed.
+    // This is usually not strictly necessary if the input's value is bound to playerStore.currentTime,
+    // but can help ensure the thumb position is accurate during drag, especially if there's any lag.
+    audioElement.value.currentTime = newTime; 
+  };
+
+  const endSeeking = (): void => {
+    if (!audioElement.value || !isUserSeeking.value) return;
+    isUserSeeking.value = false;
+    // The audioElement.currentTime should already be at the desired currentTime.value
+    // due to updateSeekPosition or the final @input event before @mouseup.
+    // Explicitly set it here to be certain.
+    audioElement.value.currentTime = currentTime.value;
+
+    if (wasPlayingBeforeSeek.value) {
+      audioElement.value.play().catch(error => {
+        _handleError(error);
+      });
+    }
+    // Reset wasPlayingBeforeSeek if needed, though it's overwritten on next startSeek
+    // wasPlayingBeforeSeek.value = false; 
+  };
+
   const _resetState = () => {
     isPlaying.value = false;
     currentTime.value = 0;
@@ -389,6 +431,8 @@ export const usePlayerStore = defineStore('player', () => {
     isShuffled,
     repeatMode,
     isQueueSidebarVisible, // Expose new state
+    isUserSeeking,        // Expose seek state
+    wasPlayingBeforeSeek, // Expose seek state
 
     // Getters (Computed)
     audioSource,
@@ -409,6 +453,9 @@ export const usePlayerStore = defineStore('player', () => {
     showQueueSidebar,   // Expose new actions
     hideQueueSidebar,
     toggleQueueSidebar,
+    startSeeking,         // Expose seek actions
+    updateSeekPosition,
+    endSeeking,
 
     // Internal methods exposed for potential direct use or testing (consider if really needed)
   };

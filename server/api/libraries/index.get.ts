@@ -1,5 +1,5 @@
 import { db } from '~/server/db'
-import { mediaLibraries } from '~/server/db/schema'
+import { mediaFolders } from '~/server/db/schema'
 import { eq } from 'drizzle-orm'
 import type { H3Event } from 'h3'
 
@@ -17,9 +17,9 @@ export default defineEventHandler(async (event: H3Event) => {
     // 2. Query the database for libraries belonging to the user
     const userLibraries = await db
       .select()
-      .from(mediaLibraries)
-      .where(eq(mediaLibraries.userId, user.userId))
-      .orderBy(mediaLibraries.createdAt)
+      .from(mediaFolders)
+      .where(eq(mediaFolders.userId, user.userId))
+      .orderBy(mediaFolders.createdAt)
 
     console.log(`Retrieved ${userLibraries.length} libraries for user ${user.userId}`)
 

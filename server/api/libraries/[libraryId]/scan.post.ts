@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { db } from '~/server/db'
-import { mediaLibraries } from '~/server/db/schema'
+import { mediaFolders } from '~/server/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { scanLibrary } from '~/server/utils/scanner'
 import type { H3Event } from 'h3'
@@ -36,11 +36,11 @@ export default defineEventHandler(async (event: H3Event) => {
   try {
     // 3. Verify the library belongs to the user and get its path
     const [library] = await db
-      .select({ id: mediaLibraries.id, path: mediaLibraries.path })
-      .from(mediaLibraries)
+      .select({ id: mediaFolders.id, path: mediaFolders.path })
+      .from(mediaFolders)
       .where(and(
-        eq(mediaLibraries.id, libraryId),
-        eq(mediaLibraries.userId, user.userId)
+        eq(mediaFolders.id, libraryId),
+        eq(mediaFolders.userId, user.userId)
       ))
       .limit(1)
 

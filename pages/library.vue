@@ -68,28 +68,39 @@
         <Icon name="mdi:alert-circle-outline" class="w-6 h-6" />
         <span>Error loading albums: {{ albumsError.message }}</span>
      </div>
-     <div v-else-if="albums && albums.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
-        <div v-for="album in albums" :key="album.id" class="card card-compact bg-base-100 shadow-md hover:shadow-xl transition-shadow duration-300 group">
-           <figure class="relative">
-             <img :src="getCoverArtUrl(album.artPath)" @error="setDefaultCover" alt="Album Art" class="aspect-square object-cover w-full" />
-              <!-- Play button overlay -->
-              <button 
-                class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                @click.stop="playAlbum(album.id)" 
-                title="Play Album"
-              >
-                 <Icon name="material-symbols:play-arrow-rounded" class="w-12 h-12 text-white" />
-              </button>
-           </figure>
-           <div class="card-body p-3">
-             <NuxtLink :to="`/albums/${album.id}`" class="card-title text-sm truncate link link-hover" :title="album.title">
-                {{ album.title }}
-             </NuxtLink>
-             <NuxtLink :to="`/artists/${album.artistId}`" class="text-xs text-base-content/70 truncate link link-hover" :title="album.artistName">
-                {{ album.artistName }}
-             </NuxtLink>
-           </div>
-        </div>
+     <div v-else-if="albums && albums.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 md:gap-6">
+        <AlbumCard 
+          v-for="album_item in albums" 
+          :key="album_item.id" 
+          :album="{ 
+            id: album_item.id, 
+            title: album_item.title, 
+            artistName: album_item.artistName, 
+            coverArtUrl: album_item.coverPath 
+          }"
+          @card-click="navigateToAlbum(album_item.id)"
+        >
+          <template #image-overlay>
+            <button 
+              @click.stop="playAlbum(album_item.id)" 
+              :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.id ? 'Pause Album' : 'Play Album'" 
+              class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
+              style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
+            >
+              <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.id && currentAlbumLoading" />
+              <Icon name="material-symbols:play-arrow-rounded" 
+                v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.id" 
+                class="w-8! h-8! text-white" />
+              <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
+            </button>
+          </template>
+          <template #artist>
+            <p class="text-xs truncate" :title="album_item.artistName || 'Unknown Artist'">{{ album_item.artistName || 'Unknown Artist' }}</p>
+          </template>
+          <template #actions>
+            <p class="text-xs text-gray-500 w-full text-left">{{ album_item.year || '' }}</p>
+          </template>
+        </AlbumCard>
      </div>
      <div v-else class="text-center text-gray-500 py-10">
         No albums found in the library. Add media folders in Settings.
@@ -102,7 +113,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { usePlayerStore } from '~/stores/player'; // Import the player store
+import { usePlayerStore, type Track } from '~/stores/player'; // Import Track type
+import AlbumCard from '~/components/album/album-card.vue'; // Import AlbumCard
+import { useRouter } from 'vue-router'; // Import useRouter
 
 // Apply the sidebar layout
 definePageMeta({
@@ -113,19 +126,17 @@ definePageMeta({
 interface Album {
   id: number;
   title: string;
-  artPath: string | null;
+  coverPath: string | null;
   artistId: number | null;
   artistName: string; // Assume artist name is always joined
-}
-
-// Define Track type for player store queue
-interface TrackForQueue {
-  id: number;
-  title: string;
-  artistName?: string; // Match player store needs
+  year: number | null; // Added for consistency
 }
 
 const playerStore = usePlayerStore(); // Get player store instance
+
+// Refs for play button loading state (similar to pages/albums/index.vue)
+const currentAlbumLoading = ref<boolean>(false);
+const albumIdLoading = ref<number | null>(null);
 
 // Search State
 const searchQuery = ref('');
@@ -173,52 +184,72 @@ const {
   watch: [debouncedSearchQuery, selectedGenre] // Re-fetch when debounced query or selectedGenre changes
 });
 
-// Function to get cover art URL (adjust path as needed)
-function getCoverArtUrl(artPath: string | null): string {
-  // TODO: Determine the correct base URL or prefix for serving cover art
-  // This might involve a dedicated API endpoint or configuring Nuxt Image
-  if (artPath) {
-    // Assuming artPath is relative to a public dir or served via API
-    // Example: return `/api/covers/${encodeURIComponent(artPath)}`;
-    // Placeholder: return a default image if path exists but is invalid for now
-    return artPath.replace('\\', '/').replace('/public', ''); // Placeholder
-  }
-  // Return a default placeholder image if artPath is null
-  return '/images/icons/placeholder-music.svg';
-}
-
-// Fallback for image loading errors
-function setDefaultCover(event: Event) {
-  const target = event.target as HTMLImageElement;
-  target.src = '/images/icons/placeholder-music.svg'; // Default on error
-}
+const router = useRouter(); // Initialize router
 
 // --- Play Album Functionality ---
-async function playAlbum(albumId: number) {
-  console.log(`Playing album ID: ${albumId}`);
-  try {
-    // Fetch all tracks for the given album
-    // Ensure the API returns data matching TrackForQueue structure or adapt mapping
-    const tracksToQueue = await $fetch<TrackForQueue[]>(`/api/tracks?albumId=${albumId}`);
-    
-    if (tracksToQueue && tracksToQueue.length > 0) {
-      // Map fetched data if needed, though $fetch might return the correct fields
-      // Example explicit mapping:
-      // const queueData = tracksToQueue.map(t => ({
-      //   id: t.id,
-      //   title: t.title,
-      //   artistName: t.artistName
-      // }));
-      playerStore.loadQueue(tracksToQueue); // Load the fetched tracks into the store
-    } else {
-      console.warn(`No tracks found for album ID: ${albumId}`);
-      // Optional: Show a notification to the user
-    }
-  } catch (error) {
-    console.error(`Error fetching tracks for album ${albumId}:`, error);
-    // Optional: Show an error notification to the user
+const playAlbum = async (albumId: number): Promise<void> => {
+  albumIdLoading.value = albumId;
+  currentAlbumLoading.value = true;
+
+  // Find the album from the current list to get its details, including coverPath
+  const selectedAlbum = albums.value?.find(album => album.id === albumId);
+
+  if (!selectedAlbum) {
+    console.error(`Album with ID ${albumId} not found in the current list.`);
+    albumIdLoading.value = null;
+    currentAlbumLoading.value = false;
+    return;
   }
-}
+
+  try {
+    // Fetch tracks for the selected album
+    // Note: The /api/tracks endpoint might return a simpler track structure
+    const rawTracks = await $fetch<any[]>(`/api/tracks?albumId=${albumId}`);
+
+    if (!rawTracks || rawTracks.length === 0) {
+      console.warn(`No tracks found for album ${albumId}`);
+      playerStore.loadQueue([]); // Clear queue or handle as appropriate
+      albumIdLoading.value = null;
+      currentAlbumLoading.value = false;
+      return;
+    }
+
+    // Augment tracks with album details like artistName, albumTitle, and coverPath
+    const tracksForQueue: Track[] = rawTracks.map(track => ({
+      id: track.id,
+      title: track.title ?? 'Unknown Track',
+      artistName: selectedAlbum.artistName ?? 'Unknown Artist',
+      albumTitle: selectedAlbum.title ?? 'Unknown Album',
+      filePath: track.filePath, // Assuming filePath is directly on the raw track object
+      duration: track.duration ?? 0,
+      albumId: selectedAlbum.id,
+      trackNumber: track.trackNumber ?? null,
+      artistId: selectedAlbum.artistId ?? null,
+      coverPath: selectedAlbum.coverPath, // Add the coverPath from the album
+    }));
+
+    // If the current playing track is from the same album, just toggle play/pause
+    // Otherwise, load the new queue and play from the beginning.
+    const trackToPlay = tracksForQueue[0];
+    if (playerStore.currentTrack?.albumId === selectedAlbum.id && playerStore.currentTrack?.id === trackToPlay.id) {
+      playerStore.togglePlayPause();
+    } else {
+      playerStore.loadQueue(tracksForQueue);
+      playerStore.playFromQueue(0); // Play the first track
+    }
+  } catch (err) {
+    console.error(`Error fetching or playing album ${albumId}:`, err);
+    // Optionally, show a user-facing error notification
+  } finally {
+    albumIdLoading.value = null;
+    currentAlbumLoading.value = false;
+  }
+};
+
+// --- Navigate to Album Detail Page ---
+const navigateToAlbum = (albumId: number): void => {
+  router.push(`/albums/${albumId}`);
+};
 
 // Define page meta if needed
 // definePageMeta({ middleware: 'auth' }); // Uncomment if auth middleware is ready

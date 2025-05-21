@@ -12,14 +12,6 @@ export const users = sqliteTable('users', {
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const mediaLibraries = sqliteTable('media_libraries', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
-  path: text('path').notNull(),
-  label: text('label'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
-
 export const artists = sqliteTable('artists', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -45,7 +37,6 @@ export const tracks = sqliteTable('tracks', {
   trackNumber: integer('track_number'),
   diskNumber: integer('disk_number'),
   duration: integer('duration'), 
-  path: text('path').notNull().unique(), 
   filePath: text('file_path').notNull().unique(), 
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -59,21 +50,19 @@ export const playlists = sqliteTable('playlists', {
 
 export const playlistTracks = sqliteTable('playlist_tracks',
   {
+    playlistTracksId: integer('playlist_tracks_id').primaryKey({ autoIncrement: true }),
     playlistId: integer('playlist_id').references(() => playlists.id, { onDelete: 'cascade' }).notNull(),
     trackId: integer('track_id').references(() => tracks.id, { onDelete: 'cascade' }).notNull(),
     order: integer('order'),
     addedAt: integer('added_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
   },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.playlistId, table.trackId] }),
-    };
-  }
 );
 
 export const mediaFolders = sqliteTable('media_folders', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
   path: text('path').notNull().unique(),
+  label: text('label'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 

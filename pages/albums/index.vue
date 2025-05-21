@@ -17,41 +17,38 @@
 
     <!-- Album List/Grid -->
     <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
-      <div 
-        v-for="album in albums" 
-        :key="album.id" 
-        class="card card-border bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-        @click="goToAlbum(album.id)"
-        >
-        <figure>
-          <img 
-            :src="getCoverArtUrl(album.coverPath)" 
-            :alt="album.title" 
-            class="aspect-square object-cover w-full" 
-            @error="onImageError"
-            />
-        </figure>
-        <!-- Play Button -->
-        <button 
-          @click.stop="playAlbum(album.id)" 
-          :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album.id ? 'Pause Album' : 'Play Album'" 
-          class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none" 
-          style="background-color: #FF6347;" 
-        >
-        <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album.id && currentAlbumLoading" />
-          <Icon name="material-symbols:play-arrow-rounded" 
-           v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album.id" 
-           class="w-8! h-8! text-white" />
-          <Icon name="material-symbols:pause-rounded"  v-else class="w-8! h-8! text-white" />
-        </button>
-        <div class="card-body flex justify-end">
-          <div>
-            <h2 class="card-title text-lg truncate" :title="album.title">{{ album.title }}</h2>
-            <p class="text-xs truncate" :title="album.artistName || 'Unknown Artist'">{{ album.artistName || 'Unknown Artist' }}</p>
-            <p class="text-xs text-gray-500">{{ album.year || '' }}</p>
-          </div>
-        </div>
-      </div>
+      <AlbumCard
+        v-for="album_item in albums"
+        :key="album_item.id"
+        :album="{
+          id: album_item.id,
+          title: album_item.title,
+          artistName: album_item.artistName,
+          coverArtUrl: album_item.coverPath
+        }"
+        @card-click="goToAlbum(album_item.id)"
+      >
+        <template #image-overlay>
+          <button 
+            @click.stop="playAlbum(album_item.id)" 
+            :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.id ? 'Pause Album' : 'Play Album'" 
+            class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
+            style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
+          >
+            <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.id && currentAlbumLoading" />
+            <Icon name="material-symbols:play-arrow-rounded" 
+              v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.id" 
+              class="w-8! h-8! text-white" />
+            <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
+          </button>
+        </template>
+        <template #artist>
+          <p class="text-xs truncate" :title="album_item.artistName || 'Unknown Artist'">{{ album_item.artistName || 'Unknown Artist' }}</p>
+        </template>
+        <template #actions>
+          <p class="text-xs text-gray-500 w-full text-left">{{ album_item.year || '' }}</p>
+        </template>
+      </AlbumCard>
     </div>
 
   </div>
@@ -60,14 +57,17 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { usePlayerStore } from '~/stores/player';
-import type { Album } from '~/types/album';
+import { usePlayerStore, type Track } from '~/stores/player';
+import type { Album } from '~/types/album'; 
+import AlbumCard from '~/components/album/album-card.vue'; 
+
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
 });
 
 const playerStore = usePlayerStore();
+const { getCoverArtUrl } = useCoverArt(); 
 
 const currentAlbum = ref<Album | null>(null);
 const currentAlbumLoading = ref<boolean>(false);
@@ -156,20 +156,6 @@ const playAlbum = async (albumId: number): Promise<void> => {
   playerStore.playFromQueue(trackIndex);
 }; 
 
-// Function to get cover art URL (adjust path as needed)
-function getCoverArtUrl(artPath: string | null): string {
-  // TODO: Determine the correct base URL or prefix for serving cover art
-  // This might involve a dedicated API endpoint or configuring Nuxt Image
-  if (artPath) {
-    // Assuming artPath is relative to a public dir or served via API
-    // Example: return `/api/covers/${encodeURIComponent(artPath)}`;
-    // Placeholder: return a default image if path exists but is invalid for now
-    return artPath.replace('\\', '/').replace('/public', ''); // Placeholder
-  }
-  // Return a default placeholder image if artPath is null
-  return '/images/icons/placeholder-music.svg';
-}
-
 const route = useRoute();
 
 // State
@@ -214,20 +200,13 @@ onMounted(() => {
 
 watch(() => route.query, () => {
     fetchAlbums();
-}, { immediate: true }); // Use immediate: true if needed based on Nuxt version/behavior
-
+}, { immediate: true }); 
 
 // Navigation function
-function goToAlbum(albumId: number) {
-  navigateTo(`/albums/${albumId}`);
-  console.log(`Navigate to view for album ID: ${albumId}`);
-}
-
-// Handle image loading errors (e.g., show placeholder)
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement;
-  target.src = '/placeholder-cover.png'; // Path to your placeholder image in public dir
-}
+const router = useRouter();
+const goToAlbum = (albumId: number): void => {
+  router.push(`/albums/${albumId}`);
+};
 </script>
 
 <style scoped>

@@ -61,6 +61,13 @@ const formatDuration = (seconds: number): string => {
             class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-base-content/70" 
             title="Play this track" />
         </div>
+        <!-- Cover Art Image -->
+        <div class="w-10 h-10 mr-3 flex-shrink-0" v-if="track.coverPath">
+          <img :src="track.coverPath" alt="Cover for {{ track.albumTitle ?? track.title }}" class="w-full h-full object-cover rounded" />
+        </div>
+        <div class="w-10 h-10 mr-3 flex-shrink-0 bg-base-300 rounded flex items-center justify-center" v-else>
+          <Icon name="material-symbols:music-note" class="w-5 h-5 text-base-content/50" />
+        </div>
         <div class="flex-grow min-w-0">
           <div class="font-medium text-sm truncate" :title="track.title">{{ track.title }}</div>
           <div 

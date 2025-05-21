@@ -1,43 +1,6 @@
 <!-- pages/settings.vue -->
 <template>
   <div class="flex h-screen bg-base-200">
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto">
-      <h2 class="text-xl font-bold mb-6 text-primary">Otogami</h2>
-
-      <!-- Recommend Section -->
-      <nav class="mb-auto">
-        <h3 class="text-xs uppercase font-semibold text-base-content/60 mb-2">Recommend</h3>
-        <ul>
-          <li><NuxtLink to="/libraries" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:explore-outline-rounded" class="w-5 h-5" /> Discovery</NuxtLink></li>
-          <li><NuxtLink to="/albums" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:album-outline" class="w-5 h-5" /> Albums</NuxtLink></li>
-          <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
-          <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
-          <li><NuxtLink to="/tracks" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:music-note-outline" class="w-5 h-5" /> Tracks</NuxtLink></li>
-        </ul>
-
-        <!-- Play List Section (Example) -->
-        <h3 class="text-xs uppercase font-semibold text-base-content/60 mt-6 mb-2">Play List</h3>
-        <ul>
-          <li><NuxtLink to="/playlists/recent" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:history" class="w-5 h-5" /> Recently Played</NuxtLink></li>
-          <li><NuxtLink to="/playlists/liked" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1"><Icon name="material-symbols:thumb-up-outline" class="w-5 h-5" /> Thumbs Up</NuxtLink></li>
-        </ul>
-
-        <!-- Tag Section (Example) -->
-        <h3 class="text-xs uppercase font-semibold text-base-content/60 mt-6 mb-2">Tag</h3>
-        <div class="flex flex-wrap gap-2">
-          <span class="badge badge-primary badge-outline cursor-pointer">Blues</span>
-          <span class="badge badge-secondary badge-outline cursor-pointer">Country</span>
-          <span class="badge badge-accent badge-outline cursor-pointer">Pop</span>
-        </div>
-      </nav>
-
-      <!-- User/Settings Footer -->
-      <div class="mt-auto border-t border-base-300 pt-4">
-        <!-- Placeholder -->
-        <NuxtLink to="/settings" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1 !bg-base-300 font-semibold"><Icon name="material-symbols:settings-outline-rounded" class="w-5 h-5" /> Settings</NuxtLink>
-      </div>
-    </aside>
 
     <!-- Main Content Area -->
     <main class="flex-1 p-6 overflow-y-auto">
@@ -142,11 +105,9 @@ interface MediaFolder {
 interface ScanResponse {
   success: boolean;
   message: string;
-  results?: { // Optional results object
-    scanned: number;
-    added: number;
-    errors: number;
-  };
+  scanned: number;
+  errors: number;
+  added?: number; // Optional for backward compatibility
 }
 
 // Reactive state for media folders
@@ -253,14 +214,17 @@ const scanFolders = async (): Promise<void> => {
   scanResults.value = null; // Clear previous results
   try {
     const response = await $fetch<ScanResponse>('/api/settings/scan', {
-      method: 'POST',
+      method: 'POST'
     });
+    
     if (response.success) {
       successMessage.value = response.message || 'Scan initiated successfully.';
-      // Store the detailed results if available
-      if(response.results) {
-        scanResults.value = response.results;
-      }
+      // Update the scan results with the response data
+      scanResults.value = {
+        scanned: response.scanned,
+        added: response.added || 0, // May be undefined
+        errors: response.errors
+      };
     } else {
       errorMessage.value = 'Failed to initiate scan.';
     }

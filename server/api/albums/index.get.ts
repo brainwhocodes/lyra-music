@@ -3,6 +3,7 @@ import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '~/server/db'
 import { albums, artists, tracks } from '~/server/db/schema'
 import { eq, asc, sql, like, SQL, and } from 'drizzle-orm'
+import { useCoverArt } from '~/composables/use-cover-art';
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
@@ -38,8 +39,15 @@ export default defineEventHandler(async (event) => {
       .orderBy(asc(artists.name), asc(albums.title))
       .all();
 
-    console.log(filteredAlbums); 
-    return filteredAlbums;
+    const { getCoverArtUrl } = useCoverArt();
+    const albumsWithFormattedCovers = filteredAlbums.map(album => ({
+      ...album,
+      // Ensure coverPath is correctly named if it's 'artPath' from DB aliased as 'coverPath'
+      coverPath: getCoverArtUrl(album.coverPath)
+    }));
+
+    console.log(albumsWithFormattedCovers); 
+    return albumsWithFormattedCovers;
   } catch (error) {
     console.error('Error fetching albums:', error);
     throw createError({

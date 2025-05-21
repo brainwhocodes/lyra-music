@@ -4,6 +4,7 @@ import { H3Event } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, tracks } from '~/server/db/schema';
 import { eq, asc } from 'drizzle-orm';
+import { useCoverArt } from '~/composables/use-cover-art'; // Import the composable
 
 export default defineEventHandler(async (event: H3Event) => {
   const albumIdParam = event.context.params?.id;
@@ -52,12 +53,14 @@ export default defineEventHandler(async (event: H3Event) => {
       });
     }
 
+    const { getCoverArtUrl } = useCoverArt();
+
     // Format the final result object
     const result = {
       id: albumData.id,
       title: albumData.title,
       year: albumData.year,
-      coverPath: albumData.cover_path,
+      coverPath: getCoverArtUrl(albumData.cover_path),
       artistId: albumData.artist_id,
       artistName: albumData.artist_name ?? 'Unknown Artist',
       tracks: tracksData?.map(track => ({
