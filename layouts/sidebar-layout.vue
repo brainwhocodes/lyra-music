@@ -25,17 +25,28 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 p-6 overflow-y-auto">
+    <main 
+      class="flex-1 p-6 overflow-y-auto"
+      :class="{ 'pr-[calc(1.5rem+20rem)]': playerStore.isQueueSidebarVisible }"
+    >
       <slot /> <!-- Page content will be injected here -->
     </main>
+
     <!-- Global Audio Player -->
     <GlobalAudioPlayer />
+
+    <!-- Queue Sidebar -->
+    <QueueSidebar v-if="playerStore.isQueueSidebarVisible" />
   </div>
   <!-- Note: Global Audio Player is now handled by this layout -->
 </template>
 
 <script setup lang="ts">
 import GlobalAudioPlayer from '~/components/player/global-audio-player.vue'; // Import the player
+import QueueSidebar from '~/components/layout/queue-sidebar.vue';
+import { usePlayerStore } from '~/stores/player';
+
+const playerStore = usePlayerStore();
 
 // Layout specific script if needed in the future
 </script>
