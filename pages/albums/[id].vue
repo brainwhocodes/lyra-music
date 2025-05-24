@@ -28,8 +28,6 @@ const playerReadyTracks = computed(() => {
   }));
 });
 
-console.log(album.value);
-
 // Function to get cover art URL (adjust path as needed)
 function getCoverArtUrl(artPath: string | null): string {
   // TODO: Determine the correct base URL or prefix for serving cover art
@@ -61,14 +59,13 @@ const playAlbum = (): void => {
     playerStore.togglePlayPause();
     return;
   }
-  
+
   // If the queue isn't this album (or no track is loaded), load the album queue
   // isCurrentAlbumLoaded checks if the *album* context is the same.
   if (!isCurrentAlbumLoaded.value) {
     playerStore.loadQueue(playerReadyTracks.value);
   }
   
-  // Play the selected track (this will set it as current in the store)
   playerStore.playFromQueue(trackIndex);
 };
 

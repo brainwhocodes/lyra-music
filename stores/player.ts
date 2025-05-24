@@ -238,35 +238,34 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const loadQueue = (tracks: Track[]) => {
-    originalQueue.value = [...tracks]; // Always store original order
+    if (!tracks || tracks.length === 0) {
+      originalQueue.value = []; // Clear original queue
+      queue.value = []; // Clear active queue
+      currentQueueIndex.value = -1;
+      return;
+    }
 
-    // Set the active queue based on shuffle state
+    originalQueue.value = [...tracks]; // Store the original order
+
     if (isShuffled.value) {
-      queue.value = shuffleArray(originalQueue.value); // Shuffle the stored original queue
+      queue.value = shuffleArray([...tracks]);
     } else {
-      queue.value = [...originalQueue.value]; // Use the original order
+      queue.value = [...tracks];
     }
-
-    // Only proceed if the queue is not empty
-    if (queue.value.length > 0) {
-      const oldIndex = currentQueueIndex.value;
-      currentQueueIndex.value = 0; // Start from the beginning
-      _setupAudioElement();        // Setup the first track
-    } else {
-      _resetState(); // Reset if queue is empty
-      currentQueueIndex.value = -1; // Ensure index is invalid
-      queue.value = []; // Ensure queue is empty
-      originalQueue.value = []; // Ensure original is empty
-    }
+  
+    currentQueueIndex.value = -1; 
   };
 
   const playFromQueue = (index: number) => {
     if (index >= 0 && index < queue.value.length) {
-      const oldIndex = currentQueueIndex.value;
       currentQueueIndex.value = index;
-      _setupAudioElement();
+      _setupAudioElement(); // This should start playback
     } else {
-      console.warn('[PlayerStore] playFromQueue: index out of bounds or queue empty.');
+      if (queue.value.length > 0) {
+        // Potentially play first track or handle error
+      } else {
+        // Queue is empty, cannot play
+      }
     }
   };
 

@@ -63,6 +63,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore, type Track } from '~/stores/player';
 import type { Album } from '~/types/album'; 
 import AlbumCard from '~/components/album/album-card.vue'; 
+import { useCoverArt } from '~/composables/use-cover-art'; 
 
 // Apply the sidebar layout
 definePageMeta({
@@ -72,47 +73,80 @@ definePageMeta({
 const playerStore = usePlayerStore();
 const { getCoverArtUrl } = useCoverArt(); 
 
-const currentAlbum = ref<Album | null>(null);
+// --- State for Album Details and Playback ---
+const currentAlbum = ref<Album | null>(null); 
 const currentAlbumLoading = ref<boolean>(false);
-const albumIdLoading = ref<string | null>(null);
+const albumIdLoading = ref<string | null>(null); 
 
-// New function to fetch and map album details
+// --- State for Albums List Display ---
+const albums = ref<Album[]>([]);
+const loading = ref(true); 
+const error = ref<string | null>(null); 
+const artistName = ref<string | null>(null); 
+const route = useRoute();
+
+// Computed property for API query parameters for fetching the albums list
+const apiQuery = computed(() => {
+  const query: { artistId?: string } = {};
+  if (route.query.artistId) {
+    query.artistId = route.query.artistId as string;
+  }
+  return query;
+});
+
+// Fetch albums list function
+async function fetchAlbums() {
+  loading.value = true;
+  error.value = null;
+  artistName.value = null; 
+  try {
+    const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value });
+    albums.value = data;
+    if (apiQuery.value.artistId && data.length > 0 && data[0].artistName) {
+        artistName.value = data[0].artistName;
+    }
+  } catch (err: any) {
+    error.value = err.data?.message || err.message || 'Failed to load albums.';
+  } finally {
+    loading.value = false;
+  }
+}
+
+// New function to fetch and map album details for playback
 async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
   currentAlbumLoading.value = true;
   albumIdLoading.value = id;
   let fetchedAlbum: Album | null = null;
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
-    const apiResponse = await $fetch(`/api/albums/${id}`) as any;
+    const apiResponse = await $fetch<any>(`/api/albums/${id}`); 
 
     if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
       const tracksForPlayer: Track[] = apiResponse.tracks.map((t: any) => ({
-        id: t.id,
+        trackId: t.trackId, 
         title: t.title ?? 'Unknown Track',
-        artistName: t.artist_name ?? apiResponse.artist_name ?? 'Unknown Artist',
-        albumTitle: t.album_title ?? apiResponse.title ?? 'Unknown Album',
-        filePath: t.file_path,
+        artistName: t.artistName ?? apiResponse.artistName ?? 'Unknown Artist',
+        albumTitle: t.albumTitle ?? apiResponse.title ?? 'Unknown Album',
+        filePath: t.filePath,
         duration: t.duration ?? 0,
-        coverPath: apiResponse.cover_path,
-        albumId: apiResponse.id,
-        artistId: apiResponse.artist_id ?? -1,
-        trackNumber: t.track_number ?? t.trackNumber ?? null,
+        coverPath: apiResponse.coverPath, 
+        albumId: apiResponse.albumId, 
+        artistId: apiResponse.artistId ?? '', 
+        trackNumber: t.trackNumber ?? null,
       }));
       fetchedAlbum = {
-        albumId: apiResponse.album,
+        albumId: apiResponse.albumId, 
         title: apiResponse.title,
         year: apiResponse.year,
-        coverPath: apiResponse.cover_path,
-        artistId: apiResponse.artist_id ?? -1,
-        artistName: apiResponse.artist_name ?? 'Unknown Artist',
+        coverPath: apiResponse.coverPath,
+        artistId: apiResponse.artistId ?? '',
+        artistName: apiResponse.artistName ?? 'Unknown Artist',
         tracks: tracksForPlayer,
       };
     } else {
-      console.warn(`No tracks found or invalid track data for album ${id}`, apiResponse);
+      // Potentially handle case where no tracks are found more explicitly if needed
     }
   } catch (err) {
-    console.error(`Error fetching or playing album ${id}:`, err);
     fetchedAlbum = null; // Ensure it's null on error
   } finally {
     currentAlbumLoading.value = false;
@@ -120,124 +154,66 @@ async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
   return fetchedAlbum;
 }
 
-// Function to play a specific album
+// Function to play a specific album from the list
 const playAlbum = async (albumId: string): Promise<void> => {
   let albumDataForPlayback: Album | null = null;
 
-  // Case 1: The requested albumId is already loaded in currentAlbum.value
+  // Check if the clicked album is already the one stored in currentAlbum
   if (currentAlbum.value && currentAlbum.value.albumId === albumId) {
     albumDataForPlayback = currentAlbum.value;
   } else {
-    // Case 2: Need to fetch a new album
-    // Pause current playback if it's ongoing
-    if (playerStore.isPlaying) {
-      playerStore.togglePlayPause();
+    if (playerStore.isPlaying && playerStore.currentTrack?.albumId !== albumId) {
+      playerStore.togglePlayPause(); // Pause if a *different* album is playing
     }
     const newlyFetchedAlbum = await fetchAlbumDetailsById(albumId);
-    currentAlbum.value = newlyFetchedAlbum; 
+    currentAlbum.value = newlyFetchedAlbum; // Cache the newly fetched album details
     albumDataForPlayback = newlyFetchedAlbum;
   }
 
-  // --- Playback Logic --- 
   if (!albumDataForPlayback || !albumDataForPlayback.tracks || albumDataForPlayback.tracks.length === 0) {
     return; 
   }
 
-  const trackIndex = 0; 
+  const trackIndex = 0; // Play from the first track
   const trackToPlay = albumDataForPlayback.tracks[trackIndex];
 
+  // If the exact same track is already current and playing, toggle pause. If paused, play.
   if (playerStore.currentTrack?.trackId === trackToPlay.trackId) {
     playerStore.togglePlayPause();
     return;
   }
 
+  // Check if the queue needs to be reloaded (i.e., different album)
   const playerQueueAlbumId = playerStore.queue.length > 0 ? playerStore.queue[0].albumId : null;
   if (playerQueueAlbumId !== albumDataForPlayback.albumId) {
     playerStore.loadQueue(albumDataForPlayback.tracks);
   }
   
   playerStore.playFromQueue(trackIndex);
-}; 
-
-const route = useRoute();
-
-// State
-const albums = ref<Album[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
-const artistName = ref<string | null>(null); // To display if filtering by artist
-
-// Computed property for API query parameters
-const apiQuery = computed(() => {
-  const query: { artistId?: number } = {};
-  if (route.query.artistId) {
-    query.artistId = Number(route.query.artistId);
-  }
-  return query;
-});
-
-// Fetch albums function
-async function fetchAlbums() {
-  loading.value = true;
-  error.value = null;
-  artistName.value = null; // Reset artist name
-  try {
-    const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value });
-    albums.value = data;
-    // If filtered by artist and results exist, grab the artist name from the first album
-    if (apiQuery.value.artistId && data.length > 0) {
-        artistName.value = data[0].artistName;
-    }
-  } catch (err: any) {
-    console.error('Error fetching albums:', err);
-    error.value = err.data?.message || err.message || 'Failed to load albums.';
-  } finally {
-    loading.value = false;
-  }
-}
-
-// Fetch albums on component mount and when query changes
-onMounted(() => {
-  fetchAlbums();
-});
-
-watch(() => route.query, () => {
-    fetchAlbums();
-}, { immediate: true }); 
+};
 
 // Navigation function
 const goToAlbum = (albumId: string): void => {
   navigateTo(`/albums/${albumId}`);
 };
+
+// Fetch albums on component mount and when query (e.g., artistId) changes
+onMounted(() => {
+  fetchAlbums();
+});
+
+watch(() => route.query.artistId, () => {
+    fetchAlbums();
+}, { immediate: false }); 
+
 </script>
 
 <style scoped>
-/* Add any page-specific styles here if needed */
 .card-title {
-    white-space: normal; /* Allow wrapping for longer titles */
+    white-space: normal; 
     overflow-wrap: break-word;
 }
 .album-play-button {
-    background-color: #FF6347;
-    position: absolute;
-    bottom: 18%;
-    right: 5%;
-}
-
-@media screen and (max-width: 1700px) {
-    .album-play-button {
-        bottom: 20%;
-    }
-}
-
-@media screen and (max-width: 1580px) {
-    .album-play-button {
-        bottom: 32%;
-    }
-}
-
-.album-play-button:hover {
-  cursor: pointer;
-    
+    cursor: pointer;  
 }
 </style>
