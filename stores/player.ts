@@ -17,10 +17,16 @@ export interface Track {
   // Add other relevant fields like duration if available directly
 }
 
+export interface QueueContext {
+  type: 'album' | 'playlist' | null;
+  id: string | null;
+}
+
 export const usePlayerStore = defineStore('player', () => {
   // State
   const queue = ref<Track[]>([]);
   const currentQueueIndex = ref<number>(-1); // -1 indicates no track selected
+  const currentQueueContext = ref<QueueContext>({ type: null, id: null }); // Added for queue context
   const isPlaying = ref<boolean>(false);
   const currentTime = ref<number>(0); // In seconds
   const duration = ref<number>(0); // In seconds
@@ -236,11 +242,12 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
-  const loadQueue = (tracks: Track[]) => {
+  const loadQueue = (tracks: Track[], context?: QueueContext) => {
     if (!tracks || tracks.length === 0) {
       originalQueue.value = []; // Clear original queue
       queue.value = []; // Clear active queue
       currentQueueIndex.value = -1;
+      currentQueueContext.value = { type: null, id: null }; // Reset context
       return;
     }
 
@@ -253,6 +260,15 @@ export const usePlayerStore = defineStore('player', () => {
     }
   
     currentQueueIndex.value = -1; 
+    if (context) {
+      currentQueueContext.value = context;
+    } else {
+      // If no context is provided, and we are loading a new queue, 
+      // it's likely an ad-hoc queue (e.g. single track play), so clear specific album/playlist context.
+      // However, if playTrack is called, it might set a single track queue but we might want to preserve context if it was just a pause/play.
+      // For now, let's clear if no context is explicitly passed during a full queue load.
+      currentQueueContext.value = { type: null, id: null }; 
+    }
   };
 
   const playFromQueue = (index: number) => {
@@ -428,6 +444,7 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading,
     isShuffled,
     repeatMode,
+    currentQueueContext, // Expose new state
     isQueueSidebarVisible, // Expose new state
     isUserSeeking,        // Expose seek state
     wasPlayingBeforeSeek, // Expose seek state

@@ -3,13 +3,29 @@
     v-if="playerStore.currentTrack"
     class="fixed bottom-0 left-0 right-0 bg-base-300 text-base-content p-3 shadow-inner z-50 flex items-center gap-4 h-25"
   >
+    <!-- Album Cover -->
+    <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-base-200">
+      <img 
+        v-if="playerStore.currentTrack.coverPath" 
+        :src="playerStore.currentTrack.coverPath" 
+        :alt="`${playerStore.currentTrack.title} cover`"
+        class="w-full h-full object-cover"
+      />
+      <div v-else class="w-full h-full flex items-center justify-center bg-base-200">
+        <Icon name="material-symbols:music-note" class="w-8 h-8 text-base-content/50" />
+      </div>
+    </div>
+
     <!-- Track Info -->
     <div class="flex-1 min-w-0">
       <div class="font-semibold truncate" :title="playerStore.currentTrack.title">
         {{ playerStore.currentTrack.title || 'Unknown Track' }}
       </div>
-      <div class="text-xs text-base-content/70 truncate" :title="playerStore.currentTrack.artistName || ''">
+      <div class="text-sm text-base-content/70 truncate" :title="playerStore.currentTrack.artistName || ''">
         {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
+      </div>
+      <div v-if="playerStore.currentTrack.albumTitle" class="text-xs text-base-content/50 truncate">
+        {{ playerStore.currentTrack.albumTitle }}
       </div>
     </div>
 
