@@ -81,6 +81,8 @@
             tracks: album_item.tracks
           }"
           @card-click="navigateToAlbum(album_item.albumId)"
+          @add-to-playlist="openAddToPlaylistModal"
+          @edit-album="handleEditAlbum"
         >
           <template #image-overlay>
             <button 
@@ -109,16 +111,67 @@
      </div>
   </div>
 
+  <!-- Add to Playlist Modal -->
+  <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">
+        Add "{{ selectedAlbumForPlaylist?.title }}" to playlist:
+      </h3>
+      <button 
+        @click="isAddToPlaylistModalOpen = false" 
+        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+      >✕</button>
+      
+      <div v-if="!playlists.length" class="text-center text-neutral-content italic py-4">
+        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink></p>
+      </div>
+      <ul v-else class="menu bg-base-100 rounded-box max-h-60 overflow-y-auto">
+        <li v-for="playlist in playlists" :key="playlist.playlistId">
+          <a @click="addAlbumToPlaylist(playlist.playlistId)">
+            {{ playlist.name }}
+          </a>
+        </li>
+      </ul>
+      <div class="modal-action">
+        <button class="btn btn-ghost" @click="isAddToPlaylistModalOpen = false">Cancel</button>
+      </div>
+    </div>
+    <!-- Click outside to close -->
+    <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
+  </div>
+  
+  <!-- Simple Notification Component -->
+  <div v-if="notification.visible" 
+       class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md"
+       :class="{
+         'bg-success text-success-content': notification.type === 'success',
+         'bg-error text-error-content': notification.type === 'error',
+         'bg-info text-info-content': notification.type === 'info'
+       }">
+    <div class="flex items-center">
+      <Icon 
+        :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
+              notification.type === 'error' ? 'material-symbols:error-outline' : 
+              'material-symbols:info-outline'" 
+        class="w-6 h-6 mr-2" />
+      <span>{{ notification.message }}</span>
+      <button @click="notification.visible = false" class="ml-2 p-1">
+        <Icon name="material-symbols:close" class="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+
    <!-- Global Audio Player Placeholder - To be implemented in layout -->
    <!-- <AudioPlayer /> -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from '#imports'
 import { usePlayerStore, type Track } from '~/stores/player'; // Import Track type
 import AlbumCard from '~/components/album/album-card.vue'; // Import AlbumCard
 import { useRouter } from 'vue-router'; // Import useRouter
 import type { Album } from '~/types/album';
+import type { Playlist } from '~/types/playlist';
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
@@ -130,6 +183,12 @@ const playerStore = usePlayerStore(); // Get player store instance
 // Refs for play button loading state (similar to pages/albums/index.vue)
 const currentAlbumLoading = ref<boolean>(false);
 const albumIdLoading = ref<string | null>(null);
+
+// State for Album Operations
+const selectedAlbumForPlaylist = ref<Album | null>(null);
+const isAddToPlaylistModalOpen = ref<boolean>(false);
+const playlists = ref<Playlist[]>([]);
+const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
 
 // Search State
 const searchQuery = ref('');
@@ -144,7 +203,7 @@ const { data: genres, pending: pendingGenres, error: genresError } = useLazyFetc
   server: false
 });
 
-watch(searchQuery, (newValue) => {
+watch(searchQuery, (newValue: string) => {
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     debouncedSearchQuery.value = newValue.trim();
@@ -180,13 +239,40 @@ const router = useRouter(); // Initialize router
 
 // --- Play Album Functionality ---
 const playAlbum = async (albumId: string): Promise<void> => {
+  // Case 1: The clicked album is already the current one in the player.
+  // This means its tracks are in the queue, and one of them is currentTrack.
+  if (playerStore.currentTrack?.albumId === albumId) {
+    playerStore.togglePlayPause(); // Just toggle play/pause for the current track.
+    return;
+  }
+
+  // Case 2: The clicked album's tracks are already loaded in the queue,
+  // but it's not the currentTrack's album.
+  // We want to play the *first* track of this album from the existing queue.
+  if (playerStore.queue.length > 0 && playerStore.queue[0].albumId === albumId) {
+    // If the currentTrack is null or from a different album, but the queue is for this album,
+    // play the first track from the queue.
+    if (!playerStore.currentTrack || playerStore.currentTrack.albumId !== albumId) {
+        playerStore.playFromQueue(0); 
+    } else {
+        // This case implies currentTrack.albumId IS albumId, which should be caught by Case 1.
+        // However, as a fallback or if logic gets more complex, explicitly toggle.
+        playerStore.togglePlayPause();
+    }
+    return;
+  }
+
+  // Case 3: The album is not loaded in the player (neither currentTrack nor queue matches).
+  // Proceed to fetch, load queue, and play.
   albumIdLoading.value = albumId;
   currentAlbumLoading.value = true;
 
-  // Find the album from the current list to get its details, including coverPath
-  const selectedAlbum = albums.value?.find(album => album.albumId === albumId);
+  // Add a 2-second delay before fetching
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
-  if (!selectedAlbum) {
+  // Find the album from the main list (used for quick display, not for player data if fetching)
+  const albumListItem = albums.value?.find(album => album.albumId === albumId);
+  if (!albumListItem) {
     console.error(`Album with ID ${albumId} not found in the current list.`);
     albumIdLoading.value = null;
     currentAlbumLoading.value = false;
@@ -194,11 +280,10 @@ const playAlbum = async (albumId: string): Promise<void> => {
   }
 
   try {
-    // Fetch tracks for the selected album
-    // Note: The /api/tracks endpoint might return a simpler track structure
-    const rawTracks = await $fetch<any[]>(`/api/tracks?albumId=${albumId}`);
+    // Fetch full album details including tracks directly from the album API endpoint
+    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`);
 
-    if (!rawTracks || rawTracks.length === 0) {
+    if (!albumDetails || !albumDetails.tracks || albumDetails.tracks.length === 0) {
       console.warn(`No tracks found for album ${albumId}`);
       playerStore.loadQueue([]); // Clear queue or handle as appropriate
       albumIdLoading.value = null;
@@ -206,29 +291,24 @@ const playAlbum = async (albumId: string): Promise<void> => {
       return;
     }
 
-    // Augment tracks with album details like artistName, albumTitle, and coverPath
-    const tracksForQueue: Track[] = rawTracks.map(track => ({
-      trackId: track.id,
+    // Map the tracks from the album details to the format expected by the player
+    const tracksForQueue: Track[] = albumDetails.tracks.map((track: any) => ({
+      trackId: track.trackId,
       title: track.title ?? 'Unknown Track',
-      artistName: selectedAlbum.artistName ?? 'Unknown Artist',
-      albumTitle: selectedAlbum.title ?? 'Unknown Album',
-      filePath: track.filePath, // Assuming filePath is directly on the raw track object
+      artistName: track.artistName ?? albumDetails.artistName ?? 'Unknown Artist',
+      albumTitle: track.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+      filePath: track.filePath,
       duration: track.duration ?? 0,
-      albumId: selectedAlbum.albumId,
+      albumId: albumDetails.albumId,
       trackNumber: track.trackNumber ?? null,
-      artistId: selectedAlbum.artistId ?? null,
-      coverPath: selectedAlbum.coverPath, // Add the coverPath from the album
+      artistId: track.artistId ?? albumDetails.artistId ?? '',
+      coverPath: albumDetails.coverPath,
     }));
 
-    // If the current playing track is from the same album, just toggle play/pause
-    // Otherwise, load the new queue and play from the beginning.
-    const trackToPlay = tracksForQueue[0];
-    if (playerStore.currentTrack?.albumId === selectedAlbum.albumId && playerStore.currentTrack?.trackId === trackToPlay.trackId) {
-      playerStore.togglePlayPause();
-    } else {
-      playerStore.loadQueue(tracksForQueue);
-      playerStore.playFromQueue(0); // Play the first track
-    }
+    // New album data fetched, load it into the queue and play the first track.
+    playerStore.loadQueue(tracksForQueue);
+    playerStore.playFromQueue(0);
+
   } catch (err) {
     console.error(`Error fetching or playing album ${albumId}:`, err);
     // Optionally, show a user-facing error notification
@@ -241,6 +321,99 @@ const playAlbum = async (albumId: string): Promise<void> => {
 // --- Navigate to Album Detail Page ---
 const navigateToAlbum = (albumId: string): void => {
   navigateTo(`/albums/${albumId}`);
+};
+
+// Simple notification system
+const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info'): void => {
+  notification.value = { message, type, visible: true };
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.value.visible = false;
+  }, 3000);
+};
+
+// Fetch user's playlists
+async function fetchPlaylists(): Promise<void> {
+  try {
+    const data = await $fetch<Playlist[]>('/api/playlists');
+    playlists.value = data;
+  } catch (e: unknown) {
+    console.error('Error fetching playlists:', e);
+    showNotification('Could not load your playlists.', 'error');
+    playlists.value = []; // Ensure it's an empty array on error
+  }
+}
+
+// Open the Add to Playlist modal
+const openAddToPlaylistModal = (album: Album): void => {
+  selectedAlbumForPlaylist.value = album;
+  isAddToPlaylistModalOpen.value = true;
+  fetchPlaylists(); 
+};
+
+// Add all album tracks to a playlist
+const addAlbumToPlaylist = async (playlistId: string): Promise<void> => {
+  if (!selectedAlbumForPlaylist.value) return;
+  
+  // Check if tracks are already loaded
+  let trackIds: string[] = [];
+  if (selectedAlbumForPlaylist.value.tracks && selectedAlbumForPlaylist.value.tracks.length > 0) {
+    trackIds = selectedAlbumForPlaylist.value.tracks.map((track: Track) => track.trackId);
+  } else {
+    // If tracks aren't loaded in the album object, we need to fetch them first
+    // This would involve implementing a fetchAlbumWithTracks function similar to playAlbum
+    showNotification('Loading album tracks...', 'info');
+    // Call existing loadAlbum function that's already part of the playAlbum workflow
+    const albumWithTracks = await loadAlbum(selectedAlbumForPlaylist.value.albumId);
+    if (!albumWithTracks?.tracks || albumWithTracks.tracks.length === 0) {
+      showNotification('Could not load album tracks', 'error');
+      isAddToPlaylistModalOpen.value = false;
+      selectedAlbumForPlaylist.value = null;
+      return;
+    }
+    trackIds = albumWithTracks.tracks.map((track: Track) => track.trackId);
+  }
+  
+  await addTracksToPlaylist(playlistId, trackIds);
+};
+
+// Generic function to add tracks to a playlist
+const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Promise<void> => {
+  if (!trackIds.length) return;
+  
+  try {
+    await $fetch(`/api/playlists/${playlistId}/tracks`, {
+      method: 'POST',
+      body: {
+        action: 'add',
+        trackIds,
+      },
+    });
+    showNotification(`Added to playlist successfully`, 'success');
+    isAddToPlaylistModalOpen.value = false;
+    selectedAlbumForPlaylist.value = null;
+  } catch (e: unknown) {
+    console.error('Error adding tracks to playlist:', e);
+    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ? 
+      String(e.data.message) : 'Failed to add to playlist.';
+    showNotification(errorMessage, 'error');
+  }
+};
+
+// Helper function to load an album with its tracks (extracted from playAlbum logic)
+async function loadAlbum(albumId: string): Promise<Album | null> {
+  try {
+    const response = await $fetch<Album>(`/api/albums/${albumId}`); 
+    return response;
+  } catch (error) {
+    console.error('Error loading album:', error);
+    return null;
+  }
+}
+
+// Placeholder function for editing an album
+const handleEditAlbum = (album: Album): void => {
+  showNotification(`Edit functionality for "${album.title}" is not yet implemented.`, 'info');
 };
 
 // Define page meta if needed

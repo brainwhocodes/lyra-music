@@ -161,12 +161,12 @@ async function register() {
     })
 
     console.log('Registration successful:', response)
-    successMessage.value = 'Registration successful! Redirecting to login...' 
+    successMessage.value = 'Registration successful! Redirecting to library...' 
     
     // Redirect to login page after a short delay
     setTimeout(() => {
-      navigateTo('/login')
-    }, 2000)
+      navigateTo('/library')
+    })
 
   } catch (error: any) {
     console.error('Registration failed:', error)

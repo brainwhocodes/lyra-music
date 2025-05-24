@@ -13,6 +13,41 @@
       <div class="absolute inset-0 pointer-events-none">
         <slot name="image-overlay"></slot>
       </div>
+      
+      <!-- Album options button -->
+      <div class="absolute top-2 right-2 z-20" @click.stop>
+        <button 
+          class="btn btn-ghost btn-sm btn-circle bg-base-300/80 backdrop-blur-sm hover:bg-base-300 opacity-0 group-hover:opacity-100 focus:opacity-100"
+          @click.stop="toggleMenu"
+          title="Album options"
+        >
+          <Icon name="i-material-symbols:more-vert" class="w-5 h-5" />
+        </button>
+        
+        <!-- Album options dropdown menu -->
+        <div 
+          v-if="showMenu" 
+          class="absolute right-0 top-full mt-1 w-52 bg-base-200 rounded-lg shadow-lg z-30 py-2 border border-base-300"
+          @click.stop
+        >
+          <div class="flex flex-col">
+            <button 
+              class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
+              @click.stop="addToPlaylist"
+            >
+              <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
+              Add to Playlist
+            </button>
+            <button 
+              class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
+              @click.stop="editAlbum"
+            >
+              <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
+              Edit Album
+            </button>
+          </div>
+        </div>
+      </div>
     </figure>
     <div class="card-body p-3 md:p-4">
       <h2 
@@ -35,18 +70,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+// In Nuxt 3, these functions are auto-imported
+// but we'll import them explicitly from #imports to fix TypeScript errors
+import { computed, ref, onMounted } from '#imports';
 import type { Album } from '~/types/album';
 
 const props = defineProps<{
   album: Album;
 }>();
 
-const emit = defineEmits(['cardClick']);
+const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum']);
 
 const DEFAULT_ALBUM_ART = '/images/covers/default-album-art.webp';
 
 const imageError = ref(false);
+const showMenu = ref(false);
+
+// Close menu when clicking outside
+onMounted(() => {
+  document.addEventListener('click', () => {
+    showMenu.value = false;
+  });
+});
+
+// Toggle the album options menu
+const toggleMenu = (): void => {
+  showMenu.value = !showMenu.value;
+};
+
+// Emit event to add the album to a playlist
+const addToPlaylist = (): void => {
+  emit('addToPlaylist', props.album);
+  showMenu.value = false;
+};
+
+// Emit event to edit the album
+const editAlbum = (): void => {
+  emit('editAlbum', props.album);
+  showMenu.value = false;
+};
 
 const albumArtUrl = computed(() => {
   if (imageError.value || !props.album.coverPath) {
