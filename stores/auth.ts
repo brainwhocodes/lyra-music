@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
   
   // Watch for changes to user state and update cookie with the full user data
   // This requires having the ID available, e.g., from the userId ref
-  watch(user, (newUserState) => {
+  watch(user, (newUserState: User | null) => {
     if (newUserState && userId.value) {
       const fullUserData: FullUserData = {
         id: userId.value,
@@ -88,9 +88,9 @@ export const useAuthStore = defineStore('auth', () => {
       const { data: responseData, error } = await useFetch<FullUserData>('/api/auth/me', {
         retry: 1,  // Only retry once
         headers: token ? { Authorization: `Bearer ${token}` } : {}, // Add Auth header
-        onResponseError({ response }) {
+        onResponseError({ response: { status } }) {
           // Handle 401 errors specifically
-          if (response.status === 401) {
+          if (status === 401) {
             console.error('Session expired or invalid');
             // Clear state and cookies on auth errors
             user.value = null;

@@ -1,6 +1,5 @@
 // stores/player.ts
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
 
 // Define the structure of a Track object (adjust based on your actual track data)
 // We might fetch this from the /api/tracks endpoint later
@@ -155,7 +154,7 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.addEventListener('playing', _handlePlaying); // Loading finished
     
     // Attempt to play
-    audioElement.value.play().catch(error => {
+    audioElement.value.play().catch((error: any) => {
       console.error('Error attempting to play audio:', error);
       // Autoplay might be blocked by the browser
       isPlaying.value = false; 
@@ -223,7 +222,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   const playTrack = (track: Track) => {
     // Check if track is already in the current queue
-    const indexInQueue = queue.value.findIndex(item => item.trackId === track.trackId);
+    const indexInQueue = queue.value.findIndex((item: Track) => item.trackId === track.trackId);
 
     if (indexInQueue !== -1) {
       // Track found in queue, play from that index
@@ -328,7 +327,7 @@ export const usePlayerStore = defineStore('player', () => {
 
     // Find the current track in the new (shuffled or restored) queue
     if (currentTrackId) {
-      const newIndex = queue.value.findIndex(track => track.trackId === currentTrackId);
+      const newIndex = queue.value.findIndex((track: Track) => track.trackId === currentTrackId);
       currentQueueIndex.value = newIndex !== -1 ? newIndex : 0; // Reset to found index or start if not found
       console.log(`Current track ID ${currentTrackId} found at new index: ${currentQueueIndex.value}`);
     } else {
@@ -395,7 +394,7 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.currentTime = currentTime.value;
 
     if (wasPlayingBeforeSeek.value) {
-      audioElement.value.play().catch(error => {
+      audioElement.value.play().catch((error: any) => {
         _handleError(error);
       });
     }
