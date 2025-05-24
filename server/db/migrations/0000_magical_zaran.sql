@@ -1,12 +1,14 @@
 CREATE TABLE `albums` (
-	`albumId` text PRIMARY KEY NOT NULL,
+	`album_id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
 	`artist_id` text,
+	`user_id` text NOT NULL,
 	`year` integer,
 	`cover_path` text,
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artistId`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artistId`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `artists` (
@@ -16,6 +18,14 @@ CREATE TABLE `artists` (
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `genres` (
+	`genre_id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `genres_name_unique` ON `genres` (`name`);--> statement-breakpoint
 CREATE TABLE `media_folders` (
 	`media_folders_id` text PRIMARY KEY NOT NULL,
 	`user_id` text,
@@ -23,7 +33,7 @@ CREATE TABLE `media_folders` (
 	`label` text,
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`userId`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `media_folders_path_unique` ON `media_folders` (`path`);--> statement-breakpoint
@@ -35,7 +45,7 @@ CREATE TABLE `playlist_tracks` (
 	`added_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`playlist_id`) REFERENCES `playlists`(`playlist_id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`trackId`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`track_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `playlists` (
@@ -44,11 +54,11 @@ CREATE TABLE `playlists` (
 	`name` text NOT NULL,
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`userId`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `tracks` (
-	`trackId` text PRIMARY KEY NOT NULL,
+	`track_id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
 	`artist_id` text,
 	`album_id` text,
@@ -61,12 +71,30 @@ CREATE TABLE `tracks` (
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artistId`) ON UPDATE no action ON DELETE set null,
-	FOREIGN KEY (`album_id`) REFERENCES `albums`(`albumId`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`album_id`) REFERENCES `albums`(`album_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `tracks_file_path_unique` ON `tracks` (`file_path`);--> statement-breakpoint
+CREATE TABLE `user_artists` (
+	`user_artist_id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`artist_id` text NOT NULL,
+	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artistId`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `user_genres` (
+	`user_genre_id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`genre_id` text NOT NULL,
+	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`genre_id`) REFERENCES `genres`(`genre_id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `users` (
-	`userId` text PRIMARY KEY NOT NULL,
+	`user_id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`email` text NOT NULL,
 	`password_hash` text NOT NULL,

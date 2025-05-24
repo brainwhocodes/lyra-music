@@ -271,7 +271,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   // Find the album from the main list (used for quick display, not for player data if fetching)
-  const albumListItem = albums.value?.find(album => album.albumId === albumId);
+  const albumListItem = albums.value?.find((album: Album) => album.albumId === albumId);
   if (!albumListItem) {
     console.error(`Album with ID ${albumId} not found in the current list.`);
     albumIdLoading.value = null;

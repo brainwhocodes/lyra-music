@@ -21,10 +21,10 @@
          v-for="artist in artists" 
          :key="artist.id" 
          class="card card-compact bg-base-200 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-         @click="goToArtist(artist.id)" 
+         @click="goToArtist(artist.artistId)" 
          >
          <div class="card-body items-center text-center">
-           <h2 class="card-title">{{ artist.name }}</h2>
+           <h2 class="card-title">{{ artist.artistName }}</h2>
            <!-- TODO: Add artist image or placeholder -->
            <!-- TODO: Add album/track counts if added to API -->
          </div>
@@ -35,8 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'

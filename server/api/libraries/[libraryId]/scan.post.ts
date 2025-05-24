@@ -36,10 +36,10 @@ export default defineEventHandler(async (event: H3Event) => {
   try {
     // 3. Verify the library belongs to the user and get its path
     const [library] = await db
-      .select({ id: mediaFolders.id, path: mediaFolders.path })
+      .select({ mediaFolderId: mediaFolders.mediaFolderId, path: mediaFolders.path })
       .from(mediaFolders)
       .where(and(
-        eq(mediaFolders.id, libraryId),
+        eq(mediaFolders.mediaFolderId, String(libraryId)),
         eq(mediaFolders.userId, user.userId)
       ))
       .limit(1)
@@ -54,20 +54,20 @@ export default defineEventHandler(async (event: H3Event) => {
     // 4. Trigger scan asynchronously (fire-and-forget)
     // We don't await this, so the request returns immediately.
     // Error handling within scanLibrary should log issues.
-    scanLibrary(library.id, library.path)
+    scanLibrary(String(library.mediaFolderId), library.path, user.userId)
       .then(() => {
-        console.log(`Background scan completed for library ${library.id}`);
+        console.log(`Background scan completed for library ${library.mediaFolderId}`);
       })
       .catch((error) => {
         // Log any unexpected errors from the async scan function itself
-        console.error(`Error during background scan execution for library ${library.id}:`, error);
+        console.error(`Error during background scan execution for library ${library.mediaFolderId}:`, error);
       });
 
-    console.log(`Scan initiated for library ${library.id} by user ${user.userId}`);
+    console.log(`Scan initiated for library ${library.mediaFolderId} by user ${user.userId}`);
     
     // 5. Return success response
     setResponseStatus(event, 202) // 202 Accepted indicates the request is accepted for processing
-    return { message: `Scan initiated for library ${library.id}.` }
+    return { message: `Scan initiated for library ${library.mediaFolderId}.` }
 
   } catch (error: any) {
      // Handle errors from DB query or other synchronous parts

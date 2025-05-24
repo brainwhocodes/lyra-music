@@ -52,10 +52,10 @@
                 <tr v-if="!isLoading && mediaFolders.length === 0">
                   <td colspan="2" class="text-center italic text-base-content/60">No media folders added yet.</td>
                 </tr>
-                <tr v-for="folder in mediaFolders" :key="folder.id">
-                  <td class="align-middle break-all">{{ folder.path }}</td>
+                <tr v-for="folder in mediaFolders" :key="folder.mediaFolderId">
+                  <td class="align-middle break-all">{{ folder.path }} <span v-if="folder.label" class="text-xs text-base-content/60">({{ folder.label }})</span></td>
                   <td>
-                    <button class="btn btn-xs btn-ghost text-error" @click="removeFolder(folder.id)" :disabled="isLoading">
+                    <button class="btn btn-xs btn-ghost text-error" @click="removeFolder(folder.mediaFolderId)" :disabled="isLoading">
                       <Icon name="material-symbols:delete-outline-rounded" class="w-4 h-4" />
                     </button>
                   </td>
@@ -112,13 +112,11 @@ definePageMeta({
   layout: 'sidebar-layout'
 });
 
-import { ref, onMounted } from 'vue';
-import type { Ref } from 'vue'; // Import Ref type
-
 // Define types for better structure
 interface MediaFolder {
-  id: number;
+  mediaFolderId: string;
   path: string;
+  label?: string | null;
   createdAt: string; // Assuming createdAt is returned as string/timestamp
 }
 
@@ -168,22 +166,25 @@ const addFolder = async (): Promise<void> => {
   successMessage.value = null;
   scanResults.value = null;
   try {
-    const response = await $fetch<{ success: boolean; folder: MediaFolder }>('/api/settings/folders', {
+    // $fetch will throw an error for non-2xx responses.
+    // If it doesn't throw, the request was successful and 'newlyAddedFolder' will be the response body.
+    const newlyAddedFolder = await $fetch<MediaFolder>('/api/settings/folders', {
       method: 'POST',
-      body: { path: newFolderPath.value.trim() },
+      body: { path: newFolderPath.value.trim() }, // Assuming 'label' is optional or handled by API default
     });
-    if (response.success && response.folder) {
-      // Add to local list immediately for responsiveness
-      mediaFolders.value.push(response.folder);
+
+    // Check if newlyAddedFolder has mediaFolderId to confirm it's a valid folder object
+    if (newlyAddedFolder && newlyAddedFolder.mediaFolderId) { 
+      mediaFolders.value.push(newlyAddedFolder);
       newFolderPath.value = ''; // Clear input
-      successMessage.value = `Folder "${response.folder.path}" added successfully.`;
-      // Optionally re-fetch to ensure consistency: await fetchFolders();
+      successMessage.value = `Folder "${newlyAddedFolder.path}" added successfully.`;
     } else {
-      errorMessage.value = 'Failed to add folder.';
+      // This case should ideally not be hit if the API returns a valid folder or throws an error.
+      // But as a fallback:
+      errorMessage.value = 'Failed to add folder: Invalid response from server.';
     }
   } catch (error: any) {
     console.error('Error adding folder:', error);
-    // Extract the most specific error message possible
     if (error.data?.statusMessage) {
       errorMessage.value = `Failed to add media folder: ${error.data.statusMessage}`;
     } else if (error.data?.message) {
@@ -195,13 +196,12 @@ const addFolder = async (): Promise<void> => {
     }
   } finally {
     isLoading.value = false;
-    // Clear success message after a delay
     if(successMessage.value) setTimeout(() => successMessage.value = null, 3000);
   }
 };
 
 // Remove folder function
-const removeFolder = async (folderId: number): Promise<void> => {
+const removeFolder = async (folderId: string): Promise<void> => {
   // Optional: Add a confirmation dialog here
   // if (!confirm('Are you sure you want to remove this folder?')) return;
 
@@ -215,7 +215,7 @@ const removeFolder = async (folderId: number): Promise<void> => {
     });
     if (response.success) {
       // Remove from local list
-      const index = mediaFolders.value.findIndex(f => f.id === folderId);
+      const index = mediaFolders.value.findIndex((f: MediaFolder) => f.mediaFolderId === folderId);
       const removedPath = mediaFolders.value[index]?.path; // Get path before removing
       if (index !== -1) {
         mediaFolders.value.splice(index, 1);
