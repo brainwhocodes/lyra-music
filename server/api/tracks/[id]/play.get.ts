@@ -16,8 +16,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const trackId = parseInt(trackIdParam, 10);
-  if (isNaN(trackId)) {
+  const trackId = trackIdParam;
+  if (!trackId) {
     throw createError({
       statusCode: 400,
       message: 'Invalid Track ID'
@@ -27,20 +27,20 @@ export default defineEventHandler(async (event) => {
   try {
     // Fetch track details including the path
     const track = await db.select({
-        path: tracks.path
+        filePath: tracks.filePath
       })
       .from(tracks)
-      .where(eq(tracks.id, trackId))
+      .where(eq(tracks.trackId, trackId))
       .get(); // Use .get() for single result
 
-    if (!track || !track.path) {
+    if (!track || !track.filePath) {
       throw createError({
         statusCode: 404,
         message: 'Track not found or path missing'
       });
     }
 
-    const filePath = track.path;
+    const filePath = track.filePath;
 
     // Security Check: Ensure the path is valid and exists
     // IMPORTANT: Add more robust path validation in a real application
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
 
     // Get file stats for content length (optional but good for clients)
     const stats = fs.statSync(filePath);
-    setResponseHeader(event, 'Content-Length', stats.size.toString());
+    setResponseHeader(event, 'Content-Length', stats.size);
 
     // Set headers for potential range requests (important for seeking)
     setResponseHeader(event, 'Accept-Ranges', 'bytes');

@@ -38,7 +38,7 @@ const formatDuration = (seconds: number): string => {
     <div v-if="queue.length > 0" class="flex-grow overflow-y-auto space-y-1 pr-2">
       <div
         v-for="(track, index) in queue"
-        :key="`${track.id}-${index}`"
+        :key="`${track.trackId}-${index}`"
         class="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer group"
         :class="{'bg-base-300 text-primary font-semibold': index === currentIndex}"
         @click="handleClickOnQueueItem(index)"

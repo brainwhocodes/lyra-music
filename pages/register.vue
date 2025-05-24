@@ -23,6 +23,22 @@
 
           <label class="form-control w-full">
             <div class="label">
+              <span class="label-text">Name</span>
+            </div>
+            <input 
+              v-model="state.name" 
+              type="text" 
+              placeholder="Your name" 
+              class="input input-bordered w-full" 
+              required 
+            />
+            <div class="label" v-if="validationErrors.name">
+              <span class="label-text-alt text-error">{{ validationErrors.name }}</span>
+            </div>
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label">
               <span class="label-text">Password</span>
             </div>
             <input 
@@ -85,7 +101,8 @@ import { z } from 'zod'
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(8, 'Password confirmation must be at least 8 characters')
+  confirmPassword: z.string().min(8, 'Password confirmation must be at least 8 characters'),
+  name: z.string().min(3, 'Name must be at least 3 characters'),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'] // path of error
@@ -97,19 +114,20 @@ interface ValidationError {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  name?: string;
 }
 
 const state = reactive<RegisterSchema>({
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  name: ''
 })
 
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const validationErrors = ref<ValidationError>({})
-const router = useRouter()
 
 async function register() {
   loading.value = true
@@ -137,7 +155,8 @@ async function register() {
       method: 'POST',
       body: {
         email: result.data.email,
-        password: result.data.password
+        password: result.data.password,
+        name: result.data.name
       }
     })
 

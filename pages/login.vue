@@ -111,11 +111,9 @@ async function login() {
 
     // Handle successful login (e.g., store token, redirect)
     console.log('Login successful:', response)
-    // TODO: Store token (e.g., in localStorage or Pinia store)
-    // Example: localStorage.setItem('authToken', response.token)
     
     // Redirect to the libraries page upon successful login
-    await navigateTo('/libraries');
+    await navigateTo('/library');
   } catch (error: any) {
     console.error('Login failed:', error)
     if (error.data && error.data.message) {

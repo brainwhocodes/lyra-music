@@ -11,16 +11,16 @@ export default defineEventHandler(async (event) => {
     // Query artists and aggregate their albums into a JSON array
     const artistsWithAlbums = await db
       .select({
-        id: artists.id,
+        artistId: artists.artistId,
         name: artists.name,
         // Aggregate albums into a JSON string
         // Note: Parsing this JSON string might be needed on the client-side
         // or you could use a custom Drizzle type if available/created.
-        albumsJson: sql<string>`json_group_array(json_object('id', ${albums.id}, 'title', ${albums.title}, 'artPath', ${albums.artPath})) filter (where ${albums.id} is not null)`,
+        albumsJson: sql<string>`json_group_array(json_object('albumId', ${albums.albumId}, 'title', ${albums.title}, 'coverPath', ${albums.coverPath})) filter (where ${albums.albumId} is not null)`,
       })
       .from(artists)
-      .leftJoin(albums, eq(artists.id, albums.artistId)) // Join albums to artists
-      .groupBy(artists.id, artists.name) // Group by artist
+      .leftJoin(albums, eq(artists.artistId, albums.artistId)) // Join albums to artists
+      .groupBy(artists.artistId, artists.name) // Group by artist
       .orderBy(asc(artists.name)) // Order by artist name
       .all(); // Use .all() for better-sqlite3
 

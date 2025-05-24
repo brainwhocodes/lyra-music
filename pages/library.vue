@@ -23,11 +23,10 @@
          <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
               <div class="w-10 rounded-full">
-                <img alt="User Avatar" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+                <img alt="User Avatar" src="" />
               </div>
             </div>
             <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-              <li><NuxtLink to="/profile">Profile</NuxtLink></li>
               <li><NuxtLink to="/settings">Settings</NuxtLink></li>
                <li><hr class="my-1" /></li>
               <li><a>Logout</a></li>
@@ -71,25 +70,28 @@
      <div v-else-if="albums && albums.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 md:gap-6">
         <AlbumCard 
           v-for="album_item in albums" 
-          :key="album_item.id" 
+          :key="album_item.albumId" 
           :album="{ 
-            id: album_item.id, 
+            albumId: album_item.albumId, 
             title: album_item.title, 
             artistName: album_item.artistName, 
-            coverArtUrl: album_item.coverPath 
+            coverPath: album_item.coverPath,
+            year: album_item.year,
+            artistId: album_item.artistId,
+            tracks: album_item.tracks
           }"
-          @card-click="navigateToAlbum(album_item.id)"
+          @card-click="navigateToAlbum(album_item.albumId)"
         >
           <template #image-overlay>
             <button 
-              @click.stop="playAlbum(album_item.id)" 
-              :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.id ? 'Pause Album' : 'Play Album'" 
+              @click.stop="playAlbum(album_item.albumId)" 
+              :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
               class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
               style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
             >
-              <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.id && currentAlbumLoading" />
+              <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
               <Icon name="material-symbols:play-arrow-rounded" 
-                v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.id" 
+                v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.albumId" 
                 class="w-8! h-8! text-white" />
               <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
             </button>
@@ -116,27 +118,18 @@ import { ref, computed, watch } from 'vue'
 import { usePlayerStore, type Track } from '~/stores/player'; // Import Track type
 import AlbumCard from '~/components/album/album-card.vue'; // Import AlbumCard
 import { useRouter } from 'vue-router'; // Import useRouter
-
+import type { Album } from '~/types/album';
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
 });
 
-// Define interfaces
-interface Album {
-  id: number;
-  title: string;
-  coverPath: string | null;
-  artistId: number | null;
-  artistName: string; // Assume artist name is always joined
-  year: number | null; // Added for consistency
-}
 
 const playerStore = usePlayerStore(); // Get player store instance
 
 // Refs for play button loading state (similar to pages/albums/index.vue)
 const currentAlbumLoading = ref<boolean>(false);
-const albumIdLoading = ref<number | null>(null);
+const albumIdLoading = ref<string | null>(null);
 
 // Search State
 const searchQuery = ref('');
@@ -147,8 +140,7 @@ let debounceTimer: NodeJS.Timeout | null = null;
 const selectedGenre = ref<string | null>(null);
 
 // Fetch Genres
-const { data: genres, pending: pendingGenres, error: genresError } = useFetch<string[]>('/api/genres', {
-  lazy: true,
+const { data: genres, pending: pendingGenres, error: genresError } = useLazyFetch<string[]>('/api/genres', {
   server: false
 });
 
@@ -187,12 +179,12 @@ const {
 const router = useRouter(); // Initialize router
 
 // --- Play Album Functionality ---
-const playAlbum = async (albumId: number): Promise<void> => {
+const playAlbum = async (albumId: string): Promise<void> => {
   albumIdLoading.value = albumId;
   currentAlbumLoading.value = true;
 
   // Find the album from the current list to get its details, including coverPath
-  const selectedAlbum = albums.value?.find(album => album.id === albumId);
+  const selectedAlbum = albums.value?.find(album => album.albumId === albumId);
 
   if (!selectedAlbum) {
     console.error(`Album with ID ${albumId} not found in the current list.`);
@@ -216,13 +208,13 @@ const playAlbum = async (albumId: number): Promise<void> => {
 
     // Augment tracks with album details like artistName, albumTitle, and coverPath
     const tracksForQueue: Track[] = rawTracks.map(track => ({
-      id: track.id,
+      trackId: track.id,
       title: track.title ?? 'Unknown Track',
       artistName: selectedAlbum.artistName ?? 'Unknown Artist',
       albumTitle: selectedAlbum.title ?? 'Unknown Album',
       filePath: track.filePath, // Assuming filePath is directly on the raw track object
       duration: track.duration ?? 0,
-      albumId: selectedAlbum.id,
+      albumId: selectedAlbum.albumId,
       trackNumber: track.trackNumber ?? null,
       artistId: selectedAlbum.artistId ?? null,
       coverPath: selectedAlbum.coverPath, // Add the coverPath from the album
@@ -231,7 +223,7 @@ const playAlbum = async (albumId: number): Promise<void> => {
     // If the current playing track is from the same album, just toggle play/pause
     // Otherwise, load the new queue and play from the beginning.
     const trackToPlay = tracksForQueue[0];
-    if (playerStore.currentTrack?.albumId === selectedAlbum.id && playerStore.currentTrack?.id === trackToPlay.id) {
+    if (playerStore.currentTrack?.albumId === selectedAlbum.albumId && playerStore.currentTrack?.trackId === trackToPlay.trackId) {
       playerStore.togglePlayPause();
     } else {
       playerStore.loadQueue(tracksForQueue);
@@ -247,8 +239,8 @@ const playAlbum = async (albumId: number): Promise<void> => {
 };
 
 // --- Navigate to Album Detail Page ---
-const navigateToAlbum = (albumId: number): void => {
-  router.push(`/albums/${albumId}`);
+const navigateToAlbum = (albumId: string): void => {
+  navigateTo(`/albums/${albumId}`);
 };
 
 // Define page meta if needed

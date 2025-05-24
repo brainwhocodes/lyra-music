@@ -5,12 +5,12 @@ import { ref, computed, watch } from 'vue';
 // Define the structure of a Track object (adjust based on your actual track data)
 // We might fetch this from the /api/tracks endpoint later
 export interface Track {
-  id: number;
+  trackId: string;
   title: string;
-  albumId: number;
+  albumId: string;
   trackNumber: number | null;
   filePath: string;
-  artistId: number | null; // Made nullable to match database schema
+  artistId: string; // Made nullable to match database schema
   duration: number;
   artistName?: string; // Optional fields as needed
   albumTitle?: string;
@@ -58,7 +58,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   // Computed property for the audio source URL
   const audioSource = computed<string | null>(() => {
-    return currentTrack.value ? `/api/tracks/${currentTrack.value.id}/play` : null;
+    return currentTrack.value ? `/api/tracks/${currentTrack.value.trackId}/play` : null;
   });
 
   // Fisher-Yates (Knuth) Shuffle algorithm
@@ -129,7 +129,7 @@ export const usePlayerStore = defineStore('player', () => {
 
     if (!source) {
       console.error("SetupAudioElement Error: audioSource is null/undefined.", {
-        trackId: track.id, // Log track ID for which source failed
+        trackId: track.trackId, // Log track ID for which source failed
         currentIndex: currentQueueIndex.value,
         queueLength: queue.value.length,
       });
@@ -138,7 +138,7 @@ export const usePlayerStore = defineStore('player', () => {
     }
 
     // Log successful setup attempt
-    console.log(`Setting up audio for track ID: ${track.id}, source: ${source}`);
+    console.log(`Setting up audio for track ID: ${track.trackId}, source: ${source}`);
 
     // Create new audio element
     audioElement.value = new Audio(source);
@@ -223,7 +223,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   const playTrack = (track: Track) => {
     // Check if track is already in the current queue
-    const indexInQueue = queue.value.findIndex(item => item.id === track.id);
+    const indexInQueue = queue.value.findIndex(item => item.trackId === track.trackId);
 
     if (indexInQueue !== -1) {
       // Track found in queue, play from that index
@@ -238,35 +238,34 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const loadQueue = (tracks: Track[]) => {
-    originalQueue.value = [...tracks]; // Always store original order
+    if (!tracks || tracks.length === 0) {
+      originalQueue.value = []; // Clear original queue
+      queue.value = []; // Clear active queue
+      currentQueueIndex.value = -1;
+      return;
+    }
 
-    // Set the active queue based on shuffle state
+    originalQueue.value = [...tracks]; // Store the original order
+
     if (isShuffled.value) {
-      queue.value = shuffleArray(originalQueue.value); // Shuffle the stored original queue
+      queue.value = shuffleArray([...tracks]);
     } else {
-      queue.value = [...originalQueue.value]; // Use the original order
+      queue.value = [...tracks];
     }
-
-    // Only proceed if the queue is not empty
-    if (queue.value.length > 0) {
-      const oldIndex = currentQueueIndex.value;
-      currentQueueIndex.value = 0; // Start from the beginning
-      _setupAudioElement();        // Setup the first track
-    } else {
-      _resetState(); // Reset if queue is empty
-      currentQueueIndex.value = -1; // Ensure index is invalid
-      queue.value = []; // Ensure queue is empty
-      originalQueue.value = []; // Ensure original is empty
-    }
+  
+    currentQueueIndex.value = -1; 
   };
 
   const playFromQueue = (index: number) => {
     if (index >= 0 && index < queue.value.length) {
-      const oldIndex = currentQueueIndex.value;
       currentQueueIndex.value = index;
-      _setupAudioElement();
+      _setupAudioElement(); // This should start playback
     } else {
-      console.warn('[PlayerStore] playFromQueue: index out of bounds or queue empty.');
+      if (queue.value.length > 0) {
+        // Potentially play first track or handle error
+      } else {
+        // Queue is empty, cannot play
+      }
     }
   };
 
@@ -314,7 +313,7 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const toggleShuffle = () => {
-    const currentTrackId = currentTrack.value?.id; // Get ID before queue changes
+    const currentTrackId = currentTrack.value?.trackId; // Get ID before queue changes
     isShuffled.value = !isShuffled.value;
 
     if (isShuffled.value) {
@@ -329,7 +328,7 @@ export const usePlayerStore = defineStore('player', () => {
 
     // Find the current track in the new (shuffled or restored) queue
     if (currentTrackId) {
-      const newIndex = queue.value.findIndex(track => track.id === currentTrackId);
+      const newIndex = queue.value.findIndex(track => track.trackId === currentTrackId);
       currentQueueIndex.value = newIndex !== -1 ? newIndex : 0; // Reset to found index or start if not found
       console.log(`Current track ID ${currentTrackId} found at new index: ${currentQueueIndex.value}`);
     } else {

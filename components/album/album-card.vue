@@ -36,13 +36,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-
-export interface Album {
-  id: number;
-  title: string | null;
-  artistName?: string | null; 
-  coverArtUrl?: string | null; 
-}
+import type { Album } from '~/types/album';
 
 const props = defineProps<{
   album: Album;
@@ -50,15 +44,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['cardClick']);
 
-const DEFAULT_ALBUM_ART = '/images/default-album-art.png'; 
+const DEFAULT_ALBUM_ART = '/images/covers/default-album-art.webp';
 
 const imageError = ref(false);
 
 const albumArtUrl = computed(() => {
-  if (imageError.value || !props.album.coverArtUrl) {
+  if (imageError.value || !props.album.coverPath) {
     return DEFAULT_ALBUM_ART;
   }
-  return props.album.coverArtUrl; 
+  return props.album.coverPath; 
 });
 
 const handleImageError = () => {

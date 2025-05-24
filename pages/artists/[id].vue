@@ -30,7 +30,7 @@ const { data: artist, pending, error } = await useAsyncData<ArtistDetails>(
 );
 
 const getCoverUrl = (coverPath: string | null | undefined): string => {
-  return coverPath ? `/api/covers${coverPath}` : '/img/placeholder.png';
+  return coverPath ? `/api/covers${coverPath}` : '/images/covers/default-album-art.webp';
 };
 
 // Function to play a specific album by this artist
