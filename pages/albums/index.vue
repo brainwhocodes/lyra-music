@@ -30,6 +30,8 @@
           tracks: album_item.tracks
         }"
         @card-click="goToAlbum(album_item.albumId)"
+        @add-to-playlist="openAddToPlaylistModal"
+        @edit-album="handleEditAlbum"
       >
         <template #image-overlay>
           <button 
@@ -55,10 +57,60 @@
     </div>
 
   </div>
+
+  <!-- Add to Playlist Modal -->
+  <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">
+        Add "{{ selectedAlbumForPlaylist?.title }}" to playlist:
+      </h3>
+      <button 
+        @click="isAddToPlaylistModalOpen = false" 
+        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+      >✕</button>
+      
+      <div v-if="!playlists.length" class="text-center text-neutral-content italic py-4">
+        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink></p>
+      </div>
+      <ul v-else class="menu bg-base-100 rounded-box max-h-60 overflow-y-auto">
+        <li v-for="playlist in playlists" :key="playlist.playlistId">
+          <a @click="addAlbumToPlaylist(playlist.playlistId)">
+            {{ playlist.name }}
+          </a>
+        </li>
+      </ul>
+      <div class="modal-action">
+        <button class="btn btn-ghost" @click="isAddToPlaylistModalOpen = false">Cancel</button>
+      </div>
+    </div>
+    <!-- Click outside to close -->
+    <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
+  </div>
+  
+  <!-- Simple Notification Component -->
+  <div v-if="notification.visible" 
+       class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md"
+       :class="{
+         'bg-success text-success-content': notification.type === 'success',
+         'bg-error text-error-content': notification.type === 'error',
+         'bg-info text-info-content': notification.type === 'info'
+       }">
+    <div class="flex items-center">
+      <Icon 
+        :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
+              notification.type === 'error' ? 'material-symbols:error-outline' : 
+              'material-symbols:info-outline'" 
+        class="w-6 h-6 mr-2" />
+      <span>{{ notification.message }}</span>
+      <button @click="notification.visible = false" class="ml-2 p-1">
+        <Icon name="material-symbols:close" class="w-4 h-4" />
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch } from '#imports';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore, type Track } from '~/stores/player';
 import type { Album } from '~/types/album'; 
@@ -76,7 +128,13 @@ const { getCoverArtUrl } = useCoverArt();
 // --- State for Album Details and Playback ---
 const currentAlbum = ref<Album | null>(null); 
 const currentAlbumLoading = ref<boolean>(false);
-const albumIdLoading = ref<string | null>(null); 
+const albumIdLoading = ref<string | null>(null);
+
+// --- State for Album Operations ---
+const selectedAlbumForPlaylist = ref<Album | null>(null);
+const isAddToPlaylistModalOpen = ref<boolean>(false);
+const playlists = ref<any[]>([]);
+const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false }); 
 
 // --- State for Albums List Display ---
 const albums = ref<Album[]>([]);
@@ -196,6 +254,80 @@ const playAlbum = async (albumId: string): Promise<void> => {
 // Navigation function
 const goToAlbum = (albumId: string): void => {
   navigateTo(`/albums/${albumId}`);
+};
+
+// Simple notification system
+const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info'): void => {
+  notification.value = { message, type, visible: true };
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.value.visible = false;
+  }, 3000);
+};
+
+// Fetch user's playlists
+async function fetchPlaylists(): Promise<void> {
+  try {
+    const data = await $fetch<any[]>('/api/playlists');
+    playlists.value = data;
+  } catch (e: unknown) {
+    console.error('Error fetching playlists:', e);
+    showNotification('Could not load your playlists.', 'error');
+    playlists.value = []; // Ensure it's an empty array on error
+  }
+}
+
+// Open the Add to Playlist modal
+const openAddToPlaylistModal = (album: Album): void => {
+  selectedAlbumForPlaylist.value = album;
+  isAddToPlaylistModalOpen.value = true;
+  fetchPlaylists(); 
+};
+
+// Add all album tracks to a playlist
+const addAlbumToPlaylist = async (playlistId: string): Promise<void> => {
+  if (!selectedAlbumForPlaylist.value?.tracks || selectedAlbumForPlaylist.value.tracks.length === 0) {
+    // If tracks aren't loaded in the album object, fetch them first
+    const albumWithTracks = await fetchAlbumDetailsById(selectedAlbumForPlaylist.value!.albumId);
+    if (!albumWithTracks?.tracks || albumWithTracks.tracks.length === 0) {
+      showNotification('Could not load album tracks', 'error');
+      isAddToPlaylistModalOpen.value = false;
+      selectedAlbumForPlaylist.value = null;
+      return;
+    }
+    selectedAlbumForPlaylist.value = albumWithTracks;
+  }
+  
+  const trackIds = selectedAlbumForPlaylist.value.tracks.map((track: any) => track.trackId);
+  await addTracksToPlaylist(playlistId, trackIds);
+};
+
+// Generic function to add tracks to a playlist
+const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Promise<void> => {
+  if (!trackIds.length) return;
+  
+  try {
+    await $fetch(`/api/playlists/${playlistId}/tracks`, {
+      method: 'POST',
+      body: {
+        action: 'add',
+        trackIds,
+      },
+    });
+    showNotification(`Added to playlist successfully`, 'success');
+    isAddToPlaylistModalOpen.value = false;
+    selectedAlbumForPlaylist.value = null;
+  } catch (e: unknown) {
+    console.error('Error adding tracks to playlist:', e);
+    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ? 
+      String(e.data.message) : 'Failed to add to playlist.';
+    showNotification(errorMessage, 'error');
+  }
+};
+
+// Placeholder function for editing an album
+const handleEditAlbum = (album: Album): void => {
+  showNotification(`Edit functionality for "${album.title}" is not yet implemented.`, 'info');
 };
 
 // Fetch albums on component mount and when query (e.g., artistId) changes
