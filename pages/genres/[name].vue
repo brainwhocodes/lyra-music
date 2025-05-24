@@ -37,7 +37,7 @@ const { data: genreDetails, pending, error } = await useAsyncData<GenreDetails>(
 );
 
 const getCoverUrl = (coverPath: string | null | undefined): string => {
-  return coverPath ? `/api/covers${coverPath}` : '/img/placeholder.png';
+  return coverPath ? `/api/covers${coverPath}` : '/images/covers/default-album-art.webp';
 };
 
 // Function to play a specific album

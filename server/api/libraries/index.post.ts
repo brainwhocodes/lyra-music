@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { db } from '~/server/db'
 import { mediaFolders } from '~/server/db/schema'
 import type { H3Event } from 'h3'
-
+import { v7 as uuidv7 } from 'uuid';
 // Input schema validation
 const librarySchema = z.object({
   path: z.string().min(1, 'Path cannot be empty')
@@ -32,6 +32,7 @@ export default defineEventHandler(async (event: H3Event) => {
     const [newLibrary] = await db
       .insert(mediaFolders)
       .values({
+        mediaFolderId: uuidv7(),
         path: libraryPath
       })
       .returning()
@@ -42,7 +43,7 @@ export default defineEventHandler(async (event: H3Event) => {
         statusMessage: 'Internal Server Error: Failed to create library entry.'
       })
     }
-    
+
     console.log(`Library added: ${libraryPath}`)
     
     // Set status code to 201 Created

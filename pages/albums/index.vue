@@ -19,25 +19,28 @@
     <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
       <AlbumCard
         v-for="album_item in albums"
-        :key="album_item.id"
+        :key="album_item.albumId"
         :album="{
-          id: album_item.id,
+          albumId: album_item.albumId,
           title: album_item.title,
           artistName: album_item.artistName,
-          coverArtUrl: album_item.coverPath
+          coverPath: album_item.coverPath,
+          year: album_item.year,
+          artistId: album_item.artistId,
+          tracks: album_item.tracks
         }"
-        @card-click="goToAlbum(album_item.id)"
+        @card-click="goToAlbum(album_item.albumId)"
       >
         <template #image-overlay>
           <button 
-            @click.stop="playAlbum(album_item.id)" 
-            :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.id ? 'Pause Album' : 'Play Album'" 
+            @click.stop="playAlbum(album_item.albumId)" 
+            :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
             class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
             style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
           >
-            <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.id && currentAlbumLoading" />
+            <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
             <Icon name="material-symbols:play-arrow-rounded" 
-              v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.id" 
+              v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.albumId" 
               class="w-8! h-8! text-white" />
             <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
           </button>
@@ -71,10 +74,10 @@ const { getCoverArtUrl } = useCoverArt();
 
 const currentAlbum = ref<Album | null>(null);
 const currentAlbumLoading = ref<boolean>(false);
-const albumIdLoading = ref<number | null>(null);
+const albumIdLoading = ref<string | null>(null);
 
 // New function to fetch and map album details
-async function fetchAlbumDetailsById(id: number): Promise<Album | null> {
+async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
   currentAlbumLoading.value = true;
   albumIdLoading.value = id;
   let fetchedAlbum: Album | null = null;
@@ -97,7 +100,7 @@ async function fetchAlbumDetailsById(id: number): Promise<Album | null> {
         trackNumber: t.track_number ?? t.trackNumber ?? null,
       }));
       fetchedAlbum = {
-        id: apiResponse.id,
+        albumId: apiResponse.album,
         title: apiResponse.title,
         year: apiResponse.year,
         coverPath: apiResponse.cover_path,
@@ -118,11 +121,11 @@ async function fetchAlbumDetailsById(id: number): Promise<Album | null> {
 }
 
 // Function to play a specific album
-const playAlbum = async (albumId: number): Promise<void> => {
+const playAlbum = async (albumId: string): Promise<void> => {
   let albumDataForPlayback: Album | null = null;
 
   // Case 1: The requested albumId is already loaded in currentAlbum.value
-  if (currentAlbum.value && currentAlbum.value.id === albumId) {
+  if (currentAlbum.value && currentAlbum.value.albumId === albumId) {
     albumDataForPlayback = currentAlbum.value;
   } else {
     // Case 2: Need to fetch a new album
@@ -143,13 +146,13 @@ const playAlbum = async (albumId: number): Promise<void> => {
   const trackIndex = 0; 
   const trackToPlay = albumDataForPlayback.tracks[trackIndex];
 
-  if (playerStore.currentTrack?.id === trackToPlay.id) {
+  if (playerStore.currentTrack?.trackId === trackToPlay.trackId) {
     playerStore.togglePlayPause();
     return;
   }
 
   const playerQueueAlbumId = playerStore.queue.length > 0 ? playerStore.queue[0].albumId : null;
-  if (playerQueueAlbumId !== albumDataForPlayback.id) {
+  if (playerQueueAlbumId !== albumDataForPlayback.albumId) {
     playerStore.loadQueue(albumDataForPlayback.tracks);
   }
   
@@ -203,9 +206,8 @@ watch(() => route.query, () => {
 }, { immediate: true }); 
 
 // Navigation function
-const router = useRouter();
-const goToAlbum = (albumId: number): void => {
-  router.push(`/albums/${albumId}`);
+const goToAlbum = (albumId: string): void => {
+  navigateTo(`/albums/${albumId}`);
 };
 </script>
 

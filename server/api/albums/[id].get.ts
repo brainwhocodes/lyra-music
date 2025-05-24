@@ -1,14 +1,14 @@
-// File: c:/Users/mille/Documents/otogami/server/api/albums/[id].get.ts
+// server/api/albums/[id].get.ts
 
-import { H3Event } from 'h3';
+import { H3Event, defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, tracks } from '~/server/db/schema';
 import { eq, asc } from 'drizzle-orm';
-import { useCoverArt } from '~/composables/use-cover-art'; // Import the composable
+import { useCoverArt } from '~/composables/use-cover-art';
 
 export default defineEventHandler(async (event: H3Event) => {
   const albumIdParam = event.context.params?.id;
-  console.log(event.context.params);
+  
   if (!albumIdParam) {
     throw createError({
       statusCode: 400,
@@ -23,27 +23,14 @@ export default defineEventHandler(async (event: H3Event) => {
       albumId: albums.albumId,
       title: albums.title,
       year: albums.year,
-      coverPath: albums.coverPath, // Adjust column name if needed
+      coverPath: albums.coverPath,
       artistId: albums.artistId,
       artistName: artists.name
     })
     .from(albums)
     .leftJoin(artists, eq(albums.artistId, artists.artistId))
     .where(eq(albums.albumId, albumId))
-    .get()
-
-    const tracksData = await db.select({
-      trackId: tracks.trackId,
-      title: tracks.title,
-      track_number: tracks.trackNumber, // Adjust column name
-      duration: tracks.duration,
-      file_path: tracks.filePath, // Adjust column name
-      // Removed potentially non-existent columns. The formatting logic below handles these.
-    })
-    .from(tracks)
-    .where(eq(tracks.albumId, albumId))
-    .orderBy(asc(tracks.trackNumber))
-    .all() // .all() for multiple results
+    .get();
 
     // Check if album was found
     if (!albumData) {
@@ -52,6 +39,18 @@ export default defineEventHandler(async (event: H3Event) => {
         statusMessage: 'Album not found',
       });
     }
+
+    const tracksData = await db.select({
+      trackId: tracks.trackId,
+      title: tracks.title,
+      track_number: tracks.trackNumber,
+      duration: tracks.duration,
+      file_path: tracks.filePath,
+    })
+    .from(tracks)
+    .where(eq(tracks.albumId, albumId))
+    .orderBy(asc(tracks.trackNumber))
+    .all();
 
     const { getCoverArtUrl } = useCoverArt();
 
@@ -68,21 +67,18 @@ export default defineEventHandler(async (event: H3Event) => {
         title: track.title,
         trackNumber: track.track_number,
         duration: track.duration,
-        // Use albumData for artist/album name as primary source, tracks might not have it
         artistName: albumData.artistName ?? 'Unknown Artist',
         albumTitle: albumData.title ?? 'Unknown Album',
         filePath: track.file_path,
       })) ?? []
     };
 
-    console.log("Album details:", result);
-    // Validate and return
     return result;
 
   } catch (error: any) {
-    // Handle potential errors from Promise.all or validation
-    if (error.statusCode) { // Re-throw H3 errors
-        throw error;
+    // Handle potential errors
+    if (error.statusCode) {
+      throw error;
     }
     console.error("Error processing album request:", error);
     throw createError({

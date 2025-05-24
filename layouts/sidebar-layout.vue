@@ -48,6 +48,18 @@ import { usePlayerStore } from '~/stores/player';
 
 const playerStore = usePlayerStore();
 
+// We'll use onMounted to check auth status to avoid redirect loops during SSR
+// This prevents the layout from redirecting during the initial render
+onMounted(() => {
+  const route = useRoute();
+  // Skip auth check if we're already on a public route
+  if (route.path === '/login' || route.path === '/register') {
+    return;
+  }
+  
+  const authCookie = useCookie<string | null>('auth_token');
+  const authStore = useAuthStore();
+});
 // Layout specific script if needed in the future
 </script>
 

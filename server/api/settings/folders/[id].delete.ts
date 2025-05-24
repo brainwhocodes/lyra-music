@@ -6,7 +6,7 @@ import { defineEventHandler, createError, getRouterParam } from 'h3';
 import { z } from 'zod';
 
 // Schema to validate the ID parameter
-const IdParamSchema = z.coerce.number().int().positive({ message: "Folder ID must be a positive integer" });
+const IdParamSchema = z.coerce.string();
 
 export default defineEventHandler(async (event) => {
   try {
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const folderId = validationResult.data;
 
     // Attempt to delete the folder from the database
-    const result = await db.delete(mediaFolders).where(eq(mediaFolders.id, folderId)).returning({ id: mediaFolders.id });
+    const result = await db.delete(mediaFolders).where(eq(mediaFolders.mediaFolderId, folderId)).returning({ mediaFolderId: mediaFolders.mediaFolderId });
 
     // Check if a folder was actually deleted (result array will have one element if successful)
     if (result.length === 0) {

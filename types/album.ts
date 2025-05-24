@@ -1,10 +1,10 @@
 // Define the expected structure from the API endpoint
 export interface Album {
-    id: number;
+    albumId: string;
     title: string;
     year: number | null;
     coverPath: string | null;
-    artistId: number;
+    artistId: string;
     artistName: string;
     tracks: Track[];
 }

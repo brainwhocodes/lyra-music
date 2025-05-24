@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     
     const folders = await db
       .select({
-        id: mediaFolders.id,
+        mediaFolderId: mediaFolders.mediaFolderId,
         path: mediaFolders.path,
         createdAt: mediaFolders.createdAt
       })

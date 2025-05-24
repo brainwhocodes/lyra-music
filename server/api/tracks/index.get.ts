@@ -15,25 +15,25 @@ export default defineEventHandler(async (event) => {
 
   // Define the selection structure
   const selection = {
-      id: tracks.id,
+      id: tracks.trackId,
       title: tracks.title,
       genre: tracks.genre,
       duration: tracks.duration,
       trackNumber: tracks.trackNumber,
-      path: tracks.path,
+      path: tracks.filePath,
       createdAt: tracks.createdAt,
       albumTitle: albums.title, // Select album title
-      albumId: albums.id,       // Select album id
+      albumId: albums.albumId,       // Select album id
       artistName: artists.name, // Select artist name
-      artistId: artists.id      // Select artist id
+      artistId: artists.artistId      // Select artist id
   };
 
   // Start building the query
   // Need to explicitly type the query builder due to dynamic where clause
   let dbQuery = db.select(selection)
     .from(tracks)
-    .leftJoin(albums, eq(tracks.albumId, albums.id))
-    .leftJoin(artists, eq(tracks.artistId, artists.id));
+    .leftJoin(albums, eq(tracks.albumId, albums.albumId))
+    .leftJoin(artists, eq(tracks.artistId, artists.artistId));
 
   // Dynamically build the WHERE clause
   const conditions: SQL[] = [];

@@ -13,9 +13,6 @@
 </template>
 
 <script setup lang="ts">
-// Import the player component (Nuxt 3 might auto-import components from ~/components)
-// import AudioPlayer from '~/components/audio-player.vue'; 
-
 // No specific script logic needed for the basic layout itself
 </script>
 

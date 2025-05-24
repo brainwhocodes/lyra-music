@@ -1,37 +1,41 @@
 // This file will contain all Drizzle schema definitions (tables, relations, etc.)
 // Refer to Phase 1 for the planned schema.
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
-
+import { v7 as uuidv7 } from 'uuid';
 // Phase 1: Define Tables
 
 export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('userId').primaryKey(),
+  name: text('name').notNull(),
   email: text('email').unique().notNull(),
   passwordHash: text('password_hash').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const artists = sqliteTable('artists', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  artistId: text('artistId').primaryKey(),
   name: text('name').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const albums = sqliteTable('albums', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  albumId: text('albumId').primaryKey(),
   title: text('title').notNull(),
-  artistId: integer('artist_id').references(() => artists.id, { onDelete: 'set null' }),
+  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'set null' }),
   year: integer('year'),
-  artPath: text('art_path'),
+  coverPath: text('cover_path'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const tracks = sqliteTable('tracks', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+  trackId: text('trackId').primaryKey(),
   title: text('title').notNull(),
-  artistId: integer('artist_id').references(() => artists.id, { onDelete: 'set null' }), 
-  albumId: integer('album_id').references(() => albums.id, { onDelete: 'cascade' }), 
+  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'set null' }), 
+  albumId: text('album_id').references(() => albums.albumId, { onDelete: 'cascade' }), 
   genre: text('genre'),
   year: integer('year'), 
   trackNumber: integer('track_number'),
@@ -39,31 +43,33 @@ export const tracks = sqliteTable('tracks', {
   duration: integer('duration'), 
   filePath: text('file_path').notNull().unique(), 
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const playlists = sqliteTable('playlists', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  playlistId: text('playlist_id').primaryKey(),
+  userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   name: text('name').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const playlistTracks = sqliteTable('playlist_tracks',
-  {
-    playlistTracksId: integer('playlist_tracks_id').primaryKey({ autoIncrement: true }),
-    playlistId: integer('playlist_id').references(() => playlists.id, { onDelete: 'cascade' }).notNull(),
-    trackId: integer('track_id').references(() => tracks.id, { onDelete: 'cascade' }).notNull(),
+export const playlistTracks = sqliteTable('playlist_tracks', {
+    playlistTrackId: text('playlist_tracks_id').primaryKey(),
+    playlistId: text('playlist_id').references(() => playlists.playlistId, { onDelete: 'cascade' }).notNull(),
+    trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
     order: integer('order'),
     addedAt: integer('added_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-  },
-);
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
 
 export const mediaFolders = sqliteTable('media_folders', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  mediaFolderId: text('media_folders_id').primaryKey(),
+  userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }),
   path: text('path').notNull().unique(),
   label: text('label'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 // === Inferred Types ===

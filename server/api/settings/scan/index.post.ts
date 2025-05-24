@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Fetch all folders without user filtering for now
-    const foldersToScan = await db.select({ id: mediaFolders.id, path: mediaFolders.path })
+    const foldersToScan = await db.select({ mediaFolderId: mediaFolders.mediaFolderId, path: mediaFolders.path })
       .from(mediaFolders)
       .orderBy(desc(mediaFolders.createdAt))
       .all();
@@ -28,15 +28,15 @@ export default defineEventHandler(async (event) => {
     // Sequentially scan each folder to avoid overwhelming the system
     // and to ensure logs are easier to follow per library.
     for (const folder of foldersToScan) {
-      if (!folder.id) {
+      if (!folder.mediaFolderId) {
         console.warn(`Folder with path ${folder.path} is missing an ID. Skipping.`);
         totalErrors++;
         continue;
       }
-      console.log(`Scanning folder: ${folder.path} (ID: ${folder.id})`);
+      console.log(`Scanning folder: ${folder.path} (ID: ${folder.mediaFolderId})`);
       try {
         // Call the scanLibrary function
-        await scanLibrary(folder.id, folder.path);
+        await scanLibrary(folder.mediaFolderId, folder.path);
         console.log(`Successfully scanned folder: ${folder.path}`);
         totalScanned++;
       } catch (error: any) {

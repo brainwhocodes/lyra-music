@@ -9,35 +9,34 @@ const ArtistDetailsSchema = z.object({
   id: z.number(),
   name: z.string(),
   albums: z.array(z.object({
-    id: z.number(),
+    albumId: z.string(),
     title: z.string(),
     year: z.number().nullable(),
-    cover_path: z.string().nullable(),
-    artist_id: z.number() // Keep artist_id for consistency
+    coverPath: z.string().nullable(),
+    artistId: z.number() // Keep artist_id for consistency
   }))
 });
 
 export default defineEventHandler(async (event: H3Event) => {
   const artistIdParam = event.context.params?.id;
 
-  if (!artistIdParam || isNaN(parseInt(artistIdParam))) {
+  if (!artistIdParam) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Valid Artist ID is required',
     });
   }
 
-  const artistId = parseInt(artistIdParam);
-
+  const artistId = artistIdParam;
   // Fetch artist details
   let artistData: any;
   try {
     artistData = await db.select({
-        id: artists.id,
+        artistId: artists.artistId,
         name: artists.name
       })
       .from(artists)
-      .where(eq(artists.id, artistId))
+      .where(eq(artists.artistId, artistId))
       .get();
 
   } catch (dbError) {
@@ -59,7 +58,7 @@ export default defineEventHandler(async (event: H3Event) => {
   let albumsData: any[];
   try {
      albumsData = await db.select({
-        id: albums.id,
+        albumId: albums.albumId,
         title: albums.title,
         year: albums.year,
         cover_path: albums.coverPath, // Adjust column name
@@ -79,7 +78,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
   // Combine and format the response
   const result = {
-    id: artistData.id,
+    artistId: artistData.artistId,
     name: artistData.name,
     albums: albumsData ?? []
   };

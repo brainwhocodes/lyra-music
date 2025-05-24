@@ -1,72 +1,66 @@
-import { z } from 'zod'
-import { db } from '~/server/db'
-import { users } from '~/server/db/schema'
-import { eq } from 'drizzle-orm'
-import { hashPassword } from '~/server/utils/auth'
-
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(100)
-})
-
-type RegisterRequest = z.infer<typeof registerSchema>
+import { defineEventHandler, readBody, createError, setCookie } from 'h3';
+import { v7 as uuidv7 } from 'uuid';
+import { db } from '~/server/db';
+import { users } from '~/server/db/schema';
+import { hashPassword, generateToken } from '~/server/utils/auth';
+import { eq } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
-  // Parse and validate request body
-  const body = await readBody<RegisterRequest>(event)
-  const result = registerSchema.safeParse(body)
-  
-  if (!result.success) {
-    throw createError({
-      statusCode: 400,
-      message: 'Invalid input',
-      data: result.error.issues
-    })
-  }
-
-  const { email, password } = result.data
-
   try {
-    // Check if user already exists
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .get()
+    // Get request body
+    const { email, password, name } = await readBody(event);
 
+    // Validate input
+    if (!email || !password || !name) {
+      throw createError({
+        statusCode: 400,
+        message: 'Email, password, and name are required'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await db.select().from(users).where(eq(users.email, email)).get();
     if (existingUser) {
       throw createError({
-        statusCode: 409,
-        message: 'Email already registered'
-      })
+        statusCode: 400,
+        message: 'User with this email already exists'
+      });
     }
 
-    // Hash password with scrypt
-    const passwordHash = await hashPassword(password)
+    // Hash password
+    const hashedPassword = await hashPassword(password);
 
-    // Create new user
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        email,
-        passwordHash
-      })
-      .returning()
-
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      createdAt: newUser.createdAt
-    }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
+    // Create user
+    const now = Date.now();
     
-    console.error('Registration error:', error)
+    const [user] = await db.insert(users).values({
+      userId: uuidv7(),
+      email,
+      passwordHash: hashedPassword,
+      name,
+      createdAt: new Date(now),
+    }).returning();
+
+    // Generate JWT token
+    const token = generateToken({ userId: user.userId, name, email });
+
+    // Set cookie
+    setCookie(event, 'auth_token', token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/'
+    });
+
+    // Return user data (without password)
+    return {
+      id: user.userId,
+      email: user.email,
+      name: user.name,
+    };
+  } catch (error: any) {
     throw createError({
-      statusCode: 500,
-      message: 'Failed to create user'
-    })
+      statusCode: error.statusCode || 500,
+      message: error.message || 'Server error during registration'
+    });
   }
-})
+});

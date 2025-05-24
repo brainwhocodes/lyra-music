@@ -4,7 +4,7 @@ import type { Album } from '~/types/album';
 
 const route = useRoute();
 const playerStore = usePlayerStore();
-const albumId = computed(() => parseInt(route.params.id as string));
+const albumId = computed(() => route.params.id as string);
 
 // Apply the sidebar layout
 definePageMeta({
@@ -41,12 +41,12 @@ function getCoverArtUrl(artPath: string | null): string {
     return artPath.replace('\\', '/').replace('/public', ''); // Placeholder
   }
   // Return a default placeholder image if artPath is null
-  return '/images/icons/placeholder-music.svg';
+  return '/images/covers/default-album-art.webp';
 }
 
 // --- Check if this album is currently loaded ---
 const isCurrentAlbumLoaded = computed(() => {
-  return album.value?.id === playerStore.currentTrack?.albumId;
+  return album.value?.albumId === playerStore.currentTrack?.albumId;
 });
 
 // --- Click handler for the main cover button ---
@@ -57,7 +57,7 @@ const playAlbum = (): void => {
   const track = album.value.tracks[trackIndex];
   
   // If the clicked track is ALREADY the current track in the player, just toggle play/pause
-  if (playerStore.currentTrack?.id === track.id) {
+  if (playerStore.currentTrack?.trackId === track.trackId) {
     playerStore.togglePlayPause();
     return;
   }
@@ -79,7 +79,7 @@ const playTrack = (trackIndex: number): void => {
   const track = album.value.tracks[trackIndex];
   
   // If the clicked track is ALREADY the current track in the player, just toggle play/pause
-  if (playerStore.currentTrack?.id === track.id) {
+  if (playerStore.currentTrack?.trackId === track.trackId) {
     playerStore.togglePlayPause();
     return;
   }
@@ -166,16 +166,16 @@ useHead(() => ({
             <tbody>
               <tr 
                 v-for="(track, index) in album.tracks" 
-                :key="track.id"
+                :key="track.trackId"
                 class="hover:bg-base-200 group cursor-pointer"
-                :class="{'text-primary font-semibold bg-base-300': playerStore.currentTrack?.id === track.id }"
+                :class="{'text-primary font-semibold bg-base-300': playerStore.currentTrack?.trackId === track.trackId }"
                 @click="playTrack(index)" 
               >
                 <td class="w-12 text-center text-sm text-neutral-content">{{ index + 1 }}</td>
                 <td class="w-12 text-center">
                     <!-- Show pause icon if this track is playing -->
                     <Icon 
-                        v-if="playerStore.currentTrack?.id === track.id && playerStore.isPlaying"
+                        v-if="playerStore.currentTrack?.trackId === track.trackId && playerStore.isPlaying"
                         name="material-symbols:pause-rounded"
                         class="w-5 h-5 text-primary"
                     />
@@ -184,7 +184,7 @@ useHead(() => ({
                         v-else
                         name="material-symbols:play-arrow-rounded"
                         class="w-5 h-5 text-base-content opacity-0 group-hover:opacity-100"
-                        :class="{'opacity-100': playerStore.currentTrack?.id === track.id }" 
+                        :class="{'opacity-100': playerStore.currentTrack?.trackId === track.trackId }" 
                     />
                 </td>
                 <td>{{ track.title }}</td>

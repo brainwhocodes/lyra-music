@@ -2,7 +2,7 @@ import { H3Event } from 'h3';
 import { z } from 'zod';
 import { db } from '~/server/db'; 
 import { albums, artists, tracks } from '~/server/db/schema'; 
-import { eq, asc, inArray, isNotNull, ne, and, sql, distinct } from 'drizzle-orm';
+import { eq, asc, inArray, isNotNull, ne, and, sql } from 'drizzle-orm';
 
 // Define the expected structure for the response
 const GenreDetailsSchema = z.object({
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
   // Fetch albums associated with the genre
   // Step 1: Find distinct album IDs from tracks matching the genre
-  let albumIds: number[];
+  let albumIds: string[];
   try {
     const albumIdObjects = await db.selectDistinct({
         albumId: tracks.albumId
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event: H3Event) => {
       .all(); // Use .all() for better-sqlite3
 
     // Extract the IDs
-    albumIds = albumIdObjects.map(item => item.albumId).filter(id => id !== null) as number[];
+    albumIds = albumIdObjects.map(item => item.albumId).filter(id => id !== null) as string[];
 
   } catch (dbError) {
     console.error(`Error fetching album IDs for genre '${genreName}':`, dbError);
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event: H3Event) => {
   if (albumIds.length > 0) {
     try {
       albumsData = await db.select({
-          id: albums.id,
+          albumId: albums.albumId,
           title: albums.title,
           year: albums.year,
           cover_path: albums.coverPath, // Adjust column name
@@ -72,8 +72,8 @@ export default defineEventHandler(async (event: H3Event) => {
           artist_name: artists.name
         })
         .from(albums)
-        .leftJoin(artists, eq(albums.artistId, artists.id))
-        .where(inArray(albums.id, albumIds))
+        .leftJoin(artists, eq(albums.artistId, artists.artistId))
+        .where(inArray(albums.albumId, albumIds))
         .orderBy(asc(albums.year)); // Order albums by year
     } catch (dbError) {
       console.error(`Error fetching album details for genre '${genreName}':`, dbError);

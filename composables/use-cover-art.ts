@@ -12,7 +12,7 @@ export const useCoverArt = () => {
    * @returns A string representing the URL for the cover art, or a placeholder if artPath is invalid.
    */
   const getCoverArtUrl = (artPath: string | null | undefined): string => {
-    const placeholder = '/images/icons/placeholder-music.svg'; // Default placeholder image
+    const placeholder = '/images/covers/default-album-art.webp'; // Default placeholder image
 
     if (!artPath) {
       console.warn('[useCoverArt] artPath is null or undefined, returning placeholder.');

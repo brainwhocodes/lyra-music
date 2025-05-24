@@ -1,18 +1,18 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c6c3d24f-7eab-4711-a002-1a6b75a03761",
+  "id": "79d03793-a620-47e4-890b-a1ddede1bc33",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "albums": {
       "name": "albums",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "albumId": {
+          "name": "albumId",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "title": {
           "name": "title",
@@ -23,7 +23,7 @@
         },
         "artist_id": {
           "name": "artist_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -35,8 +35,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "art_path": {
-          "name": "art_path",
+        "cover_path": {
+          "name": "cover_path",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -49,19 +49,27 @@
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "albums_artist_id_artists_id_fk": {
-          "name": "albums_artist_id_artists_id_fk",
+        "albums_artist_id_artists_artistId_fk": {
+          "name": "albums_artist_id_artists_artistId_fk",
           "tableFrom": "albums",
           "tableTo": "artists",
           "columnsFrom": [
             "artist_id"
           ],
           "columnsTo": [
-            "id"
+            "artistId"
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -74,12 +82,12 @@
     "artists": {
       "name": "artists",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "artistId": {
+          "name": "artistId",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "name": {
           "name": "name",
@@ -90,6 +98,14 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -106,56 +122,16 @@
     "media_folders": {
       "name": "media_folders",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "path": {
-          "name": "path",
+        "media_folders_id": {
+          "name": "media_folders_id",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "media_folders_path_unique": {
-          "name": "media_folders_path_unique",
-          "columns": [
-            "path"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "media_libraries": {
-      "name": "media_libraries",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -181,19 +157,35 @@
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "media_folders_path_unique": {
+          "name": "media_folders_path_unique",
+          "columns": [
+            "path"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "media_libraries_user_id_users_id_fk": {
-          "name": "media_libraries_user_id_users_id_fk",
-          "tableFrom": "media_libraries",
+        "media_folders_user_id_users_userId_fk": {
+          "name": "media_folders_user_id_users_userId_fk",
+          "tableFrom": "media_folders",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
           "columnsTo": [
-            "id"
+            "userId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -206,16 +198,23 @@
     "playlist_tracks": {
       "name": "playlist_tracks",
       "columns": {
+        "playlist_tracks_id": {
+          "name": "playlist_tracks_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "playlist_id": {
           "name": "playlist_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "track_id": {
           "name": "track_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -234,62 +233,62 @@
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "playlist_tracks_playlist_id_playlists_id_fk": {
-          "name": "playlist_tracks_playlist_id_playlists_id_fk",
+        "playlist_tracks_playlist_id_playlists_playlist_id_fk": {
+          "name": "playlist_tracks_playlist_id_playlists_playlist_id_fk",
           "tableFrom": "playlist_tracks",
           "tableTo": "playlists",
           "columnsFrom": [
             "playlist_id"
           ],
           "columnsTo": [
-            "id"
+            "playlist_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "playlist_tracks_track_id_tracks_id_fk": {
-          "name": "playlist_tracks_track_id_tracks_id_fk",
+        "playlist_tracks_track_id_tracks_trackId_fk": {
+          "name": "playlist_tracks_track_id_tracks_trackId_fk",
           "tableFrom": "playlist_tracks",
           "tableTo": "tracks",
           "columnsFrom": [
             "track_id"
           ],
           "columnsTo": [
-            "id"
+            "trackId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "playlist_tracks_playlist_id_track_id_pk": {
-          "columns": [
-            "playlist_id",
-            "track_id"
-          ],
-          "name": "playlist_tracks_playlist_id_track_id_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
     "playlists": {
       "name": "playlists",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "playlist_id": {
+          "name": "playlist_id",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -308,19 +307,27 @@
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "playlists_user_id_users_id_fk": {
-          "name": "playlists_user_id_users_id_fk",
+        "playlists_user_id_users_userId_fk": {
+          "name": "playlists_user_id_users_userId_fk",
           "tableFrom": "playlists",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
           "columnsTo": [
-            "id"
+            "userId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -333,12 +340,12 @@
     "tracks": {
       "name": "tracks",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "trackId": {
+          "name": "trackId",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "title": {
           "name": "title",
@@ -347,16 +354,16 @@
           "notNull": true,
           "autoincrement": false
         },
-        "album_id": {
-          "name": "album_id",
-          "type": "integer",
+        "artist_id": {
+          "name": "artist_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "artist_id": {
-          "name": "artist_id",
-          "type": "integer",
+        "album_id": {
+          "name": "album_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -368,8 +375,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "duration": {
-          "name": "duration",
+        "year": {
+          "name": "year",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -382,11 +389,18 @@
           "notNull": false,
           "autoincrement": false
         },
-        "path": {
-          "name": "path",
-          "type": "text",
+        "disk_number": {
+          "name": "disk_number",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "file_path": {
@@ -403,16 +417,17 @@
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {
-        "tracks_path_unique": {
-          "name": "tracks_path_unique",
-          "columns": [
-            "path"
-          ],
-          "isUnique": true
-        },
         "tracks_file_path_unique": {
           "name": "tracks_file_path_unique",
           "columns": [
@@ -422,30 +437,30 @@
         }
       },
       "foreignKeys": {
-        "tracks_album_id_albums_id_fk": {
-          "name": "tracks_album_id_albums_id_fk",
-          "tableFrom": "tracks",
-          "tableTo": "albums",
-          "columnsFrom": [
-            "album_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "tracks_artist_id_artists_id_fk": {
-          "name": "tracks_artist_id_artists_id_fk",
+        "tracks_artist_id_artists_artistId_fk": {
+          "name": "tracks_artist_id_artists_artistId_fk",
           "tableFrom": "tracks",
           "tableTo": "artists",
           "columnsFrom": [
             "artist_id"
           ],
           "columnsTo": [
-            "id"
+            "artistId"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tracks_album_id_albums_albumId_fk": {
+          "name": "tracks_album_id_albums_albumId_fk",
+          "tableFrom": "tracks",
+          "tableTo": "albums",
+          "columnsFrom": [
+            "album_id"
+          ],
+          "columnsTo": [
+            "albumId"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -456,12 +471,19 @@
     "users": {
       "name": "users",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
+        "userId": {
+          "name": "userId",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "email": {
           "name": "email",
@@ -479,6 +501,14 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

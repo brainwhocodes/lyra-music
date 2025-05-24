@@ -3,7 +3,7 @@ import { createError, readBody, defineEventHandler, setCookie } from 'h3'
 import { db } from '~/server/db'
 import { users } from '~/server/db/schema'
 import { eq } from 'drizzle-orm'
-import { verifyPassword, generateToken, type UserPayload } from '~/server/utils/auth';
+import { verifyPassword, generateToken } from '~/server/utils/auth';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -47,14 +47,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Define payload for the token
-  const payload: UserPayload = {
-    userId: user.id,
-    email: user.email
-  };
-
   // Generate JWT token using the utility function
-  const token = generateToken(payload);
+  const token = generateToken({ userId: user.userId, name: user.name, email: user.email });
 
   // Set the token in an HttpOnly cookie
   setCookie(event, 'auth_token', token, {
@@ -66,10 +60,7 @@ export default defineEventHandler(async (event) => {
   });
 
   return {
-    user: {
-      id: user.id,
-      email: user.email,
-      createdAt: user.createdAt
-    }
+    token,
+    expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(),
   }
 })

@@ -12,7 +12,7 @@ const statAsync = promisify(stat);
 
 // Schema to validate the trackId path parameter
 const paramsSchema = z.object({
-  trackId: z.coerce.number().int().positive()
+  trackId: z.coerce.string()
 });
 
 // Simple mime type mapping based on extension
@@ -61,7 +61,7 @@ export default defineEventHandler(async (event: H3Event) => {
                 filePath: tracks.filePath
             })
             .from(tracks)
-            .where(eq(tracks.id, trackId))
+            .where(eq(tracks.trackId, trackId))
             .limit(1);
 
         if (trackResult.length === 0 || !trackResult[0]?.filePath) {
@@ -102,7 +102,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
         // 4. Set headers
         setResponseHeader(event, 'Content-Type', mimeType);
-        setResponseHeader(event, 'Content-Length', fileStats.size.toString());
+        setResponseHeader(event, 'Content-Length', fileStats.size);
         setResponseHeader(event, 'Accept-Ranges', 'bytes'); // Indicate range requests are supported (though not fully handled yet)
 
         // 5. Create and return stream

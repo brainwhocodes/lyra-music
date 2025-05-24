@@ -12,16 +12,16 @@ export default defineEventHandler(async (event) => {
 
   try {
     let dbQuery = db.selectDistinct({
-      id: albums.id,
+      albumId: albums.albumId,
       title: albums.title,
-      coverPath: albums.artPath,
+      coverPath: albums.coverPath,
       createdAt: albums.createdAt,
-      artistId: artists.id,
+      artistId: artists.artistId,
       artistName: artists.name
     })
       .from(albums)
-      .leftJoin(artists, eq(albums.artistId, artists.id))
-      .leftJoin(tracks, eq(albums.id, tracks.albumId));
+      .leftJoin(artists, eq(albums.artistId, artists.artistId))
+      .leftJoin(tracks, eq(albums.albumId, tracks.albumId));
 
     const conditions: SQL[] = [];
     if (titleFilter) {

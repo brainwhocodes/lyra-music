@@ -66,19 +66,39 @@
 
           <!-- Add Folder Input -->
           <div class="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Enter new folder path (e.g., C:\\Music)"
-              class="input input-bordered w-full max-w-md"
-              v-model="newFolderPath"
-              @keyup.enter="addFolder"
-              :disabled="isLoading"
-            />
-            <button class="btn btn-secondary" @click="addFolder" :disabled="!newFolderPath.trim() || isLoading">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                placeholder="Enter new folder path (e.g., C:\\Music)"
+                class="input input-bordered w-full pr-10"
+                v-model="newFolderPath"
+                @keyup.enter="addFolder"
+                :disabled="isLoading"
+                id="folder-path-input"
+              />
+              <button 
+                class="btn btn-square btn-sm absolute right-2 top-1/2 -translate-y-1/2" 
+                @click="browseFolders"
+                :disabled="isLoading"
+                title="Browse for folder"
+              >
+                <Icon name="material-symbols:folder-open-outline-rounded" class="w-4 h-4" />
+              </button>
+            </div>
+            <button class="btn btn-secondary whitespace-nowrap" @click="addFolder" :disabled="!newFolderPath.trim() || isLoading">
               <Icon name="material-symbols:add-circle-outline-rounded" class="w-4 h-4 mr-1" /> Add Folder
             </button>
           </div>
-          <p class="text-xs text-base-content/60 mt-1">Enter the full path to the folder you want to add to the library.</p>
+          <p class="text-xs text-base-content/60 mt-1">Enter the full path to the folder you want to add to the library or click the folder icon to browse.</p>
+          
+          <!-- Hidden file input for folder selection -->
+          <input
+            type="file"
+            ref="folderInput"
+            accept="audio/*"
+            class="hidden"
+            @change="handleFolderSelect"
+          />
 
         </div>
       </div>
@@ -163,7 +183,16 @@ const addFolder = async (): Promise<void> => {
     }
   } catch (error: any) {
     console.error('Error adding folder:', error);
-    errorMessage.value = error.data?.message || error.data?.statusMessage || 'An error occurred while adding the folder.';
+    // Extract the most specific error message possible
+    if (error.data?.statusMessage) {
+      errorMessage.value = `Failed to add media folder: ${error.data.statusMessage}`;
+    } else if (error.data?.message) {
+      errorMessage.value = `Failed to add media folder: ${error.data.message}`;
+    } else if (error.message) {
+      errorMessage.value = `Failed to add media folder: ${error.message}`;
+    } else {
+      errorMessage.value = 'Failed to add media folder: Unknown error occurred';
+    }
   } finally {
     isLoading.value = false;
     // Clear success message after a delay
@@ -235,6 +264,49 @@ const scanFolders = async (): Promise<void> => {
     isLoading.value = false;
     // Clear success message after a delay
     if(successMessage.value) setTimeout(() => successMessage.value = null, 5000); // Longer delay for scan message
+  }
+};
+
+// Reference to the hidden file input element
+const folderInput = ref<HTMLInputElement | null>(null);
+
+// Browse folders function - triggers the hidden file input
+const browseFolders = (): void => {
+  // Trigger the hidden file input click event
+  if (folderInput.value) {
+    folderInput.value.click();
+  }
+};
+
+// Handle folder selection
+const handleFolderSelect = (event: Event): void => {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    // Get the first file
+    const file = input.files[0];
+    
+    // Extract the directory path by removing the filename from the path
+    // Note: Due to browser security, this will be a relative path or partial path
+    // The user may need to manually edit it to get the full path
+    let path = file.webkitRelativePath || file.name;
+    
+    // If we have a relative path with directories, extract the directory part
+    if (path.includes('/')) {
+      // Remove the filename, keep only the directory path
+      path = path.substring(0, path.lastIndexOf('/'));
+    }
+    
+    // If we have a Windows-style path
+    if (path.includes('\\')) {
+      path = path.substring(0, path.lastIndexOf('\\'));
+    }
+    
+    // Set the path in the input field
+    // The user may need to edit this to get the full correct path
+    newFolderPath.value = path;
+    
+    // Reset the input to allow selecting the same folder again
+    input.value = '';
   }
 };
 
