@@ -120,7 +120,7 @@ async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
 
   try {
     const apiResponse = await $fetch<any>(`/api/albums/${id}`); 
-
+    await new Promise(resolve => setTimeout(resolve, 1000));
     if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
       const tracksForPlayer: Track[] = apiResponse.tracks.map((t: any) => ({
         trackId: t.trackId, 
@@ -165,6 +165,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
     if (playerStore.isPlaying && playerStore.currentTrack?.albumId !== albumId) {
       playerStore.togglePlayPause(); // Pause if a *different* album is playing
     }
+    // Add a 1-second delay before fetching
     const newlyFetchedAlbum = await fetchAlbumDetailsById(albumId);
     currentAlbum.value = newlyFetchedAlbum; // Cache the newly fetched album details
     albumDataForPlayback = newlyFetchedAlbum;

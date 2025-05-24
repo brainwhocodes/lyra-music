@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
   const artistNameFilter = query.artistName as string | undefined;
   const albumTitleFilter = query.albumTitle as string | undefined;
   const genreFilter = query.genre as string | undefined;
+  const albumIdFilter = query.albumId as string | undefined;
 
   // Define the selection structure
   const selection = {
@@ -56,6 +57,11 @@ export default defineEventHandler(async (event) => {
     // Need the join to artists table
      // Check if artist name is not null before applying like
      conditions.push(like(artists.name, `%${artistNameFilter}%`));
+  }
+
+  // Add album ID filtering (exact match)
+  if (albumIdFilter) {
+    conditions.push(eq(tracks.albumId, albumIdFilter));
   }
 
   // Apply conditions if any exist

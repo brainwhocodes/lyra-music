@@ -28,7 +28,12 @@ const formatDuration = (seconds: number): string => {
 
 // No need for useHead in a component like this
 // useHead({ title: 'Current Queue' });
-
+function truncateString(str: string, maxLength: number): string {
+  if (str.length > maxLength) {
+    return str.substring(0, maxLength) + '...';
+  }
+  return str;
+}
 </script>
 
 <template>
@@ -39,6 +44,7 @@ const formatDuration = (seconds: number): string => {
       <div
         v-for="(track, index) in queue"
         :key="`${track.trackId}-${index}`"
+        :title="track.title+ ' - ' + track.artistName"
         class="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer group"
         :class="{'bg-base-300 text-primary font-semibold': index === currentIndex}"
         @click="handleClickOnQueueItem(index)"
@@ -69,13 +75,13 @@ const formatDuration = (seconds: number): string => {
           <Icon name="material-symbols:music-note" class="w-5 h-5 text-base-content/50" />
         </div>
         <div class="flex-grow min-w-0">
-          <div class="font-medium text-sm truncate" :title="track.title">{{ track.title }}</div>
+          <div class="font-medium text-sm truncate" :title="track.title">{{ truncateString(track.title ?? 'Unknown Track', 10) }}</div>
           <div 
             class="text-xs truncate"
             :class="index === currentIndex ? 'text-primary/70' : 'text-neutral-content/70'"
             :title="track.artistName"
           >
-            {{ track.artistName }}
+            {{ truncateString(track.artistName ?? 'Unknown Artist', 10) }}
           </div>
         </div>
         <div class="text-xs ml-2 shrink-0" :class="index === currentIndex ? 'text-primary/90' : 'text-neutral-content/70'">
@@ -89,6 +95,7 @@ const formatDuration = (seconds: number): string => {
 
   </div>
 </template>
+
 
 <style scoped>
 /* Adjust sidebar height if you have a fixed header/navbar 

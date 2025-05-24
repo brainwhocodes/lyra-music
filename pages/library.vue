@@ -180,13 +180,40 @@ const router = useRouter(); // Initialize router
 
 // --- Play Album Functionality ---
 const playAlbum = async (albumId: string): Promise<void> => {
+  // Case 1: The clicked album is already the current one in the player.
+  // This means its tracks are in the queue, and one of them is currentTrack.
+  if (playerStore.currentTrack?.albumId === albumId) {
+    playerStore.togglePlayPause(); // Just toggle play/pause for the current track.
+    return;
+  }
+
+  // Case 2: The clicked album's tracks are already loaded in the queue,
+  // but it's not the currentTrack's album.
+  // We want to play the *first* track of this album from the existing queue.
+  if (playerStore.queue.length > 0 && playerStore.queue[0].albumId === albumId) {
+    // If the currentTrack is null or from a different album, but the queue is for this album,
+    // play the first track from the queue.
+    if (!playerStore.currentTrack || playerStore.currentTrack.albumId !== albumId) {
+        playerStore.playFromQueue(0); 
+    } else {
+        // This case implies currentTrack.albumId IS albumId, which should be caught by Case 1.
+        // However, as a fallback or if logic gets more complex, explicitly toggle.
+        playerStore.togglePlayPause();
+    }
+    return;
+  }
+
+  // Case 3: The album is not loaded in the player (neither currentTrack nor queue matches).
+  // Proceed to fetch, load queue, and play.
   albumIdLoading.value = albumId;
   currentAlbumLoading.value = true;
 
-  // Find the album from the current list to get its details, including coverPath
-  const selectedAlbum = albums.value?.find(album => album.albumId === albumId);
+  // Add a 2-second delay before fetching
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
-  if (!selectedAlbum) {
+  // Find the album from the main list (used for quick display, not for player data if fetching)
+  const albumListItem = albums.value?.find(album => album.albumId === albumId);
+  if (!albumListItem) {
     console.error(`Album with ID ${albumId} not found in the current list.`);
     albumIdLoading.value = null;
     currentAlbumLoading.value = false;
@@ -194,11 +221,10 @@ const playAlbum = async (albumId: string): Promise<void> => {
   }
 
   try {
-    // Fetch tracks for the selected album
-    // Note: The /api/tracks endpoint might return a simpler track structure
-    const rawTracks = await $fetch<any[]>(`/api/tracks?albumId=${albumId}`);
+    // Fetch full album details including tracks directly from the album API endpoint
+    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`);
 
-    if (!rawTracks || rawTracks.length === 0) {
+    if (!albumDetails || !albumDetails.tracks || albumDetails.tracks.length === 0) {
       console.warn(`No tracks found for album ${albumId}`);
       playerStore.loadQueue([]); // Clear queue or handle as appropriate
       albumIdLoading.value = null;
@@ -206,29 +232,24 @@ const playAlbum = async (albumId: string): Promise<void> => {
       return;
     }
 
-    // Augment tracks with album details like artistName, albumTitle, and coverPath
-    const tracksForQueue: Track[] = rawTracks.map(track => ({
-      trackId: track.id,
+    // Map the tracks from the album details to the format expected by the player
+    const tracksForQueue: Track[] = albumDetails.tracks.map((track: any) => ({
+      trackId: track.trackId,
       title: track.title ?? 'Unknown Track',
-      artistName: selectedAlbum.artistName ?? 'Unknown Artist',
-      albumTitle: selectedAlbum.title ?? 'Unknown Album',
-      filePath: track.filePath, // Assuming filePath is directly on the raw track object
+      artistName: track.artistName ?? albumDetails.artistName ?? 'Unknown Artist',
+      albumTitle: track.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+      filePath: track.filePath,
       duration: track.duration ?? 0,
-      albumId: selectedAlbum.albumId,
+      albumId: albumDetails.albumId,
       trackNumber: track.trackNumber ?? null,
-      artistId: selectedAlbum.artistId ?? null,
-      coverPath: selectedAlbum.coverPath, // Add the coverPath from the album
+      artistId: track.artistId ?? albumDetails.artistId ?? '',
+      coverPath: albumDetails.coverPath,
     }));
 
-    // If the current playing track is from the same album, just toggle play/pause
-    // Otherwise, load the new queue and play from the beginning.
-    const trackToPlay = tracksForQueue[0];
-    if (playerStore.currentTrack?.albumId === selectedAlbum.albumId && playerStore.currentTrack?.trackId === trackToPlay.trackId) {
-      playerStore.togglePlayPause();
-    } else {
-      playerStore.loadQueue(tracksForQueue);
-      playerStore.playFromQueue(0); // Play the first track
-    }
+    // New album data fetched, load it into the queue and play the first track.
+    playerStore.loadQueue(tracksForQueue);
+    playerStore.playFromQueue(0);
+
   } catch (err) {
     console.error(`Error fetching or playing album ${albumId}:`, err);
     // Optionally, show a user-facing error notification
