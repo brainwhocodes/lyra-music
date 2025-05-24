@@ -349,7 +349,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
 import { usePlayerStore, type Track } from '~/stores/player';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -597,7 +596,7 @@ watch(trackSearchQuery, () => {
 const selectTrackToAdd = (track: Track) => {
   if (selectedTrackIds.value.includes(track.trackId)) {
     // Remove from selection
-    selectedTrackIds.value = selectedTrackIds.value.filter(id => id !== track.trackId);
+    selectedTrackIds.value = selectedTrackIds.value.filter((id: string) => id !== track.trackId);
   } else {
     // Add to selection
     selectedTrackIds.value.push(track.trackId);
@@ -749,7 +748,7 @@ const exportPlaylist = () => {
   // Create M3U content
   const m3uContent = [
     '#EXTM3U',
-    ...playlist.value.tracks.map(track => {
+    ...playlist.value.tracks.map((track: Track) => {
       return [
         `#EXTINF:${Math.round(track.duration)},${track.artistName} - ${track.title}`,
         track.filePath
@@ -786,7 +785,7 @@ const formatDuration = (seconds: number): string => {
 const calculateTotalDuration = (): number => {
   if (!playlist.value?.tracks) return 0;
   
-  return playlist.value.tracks.reduce((total, track) => total + (track.duration || 0), 0);
+  return playlist.value.tracks.reduce((total: number, track: Track) => total + (track.duration || 0), 0);
 };
 
 // Lifecycle

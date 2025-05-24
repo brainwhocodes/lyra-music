@@ -4,11 +4,20 @@ import { db } from '~/server/db'
 import { albums, artists, tracks } from '~/server/db/schema'
 import { eq, asc, sql, like, SQL, and } from 'drizzle-orm'
 import { useCoverArt } from '~/composables/use-cover-art';
+import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const titleFilter = query.title as string | undefined;
   const genreFilter = query.genre as string | undefined;
+
+  const user = getUserFromEvent(event);
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized',
+    });
+  }
 
   try {
     let dbQuery = db.selectDistinct({
@@ -24,6 +33,8 @@ export default defineEventHandler(async (event) => {
       .leftJoin(tracks, eq(albums.albumId, tracks.albumId));
 
     const conditions: SQL[] = [];
+    conditions.push(eq(albums.userId, user.userId));
+
     if (titleFilter) {
       conditions.push(like(albums.title, `%${titleFilter}%`));
     }
@@ -42,7 +53,6 @@ export default defineEventHandler(async (event) => {
     const { getCoverArtUrl } = useCoverArt();
     const albumsWithFormattedCovers = filteredAlbums.map(album => ({
       ...album,
-      // Ensure coverPath is correctly named if it's 'artPath' from DB aliased as 'coverPath'
       coverPath: getCoverArtUrl(album.coverPath)
     }));
 

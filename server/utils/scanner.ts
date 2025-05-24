@@ -3,7 +3,7 @@ import path from 'path';
 import * as mm from 'music-metadata';
 import crypto from 'crypto'; // Import crypto for hashing
 import { db } from '~/server/db';
-import { artists, albums, tracks, mediaFolders } from '~/server/db/schema';
+import { artists, albums, tracks, userArtists } from '~/server/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 // Define supported audio file extensions
@@ -95,9 +95,10 @@ async function saveArtToCacheAndGetPath(
  * Scans a specific media library directory, extracts metadata, and updates the database.
  * @param libraryId - The ID of the library being scanned.
  * @param libraryPath - The root path of the library directory.
+ * @param userId - The ID of the user who owns this library.
  */
-export async function scanLibrary(libraryId: string, libraryPath: string): Promise<void> {
-  console.log(`Starting scan for library ID: ${libraryId}, Path: ${libraryPath}`);
+export async function scanLibrary(libraryId: string, libraryPath: string, userId: string): Promise<void> {
+  console.log(`Starting scan for library ID: ${libraryId}, Path: ${libraryPath}, User ID: ${userId}`);
   let audioFilePaths: string[] = [];
   const albumsProcessedForExternalArtThisScan = new Set<string>(); // Use albumId or a unique album key (title+artist)
 
@@ -127,29 +128,49 @@ export async function scanLibrary(libraryId: string, libraryPath: string): Promi
         let finalAlbumArtPath: string | null = null;
         const currentAlbumDirectory = path.dirname(filePath);
 
-        // 1. Find or Create Artist
+        // 1. Find or Create Artist (Global) & Link to User
         let artistId: string | null = null;
         if (trackArtistName) {
           try {
-            // Check if artist already exists
+            // Check if artist already exists globally
             let [existingArtist] = await db.select({ artistId: artists.artistId }).from(artists).where(eq(artists.name, trackArtistName)).limit(1);
             
             if (existingArtist) {
               artistId = existingArtist.artistId;
-               console.log(`  Found existing artist: ${trackArtistName} (ID: ${artistId})`);
+               console.log(`  Found existing global artist: ${trackArtistName} (ID: ${artistId})`);
             } else {
-              // Insert new artist if not found
-              const [newArtist] = await db.insert(artists).values({ name: trackArtistName, artistId: uuidv7() }).returning({ artistId: artists.artistId });
-              if (newArtist) {
-                 artistId = newArtist.artistId;
-                 console.log(`  Created new artist: ${trackArtistName} (ID: ${artistId})`);
+              // Insert new global artist if not found
+              const [newArtistEntry] = await db.insert(artists).values({ name: trackArtistName, artistId: uuidv7() }).returning({ artistId: artists.artistId });
+              if (newArtistEntry) {
+                 artistId = newArtistEntry.artistId;
+                 console.log(`  Created new global artist: ${trackArtistName} (ID: ${artistId})`);
               } else {
-                console.error(`  Failed to insert artist: ${trackArtistName}`);
+                console.error(`  Failed to insert global artist: ${trackArtistName}`);
                 // Decide how to handle - skip track? Use a default? For now, log and continue
               }
             }
+
+            // Ensure user-artist link exists
+            if (artistId && userId) {
+              const [existingUserArtistLink] = await db.select()
+                .from(userArtists)
+                .where(and(eq(userArtists.userId, userId), eq(userArtists.artistId, artistId)))
+                .limit(1);
+
+              if (!existingUserArtistLink) {
+                await db.insert(userArtists).values({
+                  userId: userId,
+                  artistId: artistId,
+                  userArtistId: uuidv7() // Or let DB handle if it's auto-increment/default
+                });
+                console.log(`  Linked user ${userId} to artist ${artistId} (${trackArtistName})`);
+              } else {
+                console.log(`  User ${userId} already linked to artist ${artistId} (${trackArtistName})`);
+              }
+            }
+
           } catch (dbError: any) {
-            console.error(`  Database error finding/creating artist ${trackArtistName}: ${dbError.message}`);
+            console.error(`  Database error finding/creating artist ${trackArtistName} or user-artist link: ${dbError.message}`);
             // Continue processing? Skip track?
           }
         } else {
@@ -197,55 +218,50 @@ export async function scanLibrary(libraryId: string, libraryPath: string): Promi
         let albumId: string | null = null;
         if (trackAlbumTitle) {
           try {
-            // Check if album exists (match title AND artistId)
+            // Check if album exists (match title AND artistId AND userId)
             let [existingAlbum] = await db
               .select({ albumId: albums.albumId, coverPath: albums.coverPath })
               .from(albums)
               .where(and(
                 eq(albums.title, trackAlbumTitle),
-                // Use eq or isNull based on whether artistId was found
-                artistId ? eq(albums.artistId, artistId) : sql`${albums.artistId} IS NULL`
+                artistId ? eq(albums.artistId, artistId) : sql`${albums.artistId} IS NULL`,
+                eq(albums.userId, userId) // Added userId to condition
               ))
               .limit(1);
 
             if (existingAlbum) {
               albumId = existingAlbum.albumId;
-              console.log(`  Found existing album: ${trackAlbumTitle} (ID: ${albumId})`);
-              if (finalAlbumArtPath) { // New art was found (external or embedded)
-                if (existingAlbum.coverPath !== finalAlbumArtPath) {
-                  console.log(`  Updating coverPath for existing album ${albumId} from "${existingAlbum.coverPath}" to "${finalAlbumArtPath}"`);
-                  await db.update(albums).set({ coverPath: finalAlbumArtPath }).where(eq(albums.albumId, albumId));
-                }
-              } else { // No new art found for this track/album folder check
-                if (existingAlbum.coverPath) { // DB has an art path, let's check if its file exists
-                  const existingArtFileOnDisk = path.join(COVERS_DIR, path.basename(existingAlbum.coverPath));
-                  if (!await fs.pathExists(existingArtFileOnDisk)) {
-                    console.warn(`  Album ${albumId} (${trackAlbumTitle}) has coverPath "${existingAlbum.coverPath}" in DB, but file not found. Clearing coverPath.`);
-                    await db.update(albums).set({ coverPath: null }).where(eq(albums.albumId, albumId));
-                  }
-                }
+              console.log(`  Found existing album: ${trackAlbumTitle} (ID: ${albumId}) for user ${userId}`);
+              if (finalAlbumArtPath && finalAlbumArtPath !== existingAlbum.coverPath) {
+                console.log(`  Updating album art for ${trackAlbumTitle} to ${finalAlbumArtPath}`);
+                await db.update(albums).set({ coverPath: finalAlbumArtPath, updatedAt: sql`CURRENT_TIMESTAMP` }).where(eq(albums.albumId, albumId));
               }
-            } else { // Create new album
+            } else {
+              // Insert new album if not found
               const [newAlbum] = await db.insert(albums).values({
-                albumId: uuidv7(),
                 title: trackAlbumTitle,
-                artistId: artistId,
+                artistId: artistId, // This can be null if artist was not found/created
+                userId: userId, // Added userId
                 year: metadata.common.year,
-                coverPath: finalAlbumArtPath // This will be the new art, or null
+                coverPath: finalAlbumArtPath,
+                albumId: uuidv7()
               }).returning({ albumId: albums.albumId });
+
               if (newAlbum) {
                 albumId = newAlbum.albumId;
-                console.log(`  Created new album: ${trackAlbumTitle} (ID: ${albumId}) with artPath: ${finalAlbumArtPath}`);
+                console.log(`  Created new album: ${trackAlbumTitle} (ID: ${albumId}) for user ${userId}`);
+              } else {
+                console.error(`  Failed to insert album: ${trackAlbumTitle} for user ${userId}`);
               }
             }
           } catch (dbError: any) {
-            console.error(`  Database error finding/creating album ${trackAlbumTitle}: ${dbError.message}`);
+            console.error(`  Database error finding/creating album ${trackAlbumTitle} for user ${userId}: ${dbError.message}`);
           }
         } else {
           console.warn(`  Album title not found in metadata for ${filePath}. Track will not be associated with an album.`);
         }
 
-        // 6. Find or Create/Update Track
+        // 6. Find or Create Track
         try {
           // Check if track with this path already exists
           let [existingTrack] = await db

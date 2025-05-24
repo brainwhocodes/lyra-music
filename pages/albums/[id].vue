@@ -3,7 +3,8 @@ import { usePlayerStore } from '~/stores/player';
 import type { Album } from '~/types/album';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
-
+import type { MessageType } from '~/types/message-type';
+import type { NotificationMessage } from '~/types/notification-message';
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
@@ -14,10 +15,10 @@ const selectedTrackForPlaylist = ref<Track | null>(null);
 const isAddToPlaylistModalOpen = ref(false);
 const openMenuForTrackId = ref<string | null>(null);
 const showAlbumMenu = ref(false);
-const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
+const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 
 // Simple notification system
-const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+const showNotification = (message: string, type: MessageType = 'info') => {
   notification.value = { message, type, visible: true };
   // Auto-hide after 3 seconds
   setTimeout(() => {
@@ -149,7 +150,7 @@ const openEditTrackModal = (track: Track): void => {
 const playerReadyTracks = computed(() => {
   if (!album.value?.tracks) return [];
   const albumArtist = album.value.artistName || 'Unknown Artist'; 
-  return album.value.tracks.map(track => ({
+  return album.value.tracks.map((track: Track) => ({
     ...track,
     artistName: track.artistName || albumArtist,
   }));

@@ -1,86 +1,87 @@
-// server/api/albums/[id].get.ts
-
 import { H3Event, defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, tracks } from '~/server/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, and } from 'drizzle-orm';
 import { useCoverArt } from '~/composables/use-cover-art';
+import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event: H3Event) => {
   const albumIdParam = event.context.params?.id;
-  
+
   if (!albumIdParam) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Valid Album ID is required',
+      statusMessage: 'Album ID is required',
+    });
+  }
+
+  const user = getUserFromEvent(event);
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized',
     });
   }
 
   const albumId = albumIdParam;
 
   try {
-    const albumData = await db.select({
-      albumId: albums.albumId,
-      title: albums.title,
-      year: albums.year,
-      coverPath: albums.coverPath,
-      artistId: albums.artistId,
-      artistName: artists.name
-    })
-    .from(albums)
-    .leftJoin(artists, eq(albums.artistId, artists.artistId))
-    .where(eq(albums.albumId, albumId))
-    .get();
+    const data = await db
+      .select({
+        albumId: albums.albumId,
+        albumTitle: albums.title,
+        albumYear: albums.year,
+        coverPath: albums.coverPath,
+        artistId: artists.artistId,
+        artistName: artists.name,
+        trackId: tracks.trackId,
+        trackTitle: tracks.title,
+        trackNumber: tracks.trackNumber,
+        trackDuration: tracks.duration,
+        trackFilePath: tracks.filePath,
+      })
+      .from(albums)
+      .leftJoin(artists, eq(albums.artistId, artists.artistId))
+      .leftJoin(tracks, eq(albums.albumId, tracks.albumId))
+      .where(and(eq(albums.albumId, albumId), eq(albums.userId, user.userId)))
+      .orderBy(asc(tracks.trackNumber))
+      .all();
 
-    // Check if album was found
-    if (!albumData) {
+    if (data.length === 0) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Album not found',
+        statusMessage: 'Album not found or not authorized',
       });
     }
 
-    const tracksData = await db.select({
-      trackId: tracks.trackId,
-      title: tracks.title,
-      track_number: tracks.trackNumber,
-      duration: tracks.duration,
-      file_path: tracks.filePath,
-    })
-    .from(tracks)
-    .where(eq(tracks.albumId, albumId))
-    .orderBy(asc(tracks.trackNumber))
-    .all();
-
     const { getCoverArtUrl } = useCoverArt();
 
-    // Format the final result object
+    const base = data[0];
     const result = {
-      albumId: albumData.albumId,
-      title: albumData.title,
-      year: albumData.year,
-      coverPath: getCoverArtUrl(albumData.coverPath),
-      artistId: albumData.artistId,
-      artistName: albumData.artistName ?? 'Unknown Artist',
-      tracks: tracksData?.map(track => ({
-        trackId: track.trackId,
-        title: track.title,
-        trackNumber: track.track_number,
-        duration: track.duration,
-        artistName: albumData.artistName ?? 'Unknown Artist',
-        albumTitle: albumData.title ?? 'Unknown Album',
-        filePath: track.file_path,
-      })) ?? []
+      albumId: base.albumId,
+      title: base.albumTitle,
+      year: base.albumYear,
+      coverPath: getCoverArtUrl(base.coverPath),
+      artistId: base.artistId,
+      artistName: base.artistName ?? 'Unknown Artist',
+      tracks: data
+        .filter(row => row.trackId !== null)
+        .map(row => ({
+          trackId: row.trackId!,
+          title: row.trackTitle!,
+          trackNumber: row.trackNumber!,
+          duration: row.trackDuration!,
+          filePath: row.trackFilePath!,
+          artistName: row.artistName ?? 'Unknown Artist',
+          albumTitle: base.albumTitle,
+        })),
     };
 
     return result;
-
   } catch (error: any) {
-    // Handle potential errors
-    if (error.statusCode) {
-      throw error;
-    }
-    console.error("Error processing album request:", error);
+    if (error.statusCode) throw error;
+
+    console.error('Error processing album request:', error);
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error processing request',

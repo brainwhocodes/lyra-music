@@ -198,7 +198,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
 import { usePlayerStore, type Track } from '~/stores/player';
 
 // Define types
@@ -249,7 +248,7 @@ const filteredPlaylists = computed(() => {
   if (!searchQuery.value.trim()) return playlists.value;
   
   const query = searchQuery.value.toLowerCase();
-  return playlists.value.filter(playlist => 
+  return playlists.value.filter((playlist: Playlist) => 
     playlist.name.toLowerCase().includes(query)
   );
 });
