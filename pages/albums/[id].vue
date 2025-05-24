@@ -5,6 +5,7 @@ import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
 import type { NotificationMessage } from '~/types/notification-message';
+import TrackItem from '~/components/track/track-item.vue';
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
@@ -136,12 +137,24 @@ onMounted(() => {
   });
 });
 
-// Placeholder function to open an "Edit Track" modal (not yet implemented)
-const openEditTrackModal = (track: Track): void => {
-  console.log('Attempting to edit track:', track);
-  showNotification(`Edit functionality for "${track.title}" is not yet implemented.`, 'info');
-  // Close the track menu
+// Handle track options from TrackItem component
+const handleTrackOptions = (options: { action: string; track: Track }): void => {
+  const { action, track } = options;
+  
+  switch (action) {
+    case 'add-to-playlist':
+      openAddToPlaylistModal(track);
+      break;
+    case 'edit-track':
+      // Placeholder for edit track functionality
+      console.log('Attempting to edit track:', track);
+      showNotification(`Edit functionality for "${track.title}" is not yet implemented.`, 'info');
+      break;
+  }
+  
+  // Close any open menus
   openMenuForTrackId.value = null;
+  showAlbumMenu.value = false;
 };
 
 
@@ -150,9 +163,14 @@ const openEditTrackModal = (track: Track): void => {
 const playerReadyTracks = computed(() => {
   if (!album.value?.tracks) return [];
   const albumArtist = album.value.artistName || 'Unknown Artist'; 
+  const albumCover = album.value.coverPath; // Get album's cover path
+  const currentAlbumTitle = album.value.title; // Get album's title
+
   return album.value.tracks.map((track: Track) => ({
     ...track,
     artistName: track.artistName || albumArtist,
+    albumTitle: track.albumTitle || currentAlbumTitle, // Ensure albumTitle is set
+    coverPath: track.coverPath || albumCover,        // Ensure coverPath is set
   }));
 });
 
@@ -166,44 +184,49 @@ function getCoverArtUrl(artPath: string | null): string {
 
 // --- Check if this album is currently loaded ---
 const isCurrentAlbumLoaded = computed(() => {
-  return album.value?.albumId === playerStore.currentTrack?.albumId;
+  return playerStore.currentQueueContext.type === 'album' && 
+         playerStore.currentQueueContext.id === album.value?.albumId;
 });
 
 // --- Click handler for the main cover button ---
 const playAlbum = (): void => {
-  const trackIndex = 0;
-  if (!album.value?.tracks?.[trackIndex]) return;
+  if (!album.value?.albumId || !playerReadyTracks.value.length) return;
   
-  const track = album.value.tracks[trackIndex];
-  
-  if (playerStore.currentTrack?.trackId === track.trackId) {
-    playerStore.togglePlayPause();
-    return;
-  }
+  const firstTrack = playerReadyTracks.value[0];
+  const thisAlbumContext = { type: 'album' as const, id: album.value.albumId };
 
-  if (!isCurrentAlbumLoaded.value) {
-    playerStore.loadQueue(playerReadyTracks.value);
+  const isSameTrackAndContext = 
+    playerStore.currentTrack?.trackId === firstTrack.trackId &&
+    playerStore.currentQueueContext.type === thisAlbumContext.type &&
+    playerStore.currentQueueContext.id === thisAlbumContext.id;
+
+  if (isSameTrackAndContext) {
+    playerStore.togglePlayPause();
+  } else {
+    playerStore.loadQueue(playerReadyTracks.value, thisAlbumContext);
+    playerStore.playFromQueue(0);
   }
-  
-  playerStore.playFromQueue(trackIndex);
 };
 
 // --- Play a specific track (existing function) ---
 const playTrack = (trackIndex: number): void => {
-  if (!album.value?.tracks?.[trackIndex]) return;
+  if (!album.value?.albumId || !playerReadyTracks.value[trackIndex]) return;
   
-  const track = album.value.tracks[trackIndex];
-  
-  if (playerStore.currentTrack?.trackId === track.trackId) {
+  const clickedTrack = playerReadyTracks.value[trackIndex];
+  const thisAlbumContext = { type: 'album' as const, id: album.value.albumId };
+
+  const isMatchingTrackId = playerStore.currentTrack?.trackId === clickedTrack.trackId;
+  const isMatchingContextType = playerStore.currentQueueContext.type === thisAlbumContext.type;
+  const isMatchingContextId = playerStore.currentQueueContext.id === thisAlbumContext.id;
+
+  const isSameTrackAndContext = isMatchingTrackId && isMatchingContextType && isMatchingContextId;
+
+  if (isSameTrackAndContext) {
     playerStore.togglePlayPause();
-    return;
+  } else {
+    playerStore.loadQueue(playerReadyTracks.value, thisAlbumContext);
+    playerStore.playFromQueue(trackIndex);
   }
-  
-  if (!isCurrentAlbumLoaded.value) {
-    playerStore.loadQueue(playerReadyTracks.value);
-  }
-  
-  playerStore.playFromQueue(trackIndex);
 };
 
 // Format duration helper
@@ -229,81 +252,81 @@ useHead(() => ({
       <span class="loading loading-spinner loading-lg"></span>
     </div>
     <div v-else-if="error" class="alert alert-error shadow-lg">
-      <div>
-        <Icon name="material-symbols:error-outline-rounded" class="w-6 h-6"/>
-        <span>Error loading album details: {{ error.message }}</span>
-      </div>
+      <Icon name="material-symbols:error-outline" class="w-6 h-6" />
+      <span>Error loading album: {{ error.message }}</span>
     </div>
     <div v-else-if="album">
       <div class="flex flex-col md:flex-row gap-8 items-start">
         <!-- Album Cover & Play Button -->
         <div class="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 relative group">
           <img 
-            :src="getCoverArtUrl(album?.coverPath)" 
-            alt="Album Cover" 
+            :src="getCoverArtUrl(album.coverPath)" 
+            :alt="album.title" 
             class="w-full h-full object-cover rounded-lg shadow-lg"
           />
         </div>
-        
+
         <!-- Album Info -->
-        <div class="flex-grow text-center md:text-left">
-          <h1 class="text-4xl font-bold mb-2">{{ album?.title }}</h1>
-          <NuxtLink 
-            v-if="album?.artistId"
-            :to="`/artists/${album.artistId}`" 
-            class="text-2xl text-neutral-content hover:text-primary transition-colors"
-            title="View Artist"
-          >
-              {{ album?.artistName ?? 'Unknown Artist' }}
-          </NuxtLink>
-          <span v-else class="text-2xl text-neutral-content">
-            {{ album?.artistName ?? 'Unknown Artist' }}
-          </span>
-          <p v-if="album?.year" class="text-lg text-gray-500 mt-1">{{ album.year }}</p>
-          <p v-if="album?.tracks" class="text-sm text-gray-400 mt-2">{{ album.tracks.length }} track{{ album.tracks.length !== 1 ? 's' : '' }}</p>
-          <!-- Album controls -->
-          <div class="flex items-center gap-2 mt-4">
-            <!-- Play/Pause button -->
-            <button class="btn btn-primary" @click="playAlbum">
-              <Icon name="material-symbols:play-arrow-rounded" class="w-5 h-5 mr-1" v-if="!playerStore.isPlaying" />
-              <Icon name="material-symbols:pause-rounded" class="w-5 h-5 mr-1" v-else />
-              {{  playerStore.isPlaying ? 'Pause Album' : 'Play Album' }}
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
+          <p class="text-xl text-base-content/80 mb-4">{{ album.artistName }}</p>
+          
+          <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
+            <div class="flex items-center">
+              <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
+              <span>{{ album.tracks?.length || 0 }} tracks</span>
+            </div>
+            <div class="flex items-center">
+              <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
+              <span>{{ formatDuration(album.duration || 0) }}</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-3">
+            <button 
+              @click="playAlbum" 
+              class="btn btn-primary gap-2"
+            >
+              <Icon name="material-symbols:play-arrow" class="w-5 h-5" />
+              Play
             </button>
             
-            <!-- Album options button -->
-            <div class="relative" @click.stop>
+            <div class="dropdown dropdown-end">
               <button 
-                class="btn btn-ghost btn-sm p-2"
-                @click.stop="toggleAlbumMenu($event)"
-                title="Album options"
+                tabindex="0" 
+                class="btn btn-ghost gap-2"
+                @click.stop="toggleAlbumMenu"
               >
-                <Icon name="i-material-symbols:more-vert" class="w-5 h-5" />
+                <Icon name="material-symbols:more-vert" class="w-5 h-5" />
               </button>
-              
-              <!-- Album options dropdown -->
               <div 
                 v-if="showAlbumMenu" 
-                class="absolute right-0 top-full mt-1 w-52 bg-base-200 rounded-lg shadow-lg z-[10] py-2 border border-base-300"
+                class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
                 @click.stop
               >
                 <div class="flex flex-col">
                   <button 
-                    class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-                    @click.stop="selectedTrackForPlaylist = null; isAddToPlaylistModalOpen = true; fetchPlaylists()"
+                    v-for="playlist in playlists" 
+                    :key="playlist.playlistId"
+                    class="px-4 py-2 text-left hover:bg-base-300 rounded flex items-center"
+                    @click="addAlbumToPlaylist(playlist.playlistId)"
                   >
                     <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
-                    Add Album to Playlist
-                  </button>
-                  <button 
-                    class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-                    @click.stop="showNotification('Edit album functionality is not yet implemented.', 'info'); showAlbumMenu = false"
-                  >
-                    <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
-                    Edit Album
+                    Add to {{ playlist.name }}
                   </button>
                 </div>
               </div>
             </div>
+
+            <!-- Edit Album Button (for admins) -->
+            <button 
+              @click="openEditAlbumModal" 
+              class="btn btn-ghost gap-2"
+            >
+              <Icon name="material-symbols:edit" class="w-5 h-5" />
+              Edit Album
+            </button>
           </div>
         </div>
       </div>
@@ -311,73 +334,26 @@ useHead(() => ({
       <!-- Track List -->
       <div>
         <h2 class="text-2xl font-semibold my-4">Tracks</h2>
-        <div class="overflow-x-auto">
+        <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
+          <p class="text-neutral-content italic">No tracks found for this album.</p>
+        </div>
+        <div v-else class="overflow-x-auto">
           <table class="table w-full">
             <tbody>
-              <tr 
-                v-for="(track, index) in album.tracks" 
+              <TrackItem
+                v-for="(track, index) in album.tracks"
                 :key="track.trackId"
-                class="hover:bg-base-200 group cursor-pointer"
-                :class="{'text-primary font-semibold bg-base-300': playerStore.currentTrack?.trackId === track.trackId }"
-                @click="playTrack(index)" 
-              >
-                <td class="w-12 text-center text-sm text-neutral-content">{{ index + 1 }}</td>
-                <td class="w-12 text-center">
-                    <!-- Show pause icon if this track is playing -->
-                    <Icon 
-                        v-if="playerStore.currentTrack?.trackId === track.trackId && playerStore.isPlaying"
-                        name="material-symbols:pause-rounded"
-                        class="w-5 h-5 text-primary"
-                    />
-                    <!-- Show play icon on hover if not playing, or if it's a different track -->
-                    <Icon 
-                        v-else
-                        name="material-symbols:play-arrow-rounded"
-                        class="w-5 h-5 text-base-content opacity-0 group-hover:opacity-100"
-                        :class="{'opacity-100': playerStore.currentTrack?.trackId === track.trackId }" 
-                    />
-                </td>
-                <td>{{ track.title }}</td>
-                <td class="text-right text-sm text-neutral-content">{{ formatDuration(track.duration) }}</td>
-                <td class="w-16 text-center relative" @click.stop>
-                  <button 
-                    class="btn btn-ghost btn-sm p-1 opacity-0 group-hover:opacity-100 focus:opacity-100"
-                    @click.stop="toggleTrackMenu(track.trackId, $event)"
-                  >
-                    <Icon name="i-material-symbols:more-vert" class="w-5 h-5" />
-                  </button>
-                  
-                  <!-- Custom dropdown menu -->
-                  <div 
-                    v-if="openMenuForTrackId === track.trackId" 
-                    class="absolute right-0 top-full mt-1 w-52 bg-base-200 rounded-lg shadow-lg z-[10] py-2 border border-base-300"
-                    @click.stop
-                  >
-                    <div class="flex flex-col">
-                      <button 
-                        class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-                        @click.stop="openAddToPlaylistModal(track)"
-                      >
-                        <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
-                        Add to Playlist
-                      </button>
-                      <button 
-                        class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-                        @click.stop="openEditTrackModal(track)"
-                      >
-                        <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
-                        Edit Track
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              </tr>
+                :track="{
+                  ...track,
+                  coverPath: album.coverPath,
+                  artistName: track.artistName || album.artistName
+                }"
+                :track-number="index + 1"
+                @play-track="() => playTrack(index)"
+                @track-options="handleTrackOptions"
+              />
             </tbody>
           </table>
-        </div>
-        <!-- Message if no tracks -->
-        <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
-           <p class="text-neutral-content italic">No tracks found for this album.</p>
         </div>
       </div>
     </div>

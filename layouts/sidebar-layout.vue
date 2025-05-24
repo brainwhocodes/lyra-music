@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-base-200">
     <!-- Sidebar Navigation -->
     <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin">
-      <h2 class="text-xl font-bold mb-6 text-primary">Otogami</h2>
+      <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
 
       <!-- Recommend Section -->
       <nav class="mb-auto">
@@ -12,7 +12,7 @@
             <li><NuxtLink to="/albums" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:album-outline" class="w-5 h-5" /> Albums</NuxtLink></li>
             <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
             <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
-            <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:" class="w-5 h-5" /> Playlists</NuxtLink></li>
+            <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:featured-play-list-outline" class="w-5 h-5" /> Playlists</NuxtLink></li>
           </ul>
       </nav>
 

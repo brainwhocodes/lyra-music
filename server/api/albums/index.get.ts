@@ -2,7 +2,7 @@
 import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '~/server/db'
 import { albums, artists, tracks } from '~/server/db/schema'
-import { eq, asc, sql, like, SQL, and } from 'drizzle-orm'
+import { eq, asc, like, SQL, and } from 'drizzle-orm'
 import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
 

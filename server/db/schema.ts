@@ -15,7 +15,7 @@ export const users = sqliteTable('users', {
 });
 
 export const artists = sqliteTable('artists', {
-  artistId: text('artistId').primaryKey(),
+  artistId: text('artist_id').primaryKey(),
   name: text('name').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`).notNull(),

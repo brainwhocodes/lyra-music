@@ -1,6 +1,5 @@
 // stores/player.ts
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
 
 // Define the structure of a Track object (adjust based on your actual track data)
 // We might fetch this from the /api/tracks endpoint later
@@ -18,10 +17,16 @@ export interface Track {
   // Add other relevant fields like duration if available directly
 }
 
+export interface QueueContext {
+  type: 'album' | 'playlist' | null;
+  id: string | null;
+}
+
 export const usePlayerStore = defineStore('player', () => {
   // State
   const queue = ref<Track[]>([]);
   const currentQueueIndex = ref<number>(-1); // -1 indicates no track selected
+  const currentQueueContext = ref<QueueContext>({ type: null, id: null }); // Added for queue context
   const isPlaying = ref<boolean>(false);
   const currentTime = ref<number>(0); // In seconds
   const duration = ref<number>(0); // In seconds
@@ -155,7 +160,7 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.addEventListener('playing', _handlePlaying); // Loading finished
     
     // Attempt to play
-    audioElement.value.play().catch(error => {
+    audioElement.value.play().catch((error: any) => {
       console.error('Error attempting to play audio:', error);
       // Autoplay might be blocked by the browser
       isPlaying.value = false; 
@@ -223,7 +228,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   const playTrack = (track: Track) => {
     // Check if track is already in the current queue
-    const indexInQueue = queue.value.findIndex(item => item.trackId === track.trackId);
+    const indexInQueue = queue.value.findIndex((item: Track) => item.trackId === track.trackId);
 
     if (indexInQueue !== -1) {
       // Track found in queue, play from that index
@@ -237,11 +242,12 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
-  const loadQueue = (tracks: Track[]) => {
+  const loadQueue = (tracks: Track[], context?: QueueContext) => {
     if (!tracks || tracks.length === 0) {
       originalQueue.value = []; // Clear original queue
       queue.value = []; // Clear active queue
       currentQueueIndex.value = -1;
+      currentQueueContext.value = { type: null, id: null }; // Reset context
       return;
     }
 
@@ -254,6 +260,15 @@ export const usePlayerStore = defineStore('player', () => {
     }
   
     currentQueueIndex.value = -1; 
+    if (context) {
+      currentQueueContext.value = context;
+    } else {
+      // If no context is provided, and we are loading a new queue, 
+      // it's likely an ad-hoc queue (e.g. single track play), so clear specific album/playlist context.
+      // However, if playTrack is called, it might set a single track queue but we might want to preserve context if it was just a pause/play.
+      // For now, let's clear if no context is explicitly passed during a full queue load.
+      currentQueueContext.value = { type: null, id: null }; 
+    }
   };
 
   const playFromQueue = (index: number) => {
@@ -328,7 +343,7 @@ export const usePlayerStore = defineStore('player', () => {
 
     // Find the current track in the new (shuffled or restored) queue
     if (currentTrackId) {
-      const newIndex = queue.value.findIndex(track => track.trackId === currentTrackId);
+      const newIndex = queue.value.findIndex((track: Track) => track.trackId === currentTrackId);
       currentQueueIndex.value = newIndex !== -1 ? newIndex : 0; // Reset to found index or start if not found
       console.log(`Current track ID ${currentTrackId} found at new index: ${currentQueueIndex.value}`);
     } else {
@@ -395,7 +410,7 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.currentTime = currentTime.value;
 
     if (wasPlayingBeforeSeek.value) {
-      audioElement.value.play().catch(error => {
+      audioElement.value.play().catch((error: any) => {
         _handleError(error);
       });
     }
@@ -429,6 +444,7 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading,
     isShuffled,
     repeatMode,
+    currentQueueContext, // Expose new state
     isQueueSidebarVisible, // Expose new state
     isUserSeeking,        // Expose seek state
     wasPlayingBeforeSeek, // Expose seek state

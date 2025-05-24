@@ -1,4 +1,3 @@
-import { defineNuxtRouteMiddleware, useCookie, navigateTo, useNuxtApp } from '#app';
 import { useAuthStore } from '~/stores/auth';
 
 interface TokenPayload {
