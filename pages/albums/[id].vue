@@ -5,6 +5,7 @@ import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
 import type { NotificationMessage } from '~/types/notification-message';
+import { aL } from 'vitest/dist/chunks/reporters.d.79o4mouw.js';
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
@@ -239,7 +240,7 @@ useHead(() => ({
         <!-- Album Cover & Play Button -->
         <div class="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 relative group">
           <img 
-            :src="getCoverArtUrl(album?.coverPath)" 
+            :src="album.coverPath" 
             alt="Album Cover" 
             class="w-full h-full object-cover rounded-lg shadow-lg"
           />

@@ -5,7 +5,7 @@
   >
     <figure class="relative aspect-square overflow-hidden">
       <img 
-        :src="albumArtUrl" 
+        :src="album.coverPath" 
         :alt="album.title || 'Album cover'" 
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
         @error="handleImageError"
@@ -81,7 +81,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum']);
 
-const DEFAULT_ALBUM_ART = '/images/covers/default-album-art.webp';
 
 const imageError = ref(false);
 const showMenu = ref(false);
@@ -109,13 +108,6 @@ const editAlbum = (): void => {
   emit('editAlbum', props.album);
   showMenu.value = false;
 };
-
-const albumArtUrl = computed(() => {
-  if (imageError.value || !props.album.coverPath) {
-    return DEFAULT_ALBUM_ART;
-  }
-  return props.album.coverPath; 
-});
 
 const handleImageError = () => {
   console.warn(`Error loading image for album: ${props.album.title}, falling back to default.`);

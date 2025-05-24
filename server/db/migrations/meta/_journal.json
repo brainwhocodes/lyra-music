@@ -15,6 +15,13 @@
       "when": 1748073295678,
       "tag": "0001_nasty_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748111417490,
+      "tag": "0002_curious_iron_patriot",
+      "breakpoints": true
     }
   ]
 }

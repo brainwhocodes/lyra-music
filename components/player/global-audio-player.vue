@@ -127,10 +127,8 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import { computed, ref } from 'vue';
 
 const playerStore = usePlayerStore();
-const isDragging = ref(false);
 
 // Helper to format time (e.g., 1:05)
 const formatTime = (seconds: number): string => {

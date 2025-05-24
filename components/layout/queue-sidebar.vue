@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import { useCoverArt } from '~/composables/use-cover-art'; // Import useCoverArt
 import type { Track } from '~/stores/player'; // Assuming Track type is exported
 
 const playerStore = usePlayerStore();
+const { getCoverArtUrl } = useCoverArt(); // Destructure getCoverArtUrl
 
 const queue = computed(() => playerStore.queue);
 const currentIndex = computed(() => playerStore.currentQueueIndex);
@@ -69,7 +71,11 @@ function truncateString(str: string, maxLength: number): string {
         </div>
         <!-- Cover Art Image -->
         <div class="w-10 h-10 mr-3 flex-shrink-0" v-if="track.coverPath">
-          <img :src="track.coverPath" alt="Cover for {{ track.albumTitle ?? track.title }}" class="w-full h-full object-cover rounded" />
+          <img 
+            :src="getCoverArtUrl(track.coverPath)" 
+            alt="Cover for {{ track.albumTitle ?? track.title }}" 
+            class="w-full h-full object-cover rounded" 
+          />
         </div>
         <div class="w-10 h-10 mr-3 flex-shrink-0 bg-base-300 rounded flex items-center justify-center" v-else>
           <Icon name="material-symbols:music-note" class="w-5 h-5 text-base-content/50" />
