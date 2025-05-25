@@ -1,32 +1,18 @@
 // stores/player.ts
 import { defineStore } from 'pinia';
-
-// Define the structure of a Track object (adjust based on your actual track data)
-// We might fetch this from the /api/tracks endpoint later
-export interface Track {
-  trackId: string;
-  title: string;
-  albumId: string;
-  trackNumber: number | null;
-  filePath: string;
-  artistId: string; // Made nullable to match database schema
-  duration: number;
-  artistName?: string; // Optional fields as needed
-  albumTitle?: string;
-  coverPath?: string | null; // Added to store album cover art URL
-  // Add other relevant fields like duration if available directly
-}
+import type { Track } from '~/types/track'; // Import consolidated Track type
 
 export interface QueueContext {
-  type: 'album' | 'playlist' | null;
+  type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | null;
   id: string | null;
+  name?: string; // Optional name for the context (e.g., album title, playlist name)
 }
 
 export const usePlayerStore = defineStore('player', () => {
   // State
   const queue = ref<Track[]>([]);
   const currentQueueIndex = ref<number>(-1); // -1 indicates no track selected
-  const currentQueueContext = ref<QueueContext>({ type: null, id: null }); // Added for queue context
+  const currentQueueContext = ref<QueueContext>({ type: null, id: null, name: undefined }); // Added for queue context
   const isPlaying = ref<boolean>(false);
   const currentTime = ref<number>(0); // In seconds
   const duration = ref<number>(0); // In seconds
@@ -247,7 +233,7 @@ export const usePlayerStore = defineStore('player', () => {
       originalQueue.value = []; // Clear original queue
       queue.value = []; // Clear active queue
       currentQueueIndex.value = -1;
-      currentQueueContext.value = { type: null, id: null }; // Reset context
+      currentQueueContext.value = { type: null, id: null, name: undefined }; // Reset context
       return;
     }
 
@@ -267,7 +253,7 @@ export const usePlayerStore = defineStore('player', () => {
       // it's likely an ad-hoc queue (e.g. single track play), so clear specific album/playlist context.
       // However, if playTrack is called, it might set a single track queue but we might want to preserve context if it was just a pause/play.
       // For now, let's clear if no context is explicitly passed during a full queue load.
-      currentQueueContext.value = { type: null, id: null }; 
+      currentQueueContext.value = { type: null, id: null, name: undefined }; 
     }
   };
 

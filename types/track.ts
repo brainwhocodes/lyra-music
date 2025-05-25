@@ -1,11 +1,13 @@
 export interface Track {
   trackId: string;
   title: string;
-  artistName?: string; // Optional if it can be derived from album
-  albumId?: string;    // Optional, but good for linking
-  albumTitle?: string; // Added for album title
   duration: number;
   filePath: string;
-  coverPath?: string | null; // Added for album cover art
-  // Add other relevant track properties here
+  albumId: string; // Made required, was optional
+  trackNumber: number | null; // Added from player.ts
+  artistId: string | null; // Added from player.ts, made nullable
+  artistName?: string;
+  albumTitle?: string;
+  coverPath?: string | null;
+  // Potentially other fields like genre, year, etc. can be added later
 }

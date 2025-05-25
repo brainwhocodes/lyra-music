@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b9d95c2d-f2f3-41b3-9535-1c08de779732",
+  "id": "9a4cd9e9-8d12-4e3f-bd4d-59d1d80ffb80",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "albums": {
@@ -68,15 +68,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "albums_artist_id_artists_artistId_fk": {
-          "name": "albums_artist_id_artists_artistId_fk",
+        "albums_artist_id_artists_artist_id_fk": {
+          "name": "albums_artist_id_artists_artist_id_fk",
           "tableFrom": "albums",
           "tableTo": "artists",
           "columnsFrom": [
             "artist_id"
           ],
           "columnsTo": [
-            "artistId"
+            "artist_id"
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -102,8 +102,8 @@
     "artists": {
       "name": "artists",
       "columns": {
-        "artistId": {
-          "name": "artistId",
+        "artist_id": {
+          "name": "artist_id",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
@@ -201,7 +201,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "path": {
@@ -235,15 +235,7 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "media_folders_path_unique": {
-          "name": "media_folders_path_unique",
-          "columns": [
-            "path"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "media_folders_user_id_users_user_id_fk": {
           "name": "media_folders_user_id_users_user_id_fk",
@@ -505,15 +497,15 @@
         }
       },
       "foreignKeys": {
-        "tracks_artist_id_artists_artistId_fk": {
-          "name": "tracks_artist_id_artists_artistId_fk",
+        "tracks_artist_id_artists_artist_id_fk": {
+          "name": "tracks_artist_id_artists_artist_id_fk",
           "tableFrom": "tracks",
           "tableTo": "artists",
           "columnsFrom": [
             "artist_id"
           ],
           "columnsTo": [
-            "artistId"
+            "artist_id"
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -584,15 +576,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "user_artists_artist_id_artists_artistId_fk": {
-          "name": "user_artists_artist_id_artists_artistId_fk",
+        "user_artists_artist_id_artists_artist_id_fk": {
+          "name": "user_artists_artist_id_artists_artist_id_fk",
           "tableFrom": "user_artists",
           "tableTo": "artists",
           "columnsFrom": [
             "artist_id"
           ],
           "columnsTo": [
-            "artistId"
+            "artist_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"

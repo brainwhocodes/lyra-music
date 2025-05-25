@@ -198,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { usePlayerStore, type Track } from '~/stores/player';
+import { usePlayerStore } from '~/stores/player';
 
 // Define types
 interface Playlist {

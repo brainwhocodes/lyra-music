@@ -5,7 +5,9 @@ import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
 import type { NotificationMessage } from '~/types/notification-message';
+import type { QueueContext } from '~/stores/player';
 import TrackItem from '~/components/track/track-item.vue';
+import { resolveCoverArtUrl } from '~/utils/formatters';
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
@@ -147,7 +149,6 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
       break;
     case 'edit-track':
       // Placeholder for edit track functionality
-      console.log('Attempting to edit track:', track);
       showNotification(`Edit functionality for "${track.title}" is not yet implemented.`, 'info');
       break;
   }
@@ -156,8 +157,6 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
   openMenuForTrackId.value = null;
   showAlbumMenu.value = false;
 };
-
-
 
 // Create a computed property for tracks that are ready for the player
 const playerReadyTracks = computed(() => {
@@ -174,14 +173,6 @@ const playerReadyTracks = computed(() => {
   }));
 });
 
-// Function to get cover art URL (adjust path as needed)
-function getCoverArtUrl(artPath: string | null): string {
-  if (artPath) {
-    return artPath.replace('\\', '/').replace('/public', ''); // Placeholder
-  }
-  return '/images/covers/default-album-art.webp';
-}
-
 // --- Check if this album is currently loaded ---
 const isCurrentAlbumLoaded = computed(() => {
   return playerStore.currentQueueContext.type === 'album' && 
@@ -193,7 +184,8 @@ const playAlbum = (): void => {
   if (!album.value?.albumId || !playerReadyTracks.value.length) return;
   
   const firstTrack = playerReadyTracks.value[0];
-  const thisAlbumContext = { type: 'album' as const, id: album.value.albumId };
+  // Ensure thisAlbumContext matches the QueueContext from the store
+  const thisAlbumContext: QueueContext = { type: 'album', id: album.value.albumId, name: album.value.title };
 
   const isSameTrackAndContext = 
     playerStore.currentTrack?.trackId === firstTrack.trackId &&
@@ -203,40 +195,32 @@ const playAlbum = (): void => {
   if (isSameTrackAndContext) {
     playerStore.togglePlayPause();
   } else {
-    playerStore.loadQueue(playerReadyTracks.value, thisAlbumContext);
+    // playerReadyTracks should be compatible with the store's Track[] type
+    playerStore.loadQueue(playerReadyTracks.value as Track[], thisAlbumContext);
     playerStore.playFromQueue(0);
   }
 };
 
 // --- Play a specific track (existing function) ---
 const playTrack = (trackIndex: number): void => {
-  if (!album.value?.albumId || !playerReadyTracks.value[trackIndex]) return;
+  if (!album.value?.albumId || !playerReadyTracks.value.length || trackIndex < 0 || trackIndex >= playerReadyTracks.value.length) return;
   
-  const clickedTrack = playerReadyTracks.value[trackIndex];
-  const thisAlbumContext = { type: 'album' as const, id: album.value.albumId };
+  const trackToPlay = playerReadyTracks.value[trackIndex];
+  // Ensure thisAlbumContext matches the QueueContext from the store
+  const thisAlbumContext: QueueContext = { type: 'album', id: album.value.albumId, name: album.value.title };
 
-  const isMatchingTrackId = playerStore.currentTrack?.trackId === clickedTrack.trackId;
-  const isMatchingContextType = playerStore.currentQueueContext.type === thisAlbumContext.type;
-  const isMatchingContextId = playerStore.currentQueueContext.id === thisAlbumContext.id;
-
-  const isSameTrackAndContext = isMatchingTrackId && isMatchingContextType && isMatchingContextId;
+  const isSameTrackAndContext = 
+    playerStore.currentTrack?.trackId === trackToPlay.trackId &&
+    playerStore.currentQueueContext.type === thisAlbumContext.type &&
+    playerStore.currentQueueContext.id === thisAlbumContext.id;
 
   if (isSameTrackAndContext) {
     playerStore.togglePlayPause();
   } else {
-    playerStore.loadQueue(playerReadyTracks.value, thisAlbumContext);
+    // playerReadyTracks should be compatible with the store's Track[] type
+    playerStore.loadQueue(playerReadyTracks.value as Track[], thisAlbumContext);
     playerStore.playFromQueue(trackIndex);
   }
-};
-
-// Format duration helper
-const formatDuration = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) {
-    return '0:00';
-  }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
 // Set page title
@@ -251,110 +235,108 @@ useHead(() => ({
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
-    <div v-else-if="error" class="alert alert-error shadow-lg">
-      <Icon name="material-symbols:error-outline" class="w-6 h-6" />
-      <span>Error loading album: {{ error.message }}</span>
+    <div v-else-if="error || !album" class="text-center text-error">
+      <p>Could not load album details. Please try again later.</p>
     </div>
-    <div v-else-if="album">
-      <div class="flex flex-col md:flex-row gap-8 items-start">
-        <!-- Album Cover & Play Button -->
-        <div class="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 relative group">
-          <img 
-            :src="getCoverArtUrl(album.coverPath)" 
-            :alt="album.title" 
-            class="w-full h-full object-cover rounded-lg shadow-lg"
-          />
-        </div>
-
-        <!-- Album Info -->
-        <div class="flex-1">
-          <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
-          <p class="text-xl text-base-content/80 mb-4">{{ album.artistName }}</p>
-          
-          <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
-            <div class="flex items-center">
-              <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
-              <span>{{ album.tracks?.length || 0 }} tracks</span>
-            </div>
-            <div class="flex items-center">
-              <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
-              <span>{{ formatDuration(album.duration || 0) }}</span>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-wrap gap-3">
-            <button 
-              @click="playAlbum" 
-              class="btn btn-primary gap-2"
-            >
-              <Icon name="material-symbols:play-arrow" class="w-5 h-5" />
-              Play
-            </button>
-            
-            <div class="dropdown dropdown-end">
-              <button 
-                tabindex="0" 
-                class="btn btn-ghost gap-2"
-                @click.stop="toggleAlbumMenu"
-              >
-                <Icon name="material-symbols:more-vert" class="w-5 h-5" />
-              </button>
-              <div 
-                v-if="showAlbumMenu" 
-                class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
-                @click.stop
-              >
-                <div class="flex flex-col">
-                  <button 
-                    v-for="playlist in playlists" 
-                    :key="playlist.playlistId"
-                    class="px-4 py-2 text-left hover:bg-base-300 rounded flex items-center"
-                    @click="addAlbumToPlaylist(playlist.playlistId)"
-                  >
-                    <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
-                    Add to {{ playlist.name }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Edit Album Button (for admins) -->
-            <button 
-              @click="openEditAlbumModal" 
-              class="btn btn-ghost gap-2"
-            >
-              <Icon name="material-symbols:edit" class="w-5 h-5" />
-              Edit Album
-            </button>
-          </div>
-        </div>
+    <div v-else class="grid grid-cols-1 md:grid-cols-album-layout gap-8 items-start">
+      <!-- Album Cover and Info -->
+      <div class="md:sticky md:top-24">
+        <img 
+          :src="resolveCoverArtUrl(album.coverPath)" 
+          :alt="`${album.title} cover`"
+          class="w-full aspect-square rounded-lg shadow-xl object-cover mb-4"
+        />
       </div>
 
-      <!-- Track List -->
-      <div>
-        <h2 class="text-2xl font-semibold my-4">Tracks</h2>
-        <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
-          <p class="text-neutral-content italic">No tracks found for this album.</p>
+      <!-- Album Info -->
+      <div class="flex-1">
+        <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
+        <p class="text-xl text-base-content/80 mb-4">{{ album.artistName }}</p>
+        
+        <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
+          <div class="flex items-center">
+            <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
+            <span>{{ album.tracks?.length || 0 }} tracks</span>
+          </div>
+          <div class="flex items-center">
+            <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
+            <span>{{ formatDuration(album.duration || 0) }}</span>
+          </div>
         </div>
-        <div v-else class="overflow-x-auto">
-          <table class="table w-full">
-            <tbody>
-              <TrackItem
-                v-for="(track, index) in album.tracks"
-                :key="track.trackId"
-                :track="{
-                  ...track,
-                  coverPath: album.coverPath,
-                  artistName: track.artistName || album.artistName
-                }"
-                :track-number="index + 1"
-                @play-track="() => playTrack(index)"
-                @track-options="handleTrackOptions"
-              />
-            </tbody>
-          </table>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3">
+          <button 
+            @click="playAlbum" 
+            class="btn btn-primary gap-2"
+          >
+            <Icon name="material-symbols:play-arrow" class="w-5 h-5" />
+            Play
+          </button>
+          
+          <div class="dropdown dropdown-end">
+            <button 
+              tabindex="0" 
+              class="btn btn-ghost gap-2"
+              @click.stop="toggleAlbumMenu"
+            >
+              <Icon name="material-symbols:more-vert" class="w-5 h-5" />
+            </button>
+            <div 
+              v-if="showAlbumMenu" 
+              class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
+              @click.stop
+            >
+              <div class="flex flex-col">
+                <button 
+                  v-for="playlist in playlists" 
+                  :key="playlist.playlistId"
+                  class="px-4 py-2 text-left hover:bg-base-300 rounded flex items-center"
+                  @click="addAlbumToPlaylist(playlist.playlistId)"
+                >
+                  <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
+                  Add to {{ playlist.name }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Album Button (for admins) -->
+          <button 
+            @click="openEditAlbumModal" 
+            class="btn btn-ghost gap-2"
+          >
+            <Icon name="material-symbols:edit" class="w-5 h-5" />
+            Edit Album
+          </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Track List -->
+    <div>
+      <h2 class="text-2xl font-semibold my-4">Tracks</h2>
+      <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
+        <p class="text-neutral-content italic">No tracks found for this album.</p>
+      </div>
+      <div v-else class="overflow-x-auto">
+        <table class="table w-full">
+          <tbody>
+            <TrackItem 
+              v-for="(track, index) in album.tracks" 
+              :key="track.trackId"
+              :track="{
+                ...track,
+                artistName: track.artistName || album.artistName,
+                albumTitle: album.title,
+                coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath) // Use resolveCoverArtUrl here too
+              }"
+              :track-number="index + 1"
+              @play-track="playTrack(index)"
+              @track-options="handleTrackOptions"
+            />
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

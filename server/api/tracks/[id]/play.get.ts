@@ -5,7 +5,7 @@ import { tracks } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 import fs from 'node:fs'; // Use node:fs for explicit import
 import path from 'node:path';
-import mime from 'mime-types';
+import { getMimeType } from '~/server/utils/formatters';
 
 export default defineEventHandler(async (event) => {
   const trackIdParam = getRouterParam(event, 'id');
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Determine content type
-    const contentType = mime.lookup(filePath) || 'application/octet-stream';
+    const contentType = getMimeType(filePath);
     setResponseHeader(event, 'Content-Type', contentType);
 
     // Get file stats for content length (optional but good for clients)

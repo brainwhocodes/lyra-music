@@ -7,7 +7,7 @@
     <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-base-200">
       <img 
         v-if="playerStore.currentTrack.coverPath" 
-        :src="playerStore.currentTrack.coverPath" 
+        :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)" 
         :alt="`${playerStore.currentTrack.title} cover`"
         class="w-full h-full object-cover"
       />
@@ -146,16 +146,6 @@ import { usePlayerStore } from '~/stores/player';
 
 const playerStore = usePlayerStore();
 
-// Helper to format time (e.g., 1:05)
-const formatTime = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) {
-    return '0:00';
-  }
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
-
 // Handle seek bar input during drag
 const handleContinuousSeekInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -172,7 +162,5 @@ const handleVolumeChange = (event: Event) => {
 
 <style scoped>
 /* Add any specific styles if needed */
-.range-md {
-  height: 0.rem; /* Adjust size for daisyUI range */
-}
+
 </style>

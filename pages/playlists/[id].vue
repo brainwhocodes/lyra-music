@@ -182,12 +182,6 @@ function formatTrackCount(count: number): string {
   return count === 1 ? '1 track' : `${count} tracks`;
 }
 
-function formatDuration(seconds: number): string {
-  const min = Math.floor(seconds / 60);
-  const sec = seconds % 60;
-  return `${min}:${sec.toString().padStart(2, '0')}`;
-}
-
 function mapPlaylistTrack(track: PlaylistTrack): Track {
   return {
     trackId: track.trackId,
@@ -196,8 +190,10 @@ function mapPlaylistTrack(track: PlaylistTrack): Track {
     albumId: track.albumId,
     albumTitle: track.albumTitle,
     duration: track.duration,
-    filePath: track.filePath || '',
+    filePath: track.filePath || '', // Ensure filePath is not null
     coverPath: track.coverPath,
+    trackNumber: track.trackNumber ?? null, // Added from PlaylistTrack
+    artistId: track.artistId, // Added from PlaylistTrack
   };
 }
 

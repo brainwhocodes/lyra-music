@@ -34,7 +34,7 @@
         <tbody>
           <tr 
             v-for="track in tracks" 
-            :key="track.id" 
+            :key="track.trackId" 
             class="hover"
             >
             <td>{{ track.trackNumber || '-' }}</td>
@@ -60,53 +60,62 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
+import { ref, onMounted, computed, watch } from '#imports';
+import type { Track } from '~/types/track'; 
+import type { QueueContext } from '~/stores/player'; 
 
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
 });
 
-// Define type for track data
-interface Track {
-  id: number;
+// Interface for the raw API response
+interface ApiTrack {
+  id: string;
   title: string;
   trackNumber: number | null;
   duration: number | null;
   path: string;
   genre: string | null;
-  albumId: number | null;
+  albumId: string | null;
   albumTitle: string | null;
   albumArtPath: string | null;
-  artistId: number | null;
+  artistId: string | null;
   artistName: string | null;
+}
+
+// Interface for tracks used in this component, extending global Track for player compatibility
+interface DisplayTrack extends Track {
+  trackNumber: number | null;
+  coverPath: string | null;
+  // Add other ApiTrack fields if needed for display but not in global Track
 }
 
 const route = useRoute();
 const playerStore = usePlayerStore();
 
 // State
-const tracks = ref<Track[]>([]);
+const tracks = ref<DisplayTrack[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
-const artistName = ref<string | null>(null); // To display if filtering
-const albumTitle = ref<string | null>(null); // To display if filtering
+const artistName = ref<string | null>(null); 
+const albumTitle = ref<string | null>(null); 
 
 // Computed property for API query parameters
 const apiQuery = computed(() => {
-  const query: { artistId?: number; albumId?: number } = {};
+  const query: { artistId?: string; albumId?: string } = {};
   if (route.query.artistId) {
-    query.artistId = Number(route.query.artistId);
+    query.artistId = String(route.query.artistId);
   }
   if (route.query.albumId) {
-    query.albumId = Number(route.query.albumId);
+    query.albumId = String(route.query.albumId);
   }
   return query;
 });
 
-// Computed properties for easy access in template
+// Computed properties for easy access
 const artistId = computed(() => apiQuery.value.artistId);
 const albumId = computed(() => apiQuery.value.albumId);
 
@@ -114,18 +123,32 @@ const albumId = computed(() => apiQuery.value.albumId);
 async function fetchTracks() {
   loading.value = true;
   error.value = null;
-  artistName.value = null; // Reset context titles
+  artistName.value = null; 
   albumTitle.value = null;
   try {
-    const data = await $fetch<Track[]>('/api/tracks', { query: apiQuery.value });
-    tracks.value = data;
-    // If results exist, grab the context (artist/album name)
-    if (data.length > 0) {
+    const data = await $fetch<ApiTrack[]>('/api/tracks', { query: apiQuery.value });
+    
+    // Map ApiTrack to DisplayTrack (which includes global Track properties)
+    tracks.value = data.map((apiTrack: ApiTrack): DisplayTrack => ({
+      trackId: String(apiTrack.id),
+      title: apiTrack.title,
+      artistName: apiTrack.artistName || undefined,
+      albumId: apiTrack.albumId || '', // Provide empty string if null, to satisfy 'string' type
+      albumTitle: apiTrack.albumTitle || undefined,
+      duration: apiTrack.duration ? Number(apiTrack.duration) : 0,
+      filePath: apiTrack.path,
+      coverPath: apiTrack.albumArtPath || '',
+      artistId: apiTrack.artistId, // apiTrack.artistId is string | null, target Track.artistId is string | null
+      // DisplayTrack specific fields
+      trackNumber: apiTrack.trackNumber,
+    }));
+
+    if (tracks.value.length > 0) {
         if (albumId.value) {
-            albumTitle.value = data[0].albumTitle;
-            artistName.value = data[0].artistName; // Album view implies single artist
+            albumTitle.value = tracks.value[0].albumTitle || null; 
+            artistName.value = tracks.value[0].artistName || null; 
         } else if (artistId.value) {
-            artistName.value = data[0].artistName;
+            artistName.value = tracks.value[0].artistName || null;
         }
     }
   } catch (err: any) {
@@ -138,30 +161,37 @@ async function fetchTracks() {
 
 // Fetch tracks on component mount and when query changes
 onMounted(() => {
-  fetchTracks();
+  // Watcher with immediate: true will call fetchTracks on mount
 });
 
 watch(() => route.query, () => {
     fetchTracks();
-}, { immediate: true, deep: true }); // Use deep: true for query objects
+}, { immediate: true, deep: true });
 
-// Format duration (seconds to MM:SS)
-function formatDuration(seconds: number | null): string {
-  if (seconds === null || isNaN(seconds) || seconds < 0) {
-    return '--:--';
-  }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
 
 // Play track using the Pinia store
-function playTrack(track: Track) {
-  playerStore.playTrack({
-    id: track.id,
-    title: track.title,
-    artistName: track.artistName || undefined // Pass optional fields
-  }); 
+function playTrack(track: DisplayTrack) {
+  let context: QueueContext;
+  const currentTrackId = String(track.trackId); 
+
+  if (albumId.value) {
+    context = { type: 'album', id: String(albumId.value), name: albumTitle.value || 'Album' };
+  } else if (artistId.value) {
+    context = { type: 'artist', id: String(artistId.value), name: artistName.value || 'Artist' };
+  } else {
+    context = { type: 'all_tracks', id: 'filtered_view', name: 'Current Tracks' };
+  }
+  
+  const trackIndexInQueue = tracks.value.findIndex((t: DisplayTrack) => t.trackId === track.trackId);
+
+  if (trackIndexInQueue !== -1) {
+    // The 'tracks.value' (DisplayTrack[]) needs to be compatible with the PlayerStore's Track[]
+    // Assuming the mapping done in fetchTracks ensures compatibility.
+    playerStore.loadQueue(tracks.value as unknown as import('~/stores/player').Track[], context);
+    playerStore.playFromQueue(trackIndexInQueue);
+  } else {
+    console.error('Track not found in current list for playback:', track);
+  }
 }
 
 </script>
