@@ -7,6 +7,7 @@ import { promisify } from 'node:util'
 import path from 'node:path'
 import type { H3Event } from 'h3'
 import { sendStream } from 'h3';
+import { getMimeType } from '~/server/utils/formatters';
 
 const statAsync = promisify(stat);
 
@@ -15,20 +16,6 @@ const paramsSchema = z.object({
   trackId: z.coerce.string()
 });
 
-// Simple mime type mapping based on extension
-const getMimeType = (filePath: string): string => {
-    const ext = path.extname(filePath).toLowerCase();
-    switch (ext) {
-        case '.mp3': return 'audio/mpeg';
-        case '.flac': return 'audio/flac';
-        case '.ogg': return 'audio/ogg';
-        case '.opus': return 'audio/opus';
-        case '.m4a': return 'audio/mp4'; // Often used for AAC
-        case '.aac': return 'audio/aac';
-        case '.wav': return 'audio/wav';
-        default: return 'application/octet-stream'; // Default binary stream
-    }
-};
 
 /**
  * @description Streams the audio data for a given trackId.

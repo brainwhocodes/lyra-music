@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import { useCoverArt } from '~/composables/use-cover-art'; // Import useCoverArt
-import type { Track } from '~/stores/player'; // Assuming Track type is exported
+import type { Track } from '~/types/track';
 
 const playerStore = usePlayerStore();
-const { getCoverArtUrl } = useCoverArt(); // Destructure getCoverArtUrl
 
 const queue = computed(() => playerStore.queue);
 const currentIndex = computed(() => playerStore.currentQueueIndex);
@@ -18,24 +16,9 @@ const handleClickOnQueueItem = (index: number): void => {
   }
 };
 
-// Format duration helper
-const formatDuration = (seconds: number): string => {
-  if (isNaN(seconds) || seconds < 0) {
-    return '0:00';
-  }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
 
 // No need for useHead in a component like this
 // useHead({ title: 'Current Queue' });
-function truncateString(str: string, maxLength: number): string {
-  if (str.length > maxLength) {
-    return str.substring(0, maxLength) + '...';
-  }
-  return str;
-}
 </script>
 
 <template>
@@ -72,7 +55,7 @@ function truncateString(str: string, maxLength: number): string {
         <!-- Cover Art Image -->
         <div class="w-10 h-10 mr-3 flex-shrink-0" v-if="track.coverPath">
           <img 
-            :src="getCoverArtUrl(track.coverPath)" 
+            :src="resolveCoverArtUrl(track.coverPath)" 
             alt="Cover for {{ track.albumTitle ?? track.title }}" 
             class="w-full h-full object-cover rounded" 
           />

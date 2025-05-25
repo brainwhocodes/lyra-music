@@ -112,9 +112,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from '#imports';
 import { useRoute, useRouter } from 'vue-router';
-import { usePlayerStore, type Track } from '~/stores/player';
+import { usePlayerStore } from '~/stores/player';
 import type { Album } from '~/types/album'; 
 import AlbumCard from '~/components/album/album-card.vue'; 
+import type { Track } from '~/types/track'; 
 import { useCoverArt } from '~/composables/use-cover-art'; 
 
 // Apply the sidebar layout

@@ -167,18 +167,19 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from '#imports'
-import { usePlayerStore, type Track } from '~/stores/player'; // Import Track type
-import AlbumCard from '~/components/album/album-card.vue'; // Import AlbumCard
-import { useRouter } from 'vue-router'; // Import useRouter
+import { usePlayerStore } from '~/stores/player'; 
+import type { Track } from '~/types/track'; // Update import path for Track type
+import AlbumCard from '~/components/album/album-card.vue'; 
+import { useRouter } from 'vue-router'; 
 import type { Album } from '~/types/album';
 import type { Playlist } from '~/types/playlist';
+
 // Apply the sidebar layout
 definePageMeta({
   layout: 'sidebar-layout'
 });
 
-
-const playerStore = usePlayerStore(); // Get player store instance
+const playerStore = usePlayerStore(); 
 
 // Refs for play button loading state (similar to pages/albums/index.vue)
 const currentAlbumLoading = ref<boolean>(false);
@@ -235,7 +236,7 @@ const {
   watch: [debouncedSearchQuery, selectedGenre] // Re-fetch when debounced query or selectedGenre changes
 });
 
-const router = useRouter(); // Initialize router
+const router = useRouter(); 
 
 // --- Play Album Functionality ---
 const playAlbum = async (albumId: string): Promise<void> => {

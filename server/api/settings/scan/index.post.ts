@@ -48,8 +48,12 @@ export default defineEventHandler(async (event) => {
       }
       console.log(`Scanning folder: ${folder.path} (ID: ${folder.mediaFolderId}) for user ${user.userId}`);
       try {
-        // Call the scanLibrary function with userId
-        await scanLibrary(folder.mediaFolderId, folder.path, user.userId);
+        // Call the scanLibrary function with a single object parameter
+        await scanLibrary({
+          libraryId: folder.mediaFolderId,
+          libraryPath: folder.path,
+          userId: user.userId
+        });
         console.log(`Successfully scanned folder: ${folder.path}`);
         totalScanned++;
       } catch (error: any) {

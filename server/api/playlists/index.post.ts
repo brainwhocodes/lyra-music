@@ -2,7 +2,7 @@ import { defineEventHandler, readBody } from 'h3';
 import { db } from '~/server/db';
 import { playlists } from '~/server/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 import { getUserFromEvent } from '~/server/utils/auth';
 import { sql } from 'drizzle-orm';
 
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const newPlaylist = {
-      playlistId: `pl_${uuidv4()}`,
+      playlistId: `${uuidv7()}`,
       userId: user.userId,
       name: body.name.trim(),
       createdAt: sql`CURRENT_TIMESTAMP`,

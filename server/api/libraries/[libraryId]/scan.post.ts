@@ -54,7 +54,11 @@ export default defineEventHandler(async (event: H3Event) => {
     // 4. Trigger scan asynchronously (fire-and-forget)
     // We don't await this, so the request returns immediately.
     // Error handling within scanLibrary should log issues.
-    scanLibrary(String(library.mediaFolderId), library.path, user.userId)
+    scanLibrary({
+      libraryId: String(library.mediaFolderId),
+      libraryPath: library.path,
+      userId: user.userId
+    })
       .then(() => {
         console.log(`Background scan completed for library ${library.mediaFolderId}`);
       })
