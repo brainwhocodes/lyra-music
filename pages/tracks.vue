@@ -187,7 +187,7 @@ function playTrack(track: DisplayTrack) {
   if (trackIndexInQueue !== -1) {
     // The 'tracks.value' (DisplayTrack[]) needs to be compatible with the PlayerStore's Track[]
     // Assuming the mapping done in fetchTracks ensures compatibility.
-    playerStore.loadQueue(tracks.value as unknown as import('~/stores/player').Track[], context);
+    playerStore.loadQueue(tracks.value as Track[], context);
     playerStore.playFromQueue(trackIndexInQueue);
   } else {
     console.error('Track not found in current list for playback:', track);

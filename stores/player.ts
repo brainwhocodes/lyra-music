@@ -23,6 +23,9 @@ export const usePlayerStore = defineStore('player', () => {
   const originalQueue = ref<Track[]>([]); // To restore order when shuffle is turned off
   const repeatMode = ref<'none' | 'one' | 'all'>('none');
 
+  // New state for "true shuffle"
+  const playedTrackIdsInShuffle = ref<Set<string>>(new Set());
+
   // State for Queue Sidebar Visibility
   const isQueueSidebarVisible = ref<boolean>(false);
 
@@ -40,10 +43,19 @@ export const usePlayerStore = defineStore('player', () => {
   });
 
   const canPlayNext = computed<boolean>(() => {
+    if (isShuffled.value) {
+      const availableTracks = queue.value.filter((track: Track) => !playedTrackIdsInShuffle.value.has(track.trackId));
+      return availableTracks.length > 0;
+    }
     return currentQueueIndex.value < queue.value.length - 1;
   });
 
   const canPlayPrevious = computed<boolean>(() => {
+    if (isShuffled.value) {
+      // In shuffle, previous typically restarts current track or uses a more complex history.
+      // For now, allow if a track is loaded (can be restarted).
+      return currentTrack.value !== null;
+    }
     return currentQueueIndex.value > 0;
   });
 
@@ -160,34 +172,21 @@ export const usePlayerStore = defineStore('player', () => {
   const _handlePause = () => { isPlaying.value = false; };
   const _handleEnded = () => { 
     isPlaying.value = false; 
-    currentTime.value = 0; // Reset time
+    // currentTime.value = 0; // Reset time - seek(0) in 'one' or new track setup handles this
 
     switch (repeatMode.value) {
       case 'one':
-        // Replay the current track
-        seek(0); // Reset time visually just in case
-        audioElement.value?.play().catch(_handleError); // Play again directly
-        // Or call _setupAudioElement() if a full reset/reload is desired
+        seek(0); 
+        audioElement.value?.play().catch(_handleError); 
         break;
       case 'all':
-        if (canPlayNext.value) {
-          playNext();
-        } else {
-          // Loop back to the beginning of the queue
-          currentQueueIndex.value = 0;
-          _setupAudioElement();
-        }
+        playNext(true); // Pass flag indicating it's an auto-advancement from 'repeat all'
         break;
       case 'none':
       default:
-        // Default: Play next if possible, otherwise stop
-        if (canPlayNext.value) {
-          playNext();
-        } else {
-          // Stop playback, reset index
-          currentQueueIndex.value = -1; 
-          // Optionally clean up audio element? _cleanupAudioElement();
-        }
+        // playNext will handle shuffle logic or linear advancement
+        // and will stop if no next track is available/appropriate.
+        playNext();
         break;
     }
   };
@@ -212,60 +211,92 @@ export const usePlayerStore = defineStore('player', () => {
 
   // --- Actions --- 
 
-  const playTrack = (track: Track) => {
-    // Check if track is already in the current queue
-    const indexInQueue = queue.value.findIndex((item: Track) => item.trackId === track.trackId);
+  // Action to add an album's tracks to the queue without starting playback
+  const addAlbumToQueue = (tracksToAdd: Track[], albumContext: QueueContext): void => {
+    const wasQueueEmpty = queue.value.length === 0;
+    // Filter out tracks that are already in the queue by trackId
+    const newTracks = tracksToAdd.filter((newTrack: Track) => 
+      !queue.value.some((existingTrack: Track) => existingTrack.trackId === newTrack.trackId)
+    );
 
-    if (indexInQueue !== -1) {
-      // Track found in queue, play from that index
-      currentQueueIndex.value = indexInQueue;
-      _setupAudioElement(); // Setup and play
-    } else {
-      // Track not in queue, replace queue with this single track
-      queue.value = [track];
-      currentQueueIndex.value = 0;
-      _setupAudioElement(); // Setup and play
+    if (newTracks.length > 0) {
+      queue.value.push(...newTracks);
+      // If shuffle is on and the queue was empty, this is like a new context
+      if (isShuffled.value && wasQueueEmpty) {
+        originalQueue.value = [...queue.value];
+        playedTrackIdsInShuffle.value.clear();
+      }
     }
+
+    // Set context if the queue was empty and now has tracks from this album
+    if (wasQueueEmpty && queue.value.length > 0) {
+      currentQueueContext.value = albumContext;
+      // If not playing anything, set current index to the first track of the added album
+      // This doesn't start playback, just sets the potential starting point.
+      if (currentQueueIndex.value === -1) {
+        const firstAddedTrackId = tracksToAdd[0]?.trackId;
+        const firstAddedTrackIndex = queue.value.findIndex((t: Track) => t.trackId === firstAddedTrackId);
+        if (firstAddedTrackIndex !== -1) {
+          currentQueueIndex.value = firstAddedTrackIndex;
+        }
+      }
+    }
+    // Optionally, show a notification or update UI
+    console.log(`${newTracks.length} new tracks added to queue. Queue length: ${queue.value.length}`);
+    // Does not automatically start playback or change current track if one is playing.
   };
 
-  const loadQueue = (tracks: Track[], context?: QueueContext) => {
-    if (!tracks || tracks.length === 0) {
-      originalQueue.value = []; // Clear original queue
-      queue.value = []; // Clear active queue
-      currentQueueIndex.value = -1;
-      currentQueueContext.value = { type: null, id: null, name: undefined }; // Reset context
-      return;
+  const playTrack = (track: Track) => {
+    _cleanupAudioElement();
+    // When a single track is played, it typically forms a new, temporary queue.
+    queue.value = [track];
+    currentQueueIndex.value = 0;
+    currentQueueContext.value = { type: 'track', id: track.trackId, name: track.title };
+
+    // Clear shuffle history as the context has changed significantly.
+    playedTrackIdsInShuffle.value.clear();
+    if (isShuffled.value) {
+      // If shuffle mode is on, this single track is the new originalQueue for shuffle purposes.
+      originalQueue.value = [...queue.value];
+      // Add this track to played set as it's about to play.
+      playedTrackIdsInShuffle.value.add(track.trackId);
     }
 
-    originalQueue.value = [...tracks]; // Store the original order
+    _setupAudioElement();
+  };
+
+  const loadQueue = (tracks: Track[], context?: QueueContext, startPlaying: boolean = true, startIndex: number = 0) => {
+    _cleanupAudioElement(); 
+
+    originalQueue.value = []; 
+    playedTrackIdsInShuffle.value.clear(); 
+
+    queue.value = [...tracks];
+    currentQueueContext.value = context || { type: null, id: null, name: undefined };
+
+    if (tracks.length > 0) {
+      currentQueueIndex.value = Math.max(0, Math.min(startIndex, tracks.length - 1));
+      if (startPlaying) {
+        _setupAudioElement();
+        if (isShuffled.value && currentTrack.value) {
+          playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
+        }
+      }
+    } else {
+      _resetState();
+    }
 
     if (isShuffled.value) {
-      queue.value = shuffleArray([...tracks]);
-    } else {
-      queue.value = [...tracks];
-    }
-  
-    currentQueueIndex.value = -1; 
-    if (context) {
-      currentQueueContext.value = context;
-    } else {
-      // If no context is provided, and we are loading a new queue, 
-      // it's likely an ad-hoc queue (e.g. single track play), so clear specific album/playlist context.
-      // However, if playTrack is called, it might set a single track queue but we might want to preserve context if it was just a pause/play.
-      // For now, let's clear if no context is explicitly passed during a full queue load.
-      currentQueueContext.value = { type: null, id: null, name: undefined }; 
+      originalQueue.value = [...queue.value];
     }
   };
 
   const playFromQueue = (index: number) => {
     if (index >= 0 && index < queue.value.length) {
       currentQueueIndex.value = index;
-      _setupAudioElement(); // This should start playback
-    } else {
-      if (queue.value.length > 0) {
-        // Potentially play first track or handle error
-      } else {
-        // Queue is empty, cannot play
+      _setupAudioElement();
+      if (isShuffled.value && currentTrack.value) {
+        playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
       }
     }
   };
@@ -285,17 +316,67 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
-  const playNext = () => {
-    if (canPlayNext.value) {
-      currentQueueIndex.value++;
-      _setupAudioElement();
+  const playNext = (isLoopingAll: boolean = false) => {
+    if (isShuffled.value) {
+      const availableTracks = queue.value.filter((track: Track) => !playedTrackIdsInShuffle.value.has(track.trackId));
+
+      if (availableTracks.length > 0) {
+        const randomIndex = Math.floor(Math.random() * availableTracks.length);
+        const nextTrackToPlay = availableTracks[randomIndex];
+        const originalIndex = queue.value.findIndex((t: Track) => t.trackId === nextTrackToPlay.trackId);
+
+        if (originalIndex !== -1) {
+          currentQueueIndex.value = originalIndex;
+          _setupAudioElement(); 
+          playedTrackIdsInShuffle.value.add(nextTrackToPlay.trackId);
+        } else {
+          console.error("Shuffle Error: Next track not found in original queue.");
+          _resetState();
+        }
+      } else {
+        // All tracks in shuffle mode have been played
+        if (repeatMode.value === 'all' && isLoopingAll) {
+          console.log("Shuffle: All tracks played, repeating all.");
+          playedTrackIdsInShuffle.value.clear();
+          // If currentTrack.value just ended, it's fine not to re-add it here.
+          if (queue.value.length > 0) {
+            // Pick a new random track to start the new cycle
+            const randomIndex = Math.floor(Math.random() * queue.value.length);
+            currentQueueIndex.value = randomIndex; // Set to a random track from the full queue
+            _setupAudioElement();
+            if(currentTrack.value) playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
+          } else {
+            _resetState();
+          }
+        } else {
+          console.log("Shuffle: All tracks played, not repeating.");
+          _resetState(); 
+        }
+      }
+    } else { // Not shuffled, linear playback
+      if (currentQueueIndex.value < queue.value.length - 1) {
+        currentQueueIndex.value++;
+        _setupAudioElement();
+      } else if (repeatMode.value === 'all' && isLoopingAll) {
+        currentQueueIndex.value = 0;
+        _setupAudioElement();
+      } else {
+        _resetState();
+      }
     }
   };
 
   const playPrevious = () => {
-    if (canPlayPrevious.value) {
-      currentQueueIndex.value--;
-      _setupAudioElement();
+    if (isShuffled.value) {
+      if (audioElement.value && currentTrack.value) {
+        seek(0); // Restart current track
+        if (!isPlaying.value) audioElement.value.play().catch(_handleError);
+      }
+    } else { 
+      if (currentQueueIndex.value > 0) {
+        currentQueueIndex.value--;
+        _setupAudioElement();
+      }
     }
   };
 
@@ -314,30 +395,36 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const toggleShuffle = () => {
-    const currentTrackId = currentTrack.value?.trackId; // Get ID before queue changes
     isShuffled.value = !isShuffled.value;
+    playedTrackIdsInShuffle.value.clear();
 
     if (isShuffled.value) {
-      // Shuffle the original queue and assign to active queue
-      console.log("Shuffle ON");
-      queue.value = shuffleArray(originalQueue.value); 
+      // Store the current queue order if it's not already stored or different
+      // This check ensures originalQueue is set once when shuffle is first enabled for a queue.
+      if (originalQueue.value.length === 0 || originalQueue.value[0]?.trackId !== queue.value[0]?.trackId || originalQueue.value.length !== queue.value.length) {
+        originalQueue.value = [...queue.value];
+      }
+      if (currentTrack.value) {
+        playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
+      }
     } else {
-      // Restore original order
-      console.log("Shuffle OFF");
-      queue.value = [...originalQueue.value];
-    }
+      // When shuffle is turned off, restore the original queue order
+      // and try to find the current playing track in it.
+      if (originalQueue.value.length > 0) {
+        const currentPlayingTrackId = currentTrack.value?.trackId;
+        queue.value = [...originalQueue.value]; 
+        originalQueue.value = []; // Clear originalQueue as it's now active
 
-    // Find the current track in the new (shuffled or restored) queue
-    if (currentTrackId) {
-      const newIndex = queue.value.findIndex((track: Track) => track.trackId === currentTrackId);
-      currentQueueIndex.value = newIndex !== -1 ? newIndex : 0; // Reset to found index or start if not found
-      console.log(`Current track ID ${currentTrackId} found at new index: ${currentQueueIndex.value}`);
-    } else {
-      currentQueueIndex.value = 0; // Or -1 if no track was playing?
-      console.log("No current track ID found, setting index to 0");
+        if (currentPlayingTrackId) {
+          const newIndex = queue.value.findIndex((t: Track) => t.trackId === currentPlayingTrackId);
+          currentQueueIndex.value = (newIndex !== -1) ? newIndex : 0;
+        } else {
+          // If no track was playing, or it's not in original queue, default to start
+          currentQueueIndex.value = (queue.value.length > 0) ? 0 : -1;
+        }
+      }
+      // playedTrackIdsInShuffle is already cleared at the start of the function.
     }
-    
-    // Note: Doesn't automatically restart the track, just sets the order for next/prev/end
   };
 
   const toggleRepeatMode = () => {
@@ -405,13 +492,19 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const _resetState = () => {
+    _cleanupAudioElement();
     isPlaying.value = false;
+    currentQueueIndex.value = -1;
+    // Do not clear queue.value or currentQueueContext here, as _resetState is often called
+    // when playback stops at the end of a queue, but the queue itself should remain.
+    // queue.value = [];
+    // currentQueueContext.value = { type: null, id: null, name: undefined };
     currentTime.value = 0;
     duration.value = 0;
     isLoading.value = false;
-    currentQueueIndex.value = -1;
-    queue.value = [];
-    _cleanupAudioElement();
+    // Clearing playedTrackIdsInShuffle here might be too aggressive.
+    // It's better managed by loadQueue, toggleShuffle, or when shuffle cycle completes.
+    // playedTrackIdsInShuffle.value.clear(); 
   };
 
   // Ensure cleanup when store instance is effectively destroyed (though Pinia stores are generally singletons)
@@ -457,6 +550,7 @@ export const usePlayerStore = defineStore('player', () => {
     startSeeking,         // Expose seek actions
     updateSeekPosition,
     endSeeking,
+    addAlbumToQueue, // Export the new action
 
     // Internal methods exposed for potential direct use or testing (consider if really needed)
   };

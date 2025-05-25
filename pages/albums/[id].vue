@@ -7,6 +7,7 @@ import type { MessageType } from '~/types/message-type';
 import type { NotificationMessage } from '~/types/notification-message';
 import type { QueueContext } from '~/stores/player';
 import TrackItem from '~/components/track/track-item.vue';
+import OptionsMenu from '~/components/options-menu.vue'; // Import OptionsMenu
 import { resolveCoverArtUrl } from '~/utils/formatters';
 const route = useRoute();
 const playerStore = usePlayerStore();
@@ -17,8 +18,11 @@ const playlists = ref<Playlist[]>([]);
 const selectedTrackForPlaylist = ref<Track | null>(null);
 const isAddToPlaylistModalOpen = ref(false);
 const openMenuForTrackId = ref<string | null>(null);
-const showAlbumMenu = ref(false);
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
+const isAddAlbumToPlaylistModalOpen = ref(false);
+
+// Template ref for OptionsMenu
+const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
 
 // Simple notification system
 const showNotification = (message: string, type: MessageType = 'info') => {
@@ -85,29 +89,15 @@ const toggleTrackMenu = (trackId: string, event?: Event): void => {
     openMenuForTrackId.value = null;
   } else {
     openMenuForTrackId.value = trackId;
-    showAlbumMenu.value = false; // Close album menu when opening track menu
-  }
-};
-
-// Toggle the album menu
-const toggleAlbumMenu = (event?: Event): void => {
-  if (event) {
-    event.stopPropagation();
-  }
-  
-  showAlbumMenu.value = !showAlbumMenu.value;
-  if (showAlbumMenu.value) {
-    openMenuForTrackId.value = null; // Close track menu when opening album menu
   }
 };
 
 // Function to add all album tracks to a playlist
 const addAlbumToPlaylist = (playlistId: string): void => {
-  if (!album.value?.tracks || album.value.tracks.length === 0) return;
+  if (!album.value || !album.value.tracks || album.value.tracks.length === 0) return;
   
   const trackIds = album.value.tracks.map((track: Track) => track.trackId);
   addTracksToPlaylist(playlistId, trackIds, `Album "${album.value.title}" added to playlist.`);
-  showAlbumMenu.value = false;
 };
 
 // Generic function to add tracks to a playlist
@@ -135,7 +125,6 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[], succe
 onMounted(() => {
   document.addEventListener('click', () => {
     openMenuForTrackId.value = null;
-    showAlbumMenu.value = false;
   });
 });
 
@@ -155,12 +144,13 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
   
   // Close any open menus
   openMenuForTrackId.value = null;
-  showAlbumMenu.value = false;
 };
 
 // Create a computed property for tracks that are ready for the player
 const playerReadyTracks = computed(() => {
-  if (!album.value?.tracks) return [];
+  if (!album.value) return []; // Add this primary guard for the album object itself
+  if (!album.value.tracks || album.value.tracks.length === 0) return []; // Guard for tracks array
+
   const albumArtist = album.value.artistName || 'Unknown Artist'; 
   const albumCover = album.value.coverPath; // Get album's cover path
   const currentAlbumTitle = album.value.title; // Get album's title
@@ -178,6 +168,58 @@ const isCurrentAlbumLoaded = computed(() => {
   return playerStore.currentQueueContext.type === 'album' && 
          playerStore.currentQueueContext.id === album.value?.albumId;
 });
+
+// --- Album Options Menu ---
+const albumOptions = computed(() => [
+  { id: 'add-to-queue', label: 'Add to Queue', icon: 'mdi:playlist-plus' },
+  { id: 'add-album-to-playlist', label: 'Add Album to Playlist', icon: 'mdi:playlist-music' },
+  { id: 'edit-album', label: 'Edit Album', icon: 'mdi:pencil' },
+  // Add more options as needed
+]);
+
+const handleAlbumOption = (optionId: string): void => {
+  albumOptionsMenuRef.value?.closeMenu(); // Close menu after selection
+  switch (optionId) {
+    case 'add-to-queue':
+      handleAddAlbumToQueue();
+      break;
+    case 'add-album-to-playlist':
+      openAddAlbumToPlaylistModal();
+      break;
+    case 'edit-album':
+      openEditAlbumModal();
+      break;
+    default:
+      console.warn('Unknown album option:', optionId);
+  }
+};
+
+// New function to handle adding album to queue
+const handleAddAlbumToQueue = (): void => {
+  if (!album.value || !playerReadyTracks.value || playerReadyTracks.value.length === 0) {
+    showNotification('No tracks in this album to add to queue.', 'info');
+    return;
+  }
+
+  const albumContext: QueueContext = {
+    type: 'album',
+    id: album.value.albumId,
+    name: album.value.title,
+  };
+
+  playerStore.addAlbumToQueue(playerReadyTracks.value as Track[], albumContext);
+  showNotification(`Album "${album.value.title}" added to queue.`, 'success');
+  playerStore.showQueueSidebar(); // Optionally show the queue
+};
+
+const openAddAlbumToPlaylistModal = (): void => {
+  if (!album.value || !album.value.tracks || album.value.tracks.length === 0) {
+    showNotification('No tracks in this album to add to a playlist.', 'info');
+    return;
+  }
+  fetchPlaylists(); // Ensure playlists are up-to-date
+  isAddAlbumToPlaylistModalOpen.value = true;
+};
 
 // --- Click handler for the main cover button ---
 const playAlbum = (): void => {
@@ -225,9 +267,14 @@ const playTrack = (trackIndex: number): void => {
 
 // Set page title
 useHead(() => ({
-  title: album.value ? `${album.value.title} by ${album.value.artistName}` : 'Album Details'
+  title: album.value ? `${album.value.title} by ${album.value.artistName || 'Unknown Artist'}` : 'Album Details'
 }));
 
+// --- Function to open the album edit modal (placeholder) ---
+const openEditAlbumModal = (): void => {
+  // Placeholder for edit album functionality
+  showNotification(`Edit functionality for album "${album.value?.title}" is not yet implemented.`, 'info');
+};
 </script>
 
 <template>
@@ -235,16 +282,16 @@ useHead(() => ({
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
-    <div v-else-if="error || !album" class="text-center text-error">
-      <p>Could not load album details. Please try again later.</p>
+    <div v-else-if="error" class="text-center text-error">
+      Error loading album: {{ error.message }}
     </div>
-    <div v-else class="grid grid-cols-1 md:grid-cols-album-layout gap-8 items-start">
-      <!-- Album Cover and Info -->
-      <div class="md:sticky md:top-24">
+    <div v-else-if="album" class="flex flex-col md:flex-row gap-8 items-center">
+      <!-- Album Cover -->
+      <div class="md:w-1/3">
         <img 
           :src="resolveCoverArtUrl(album.coverPath)" 
           :alt="`${album.title} cover`"
-          class="w-full aspect-square rounded-lg shadow-xl object-cover mb-4"
+          class="w-full aspect-square rounded-lg shadow-xl object-cover"
         />
       </div>
 
@@ -256,11 +303,11 @@ useHead(() => ({
         <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
           <div class="flex items-center">
             <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
-            <span>{{ album.tracks?.length || 0 }} tracks</span>
+            <span>{{ playerReadyTracks.length || 0 }} tracks</span>
           </div>
           <div class="flex items-center">
             <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
-            <span>{{ formatDuration(album.duration || 0) }}</span>
+            <span>{{ formatDuration(playerReadyTracks?.reduce((total: number, track: Track) => total + (track.duration || 0), 0)) }}</span>
           </div>
         </div>
 
@@ -274,47 +321,17 @@ useHead(() => ({
             Play
           </button>
           
-          <div class="dropdown dropdown-end">
-            <button 
-              tabindex="0" 
-              class="btn btn-ghost gap-2"
-              @click.stop="toggleAlbumMenu"
-            >
-              <Icon name="material-symbols:more-vert" class="w-5 h-5" />
-            </button>
-            <div 
-              v-if="showAlbumMenu" 
-              class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
-              @click.stop
-            >
-              <div class="flex flex-col">
-                <button 
-                  v-for="playlist in playlists" 
-                  :key="playlist.playlistId"
-                  class="px-4 py-2 text-left hover:bg-base-300 rounded flex items-center"
-                  @click="addAlbumToPlaylist(playlist.playlistId)"
-                >
-                  <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
-                  Add to {{ playlist.name }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Edit Album Button (for admins) -->
-          <button 
-            @click="openEditAlbumModal" 
-            class="btn btn-ghost gap-2"
-          >
-            <Icon name="material-symbols:edit" class="w-5 h-5" />
-            Edit Album
-          </button>
+          <OptionsMenu ref="albumOptionsMenuRef" :options="albumOptions" @option-selected="handleAlbumOption">
+          </OptionsMenu>
         </div>
       </div>
     </div>
+    <div v-else class="text-center text-warning">
+      Album data not available or not found.
+    </div>
 
     <!-- Track List -->
-    <div>
+    <div v-if="album">
       <h2 class="text-2xl font-semibold my-4">Tracks</h2>
       <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
         <p class="text-neutral-content italic">No tracks found for this album.</p>
@@ -341,47 +358,47 @@ useHead(() => ({
     </div>
   </div>
 
-  <!-- Add to Playlist Modal -->
+  <!-- Add to Playlist Modal (for single tracks) -->
   <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">
-        <template v-if="selectedTrackForPlaylist">
-          Add "{{ selectedTrackForPlaylist.title }}" to playlist:
-        </template>
-        <template v-else>
-          Add "{{ album?.title }}" to playlist:
-        </template>
-      </h3>
-      <button 
-        @click="isAddToPlaylistModalOpen = false" 
-        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-      >✕</button>
-      
-      <div v-if="!playlists.length" class="text-center text-neutral-content italic py-4">
-        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink></p>
-      </div>
-      <ul v-else class="menu bg-base-100 rounded-box max-h-60 overflow-y-auto">
+      <h3 class="font-bold text-lg">Add "{{ selectedTrackForPlaylist?.title }}" to Playlist</h3>
+      <ul v-if="playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
         <li v-for="playlist in playlists" :key="playlist.playlistId">
-          <a @click="selectedTrackForPlaylist ? addTrackToPlaylist(playlist.playlistId) : addAlbumToPlaylist(playlist.playlistId)">
+          <a @click="addTrackToPlaylist(playlist.playlistId)">
             {{ playlist.name }}
           </a>
         </li>
       </ul>
+      <p v-else-if="!playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
+      <p v-else class="py-4">Loading playlists...</p>
       <div class="modal-action">
-        <button class="btn btn-ghost" @click="isAddToPlaylistModalOpen = false">Cancel</button>
+        <button class="btn" @click="isAddToPlaylistModalOpen = false">Close</button>
       </div>
     </div>
-    <!-- Click outside to close -->
-    <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
   </div>
-  <!-- Simple Notification Component -->
-  <div v-if="notification.visible" 
-       class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md"
-       :class="{
-         'bg-success text-success-content': notification.type === 'success',
-         'bg-error text-error-content': notification.type === 'error',
-         'bg-info text-info-content': notification.type === 'info'
-       }">
+
+  <!-- Add Album to Playlist Modal -->
+  <div v-if="isAddAlbumToPlaylistModalOpen" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Add album "{{ album?.title }}" to Playlist</h3>
+      <ul v-if="playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
+        <li v-for="playlist in playlists" :key="playlist.playlistId">
+          <!-- The existing addAlbumToPlaylist function will be called -->
+          <a @click="addAlbumToPlaylist(playlist.playlistId); isAddAlbumToPlaylistModalOpen = false;">
+            {{ playlist.name }}
+          </a>
+        </li>
+      </ul>
+      <p v-else-if="!playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
+      <p v-else class="py-4">Loading playlists...</p>
+      <div class="modal-action">
+        <button class="btn" @click="isAddAlbumToPlaylistModalOpen = false">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Notification -->
+  <div v-if="notification.visible" class="toast toast-top toast-center min-w-max">
     <div class="flex items-center">
       <Icon 
         :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
