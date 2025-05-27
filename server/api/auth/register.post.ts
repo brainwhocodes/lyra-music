@@ -3,7 +3,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import { users } from '~/server/db/schema';
 import { hashPassword, generateToken } from '~/server/utils/auth';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -38,7 +38,8 @@ export default defineEventHandler(async (event) => {
       email,
       passwordHash: hashedPassword,
       name,
-      createdAt: new Date(now),
+      createdAt: sql`CURRENT_TIMESTAMP`,
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     }).returning();
 
     // Generate JWT token

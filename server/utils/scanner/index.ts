@@ -7,6 +7,7 @@ import { fileUtils } from './file-utils';
 import { albumArtUtils } from './album-art-utils';
 import { dbOperations } from './db-operations';
 import { ProcessedTrack, TrackMetadata } from './types';
+import { getReleaseInfoWithTags, searchReleaseByTitleAndArtist } from '~/server/utils/musicbrainz';
 
 interface ScanLibraryParams {
   libraryId: string;
@@ -57,6 +58,24 @@ async function processAudioFile(
     const trackArtistName = common.artist?.trim();
     const trackAlbumTitle = common.album?.trim();
 
+    // Attempt to extract MusicBrainz Release ID
+    let musicbrainzReleaseIdFromMeta: string | undefined = undefined;
+    const rawMbReleaseId = (common as any).musicbrainz_releaseid; // Use 'as any' to bypass strict type check for now
+    if (Array.isArray(rawMbReleaseId) && rawMbReleaseId.length > 0) {
+      musicbrainzReleaseIdFromMeta = String(rawMbReleaseId[0]); // Ensure it's a string
+    } else if (typeof rawMbReleaseId === 'string') {
+      musicbrainzReleaseIdFromMeta = rawMbReleaseId;
+    }
+    // As a fallback, you could check other potential MBID fields if the above is not found:
+    // if (!musicbrainzReleaseIdFromMeta) {
+    //   const rawMbAlbumId = (common as any).musicbrainz_albumid;
+    //   if (Array.isArray(rawMbAlbumId) && rawMbAlbumId.length > 0) {
+    //     musicbrainzReleaseIdFromMeta = String(rawMbAlbumId[0]);
+    //   } else if (typeof rawMbAlbumId === 'string') {
+    //     musicbrainzReleaseIdFromMeta = rawMbAlbumId;
+    //   }
+    // }
+
     if (!trackTitle) {
       console.warn(`  Track title not found for ${filePath}. Skipping.`);
       return;
@@ -75,7 +94,71 @@ async function processAudioFile(
       userId,
       year: common.year,
       coverPath: albumArtPath,
+      musicbrainzReleaseId: musicbrainzReleaseIdFromMeta, // Pass to findOrCreateAlbum
     });
+
+    // --- Start: MusicBrainz Genre Fetching ---
+    if (albumId) {
+      let mbReleaseId: string | undefined = musicbrainzReleaseIdFromMeta; // Use extracted ID
+      console.log(`  [Genre Fetch] Album ID: ${albumId}, MB Release ID from metadata: ${mbReleaseId}`);
+
+      // If no MBID from metadata, try searching MusicBrainz by album/artist
+      if (!mbReleaseId && trackAlbumTitle) {
+        console.log(`  [Genre Fetch] No MBID from metadata. Searching MusicBrainz for album: "${trackAlbumTitle}", artist: "${trackArtistName || 'Unknown'}"`);
+        const searchResultMbId = await searchReleaseByTitleAndArtist(trackAlbumTitle, trackArtistName);
+        if (searchResultMbId) {
+          console.log(`  [Genre Fetch] Found MBID from search: ${searchResultMbId}`);
+          mbReleaseId = searchResultMbId;
+          // Optionally, update the album in the DB with this found MBID
+          // await dbOperations.updateAlbumMbId(albumId, searchResultMbId);
+        } else {
+          console.log(`  [Genre Fetch] MusicBrainz search found no results for "${trackAlbumTitle}".`);
+        }
+      }
+
+      if (mbReleaseId) {
+        try {
+          console.log(`  [Genre Fetch] Fetching MusicBrainz info for MB Release ID ${mbReleaseId}`);
+          const releaseInfo = await getReleaseInfoWithTags(mbReleaseId);
+          console.log('  [Genre Fetch] Raw MusicBrainz Release Info:', JSON.stringify(releaseInfo, null, 2)); // Added log for raw response
+          
+          if (releaseInfo && releaseInfo.genres && Array.isArray(releaseInfo.genres) && releaseInfo.genres.length > 0) { // Added length check
+            const musicBrainzGenres: { name: string }[] = releaseInfo.genres;
+            console.log(`    [Genre Fetch] Found ${musicBrainzGenres.length} genres from MusicBrainz:`, musicBrainzGenres.map(g => g.name).join(', '));
+
+            for (const genreFromMb of musicBrainzGenres) {
+              if (genreFromMb.name) {
+                console.log(`    [Genre Fetch] Processing genre: ${genreFromMb.name}`); // Added log
+                const genreId = await dbOperations.findOrCreateGenre(genreFromMb.name);
+                if (genreId) {
+                  await dbOperations.linkAlbumToGenre(albumId, genreId);
+                }
+              }
+            }
+          } else if (releaseInfo && releaseInfo.tags && Array.isArray(releaseInfo.tags) && releaseInfo.tags.length > 0) { // Added length check
+            const musicBrainzTags: { name: string, count: number }[] = releaseInfo.tags;
+            console.log(`    [Genre Fetch] No 'genres' found. Found ${musicBrainzTags.length} tags from MusicBrainz:`, musicBrainzTags.map(t => t.name).join(', '));
+
+            for (const tagFromMb of musicBrainzTags) {
+              if (tagFromMb.name) {
+                console.log(`    [Genre Fetch] Processing tag as genre: ${tagFromMb.name}`); // Added log
+                const genreId = await dbOperations.findOrCreateGenre(tagFromMb.name);
+                if (genreId) {
+                  await dbOperations.linkAlbumToGenre(albumId, genreId);
+                }
+              }
+            }
+          } else {
+            console.log(`    [Genre Fetch] No genres or tags found in MusicBrainz response for MB Release ID ${mbReleaseId}.`); // Added log
+          }
+        } catch (error: any) {
+          console.error(`  [Genre Fetch] Error fetching or processing MusicBrainz genres for ${mbReleaseId}: ${error.message}`);
+        }
+      } else {
+        console.log(`  Skipping MusicBrainz genre fetch for album ID ${albumId} as no MBReleaseID is available.`);
+      }
+    }
+    // --- End: MusicBrainz Genre Fetching ---
 
     // Find or create track
     await dbOperations.findOrCreateTrack({
@@ -83,10 +166,7 @@ async function processAudioFile(
       filePath,
       albumId,
       artistId,
-      genre: common.genre?.[0],
-      duration: metadata.format?.duration ? Math.round(metadata.format.duration) : null,
-      trackNumber: common.track?.no,
-      libraryId,
+      metadata,
     });
   } catch (error: any) {
     console.error(`Failed to process file ${filePath}: ${error.message}`);
@@ -173,7 +253,7 @@ export async function pruneOrphanedAlbumArtPaths(): Promise<void> {
         // Update the album to remove the cover path
         await db
           .update(albums)
-          .set({ coverPath: null, updatedAt: new Date() })
+          .set({ coverPath: null, updatedAt: sql`CURRENT_TIMESTAMP` })
           .where(eq(albums.albumId, album.albumId));
           
         prunedCount++;

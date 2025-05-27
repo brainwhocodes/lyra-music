@@ -1,18 +1,18 @@
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { useLazyFetch } from 'nuxt/app';
 
 // Define the expected structure from the API
 interface Genre {
+  genreId: string;
   name: string;
-  album_count: number; // Assuming the API provides this
+  albumCount: number; 
 }
 
 // Fetch genres from the API endpoint /api/genres/index.get.ts
-const { data: genres, pending, error } = await useAsyncData<Genre[]>(
-  'genres-list',
-  () => $fetch('/api/genres'), 
-);
+const { data: genres, pending, error } = await useLazyFetch<Genre[]>('/api/genres', {
+  server: false,
+});
 
 // Simple fuzzy search filtering
 const searchQuery = ref('');
@@ -21,13 +21,17 @@ const filteredGenres = computed(() => {
     return genres.value;
   }
   const lowerQuery = searchQuery.value.toLowerCase();
-  return genres.value?.filter(genre => 
+  return genres.value?.filter((genre: Genre) => 
     genre.name.toLowerCase().includes(lowerQuery)
   );
 });
 
 
 useHead({ title: 'Genres' });
+
+definePageMeta({
+  layout: 'sidebar-layout'
+});
 
 </script>
 
@@ -48,30 +52,24 @@ useHead({ title: 'Genres' });
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
-    <div v-else-if="error" class="alert alert-error shadow-lg">
-      <div>
-        <Icon name="material-symbols:error-outline-rounded" class="w-6 h-6"/>
-        <span>Error loading genres: {{ error.message }}</span>
-      </div>
+    <div v-else-if="error" class="text-center text-error">
+      <p>Error loading genres: {{ error.message }}</p>
     </div>
-    <div v-else-if="filteredGenres && filteredGenres.length > 0">
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <NuxtLink 
-          v-for="genre in filteredGenres" 
-          :key="genre.name" 
-          :to="`/genres/${encodeURIComponent(genre.name)}`" 
-          class="card bg-base-100 hover:bg-base-200 shadow-md transition-colors duration-200 p-4 text-center"
-          :title="`${genre.name} (${genre.album_count} album${genre.album_count !== 1 ? 's' : ''})`"
-        >
-          <h2 class="text-lg font-semibold truncate">{{ genre.name }}</h2>
-          <p class="text-sm text-neutral-content">{{ genre.album_count }} album{{ genre.album_count !== 1 ? 's' : '' }}</p>
-        </NuxtLink>
-      </div>
+    <div v-else-if="filteredGenres.length === 0" class="text-center">
+      <p>No genres found.</p>
     </div>
-    <div v-else class="text-center text-neutral-content italic">
-       <p v-if="searchQuery">No genres found matching "{{ searchQuery }}".</p>
-       <p v-else>No genres found in the library.</p>
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <NuxtLink 
+        v-for="genre in filteredGenres" 
+        :key="genre.genreId" 
+        :to="`/genres/${genre.genreId}`"
+        class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300"
+      >
+        <div class="card-body">
+          <h2 class="card-title truncate">{{ genre.name }}</h2>
+          <p class="text-sm text-base-content/70">{{ genre.albumCount }} album{{ genre.albumCount !== 1 ? 's' : '' }}</p>
+        </div>
+      </NuxtLink>
     </div>
-
   </div>
 </template>

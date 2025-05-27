@@ -4,7 +4,7 @@ export interface Album {
     title: string;
     year: number | null;
     coverPath: string | null;
-    artistId: string;
+    artistId: string | null; // Changed to allow null
     artistName: string;
     tracks: Track[];
 }

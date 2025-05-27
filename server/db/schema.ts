@@ -10,16 +10,16 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   email: text('email').unique().notNull(),
   passwordHash: text('password_hash').notNull(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const artists = sqliteTable('artists', {
   artistId: text('artist_id').primaryKey().$defaultFn(() => uuidv7()),
   artistImage: text('artist_image'),
   name: text('name').notNull(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const albums = sqliteTable('albums', {
@@ -29,8 +29,9 @@ export const albums = sqliteTable('albums', {
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   year: integer('year'),
   coverPath: text('cover_path'),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  musicbrainzReleaseId: text('musicbrainz_release_id'),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const radioChannels = sqliteTable('radio_channels', {
@@ -41,15 +42,15 @@ export const radioChannels = sqliteTable('radio_channels', {
   seedArtistId: text('seed_artist_id').references(() => artists.artistId, { onDelete: 'set null' }),
   seedGenreId: text('seed_genre_id').references(() => genres.genreId, { onDelete: 'set null' }),
   dynamic: integer('dynamic').default(1).notNull(), // 1 = auto-update, 0 = static
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const radioChannelTracks = sqliteTable('radio_channel_tracks', {
   radioTrackId: text('radio_track_id').primaryKey().$defaultFn(() => uuidv7()),
   channelId: text('channel_id').references(() => radioChannels.channelId, { onDelete: 'cascade' }).notNull(),
   trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
-  addedAt: text('added_at').default(sql`datetime('now')`).notNull(),
+  addedAt: text('added_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const tracks = sqliteTable('tracks', {
@@ -63,16 +64,16 @@ export const tracks = sqliteTable('tracks', {
   diskNumber: integer('disk_number'),
   duration: integer('duration'), 
   filePath: text('file_path').notNull().unique(), 
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const playlists = sqliteTable('playlists', {
   playlistId: text('playlist_id').primaryKey().$defaultFn(() => uuidv7()),
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   name: text('name').notNull(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const playlistTracks = sqliteTable('playlist_tracks', {
@@ -80,8 +81,8 @@ export const playlistTracks = sqliteTable('playlist_tracks', {
     playlistId: text('playlist_id').references(() => playlists.playlistId, { onDelete: 'cascade' }).notNull(),
     trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
     order: integer('order'),
-    addedAt: text('added_at').default(sql`datetime('now')`).notNull(),
-    updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+    addedAt: text('added_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const mediaFolders = sqliteTable('media_folders', {
@@ -89,31 +90,31 @@ export const mediaFolders = sqliteTable('media_folders', {
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   path: text('path').notNull(),
   label: text('label'),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const genres = sqliteTable('genres', {
   genreId: text('genre_id').primaryKey().$defaultFn(() => uuidv7()),
   name: text('name').notNull().unique(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const userGenres = sqliteTable('user_genres', {
-  userGenreId: text('user_genre_id').primaryKey().$defaultFn(() => uuidv7()),
-  userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
+export const albumGenres = sqliteTable('album_genres', {
+  albumGenreId: text('album_genre_id').primaryKey().$defaultFn(() => uuidv7()),
+  albumId: text('album_id').references(() => albums.albumId, { onDelete: 'cascade' }).notNull(),
   genreId: text('genre_id').references(() => genres.genreId, { onDelete: 'cascade' }).notNull(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const userArtists = sqliteTable('user_artists', {
   userArtistId: text('user_artist_id').primaryKey().$defaultFn(() => uuidv7()),
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'cascade' }).notNull(),
-  createdAt: text('created_at').default(sql`datetime('now')`).notNull(),
-  updatedAt: text('updated_at').default(sql`datetime('now')`).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 // === Inferred Types ===
@@ -135,8 +136,8 @@ export type NewMediaFolder = InferInsertModel<typeof mediaFolders>;
 export type Genre = InferSelectModel<typeof genres>;
 export type NewGenre = InferInsertModel<typeof genres>;
 
-export type UserGenre = InferSelectModel<typeof userGenres>;
-export type NewUserGenre = InferInsertModel<typeof userGenres>;
+export type AlbumGenre = InferSelectModel<typeof albumGenres>;
+export type NewAlbumGenre = InferInsertModel<typeof albumGenres>;
 
 export type UserArtist = InferSelectModel<typeof userArtists>;
 export type NewUserArtist = InferInsertModel<typeof userArtists>;

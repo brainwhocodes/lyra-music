@@ -55,7 +55,7 @@
         :class="{ 'btn-active btn-primary': selectedGenre === genre }" 
         @click="selectedGenre = genre"
       >
-        {{ genre }}
+        {{ genre.name }}
       </button>
     </div>
 

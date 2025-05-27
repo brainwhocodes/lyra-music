@@ -1,7 +1,7 @@
 import { eq, and, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
-import { artists, albums, tracks, userArtists } from '~/server/db/schema';
+import { artists, albums, tracks, userArtists, genres, albumGenres } from '~/server/db/schema';
 
 interface FindOrCreateArtistParams {
   artistName: string;
@@ -14,6 +14,7 @@ interface FindOrCreateAlbumParams {
   userId: string;
   year?: number;
   coverPath?: string | null;
+  musicbrainzReleaseId?: string | null;
 }
 
 interface FindOrCreateTrackParams {
@@ -21,10 +22,7 @@ interface FindOrCreateTrackParams {
   filePath: string;
   albumId: string | null;
   artistId: string | null;
-  genre?: string;
-  duration?: number | null;
-  trackNumber?: number | null;
-  libraryId: string;
+  metadata: any;
 }
 
 /**
@@ -102,10 +100,10 @@ async function linkUserToArtist(
 
     if (!existingLink) {
       await db.insert(userArtists).values({
-        userArtistId: uuidv7(),
         userId,
         artistId,
-        createdAt: new Date()
+        createdAt: sql`CURRENT_TIMESTAMP`,
+        updatedAt: sql`CURRENT_TIMESTAMP`
       });
       console.log(`  Linked user ${userId} to artist ${artistId} (${artistName})`);
     }
@@ -123,6 +121,7 @@ export async function findOrCreateAlbum({
   userId,
   year,
   coverPath,
+  musicbrainzReleaseId,
 }: FindOrCreateAlbumParams): Promise<string | null> {
   if (!albumTitle) return null;
 
@@ -131,7 +130,8 @@ export async function findOrCreateAlbum({
     const [existingAlbum] = await db
       .select({ 
         albumId: albums.albumId, 
-        coverPath: albums.coverPath 
+        coverPath: albums.coverPath,
+        musicbrainzReleaseId: albums.musicbrainzReleaseId
       })
       .from(albums)
       .where(
@@ -143,17 +143,31 @@ export async function findOrCreateAlbum({
       )
       .limit(1);
 
-    // If album exists, update art if needed
+    // If album exists, update art and musicbrainzReleaseId if needed
     if (existingAlbum) {
       console.log(`  Found existing album: ${albumTitle} (ID: ${existingAlbum.albumId})`);
       
+      const updates: Partial<typeof albums.$inferInsert> = {};
+      let needsUpdate = false;
+
       if (coverPath && coverPath !== existingAlbum.coverPath) {
+        updates.coverPath = coverPath;
+        needsUpdate = true;
         console.log(`  Updating album art for ${albumTitle} to ${coverPath}`);
+      }
+
+      if (musicbrainzReleaseId && musicbrainzReleaseId !== existingAlbum.musicbrainzReleaseId) {
+        updates.musicbrainzReleaseId = musicbrainzReleaseId;
+        needsUpdate = true;
+        console.log(`  Updating MusicBrainz Release ID for ${albumTitle} to ${musicbrainzReleaseId}`);
+      }
+
+      if (needsUpdate) {
         await db
           .update(albums)
-          .set({ 
-            coverPath,
-            updatedAt: sql`CURRENT_TIMESTAMP` 
+          .set({
+            ...updates,
+            updatedAt: sql`CURRENT_TIMESTAMP`
           })
           .where(eq(albums.albumId, existingAlbum.albumId));
       }
@@ -165,14 +179,12 @@ export async function findOrCreateAlbum({
     const [newAlbum] = await db
       .insert(albums)
       .values({
-        albumId: uuidv7(),
         title: albumTitle,
         artistId,
         userId,
         year,
         coverPath,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        musicbrainzReleaseId,
       })
       .returning({ albumId: albums.albumId });
 
@@ -197,39 +209,39 @@ export async function findOrCreateTrack({
   filePath,
   albumId,
   artistId,
-  genre,
-  duration,
-  trackNumber,
-  libraryId,
+  metadata,
 }: FindOrCreateTrackParams): Promise<string | null> {
+  const common = metadata.common || {};
+
   try {
-    // Check if track with this path already exists
     const [existingTrack] = await db
-      .select({ trackId: tracks.trackId })
+      .select({ trackId: tracks.trackId, filePath: tracks.filePath })
       .from(tracks)
       .where(eq(tracks.filePath, filePath))
       .limit(1);
 
-    // Prepare track data with required fields
-    const trackToUpsert = {
-      trackId: uuidv7(),
+    // Common data payload for insert/update, excluding fields with DB defaults or not in schema
+    const trackDataPayload = {
       title,
       albumId,
       artistId,
-      genre,
-      duration,
-      trackNumber,
+      genre: common.genre?.join(', '),
+      year: common.year,
+      trackNumber: common.track?.no,
+      diskNumber: common.disk?.no,
+      duration: metadata.format.duration,
       filePath,
-      libraryId,
-      createdAt: new Date(),
-      updatedAt: new Date()
     };
 
     if (existingTrack) {
-      // Update existing track if file has moved or metadata changed
+      // Update existing track
+      // Consider adding logic here to check if an update is truly necessary by comparing fields
       await db
         .update(tracks)
-        .set(trackToUpsert)
+        .set({
+          ...trackDataPayload,
+          updatedAt: sql`CURRENT_TIMESTAMP`, // Explicitly set updatedAt for updates
+        })
         .where(eq(tracks.trackId, existingTrack.trackId));
       
       console.log(`  Updated track: ${title} (ID: ${existingTrack.trackId})`);
@@ -239,7 +251,10 @@ export async function findOrCreateTrack({
     // Insert new track
     const [newTrack] = await db
       .insert(tracks)
-      .values(trackToUpsert)
+      .values({
+        ...trackDataPayload,
+        // trackId, createdAt, and updatedAt will use schema defaults
+      })
       .returning({ trackId: tracks.trackId });
 
     if (!newTrack) {
@@ -255,8 +270,90 @@ export async function findOrCreateTrack({
   }
 }
 
+/**
+ * Finds or creates a genre in the database.
+ * @param genreName The name of the genre.
+ * @returns The ID of the found or created genre, or null if an error occurs or name is empty.
+ */
+export async function findOrCreateGenre(genreName: string): Promise<string | null> {
+  if (!genreName || genreName.trim() === '') {
+    console.warn('  Attempted to find or create an empty genre name.');
+    return null;
+  }
+
+  const trimmedGenreName = genreName.trim();
+
+  try {
+    const [existingGenre] = await db
+      .select({ genreId: genres.genreId })
+      .from(genres)
+      .where(eq(genres.name, trimmedGenreName))
+      .limit(1);
+
+    if (existingGenre) {
+      console.log(`  Found existing genre: ${trimmedGenreName} (ID: ${existingGenre.genreId})`);
+      return existingGenre.genreId;
+    }
+
+    const [newGenre] = await db
+      .insert(genres)
+      .values({
+        genreId: uuidv7(),
+        name: trimmedGenreName,
+      })
+      .returning({ genreId: genres.genreId });
+
+    if (!newGenre) {
+      console.error(`  Failed to create genre: ${trimmedGenreName}`);
+      return null;
+    }
+
+    console.log(`  Created new genre: ${trimmedGenreName} (ID: ${newGenre.genreId})`);
+    return newGenre.genreId;
+  } catch (error: any) {
+    console.error(`  Database error with genre ${trimmedGenreName}: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Links an album to a genre in the database if the link does not already exist.
+ * @param albumId The ID of the album.
+ * @param genreId The ID of the genre.
+ */
+export async function linkAlbumToGenre(albumId: string, genreId: string): Promise<void> {
+  if (!albumId || !genreId) {
+    console.warn('  Attempted to link album to genre with missing IDs.');
+    return;
+  }
+
+  try {
+    const [existingLink] = await db
+      .select()
+      .from(albumGenres)
+      .where(and(eq(albumGenres.albumId, albumId), eq(albumGenres.genreId, genreId)))
+      .limit(1);
+
+    if (existingLink) {
+      // console.log(`  Album ${albumId} already linked to genre ${genreId}`);
+      return; // Link already exists
+    }
+
+    await db.insert(albumGenres).values({
+      albumGenreId: uuidv7(),
+      albumId,
+      genreId,
+    });
+    console.log(`  Linked album ${albumId} to genre ${genreId}`);
+  } catch (error: any) {
+    console.error(`  Error linking album ${albumId} to genre ${genreId}: ${error.message}`);
+  }
+}
+
 export const dbOperations = {
   findOrCreateArtist,
   findOrCreateAlbum,
   findOrCreateTrack,
+  findOrCreateGenre,
+  linkAlbumToGenre,
 } as const;
