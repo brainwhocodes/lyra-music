@@ -26,7 +26,8 @@ export default defineEventHandler(async (event) => {
       coverPath: albums.coverPath,
       createdAt: albums.createdAt,
       artistId: artists.artistId,
-      artistName: artists.name
+      artistName: artists.name,
+      year: albums.year
     })
       .from(albums)
       .leftJoin(artists, eq(albums.artistId, artists.artistId))

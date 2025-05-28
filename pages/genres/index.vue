@@ -63,7 +63,7 @@ definePageMeta({
         v-for="genre in filteredGenres" 
         :key="genre.genreId" 
         :to="`/genres/${genre.genreId}`"
-        class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300"
+        class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300"
       >
         <div class="card-body">
           <h2 class="card-title truncate">{{ genre.name }}</h2>

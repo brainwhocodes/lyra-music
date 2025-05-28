@@ -98,12 +98,6 @@
               <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
             </button>
           </template>
-          <template #artist>
-            <p class="text-xs truncate" :title="album_item.artistName || 'Unknown Artist'">{{ album_item.artistName || 'Unknown Artist' }}</p>
-          </template>
-          <template #actions>
-            <p class="text-xs text-gray-500 w-full text-left">{{ album_item.year || '' }}</p>
-          </template>
         </AlbumCard>
      </div>
      <div v-else class="text-center text-gray-500 py-10">

@@ -40,13 +40,19 @@
         class="card-title text-sm font-semibold truncate" 
         :title="album.title || 'Unknown Album'"
       >
-        <slot name="title">{{ album.title || 'Unknown Album' }}</slot>
+        {{ album.title || 'Unknown Album' }}
       </h2>
       <p 
-        class="text-xs text-neutral-content/70 truncate"
+        class="text-xs color-primary-content truncate"
         :title="album.artistName || 'Unknown Artist'"
       >
-        <slot name="artist">{{ album.artistName || 'Unknown Artist' }}</slot>
+        {{ album.artistName || 'Unknown Artist' }}
+      </p>
+      <p 
+        class="text-xs color-primary-content truncate"
+        :title="album.year || 'Unknown Year'"
+      >
+        {{ album.year || 'Unknown Year' }}
       </p>
       <div class="card-actions justify-end mt-1">
         <slot name="actions"></slot>

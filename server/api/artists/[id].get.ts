@@ -1,25 +1,32 @@
-import { H3Event } from 'h3';
+import { H3Event, createError } from 'h3';
 import { z } from 'zod';
 import { db } from '~/server/db'; 
-import { artists, albums } from '~/server/db/schema'; 
-import { eq, asc } from 'drizzle-orm';
+import { artists, albums, artistUsers } from '~/server/db/schema'; 
+import { eq, asc, and, inArray } from 'drizzle-orm';
+import { getUserFromEvent } from '~/server/utils/auth';
 
 // Define the expected structure for the response
 const ArtistDetailsSchema = z.object({
-  id: z.number(),
+  artistId: z.string(),
   name: z.string(),
   albums: z.array(z.object({
     albumId: z.string(),
     title: z.string(),
     year: z.number().nullable(),
-    coverPath: z.string().nullable(),
-    artistId: z.number() // Keep artist_id for consistency
+    coverPath: z.string().nullable().optional(),
+    artistId: z.string().nullable().optional() // Make it optional and nullable
   }))
 });
 
 export default defineEventHandler(async (event: H3Event) => {
   const artistIdParam = event.context.params?.id;
-
+  const user = getUserFromEvent(event);
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized',
+    });
+  }
   if (!artistIdParam) {
     throw createError({
       statusCode: 400,
@@ -31,6 +38,24 @@ export default defineEventHandler(async (event: H3Event) => {
   // Fetch artist details
   let artistData: any;
   try {
+    // First, check if this artist is associated with the current user
+    const userArtistRelations = await db
+      .select()
+      .from(artistUsers)
+      .where(and(
+        eq(artistUsers.artistId, artistId),
+        eq(artistUsers.userId, user.userId)
+      ));
+    
+    // If no relation exists, the user doesn't have access to this artist
+    if (userArtistRelations.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Artist not found for this user',
+      });
+    }
+    
+    // Now fetch the artist details
     artistData = await db.select({
         artistId: artists.artistId,
         name: artists.name
@@ -61,11 +86,14 @@ export default defineEventHandler(async (event: H3Event) => {
         albumId: albums.albumId,
         title: albums.title,
         year: albums.year,
-        cover_path: albums.coverPath, // Adjust column name
-        artist_id: albums.artistId
+        coverPath: albums.coverPath,
+        artistId: albums.artistId
       })
       .from(albums)
-      .where(eq(albums.artistId, artistId))
+      .where(and(
+        eq(albums.artistId, artistId),
+        eq(albums.userId, user.userId)
+      ))
       .orderBy(asc(albums.year)); // Order albums by year
 
   } catch (dbError) {
@@ -80,7 +108,12 @@ export default defineEventHandler(async (event: H3Event) => {
   const result = {
     artistId: artistData.artistId,
     name: artistData.name,
-    albums: albumsData ?? []
+    albums: (albumsData ?? []).map(album => ({
+      ...album,
+      // Ensure these fields are properly set even if they're null/undefined
+      coverPath: album.coverPath ?? null,
+      artistId: album.artistId ?? artistId // Default to the parent artist ID if missing
+    }))
   };
 
   // Validate the result against the schema

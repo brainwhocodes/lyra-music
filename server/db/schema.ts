@@ -22,6 +22,18 @@ export const artists = sqliteTable('artists', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+// Junction table for many-to-many relationship between artists and users
+export const artistUsers = sqliteTable('artist_users', {
+  artistUserId: text('artist_user_id').primaryKey().$defaultFn(() => uuidv7()),
+  artistId: text('artist_id')
+    .notNull()
+    .references(() => artists.artistId, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.userId, { onDelete: 'cascade' }),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
 export const albums = sqliteTable('albums', {
   albumId: text('album_id').primaryKey().$defaultFn(() => uuidv7()),
   title: text('title').notNull(),

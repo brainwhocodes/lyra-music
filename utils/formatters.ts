@@ -41,7 +41,7 @@ export const formatTrackDuration = (duration: number | undefined | null): string
  * @returns A web-accessible URL for the cover art or a default image path.
  */
 export function resolveCoverArtUrl(coverPath?: string | null): string {
-  const defaultCover = '/images/covers/default-album-art.webp'; // Ensure this exists in public/images/covers
+  const defaultCover = '/images/icons/default-album-art.webp'; // Ensure this exists in public/images/covers
 
   if (!coverPath) {
     return defaultCover;

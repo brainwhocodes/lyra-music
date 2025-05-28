@@ -1,7 +1,7 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import type { Track } from '~/stores/player'; // Assuming Track type exists and has necessary fields
+import type { Track } from '~/types/track'; // Assuming Track type exists and has necessary fields
 
 const route = useRoute();
 const playerStore = usePlayerStore();
@@ -30,7 +30,7 @@ const { data: artist, pending, error } = await useAsyncData<ArtistDetails>(
 );
 
 const getCoverUrl = (coverPath: string | null | undefined): string => {
-  return coverPath ? `/api/covers${coverPath}` : '/images/covers/default-album-art.webp';
+  return coverPath ? `/api/covers${coverPath}` : '/images/icons/default-album-art.webp';
 };
 
 // Function to play a specific album by this artist
@@ -42,15 +42,16 @@ const playAlbum = async (albumId: number): Promise<void> => {
     if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
       // Ensure the tracks have the necessary info for the player store
       const tracksForPlayer: Track[] = albumDetails.tracks.map((t: any) => ({
-         id: t.id,
+         trackId: t.id,
+         trackNumber: t.trackNumber,
          title: t.title,
          artistName: t.artist_name ?? artist.value?.name ?? 'Unknown Artist', // Prioritize track artist, fallback to album artist
          albumTitle: t.album_title ?? albumDetails.title ?? 'Unknown Album', // Prioritize track album, fallback to fetched album
          filePath: t.file_path,
          duration: t.duration,
-         coverPath: albumDetails.cover_path, // Add album cover to track
-         albumId: albumDetails.id, // Add albumId to track
-         artistId: albumDetails.artist_id, // Add artistId to track
+         coverPath: albumDetails.coverPath, // Add album cover to track
+         albumId: albumDetails.albumId, // Add albumId to track
+         artistId: albumDetails.artistId, // Add artistId to track
       }));
       playerStore.loadQueue(tracksForPlayer);
     } else {

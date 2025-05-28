@@ -4,7 +4,7 @@
     :class="{'text-primary font-semibold bg-base-300': isCurrentTrack}"
     @click="onPlayTrack"
   >
-    <td class="w-12 text-center text-sm text-neutral-content">{{ trackNumber }}</td>
+    <td class="w-12 text-center text-sm color-primary-content">{{ trackNumber }}</td>
     <td class="w-12 text-center">
       <!-- Show pause icon if this track is playing -->
       <Icon 
@@ -32,7 +32,7 @@
         <div v-if="track.artistName" class="text-sm text-base-content/70">{{ track.artistName }}</div>
       </div>
     </td>
-    <td class="text-right text-sm text-neutral-content">{{ formattedDuration }}</td>
+    <td class="text-right text-sm color-primary-content">{{ formattedDuration }}</td>
     <td class="w-16 text-center relative" @click.stop>
       <OptionsMenu>
         <template #default>

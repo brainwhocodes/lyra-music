@@ -20,7 +20,7 @@
        <div 
          v-for="artist in artists" 
          :key="artist.id" 
-         class="card card-compact bg-base-200 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+         class="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
          @click="goToArtist(artist.artistId)" 
          >
          <div class="card-body items-center text-center">

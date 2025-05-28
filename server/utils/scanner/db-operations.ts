@@ -1,7 +1,7 @@
 import { eq, and, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
-import { artists, albums, tracks, userArtists, genres, albumGenres } from '~/server/db/schema';
+import { artists, albums, tracks, artistUsers, genres, albumGenres } from '~/server/db/schema';
 
 interface FindOrCreateArtistParams {
   artistName: string;
@@ -89,23 +89,23 @@ async function linkUserToArtist(
   try {
     const [existingLink] = await db
       .select()
-      .from(userArtists)
+      .from(artistUsers)
       .where(
         and(
-          eq(userArtists.userId, userId), 
-          eq(userArtists.artistId, artistId)
+          eq(artistUsers.userId, userId), 
+          eq(artistUsers.artistId, artistId)
         )
       )
       .limit(1);
 
     if (!existingLink) {
-      await db.insert(userArtists).values({
+      // Create new link
+      await db.insert(artistUsers).values({
+        id: uuidv7(),
         userId,
         artistId,
-        createdAt: sql`CURRENT_TIMESTAMP`,
-        updatedAt: sql`CURRENT_TIMESTAMP`
       });
-      console.log(`  Linked user ${userId} to artist ${artistId} (${artistName})`);
+      console.log(`  Linked user ${userId} to artist ${artistName} (${artistId})`);
     }
   } catch (error: any) {
     console.error(`  Error linking user ${userId} to artist ${artistId}: ${error.message}`);

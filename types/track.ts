@@ -1,7 +1,7 @@
 export interface Track {
   trackId: string;
   title: string;
-  duration: number;
+  duration: number | null;
   filePath: string;
   albumId: string; // Made required, was optional
   trackNumber: number | null; // Added from player.ts

@@ -56,7 +56,7 @@ definePageMeta({
         v-for="album in albums" 
         :key="album.albumId" 
         :to="`/albums/${album.albumId}`"
-        class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow duration-300"
+        class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300"
       >
         <figure v-if="album.coverPath" class="aspect-square">
           <img :src="album.coverPath" :alt="album.title" class="object-cover w-full h-full" />
