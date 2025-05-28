@@ -71,7 +71,7 @@
         <AlbumCard 
           v-for="album_item in albums" 
           :key="album_item.albumId" 
-          :album="{ 
+          :album="{
             albumId: album_item.albumId, 
             title: album_item.title, 
             artistName: album_item.artistName, 
@@ -80,25 +80,13 @@
             artistId: album_item.artistId,
             tracks: album_item.tracks
           }"
+          :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
+          :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
           @card-click="navigateToAlbum(album_item.albumId)"
           @add-to-playlist="openAddToPlaylistModal"
           @edit-album="handleEditAlbum"
-        >
-          <template #image-overlay>
-            <button 
-              @click.stop="playAlbum(album_item.albumId)" 
-              :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
-              class="album-play-button bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none pointer-events-auto album-play-button-hover-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
-              style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
-            >
-              <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
-              <Icon name="material-symbols:play-arrow-rounded" 
-                v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.albumId" 
-                class="w-8! h-8! text-white" />
-              <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
-            </button>
-          </template>
-        </AlbumCard>
+          @play="handleAlbumPlayEvent"
+        />
      </div>
      <div v-else class="text-center text-gray-500 py-10">
         No albums found in the library. Add media folders in Settings.
@@ -232,8 +220,27 @@ const {
 
 const router = useRouter(); 
 
+// --- Event Handler for AlbumCard's @play event ---
+const handleAlbumPlayEvent = async (album: Album): Promise<void> => {
+  console.log(`[LibraryPage] handleAlbumPlayEvent: Received play event for album:`, album);
+  if (!album || !album.albumId) {
+    console.warn('[LibraryPage] handleAlbumPlayEvent: Invalid album data received.');
+    showNotification('Cannot play album: invalid data.', 'error');
+    return;
+  }
+
+  // Call the existing playAlbum logic, now with the full album object or just its ID
+  // If playAlbum is adapted to take an Album object, that's cleaner.
+  // For now, let's assume playAlbum still primarily works off albumId and fetches details if needed.
+  await playAlbum(album.albumId); 
+};
+
 // --- Play Album Functionality ---
 const playAlbum = async (albumId: string): Promise<void> => {
+  console.log(`[LibraryPage] playAlbum: Attempting to play album ID: ${albumId}`);
+  if (!albumId) {
+    console.warn('[LibraryPage] playAlbum: albumId is null or undefined.');
+  }
   // Case 1: The clicked album is already the current one in the player.
   // This means its tracks are in the queue, and one of them is currentTrack.
   if (playerStore.currentTrack?.albumId === albumId) {
@@ -397,11 +404,23 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
 
 // Helper function to load an album with its tracks (extracted from playAlbum logic)
 async function loadAlbum(albumId: string): Promise<Album | null> {
+  console.log(`[LibraryPage] loadAlbum: Fetching details for album ID: ${albumId}`);
   try {
-    const response = await $fetch<Album>(`/api/albums/${albumId}`); 
-    return response;
+    // Directly fetch from the API endpoint that returns a single album with tracks
+    const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`);
+    console.log(`[LibraryPage] loadAlbum: API response for ${albumId}:`, apiResponse);
+
+    // Ensure the response has tracks and they are mapped correctly if necessary
+    // The /api/albums/${albumId} endpoint should ideally return tracks in the correct player-ready format.
+    // If not, mapping similar to pages/albums/index.vue's fetchAlbumDetailsById would be needed here.
+    if (apiResponse && apiResponse.tracks) {
+      // Assuming tracks are already in the correct format from this endpoint
+      return apiResponse; 
+    }
+    console.warn(`[LibraryPage] loadAlbum: No tracks in API response for ${albumId}`);
+    return null;
   } catch (error) {
-    console.error('Error loading album:', error);
+    console.error(`[LibraryPage] loadAlbum: Error fetching album ${albumId}:`, error);
     return null;
   }
 }

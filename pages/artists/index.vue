@@ -18,7 +18,7 @@
     </div>
 
     <!-- Artist Grid View -->
-    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
        <NuxtLink 
          v-for="artist in artists" 
          :key="artist.artistId" 
@@ -38,15 +38,7 @@
          </div>
        </NuxtLink>
     </div>
-    
-    <!-- Artist Table View -->
-    <div v-else>
-      <ArtistTable 
-        :artists="artists" 
-        @artist-click="goToArtist" 
-        @artist-options="handleArtistOptions"
-      />
-    </div>
+  
 
   </div>
 </template>

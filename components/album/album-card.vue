@@ -1,7 +1,7 @@
 <template>
   <div 
     class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out group"
-    @click="$emit('cardClick')"
+    @click="$emit('cardClick', album)"
   >
     <figure class="relative aspect-square overflow-hidden">
       <img 
@@ -10,9 +10,16 @@
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
         @error="handleImageError"
       />
-      <div class="absolute inset-0 pointer-events-none">
-        <slot name="image-overlay"></slot>
-      </div>
+      <button 
+        @click.stop="$emit('play', album)" 
+        :title="buttonTitle"
+        class="bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none shadow-lg hover:bg-primary-focus transition-colors duration-200"
+        style="bottom: 0.5rem; right: 0.5rem; z-index: 10;"
+      >
+        <Icon v-if="isLoadingThisAlbum" name="material-symbols:progress-activity" class="w-7 h-7 animate-spin text-primary-content" />
+        <Icon v-else-if="isPlayingThisAlbum" name="material-symbols:pause-rounded" class="w-7 h-7 text-primary-content" />
+        <Icon v-else name="material-symbols:play-arrow-rounded" class="w-7 h-7 text-primary-content" />
+      </button>
       
       <div class="absolute top-2 right-2 z-20">
         <OptionsMenu>
@@ -66,21 +73,19 @@ import type { Album } from '~/types/album';
 
 const props = defineProps<{
   album: Album;
+  isPlayingThisAlbum?: boolean; // Is this album currently playing?
+  isLoadingThisAlbum?: boolean; // Is this album currently being loaded for playback?
 }>();
 
-const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum']);
+const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum', 'play']);
 
 const imageError = ref(false);
 
-// Emit event to add the album to a playlist
-const addToPlaylist = (): void => {
-  emit('addToPlaylist', props.album);
-};
-
-// Emit event to edit the album
-const editAlbum = (): void => {
-  emit('editAlbum', props.album);
-};
+const buttonTitle = computed(() => {
+  if (props.isLoadingThisAlbum) return 'Loading...';
+  if (props.isPlayingThisAlbum) return 'Pause Album';
+  return 'Play Album';
+});
 
 const handleImageError = () => {
   console.warn(`Error loading image for album: ${props.album.title}, falling back to default.`);
@@ -95,9 +100,5 @@ const handleImageError = () => {
 figure img {
   max-width: 100%;
   max-height: 100%;
-}
-/* Ensure overlay slot content can receive pointer events if needed */
-::v-slotted([name="image-overlay"]) > * {
-  pointer-events: auto;
 }
 </style>

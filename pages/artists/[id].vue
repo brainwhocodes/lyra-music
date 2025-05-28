@@ -1,22 +1,37 @@
 
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
-import type { Track } from '~/types/track'; // Assuming Track type exists and has necessary fields
+import { usePlayerStore, type QueueContext } from '~/stores/player';
+import type { Track } from '~/types/track'; 
+import AlbumCard from '~/components/album/album-card.vue';
+import type { Album } from '~/types/album';
+import { resolveCoverArtUrl } from '~/utils/formatters';
+import { useRouter } from 'vue-router';
+import OptionsMenu from '~/components/options-menu.vue'; 
+import type { Playlist } from '~/types/playlist'; 
+
+definePageMeta({
+  layout: 'sidebar-layout'
+});
 
 const route = useRoute();
 const playerStore = usePlayerStore();
 const artistId = computed(() => route.params.id as string);
+const router = useRouter();
+const isProcessingArtistAction = ref(false); 
+const loadingAlbumIdForPlay = ref<string | null>(null); // For individual album card loading state
 
-// Define the structure for albums within the artist details
+// State for "Add Artist to Playlist" functionality
+const playlists = ref<Playlist[]>([]);
+const isAddArtistToPlaylistModalOpen = ref(false);
+
 interface ArtistAlbum {
   id: string;
   title: string;
   year: number | null;
   cover_path: string | null;
-  artist_id: string; // Included for consistency, though might not be strictly needed here
+  artist_id: string; 
 }
 
-// Define the structure expected from the API endpoint /api/artists/[id].get.ts
 interface ArtistDetails {
   id: string;
   name: string;
@@ -28,65 +43,216 @@ const { data: artist, pending, error } = await useLazyFetch<ArtistDetails>(`/api
   server: false,
 });
 
-const getCoverUrl = (coverPath: string | null | undefined): string => {
-  return coverPath ? `/api/covers${coverPath}` : '/images/icons/default-album-art.webp';
-};
-
-// Function to get artist image URL with fallback
 const getArtistImageUrl = (imagePath: string | null): string => {
   const defaultImage = '/images/icons/default-artist-art.webp';
   if (!imagePath) return defaultImage;
-  
-  // Check if the path is already a full URL
-  if (imagePath.startsWith('http')) return imagePath;
-  
-  // Check if the path is a relative path to the API
-  if (imagePath.startsWith('/')) {
-    return `/api/covers${imagePath}`;
-  }
-  
-  // Otherwise, assume it's a relative path to the images directory
-  return `/images/covers/${imagePath}`;
+  return imagePath;
 };
 
-// Function to play a specific album by this artist
-// Fetches album details (which includes tracks) and loads the queue
-const playAlbum = async (albumId: string): Promise<void> => {
+const navigateToAlbum = (albumId: string) => {
+  router.push(`/albums/${albumId}`);
+};
+
+const mappedAlbums = computed((): Album[] => {
+  if (!artist.value || !artist.value.albums) {
+    return [];
+  }
+  return artist.value.albums.map((artistAlbum: ArtistAlbum): Album => ({
+    albumId: artistAlbum.id,
+    title: artistAlbum.title,
+    artistName: artist.value!.name, 
+    year: artistAlbum.year,
+    coverPath: resolveCoverArtUrl(artistAlbum.cover_path), 
+    artistId: artistAlbum.artist_id, 
+    // tracks: [] // tracks is optional in Album type, can be omitted if not readily available
+  }));
+});
+
+async function fetchPlaylists(): Promise<void> {
   try {
-    // Fetch the full album details, which should include tracks
-    const albumDetails = await $fetch(`/api/albums/${albumId}`); // Assumes this endpoint returns tracks
-    if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
-      // Ensure the tracks have the necessary info for the player store
-      const tracksForPlayer: Track[] = albumDetails.tracks.map((t: any) => ({
-         trackId: t.trackId, // API now returns trackId directly
-         trackNumber: t.trackNumber,
-         title: t.title,
-         artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist', 
-         albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album', 
-         filePath: t.filePath, // API now returns filePath directly
-         duration: t.duration,
-         coverPath: albumDetails.coverPath, // Album cover for all tracks in this context
-         albumId: albumDetails.albumId, 
-         artistId: t.artistId, // Use track's specific artistId from API
-         genre: t.genre, // Added from API
-         year: t.year, // Added from API (trackSpecificYear, aliased to year)
-         diskNumber: t.diskNumber, // Added from API
-         createdAt: t.createdAt, // Added from API
-         updatedAt: t.updatedAt, // Added from API
-         explicit: t.explicit ?? null, // Add explicit field, defaulting to null if not present
-      }));
-      playerStore.loadQueue(tracksForPlayer);
+    const data = await $fetch<Playlist[]>('/api/playlists');
+    playlists.value = data;
+  } catch (e: unknown) {
+    console.error('Error fetching playlists:', e);
+    playlists.value = [];
+  }
+}
+
+onMounted(() => {
+  fetchPlaylists(); 
+});
+
+async function getAllArtistTracks(): Promise<Track[]> {
+  if (!artist.value || !artist.value.albums || artist.value.albums.length === 0) {
+    return [];
+  }
+  isProcessingArtistAction.value = true;
+  let allTracks: Track[] = [];
+  try {
+    for (const artistAlbum of artist.value.albums) {
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${artistAlbum.id}`);
+      if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
+        const tracksFromThisAlbum = albumDetails.tracks.map((t: any): Track => ({
+          trackId: t.trackId,
+          trackNumber: t.trackNumber,
+          title: t.title,
+          artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist',
+          albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+          filePath: t.filePath,
+          duration: t.duration,
+          coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+          albumId: albumDetails.albumId,
+          artistId: t.artistId ?? artist.value?.id,
+          genre: t.genre,
+          year: t.year,
+          diskNumber: t.diskNumber,
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          explicit: t.explicit ?? null,
+        }));
+        allTracks = allTracks.concat(tracksFromThisAlbum);
+      }
+    }
+  } catch (fetchError) {
+    console.error("Error fetching all artist tracks:", fetchError);
+    allTracks = [];
+  } finally {
+    isProcessingArtistAction.value = false;
+  }
+  return allTracks;
+}
+
+const playArtist = async (): Promise<void> => {
+  const tracks = await getAllArtistTracks();
+  if (tracks.length > 0 && artist.value) {
+    const context: QueueContext = { type: 'artist', id: artist.value.id, name: artist.value.name };
+    playerStore.loadQueue(tracks, context, true, 0, false);
+  } else if (artist.value) {
+    console.log(`No playable tracks found for ${artist.value.name}.`);
+  }
+};
+
+const shufflePlayArtist = async (): Promise<void> => {
+  const tracks = await getAllArtistTracks();
+  if (tracks.length > 0 && artist.value) {
+    const context: QueueContext = { type: 'artist', id: artist.value.id, name: artist.value.name };
+    playerStore.loadQueue(tracks, context, true, 0, true);
+  } else if (artist.value) {
+     console.log(`No playable tracks found for ${artist.value.name} to shuffle.`);
+  }
+};
+
+const addArtistTracksToQueue = async (): Promise<void> => {
+  const tracks = await getAllArtistTracks();
+  if (tracks.length > 0 && artist.value) {
+    playerStore.addTracksToQueue(tracks);
+    console.log(`Added all tracks by ${artist.value.name} to queue.`);
+  } else if (artist.value) {
+    console.log(`No playable tracks found for ${artist.value.name} to add to queue.`);
+  }
+};
+
+const artistOptions = computed(() => {
+  if (!artist.value) return [];
+  return [
+    { id: 'add-artist-to-playlist', label: `Add ${artist.value.name}'s music to Playlist`, icon: 'mdi:playlist-music' },
+    // Future options can be added here
+  ];
+});
+
+const openAddArtistToPlaylistModal = (): void => {
+  fetchPlaylists(); 
+  isAddArtistToPlaylistModalOpen.value = true;
+};
+
+const handleArtistOption = (optionId: string): void => {
+  switch (optionId) {
+    case 'add-artist-to-playlist':
+      openAddArtistToPlaylistModal();
+      break;
+    default:
+      console.warn('Unknown artist option:', optionId);
+  }
+};
+
+const addAllArtistTracksToPlaylist = async (playlistId: string): Promise<void> => {
+  if (!artist.value) return;
+  const tracks = await getAllArtistTracks(); 
+  
+  if (tracks.length > 0) {
+    try {
+      await $fetch(`/api/playlists/${playlistId}/tracks`, {
+        method: 'POST',
+        body: { action: 'add', trackIds: tracks.map(t => t.trackId) },
+      });
+      console.log(`${artist.value.name}'s music added to playlist.`); // Keep existing log
+    } catch (e) {
+      console.error('Error adding artist tracks to playlist:', e);
+    }
+  }
+  isAddArtistToPlaylistModalOpen.value = false;
+};
+
+const playAlbum = async (albumIdToPlay: string): Promise<void> => {
+  console.log(`[ArtistPage] playAlbum: Attempting to play album ID: ${albumIdToPlay}`);
+  if (!albumIdToPlay) {
+    console.warn('[ArtistPage] playAlbum: albumIdToPlay is null or undefined.');
+    return;
+  }
+
+  loadingAlbumIdForPlay.value = albumIdToPlay;
+  try {
+    // Check if the clicked album is already playing/paused
+    if (playerStore.currentTrack?.albumId === albumIdToPlay) {
+      console.log(`[ArtistPage] playAlbum: Toggling play/pause for already loaded album: ${albumIdToPlay}`);
+      playerStore.togglePlayPause();
     } else {
-      console.warn(`No tracks found for album ${albumId} or album details missing tracks.`);
-      // Optionally show a user notification
+      console.log(`[ArtistPage] playAlbum: Fetching details for album: ${albumIdToPlay}`);
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${albumIdToPlay}`);
+      console.log(`[ArtistPage] playAlbum: API response for ${albumIdToPlay}:`, albumDetails);
+
+      if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
+        const tracksToPlay = albumDetails.tracks.map((t: any): Track => ({
+          trackId: t.trackId,
+          trackNumber: t.trackNumber,
+          title: t.title,
+          artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist',
+          albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+          filePath: t.filePath,
+          duration: t.duration,
+          coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+          albumId: albumDetails.albumId,
+          artistId: t.artistId ?? artist.value?.id,
+          genre: t.genre,
+          year: t.year,
+          diskNumber: t.diskNumber,
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          explicit: t.explicit ?? null,
+        }));
+        const context: QueueContext = { type: 'album', id: albumDetails.albumId, name: albumDetails.title };
+        console.log(`[ArtistPage] playAlbum: Calling playerStore.loadQueue with context:`, context, 'and tracks:', tracksToPlay);
+        playerStore.loadQueue(tracksToPlay, context, true, 0);
+      } else {
+        console.warn(`[ArtistPage] playAlbum: No tracks found for album ${albumIdToPlay}`);
+      }
     }
   } catch (err) {
-    console.error(`Error fetching or playing album ${albumId}:`, err);
-    // Optionally show a user notification
+    console.error(`[ArtistPage] playAlbum: Error playing album ${albumIdToPlay}:`, err);
+  } finally {
+    loadingAlbumIdForPlay.value = null;
   }
 };
 
-// Set page title
+const handlePlayAlbumEvent = (album: Album): void => {
+  console.log(`[ArtistPage] handlePlayAlbumEvent: Received play event for album:`, album);
+  if (album && album.albumId) {
+    playAlbum(album.albumId);
+  } else {
+    console.warn('[ArtistPage] handlePlayAlbumEvent: Invalid album data received.');
+  }
+};
+
 useHead(() => ({
   title: artist.value ? artist.value.name : 'Artist Details'
 }));
@@ -109,14 +275,10 @@ useHead(() => ({
         <!-- Artist Image -->
         <div class="w-48 h-48 rounded-full overflow-hidden bg-base-200 flex-shrink-0">
           <img 
-            v-if="artist.artistImage" 
             :src="getArtistImageUrl(artist.artistImage)" 
             :alt="artist.name" 
             class="w-full h-full object-cover"
           />
-          <div v-else class="w-full h-full flex items-center justify-center">
-            <Icon name="material-symbols:person" class="w-24 h-24 text-base-content/30" />
-          </div>
         </div>
         
         <!-- Artist Info -->
@@ -125,39 +287,45 @@ useHead(() => ({
           <p v-if="artist.albums" class="text-base-content/70 mt-2">
             {{ artist.albums.length }} {{ artist.albums.length === 1 ? 'album' : 'albums' }}
           </p>
+          <div class="mt-4 flex flex-wrap gap-2 items-center">
+            <button @click="playArtist" class="btn btn-primary" :disabled="isProcessingArtistAction || !artist?.albums?.length">
+              <Icon v-if="!isProcessingArtistAction" name="material-symbols:play-arrow-rounded" class="w-5 h-5 mr-1" />
+              <span v-if="isProcessingArtistAction" class="loading loading-spinner loading-xs mr-2"></span>
+              Play Artist
+            </button>
+            <button @click="shufflePlayArtist" class="btn btn-secondary" :disabled="isProcessingArtistAction || !artist?.albums?.length">
+              <Icon v-if="!isProcessingArtistAction" name="material-symbols:shuffle-rounded" class="w-5 h-5 mr-1" />
+              <span v-if="isProcessingArtistAction" class="loading loading-spinner loading-xs mr-2"></span>
+              Shuffle
+            </button>
+            <button @click="addArtistTracksToQueue" class="btn btn-ghost" :disabled="isProcessingArtistAction || !artist?.albums?.length">
+              <Icon v-if="!isProcessingArtistAction" name="material-symbols:playlist-add-rounded" class="w-5 h-5 mr-1" />
+              <span v-if="isProcessingArtistAction" class="loading loading-spinner loading-xs mr-2"></span>
+              Add to Queue
+            </button>
+            <OptionsMenu
+              :options="artistOptions"
+              @select="handleArtistOption"
+              button-class="btn btn-ghost"
+              :disabled="isProcessingArtistAction || !artist?.albums?.length || !artistOptions.length"
+            >
+              <Icon name="material-symbols:more-vert" class="w-5 h-5" />
+            </OptionsMenu>
+          </div>
         </div>
       </div>
 
       <h2 class="text-2xl font-semibold mb-4">Albums</h2>
-      <div v-if="artist.albums && artist.albums.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        <div
-          v-for="album in artist.albums"
-          :key="album.id"
-          class="card bg-base-100 shadow-xl overflow-hidden group relative"
-        >
-          <figure class="aspect-square relative">
-             <NuxtLink :to="`/albums/${album.id}`" title="View Album">
-              <img
-                :src="getCoverUrl(album.cover_path)"
-                :alt="album.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                loading="lazy"
-              />
-            </NuxtLink>
-            <!-- Overlay Play Button -->
-            <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button @click.stop="playAlbum(album.id)" title="Play Album" class="btn btn-primary btn-circle btn-lg">
-                <Icon name="material-symbols:play-arrow-rounded" class="w-8 h-8" />
-              </button>
-            </div>
-          </figure>
-          <div class="card-body p-3">
-            <NuxtLink :to="`/albums/${album.id}`" class="hover:text-primary transition-colors duration-200" title="View Album">
-              <h2 class="card-title text-sm truncate" :title="album.title">{{ album.title }}</h2>
-            </NuxtLink>
-            <p v-if="album.year" class="text-xs text-neutral-content">{{ album.year }}</p>
-          </div>
-        </div>
+      <div v-if="mappedAlbums.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <AlbumCard 
+          v-for="albumItem in mappedAlbums" 
+          :key="albumItem.albumId" 
+          :album="albumItem"
+          :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === albumItem.albumId"
+          :is-loading-this-album="loadingAlbumIdForPlay === albumItem.albumId"
+          @cardClick="navigateToAlbum(albumItem.albumId)" 
+          @play="handlePlayAlbumEvent" 
+        />
       </div>
       <div v-else>
         <p class="text-neutral-content italic">No albums found for this artist.</p>
@@ -167,5 +335,24 @@ useHead(() => ({
      <div v-else>
        <p class="text-center text-neutral-content italic">Artist not found.</p>
      </div>
+
+    <!-- Modal for Add Artist to Playlist -->
+    <div v-if="isAddArtistToPlaylistModalOpen" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add {{ artist?.name }}'s music to Playlist</h3>
+        <div v-if="playlists.length > 0" class="max-h-60 overflow-y-auto">
+          <ul class="menu p-2 rounded-box">
+            <li v-for="playlist in playlists" :key="playlist.playlistId">
+              <a @click="addAllArtistTracksToPlaylist(playlist.playlistId)">{{ playlist.name }}</a>
+            </li>
+          </ul>
+        </div>
+        <p v-else class="py-4">You have no playlists. Create one first!</p>
+        <div class="modal-action">
+          <button class="btn btn-ghost" @click="isAddArtistToPlaylistModalOpen = false">Cancel</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>

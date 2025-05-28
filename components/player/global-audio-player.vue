@@ -22,10 +22,14 @@
         {{ playerStore.currentTrack.title || 'Unknown Track' }}
       </div>
       <div class="text-sm text-base-content/70 truncate" :title="playerStore.currentTrack.artistName || ''">
-        {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
+        <NuxtLink class="hover:underline" :to="`/artists/${playerStore.currentTrack.artistId}`">
+          {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
+        </NuxtLink>
       </div>
       <div v-if="playerStore.currentTrack.albumTitle" class="text-xs text-base-content/50 truncate">
-        {{ playerStore.currentTrack.albumTitle }}
+        <NuxtLink class="hover:underline" :to="`/albums/${playerStore.currentTrack.albumId}`">
+          {{ playerStore.currentTrack.albumTitle }}
+        </NuxtLink>
       </div>
     </div>
 

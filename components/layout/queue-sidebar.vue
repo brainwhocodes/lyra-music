@@ -22,7 +22,7 @@ const handleClickOnQueueItem = (index: number): void => {
 </script>
 
 <template>
-  <div class="w-96 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-16 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
+  <div class="w-96 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-8 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
     <h2 class="text-xl font-semibold mb-4">Up Next</h2>
 
     <div v-if="queue.length > 0" class="flex-grow overflow-y-auto space-y-1 pr-2">

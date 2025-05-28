@@ -29,26 +29,13 @@
           artistId: album_item.artistId,
           tracks: album_item.tracks
         }"
+        :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
+        :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
         @card-click="goToAlbum(album_item.albumId)"
         @add-to-playlist="openAddToPlaylistModal"
         @edit-album="handleEditAlbum"
-      >
-        <template #image-overlay>
-          <button 
-            @click.stop="playAlbum(album_item.albumId)" 
-            :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
-            class="album-play-button bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none 
-                   album-play-button-hover-effect" 
-            style=" position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
-          >
-            <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
-            <Icon name="material-symbols:play-arrow-rounded" 
-              v-else-if="!playerStore.isPlaying || playerStore.currentTrack?.albumId !== album_item.albumId" 
-              class="w-8! h-8! text-white" />
-            <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
-          </button>
-        </template>
-      </AlbumCard>
+        @play="handleAlbumCardPlayEvent(album_item)" 
+      />
     </div>
 
   </div>
@@ -168,13 +155,15 @@ async function fetchAlbums() {
 
 // New function to fetch and map album details for playback
 async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
+  console.log(`[AlbumsIndex] fetchAlbumDetailsById: Fetching details for album ID: ${id}`);
   currentAlbumLoading.value = true;
   albumIdLoading.value = id;
   let fetchedAlbum: Album | null = null;
 
   try {
     const apiResponse = await $fetch<any>(`/api/albums/${id}`); 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log(`[AlbumsIndex] fetchAlbumDetailsById: API response for ${id}:`, apiResponse);
+    // await new Promise(resolve => setTimeout(resolve, 1000));
     if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
       const tracksForPlayer: Track[] = apiResponse.tracks.map((t: any) => ({
         trackId: t.trackId, 
@@ -198,18 +187,27 @@ async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
         tracks: tracksForPlayer,
       };
     } else {
-      // Potentially handle case where no tracks are found more explicitly if needed
+      console.warn(`[AlbumsIndex] fetchAlbumDetailsById: No tracks found or invalid response for album ID: ${id}`, apiResponse);
     }
   } catch (err) {
+    console.error(`[AlbumsIndex] fetchAlbumDetailsById: Error fetching album ${id}:`, err);
     fetchedAlbum = null; // Ensure it's null on error
   } finally {
     currentAlbumLoading.value = false;
+    // albumIdLoading.value = null; // Resetting here might be too soon if multiple clicks happen
   }
+  console.log(`[AlbumsIndex] fetchAlbumDetailsById: Returning for ${id}:`, fetchedAlbum);
   return fetchedAlbum;
 }
 
 // Function to play a specific album from the list
 const playAlbum = async (albumId: string): Promise<void> => {
+  console.log(`[AlbumsIndex] playAlbum: Attempting to play album ID: ${albumId}`);
+  if (!albumId) {
+    console.warn('[AlbumsIndex] playAlbum: albumId is null or undefined.');
+    return;
+  }
+
   let albumDataForPlayback: Album | null = null;
 
   // Check if the clicked album is already the one stored in currentAlbum
@@ -245,6 +243,16 @@ const playAlbum = async (albumId: string): Promise<void> => {
   }
   
   playerStore.playFromQueue(trackIndex);
+};
+
+// New handler for the 'play' event from AlbumCard
+const handleAlbumCardPlayEvent = (album: Album): void => {
+  console.log(`[AlbumsIndex] handleAlbumCardPlayEvent: Received play event for album:`, album);
+  if (album && album.albumId) {
+    playAlbum(album.albumId);
+  } else {
+    console.error('[AlbumsIndex] handleAlbumCardPlayEvent: Album or albumId is missing.', album);
+  }
 };
 
 // Navigation function
