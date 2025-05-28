@@ -1,6 +1,8 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6">Artists</h1>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold">Artists</h1>
+    </div>
 
     <div v-if="loading" class="text-center">
       <span class="loading loading-lg loading-spinner"></span>
@@ -15,20 +17,35 @@
       No artists found. Have you scanned your libraries?
     </div>
 
-    <!-- Artist List/Grid -->
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-       <div 
+    <!-- Artist Grid View -->
+    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+       <NuxtLink 
          v-for="artist in artists" 
-         :key="artist.id" 
+         :key="artist.artistId" 
+         :to="`/artists/${artist.artistId}`"
          class="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-         @click="goToArtist(artist.artistId)" 
          >
+         <figure class="aspect-square overflow-hidden">
+           <img 
+             :src="getArtistImageUrl(artist.artistImage)" 
+             :alt="artist.artistName" 
+             class="w-full h-full object-cover"
+           />
+         </figure>
          <div class="card-body items-center text-center">
            <h2 class="card-title">{{ artist.artistName }}</h2>
-           <!-- TODO: Add artist image or placeholder -->
            <!-- TODO: Add album/track counts if added to API -->
          </div>
-       </div>
+       </NuxtLink>
+    </div>
+    
+    <!-- Artist Table View -->
+    <div v-else>
+      <ArtistTable 
+        :artists="artists" 
+        @artist-click="goToArtist" 
+        @artist-options="handleArtistOptions"
+      />
     </div>
 
   </div>
@@ -42,8 +59,9 @@ definePageMeta({
 
 // Define type for artist data
 interface Artist {
-  id: number;
-  name: string;
+  artistId: string;
+  artistName: string;
+  artistImage: string | null;
   // Add counts later if implemented
   // albumCount?: number;
   // trackCount?: number;
@@ -53,6 +71,7 @@ interface Artist {
 const artists = ref<Artist[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const viewMode = ref<'grid' | 'table'>('grid');
 
 // Fetch artists on component mount
 onMounted(async () => {
@@ -69,12 +88,21 @@ onMounted(async () => {
   }
 });
 
+function getArtistImageUrl(imagePath: string | null): string {
+  return imagePath ? `${imagePath}` : '/images/icons/default-artist-art.webp';
+}
+
 // Navigation function
-function goToArtist(artistId: number) {
-  // Navigate to a dedicated artist page or filter another page
-  // For now, let's assume we'll filter the albums page
-   navigateTo({ path: '/albums', query: { artistId: artistId } });
-   console.log(`Navigate to view for artist ID: ${artistId}`);
+function goToArtist(artistId: string): void {
+  // Navigate to the artist detail page
+  navigateTo(`/artists/${artistId}`);
+  console.log(`Navigate to view for artist ID: ${artistId}`);
+}
+
+// Handle artist options
+function handleArtistOptions(artist: Artist): void {
+  console.log(`Options for artist: ${artist.artistName}`);
+  // Implement options menu functionality here
 }
 
 </script>

@@ -20,17 +20,33 @@ interface ArtistAlbum {
 interface ArtistDetails {
   id: number;
   name: string;
+  artistImage: string | null;
   albums: ArtistAlbum[];
 }
 
-const { data: artist, pending, error } = await useAsyncData<ArtistDetails>(
-  `artist-${artistId.value}`,
-  () => $fetch(`/api/artists/${artistId.value}`),
-  { watch: [artistId] } // Refetch if the artist ID changes
-);
+const { data: artist, pending, error } = await useLazyFetch<ArtistDetails>(`/api/artists/${artistId.value}`, {
+  server: false,
+});
 
 const getCoverUrl = (coverPath: string | null | undefined): string => {
   return coverPath ? `/api/covers${coverPath}` : '/images/icons/default-album-art.webp';
+};
+
+// Function to get artist image URL with fallback
+const getArtistImageUrl = (imagePath: string | null): string => {
+  const defaultImage = '/images/icons/default-artist-art.webp';
+  if (!imagePath) return defaultImage;
+  
+  // Check if the path is already a full URL
+  if (imagePath.startsWith('http')) return imagePath;
+  
+  // Check if the path is a relative path to the API
+  if (imagePath.startsWith('/')) {
+    return `/api/covers${imagePath}`;
+  }
+  
+  // Otherwise, assume it's a relative path to the images directory
+  return `/images/covers/${imagePath}`;
 };
 
 // Function to play a specific album by this artist
@@ -83,7 +99,28 @@ useHead(() => ({
       </div>
     </div>
     <div v-else-if="artist">
-      <h1 class="text-4xl font-bold mb-6">{{ artist.name }}</h1>
+      <div class="flex flex-col md:flex-row gap-6 items-center mb-6">
+        <!-- Artist Image -->
+        <div class="w-48 h-48 rounded-full overflow-hidden bg-base-200 flex-shrink-0">
+          <img 
+            v-if="artist.artistImage" 
+            :src="getArtistImageUrl(artist.artistImage)" 
+            :alt="artist.name" 
+            class="w-full h-full object-cover"
+          />
+          <div v-else class="w-full h-full flex items-center justify-center">
+            <Icon name="material-symbols:person" class="w-24 h-24 text-base-content/30" />
+          </div>
+        </div>
+        
+        <!-- Artist Info -->
+        <div>
+          <h1 class="text-4xl font-bold">{{ artist.name }}</h1>
+          <p v-if="artist.albums" class="text-base-content/70 mt-2">
+            {{ artist.albums.length }} {{ artist.albums.length === 1 ? 'album' : 'albums' }}
+          </p>
+        </div>
+      </div>
 
       <h2 class="text-2xl font-semibold mb-4">Albums</h2>
       <div v-if="artist.albums && artist.albums.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

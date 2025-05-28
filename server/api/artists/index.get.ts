@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
       .select({
         artistId: artists.artistId,
         artistName: artists.name,
+        artistImage: artists.artistImage,
       })
       .from(artists)
       .leftJoin(albums, eq(artists.artistId, albums.artistId))

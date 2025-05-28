@@ -135,5 +135,10 @@ coverage/
 .fleet
 .idea
 
+# Ignore all files in image directories but keep the directories themselves
+public/images/covers/*
+public/images/artists/*
 
-public/images/covers
+# Don't ignore .gitkeep files to keep empty directories in git
+!public/images/covers/.gitkeep
+!public/images/artists/.gitkeep

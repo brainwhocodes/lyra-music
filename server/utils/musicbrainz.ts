@@ -54,7 +54,7 @@ async function processQueue(): Promise<void> {
           requestTimestamps.push(Date.now());
           try {
             const headers = {
-              'User-Agent': userAgent || 'Otogami/0.0.1 (UserAgentNotSet)', // Default UA if not set
+              'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)', // Default UA if not set
               'Accept': 'application/json',
               ...(requestDetails.options.headers || {}),
             };
@@ -121,14 +121,157 @@ export async function musicBrainzApiRequest<T>(
 
 /**
  * Fetches release information including artist credits, labels, recordings,
- * release groups, media, discids, aliases, tags, and genres.
+ * release groups, media, discids, aliases, tags, genres, and cover art relationships.
  * @param mbid The MusicBrainz ID (MBID) of the release.
- * @returns A promise that resolves with the release data including tags and genres.
+ * @returns A promise that resolves with the release data including tags, genres, and cover art URLs.
  */
 export async function getReleaseInfoWithTags(mbid: string): Promise<any> { 
   return musicBrainzApiRequest(`release/${mbid}`, { 
-    inc: 'artist-credits+labels+recordings+release-groups+media+discids+aliases+tags+genres' 
+    inc: 'artist-credits+labels+recordings+release-groups+media+discids+aliases+tags+genres+url-rels' 
   });
+}
+
+/**
+ * Interface for MusicBrainz release with relations
+ */
+interface MusicBrainzReleaseWithRelations extends MusicBrainzRelease {
+  relations?: Array<{
+    type: string;
+    url?: {
+      resource: string;
+    };
+  }>;
+}
+
+/**
+ * Interface for Cover Art Archive response
+ */
+interface CoverArtArchiveResponse {
+  images?: Array<{
+    front?: boolean;
+    image?: string;
+  }>;
+}
+
+/**
+ * Fetches cover art URLs for a release from MusicBrainz.
+ * @param mbid The MusicBrainz ID (MBID) of the release.
+ * @returns A promise that resolves with an array of cover art URLs, or an empty array if none found.
+ */
+export async function getReleaseCoverArtUrls(mbid: string): Promise<string[]> {
+  try {
+    const release = await musicBrainzApiRequest<MusicBrainzReleaseWithRelations>(`release/${mbid}`, { 
+      inc: 'url-rels' 
+    });
+    
+    const coverArtUrls: string[] = [];
+    
+    if (release?.relations) {
+      for (const relation of release.relations) {
+        // Check for cover art relations
+        if (relation.type === 'cover art' && relation.url?.resource) {
+          const url = relation.url.resource;
+          
+          // Check if it's a Cover Art Archive URL
+          if (url.includes('coverartarchive.org')) {
+            try {
+              // Fetch the actual image URLs from Cover Art Archive
+              const coverArtData = await ofetch<CoverArtArchiveResponse>(`${url}`, { 
+                headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (default)' }
+              });
+              
+              if (coverArtData?.images) {
+                for (const image of coverArtData.images) {
+                  if (image.front && image.image) {
+                    coverArtUrls.push(image.image);
+                    break; // Just get the front cover
+                  }
+                }
+              }
+            } catch (coverArtError: any) {
+              console.error(`  Error fetching cover art from Cover Art Archive: ${coverArtError.message}`);
+            }
+          } else {
+            // Direct image URL
+            coverArtUrls.push(url);
+          }
+        }
+      }
+    }
+    
+    return coverArtUrls;
+  } catch (error: any) {
+    console.error(`  Error fetching cover art URLs for release ${mbid}: ${error.message}`);
+    return [];
+  }
+}
+
+/**
+ * Searches for an artist on MusicBrainz by name.
+ * @param artistName The name of the artist.
+ * @returns The MusicBrainz ID (MBID) of the first matching artist, or null if not found or error.
+ */
+export async function searchArtistByName(
+  artistName: string
+): Promise<string | null> {
+  if (!artistName) return null;
+
+  try {
+    const response = await musicBrainzApiRequest<MusicBrainzArtistSearchResponse>('artist', { 
+      query: `artist:"${artistName}"`, 
+      limit: 1 
+    });
+
+    if (response && response.artists && response.artists.length > 0) {
+      const firstArtist = response.artists[0];
+      console.log(`  [MusicBrainz Search] Found artist: ${firstArtist.name} (ID: ${firstArtist.id})`);
+      return firstArtist.id;
+    }
+    console.log(`  [MusicBrainz Search] No artists found for query: ${artistName}`);
+    return null;
+  } catch (error: any) {
+    console.error(`  [MusicBrainz Search] Error searching for artist: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Fetches artist information including relationships to get image URLs.
+ * @param mbid The MusicBrainz ID (MBID) of the artist.
+ * @returns A promise that resolves with the artist data including relationships.
+ */
+export async function getArtistWithImages(mbid: string): Promise<MusicBrainzArtist | null> { 
+  try {
+    const artist = await musicBrainzApiRequest<MusicBrainzArtist>(`artist/${mbid}`, { 
+      inc: 'url-rels' 
+    });
+    return artist;
+  } catch (error: any) {
+    console.error(`  [MusicBrainz] Error fetching artist data: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Extracts image URLs from artist relationships.
+ * @param artist The MusicBrainz artist object with relationships.
+ * @returns An array of image URLs, or null if none found.
+ */
+export function extractArtistImageUrls(artist: MusicBrainzArtist): string[] {
+  const imageUrls: string[] = [];
+  
+  if (!artist.relations) return imageUrls;
+  
+  for (const relation of artist.relations) {
+    // Check for image relations
+    if (relation.type === 'image' && relation.url?.resource) {
+      // Convert Wikimedia Commons URLs to direct image URLs if needed
+      const url = relation.url.resource;
+      imageUrls.push(url);
+    }
+  }
+  
+  return imageUrls;
 }
 
 // Interface for the structure of a release object in MusicBrainz API responses
@@ -136,6 +279,26 @@ interface MusicBrainzRelease {
   id: string;
   title: string;
   // Add other relevant fields if needed, e.g., 'artist-credit', 'date'
+}
+
+// Interface for the structure of an artist object in MusicBrainz API responses
+interface MusicBrainzArtist {
+  id: string;
+  name: string;
+  relations?: Array<{
+    type: string;
+    url?: {
+      resource: string;
+    };
+  }>;
+}
+
+// Interface for the MusicBrainz API response when searching for artists
+interface MusicBrainzArtistSearchResponse {
+  created?: string;
+  count?: number;
+  offset?: number;
+  artists: MusicBrainzArtist[];
 }
 
 // Interface for the MusicBrainz API response when searching for releases

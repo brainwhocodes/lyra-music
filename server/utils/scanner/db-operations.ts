@@ -2,6 +2,8 @@ import { eq, and, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import { artists, albums, tracks, artistUsers, genres, albumGenres } from '~/server/db/schema';
+import { searchArtistByName, getArtistWithImages, extractArtistImageUrls } from '~/server/utils/musicbrainz';
+import { albumArtUtils } from './album-art-utils';
 
 interface FindOrCreateArtistParams {
   artistName: string;
@@ -27,6 +29,7 @@ interface FindOrCreateTrackParams {
 
 /**
  * Finds or creates an artist and links them to a user.
+ * Also fetches and saves artist images from MusicBrainz if available.
  */
 export async function findOrCreateArtist({
   artistName,
@@ -37,21 +40,30 @@ export async function findOrCreateArtist({
   try {
     // Check if artist exists
     const [existingArtist] = await db
-      .select({ artistId: artists.artistId })
+      .select({ 
+        artistId: artists.artistId,
+        artistImage: artists.artistImage 
+      })
       .from(artists)
       .where(eq(artists.name, artistName))
       .limit(1);
 
     let artistId: string;
+    let shouldFetchArtistImage = false;
     
     if (existingArtist) {
       artistId = existingArtist.artistId;
       console.log(`  Found existing artist: ${artistName} (ID: ${artistId})`);
+      
+      // Check if we need to fetch artist image
+      if (!existingArtist.artistImage) {
+        shouldFetchArtistImage = true;
+      }
     } else {
-      // Create new artist
+      // Create a new artist
       const [newArtist] = await db
         .insert(artists)
-        .values({ 
+        .values({
           artistId: uuidv7(),
           name: artistName 
         })
@@ -64,6 +76,47 @@ export async function findOrCreateArtist({
       
       artistId = newArtist.artistId;
       console.log(`  Created new artist: ${artistName} (ID: ${artistId})`);
+      shouldFetchArtistImage = true;
+    }
+
+    // Fetch artist image from MusicBrainz if needed
+    if (shouldFetchArtistImage) {
+      try {
+        console.log(`  Fetching artist image for: ${artistName}`);
+        // Search for artist on MusicBrainz
+        const mbid = await searchArtistByName(artistName);
+        
+        if (mbid) {
+          // Get artist details with image relations
+          const artistDetails = await getArtistWithImages(mbid);
+          
+          if (artistDetails) {
+            // Extract image URLs
+            const imageUrls = extractArtistImageUrls(artistDetails);
+            
+            if (imageUrls.length > 0) {
+              // Download the first image
+              const imagePath = await albumArtUtils.downloadArtistImage(imageUrls[0]);
+              
+              if (imagePath) {
+                // Update artist with image path
+                await db
+                  .update(artists)
+                  .set({ 
+                    artistImage: imagePath,
+                    updatedAt: sql`CURRENT_TIMESTAMP` 
+                  })
+                  .where(eq(artists.artistId, artistId));
+                  
+                console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
+              }
+            }
+          }
+        }
+      } catch (imageError: any) {
+        // Log error but continue - image is optional
+        console.error(`  Error fetching artist image for ${artistName}: ${imageError.message}`);
+      }
     }
 
     // Link artist to user if not already linked
@@ -101,7 +154,7 @@ async function linkUserToArtist(
     if (!existingLink) {
       // Create new link
       await db.insert(artistUsers).values({
-        id: uuidv7(),
+        artistUserId: uuidv7(),
         userId,
         artistId,
       });
@@ -145,21 +198,33 @@ export async function findOrCreateAlbum({
 
     // If album exists, update art and musicbrainzReleaseId if needed
     if (existingAlbum) {
-      console.log(`  Found existing album: ${albumTitle} (ID: ${existingAlbum.albumId})`);
+      const albumId = existingAlbum.albumId;
       
       const updates: Partial<typeof albums.$inferInsert> = {};
       let needsUpdate = false;
 
+      // Update cover path if we have a new one from local sources
       if (coverPath && coverPath !== existingAlbum.coverPath) {
         updates.coverPath = coverPath;
         needsUpdate = true;
-        console.log(`  Updating album art for ${albumTitle} to ${coverPath}`);
       }
 
+      // Update MusicBrainz release ID if we have a new one
       if (musicbrainzReleaseId && musicbrainzReleaseId !== existingAlbum.musicbrainzReleaseId) {
         updates.musicbrainzReleaseId = musicbrainzReleaseId;
         needsUpdate = true;
-        console.log(`  Updating MusicBrainz Release ID for ${albumTitle} to ${musicbrainzReleaseId}`);
+      }
+      
+      // If we don't have a cover path but we have a MusicBrainz ID, try to get cover art from MusicBrainz
+      if (!existingAlbum.coverPath && !coverPath) {
+        const mbId = musicbrainzReleaseId || existingAlbum.musicbrainzReleaseId;
+        if (mbId) {
+          const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(mbId);
+          if (mbCoverPath) {
+            updates.coverPath = mbCoverPath;
+            needsUpdate = true;
+          }
+        }
       }
 
       if (needsUpdate) {
@@ -169,12 +234,21 @@ export async function findOrCreateAlbum({
             ...updates,
             updatedAt: sql`CURRENT_TIMESTAMP`
           })
-          .where(eq(albums.albumId, existingAlbum.albumId));
+          .where(eq(albums.albumId, albumId));
       }
       
-      return existingAlbum.albumId;
+      return albumId;
     }
 
+    // Try to get cover art from MusicBrainz if we don't have one locally but have a MusicBrainz ID
+    let finalCoverPath = coverPath;
+    if (!coverPath && musicbrainzReleaseId) {
+      const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId);
+      if (mbCoverPath) {
+        finalCoverPath = mbCoverPath;
+      }
+    }
+    
     // Create new album
     const [newAlbum] = await db
       .insert(albums)
@@ -183,17 +257,15 @@ export async function findOrCreateAlbum({
         artistId,
         userId,
         year,
-        coverPath,
+        coverPath: finalCoverPath,
         musicbrainzReleaseId,
       })
       .returning({ albumId: albums.albumId });
 
     if (!newAlbum) {
-      console.error(`  Failed to create album: ${albumTitle}`);
       return null;
     }
 
-    console.log(`  Created new album: ${albumTitle} (ID: ${newAlbum.albumId})`);
     return newAlbum.albumId;
   } catch (error: any) {
     console.error(`  Database error with album ${albumTitle}: ${error.message}`);
