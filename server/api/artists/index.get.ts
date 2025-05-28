@@ -1,6 +1,6 @@
 import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { artists, albums } from '~/server/db/schema';
+import { artists, albums, albumArtists } from '~/server/db/schema';
 import { asc, eq } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
@@ -22,8 +22,10 @@ export default defineEventHandler(async (event) => {
         artistImage: artists.artistImage,
       })
       .from(artists)
-      .leftJoin(albums, eq(artists.artistId, albums.artistId))
+      .innerJoin(albumArtists, eq(artists.artistId, albumArtists.artistId))
+      .innerJoin(albums, eq(albumArtists.albumId, albums.albumId))
       .where(eq(albums.userId, user.userId))
+      .groupBy(artists.artistId, artists.name, artists.artistImage) // Ensure distinct artists
       .orderBy(asc(artists.name))
       .all();
 

@@ -13,6 +13,7 @@ export interface TrackMetadata {
     year?: number;
     genre?: string[];
     track?: { no: number | null; of: number | null };
+    disk?: { no: number | null; of: number | null };
     picture?: Array<{ format: string; data: Uint8Array }>;
   };
   format?: {

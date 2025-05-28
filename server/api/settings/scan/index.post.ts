@@ -34,8 +34,12 @@ export default defineEventHandler(async (event) => {
     }
 
     console.log(`Starting scan for ${foldersToScan.length} media folder(s) for user ${user.userId}...`);
+    
+    // Initialize counters
     let totalScanned = 0;
-    let totalAdded = 0;
+    let totalAddedTracks = 0;
+    let totalAddedArtists = 0;
+    let totalAddedAlbums = 0;
     let totalErrors = 0;
 
     // Sequentially scan each folder to avoid overwhelming the system
@@ -49,13 +53,20 @@ export default defineEventHandler(async (event) => {
       console.log(`Scanning folder: ${folder.path} (ID: ${folder.mediaFolderId}) for user ${user.userId}`);
       try {
         // Call the scanLibrary function with a single object parameter
-        await scanLibrary({
+        const scanStats = await scanLibrary({
           libraryId: folder.mediaFolderId,
           libraryPath: folder.path,
           userId: user.userId
         });
-        console.log(`Successfully scanned folder: ${folder.path}`);
+        
+        // Update totals
         totalScanned++;
+        totalAddedTracks += scanStats.addedTracks;
+        totalAddedArtists += scanStats.addedArtists;
+        totalAddedAlbums += scanStats.addedAlbums;
+        totalErrors += scanStats.errors;
+        
+        console.log(`Successfully scanned folder: ${folder.path}`);
       } catch (error: any) {
         console.error(`Error scanning folder ${folder.path}: ${error.message}`);
         totalErrors++;
@@ -67,6 +78,9 @@ export default defineEventHandler(async (event) => {
       success: true,
       message: `Scan completed for ${totalScanned} folders.`,
       scanned: totalScanned,
+      addedTracks: totalAddedTracks,
+      addedArtists: totalAddedArtists,
+      addedAlbums: totalAddedAlbums,
       errors: totalErrors
     };
   } catch (error: any) {

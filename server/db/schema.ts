@@ -18,6 +18,7 @@ export const artists = sqliteTable('artists', {
   artistId: text('artist_id').primaryKey().$defaultFn(() => uuidv7()),
   artistImage: text('artist_image'),
   name: text('name').notNull(),
+  musicbrainzArtistId: text('musicbrainz_artist_id'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -37,13 +38,26 @@ export const artistUsers = sqliteTable('artist_users', {
 export const albums = sqliteTable('albums', {
   albumId: text('album_id').primaryKey().$defaultFn(() => uuidv7()),
   title: text('title').notNull(),
-  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'set null' }),
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   year: integer('year'),
   coverPath: text('cover_path'),
   musicbrainzReleaseId: text('musicbrainz_release_id'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Junction table for many-to-many relationship between albums and artists
+export const albumArtists = sqliteTable('album_artists', {
+  albumArtistId: text('album_artist_id').primaryKey().$defaultFn(() => uuidv7()),
+  albumId: text('album_id')
+    .notNull()
+    .references(() => albums.albumId, { onDelete: 'cascade' }),
+  artistId: text('artist_id')
+    .notNull()
+    .references(() => artists.artistId, { onDelete: 'cascade' }),
+  isPrimaryArtist: integer('is_primary_artist').default(0),
+  role: text('role').default('performer'),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const radioChannels = sqliteTable('radio_channels', {

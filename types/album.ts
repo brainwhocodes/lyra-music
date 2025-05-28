@@ -6,5 +6,5 @@ export interface Album {
     coverPath: string | null;
     artistId: string | null; // Changed to allow null
     artistName: string;
-    tracks: Track[];
+    tracks?: Track[];
 }

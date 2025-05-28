@@ -1,12 +1,11 @@
 <template>
-  <div class="flex h-screen bg-base-200">
+  <div class="flex h-screen">
     <!-- Sidebar Navigation -->
     <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin">
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
 
       <!-- Recommend Section -->
       <nav class="mb-auto">
-        <h3 class="text-xs uppercase font-semibold text-base-content/60 mb-2">Recommend</h3>
         <ul>
             <li><NuxtLink to="/library" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:explore-outline-rounded" class="w-5 h-5" /> Library</NuxtLink></li>
             <li><NuxtLink to="/albums" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:album-outline" class="w-5 h-5" /> Albums</NuxtLink></li>
@@ -27,8 +26,7 @@
 
     <!-- Main Content Area -->
     <main 
-      class="flex-1 p-6 overflow-y-auto"
-      :class="{ 'pr-[calc(1.5rem+20rem)]': playerStore.isQueueSidebarVisible }"
+      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(1.5rem+20rem)]': playerStore.isQueueSidebarVisible } ]"
     >
       <slot /> <!-- Page content will be injected here -->
     </main>

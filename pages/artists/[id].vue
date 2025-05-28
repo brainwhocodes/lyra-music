@@ -5,20 +5,20 @@ import type { Track } from '~/types/track'; // Assuming Track type exists and ha
 
 const route = useRoute();
 const playerStore = usePlayerStore();
-const artistId = computed(() => parseInt(route.params.id as string));
+const artistId = computed(() => route.params.id as string);
 
 // Define the structure for albums within the artist details
 interface ArtistAlbum {
-  id: number;
+  id: string;
   title: string;
   year: number | null;
   cover_path: string | null;
-  artist_id: number; // Included for consistency, though might not be strictly needed here
+  artist_id: string; // Included for consistency, though might not be strictly needed here
 }
 
 // Define the structure expected from the API endpoint /api/artists/[id].get.ts
 interface ArtistDetails {
-  id: number;
+  id: string;
   name: string;
   artistImage: string | null;
   albums: ArtistAlbum[];
@@ -51,23 +51,28 @@ const getArtistImageUrl = (imagePath: string | null): string => {
 
 // Function to play a specific album by this artist
 // Fetches album details (which includes tracks) and loads the queue
-const playAlbum = async (albumId: number): Promise<void> => {
+const playAlbum = async (albumId: string): Promise<void> => {
   try {
     // Fetch the full album details, which should include tracks
     const albumDetails = await $fetch(`/api/albums/${albumId}`); // Assumes this endpoint returns tracks
     if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
       // Ensure the tracks have the necessary info for the player store
       const tracksForPlayer: Track[] = albumDetails.tracks.map((t: any) => ({
-         trackId: t.id,
+         trackId: t.trackId, // API now returns trackId directly
          trackNumber: t.trackNumber,
          title: t.title,
-         artistName: t.artist_name ?? artist.value?.name ?? 'Unknown Artist', // Prioritize track artist, fallback to album artist
-         albumTitle: t.album_title ?? albumDetails.title ?? 'Unknown Album', // Prioritize track album, fallback to fetched album
-         filePath: t.file_path,
+         artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist', 
+         albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album', 
+         filePath: t.filePath, // API now returns filePath directly
          duration: t.duration,
-         coverPath: albumDetails.coverPath, // Add album cover to track
-         albumId: albumDetails.albumId, // Add albumId to track
-         artistId: albumDetails.artistId, // Add artistId to track
+         coverPath: albumDetails.coverPath, // Album cover for all tracks in this context
+         albumId: albumDetails.albumId, 
+         artistId: t.artistId, // Use track's specific artistId from API
+         genre: t.genre, // Added from API
+         year: t.year, // Added from API (trackSpecificYear, aliased to year)
+         diskNumber: t.diskNumber, // Added from API
+         createdAt: t.createdAt, // Added from API
+         updatedAt: t.updatedAt, // Added from API
       }));
       playerStore.loadQueue(tracksForPlayer);
     } else {

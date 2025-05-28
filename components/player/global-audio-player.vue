@@ -47,7 +47,7 @@
       >
         <Icon name="material-symbols:shuffle-rounded" class="w-5 h-5" />
       </button>
-      <button class="btn btn-ghost btn-xl btn-circle" @click="playerStore.togglePlayPause">
+      <button class="btn btn-xl btn-circle btn-primary" @click="playerStore.togglePlayPause">
         <Icon 
           v-if="playerStore.isLoading"
           name="svg-spinners:180-ring-with-bg"

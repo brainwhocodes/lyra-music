@@ -1,6 +1,6 @@
 import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { artists, albums } from '~/server/db/schema';
+import { artists, albums, albumArtists } from '~/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
@@ -49,10 +49,10 @@ export default defineEventHandler(async (event) => {
         title: albums.title,
         year: albums.year,
         cover_path: albums.coverPath,
-        artist_id: albums.artistId
       })
       .from(albums)
-      .where(and(eq(albums.artistId, artistId), eq(albums.userId, user.userId)))
+      .innerJoin(albumArtists, eq(albums.albumId, albumArtists.albumId))
+      .where(and(eq(albumArtists.artistId, artistId), eq(albums.userId, user.userId)))
       .all();
 
     // Return combined artist details with albums

@@ -3,11 +3,15 @@ export interface Track {
   title: string;
   duration: number | null;
   filePath: string;
-  albumId: string; // Made required, was optional
-  trackNumber: number | null; // Added from player.ts
-  artistId: string | null; // Added from player.ts, made nullable
-  artistName?: string;
-  albumTitle?: string;
-  coverPath?: string | null;
-  // Potentially other fields like genre, year, etc. can be added later
+  albumId: string | null;       // Align with schema: was string, now string | null
+  trackNumber: number | null;
+  artistId: string | null;
+  artistName?: string;          // Optional, for convenience, not in base schema track table
+  albumTitle?: string;          // Optional, for convenience, not in base schema track table
+  coverPath?: string | null;    // Optional, for convenience, not in base schema track table
+  genre: string | null;         // Add from schema
+  year: number | null;          // Add from schema
+  diskNumber: number | null;    // Add from schema
+  createdAt: string;            // Add from schema
+  updatedAt: string;            // Add from schema
 }

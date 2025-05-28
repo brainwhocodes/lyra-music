@@ -138,7 +138,13 @@ coverage/
 # Ignore all files in image directories but keep the directories themselves
 public/images/covers/*
 public/images/artists/*
+public/images/icons/*
 
 # Don't ignore .gitkeep files to keep empty directories in git
 !public/images/covers/.gitkeep
 !public/images/artists/.gitkeep
+!public/images/icons/.gitkeep
+
+# Don't ignore default placeholder images
+!public/images/icons/default-album-art.webp
+!public/images/icons/default-artists-art.webp

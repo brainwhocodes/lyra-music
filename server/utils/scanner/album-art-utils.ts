@@ -124,45 +124,51 @@ export async function processEmbeddedAlbumArt(pictures: Array<{ format: string; 
  * @returns A promise that resolves with the path to the downloaded cover art, or null if not found or error.
  */
 export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: string): Promise<string | null> {
-  if (!musicbrainzReleaseId) return null;
+  if (!musicbrainzReleaseId) {
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Received null/empty MBID. Skipping.`);
+    return null;
+  }
   
+  console.log(`[MB Art DL ${musicbrainzReleaseId}] Attempting to download album art.`);
   try {
-    // Get cover art URLs from MusicBrainz
     const coverArtUrls = await getReleaseCoverArtUrls(musicbrainzReleaseId);
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Received URLs from getReleaseCoverArtUrls:`, coverArtUrls);
     
-    if (coverArtUrls.length === 0) {
+    if (!coverArtUrls || coverArtUrls.length === 0) {
+      console.log(`[MB Art DL ${musicbrainzReleaseId}] No cover art URLs found by getReleaseCoverArtUrls.`);
       return null;
     }
     
-    // Download the first available cover art
-    const imageUrl = coverArtUrls[0];
+    const imageUrl = coverArtUrls[0]; // Using the first URL
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Selected image URL for download: ${imageUrl}`);
     
     await ensureCoversDirectory();
     
-    // Generate a hash of the URL to use as the filename
     const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
-    
-    // Determine the file extension from the URL or default to jpg
     const urlPath = new URL(imageUrl).pathname;
     const extension = path.extname(urlPath).toLowerCase() || '.jpg';
     const cleanExtension = extension.replace('.', '').replace('jpeg', 'jpg');
-    
     const imageFilename = `${hash}.${cleanExtension}`;
     const imageFullPath = path.join(COVERS_DIR, imageFilename);
     
-    // Check if the file already exists
-    if (!await fileUtils.pathExists(imageFullPath)) {
-      // Download the image
-      const response = await ofetch(imageUrl, { responseType: 'arrayBuffer' });
-      const imageBuffer = Buffer.from(response);
-      
-      // Save the image to disk
-      await fileUtils.writeFile(imageFullPath, imageBuffer);
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Target save path: ${imageFullPath}`);
+
+    if (await fileUtils.pathExists(imageFullPath)) {
+      console.log(`[MB Art DL ${musicbrainzReleaseId}] Image already exists at ${imageFullPath}. Skipping download.`);
+      return `/images/covers/${imageFilename}`;
     }
+    
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Downloading image from ${imageUrl}...`);
+    const response = await ofetch(imageUrl, { responseType: 'arrayBuffer', retry: 2, retryDelay: 1000 });
+    const imageBuffer = Buffer.from(response);
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Image downloaded successfully. Size: ${imageBuffer.length} bytes.`);
+    
+    await fileUtils.writeFile(imageFullPath, imageBuffer);
+    console.log(`[MB Art DL ${musicbrainzReleaseId}] Image saved successfully to ${imageFullPath}.`);
     
     return `/images/covers/${imageFilename}`;
   } catch (error: any) {
-    console.error(`Failed to download album cover art from MusicBrainz: ${error.message}`);
+    console.error(`[MB Art DL ${musicbrainzReleaseId}] Failed to download or save album cover art: ${error.message}`, error.stack);
     return null;
   }
 }

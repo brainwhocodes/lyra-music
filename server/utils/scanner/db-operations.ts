@@ -1,18 +1,24 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
-import { artists, albums, tracks, artistUsers, genres, albumGenres } from '~/server/db/schema';
+import { artists, albums, tracks, artistUsers, genres, albumGenres, albumArtists, type Album, type Artist } from '~/server/db/schema';
 import { searchArtistByName, getArtistWithImages, extractArtistImageUrls } from '~/server/utils/musicbrainz';
 import { albumArtUtils } from './album-art-utils';
 
 interface FindOrCreateArtistParams {
   artistName: string;
   userId: string;
+  skipRemoteImageFetch?: boolean;
+}
+
+interface GetOrCreateArtistMinimalParams {
+  artistName: string;
 }
 
 interface FindOrCreateAlbumParams {
   albumTitle: string;
-  artistId: string | null;
+  artistIds: string[];
+  primaryArtistId?: string | null;
   userId: string;
   year?: number;
   coverPath?: string | null;
@@ -34,97 +40,104 @@ interface FindOrCreateTrackParams {
 export async function findOrCreateArtist({
   artistName,
   userId,
-}: FindOrCreateArtistParams): Promise<string | null> {
+  skipRemoteImageFetch = false,
+}: FindOrCreateArtistParams): Promise<Artist | null> {
   if (!artistName) return null;
 
   try {
     // Check if artist exists
-    const [existingArtist] = await db
-      .select({ 
-        artistId: artists.artistId,
-        artistImage: artists.artistImage 
-      })
+    let existingArtistRecord = await db
+      .select()
       .from(artists)
       .where(eq(artists.name, artistName))
       .limit(1);
 
-    let artistId: string;
+    let artistRecord: Artist;
     let shouldFetchArtistImage = false;
     
-    if (existingArtist) {
-      artistId = existingArtist.artistId;
-      console.log(`  Found existing artist: ${artistName} (ID: ${artistId})`);
+    if (existingArtistRecord.length > 0) {
+      artistRecord = existingArtistRecord[0];
+      console.log(`  Found existing artist: ${artistName} (ID: ${artistRecord.artistId}, MBID: ${artistRecord.musicbrainzArtistId})`);
       
-      // Check if we need to fetch artist image
-      if (!existingArtist.artistImage) {
+      if (!artistRecord.artistImage) {
         shouldFetchArtistImage = true;
       }
     } else {
       // Create a new artist
-      const [newArtist] = await db
+      const newArtistResult = await db
         .insert(artists)
         .values({
           artistId: uuidv7(),
           name: artistName 
+          // musicbrainzArtistId will be updated later if found
         })
-        .returning({ artistId: artists.artistId });
+        .returning();
 
-      if (!newArtist) {
+      if (!newArtistResult || newArtistResult.length === 0) {
         console.error(`  Failed to create artist: ${artistName}`);
         return null;
       }
       
-      artistId = newArtist.artistId;
-      console.log(`  Created new artist: ${artistName} (ID: ${artistId})`);
+      artistRecord = newArtistResult[0];
+      console.log(`  Created new artist: ${artistName} (ID: ${artistRecord.artistId})`);
       shouldFetchArtistImage = true;
     }
 
-    // Fetch artist image from MusicBrainz if needed
-    if (shouldFetchArtistImage) {
+    // Fetch artist image from MusicBrainz if needed and not skipped
+    if (shouldFetchArtistImage && !skipRemoteImageFetch) {
       try {
-        console.log(`  Fetching artist image for: ${artistName}`);
-        // Search for artist on MusicBrainz
-        const mbid = await searchArtistByName(artistName);
+        let mbid: string | null = artistRecord.musicbrainzArtistId || null;
+
+        if (!mbid) { // Only search by name if we don't have an MBID
+          console.log(`  Searching MusicBrainz ID for: ${artistName}`);
+          mbid = await searchArtistByName(artistName);
+        }
         
         if (mbid) {
-          // Get artist details with image relations
+          // If mbid was found and not already stored, or if it's different (though unlikely to change often)
+          // Or if the artist was just created and mbid was found
+          if (!artistRecord.musicbrainzArtistId || artistRecord.musicbrainzArtistId !== mbid) {
+            const updatedArtistWithMbid = await db.update(artists).set({
+              musicbrainzArtistId: mbid,
+              updatedAt: sql`CURRENT_TIMESTAMP`
+            }).where(eq(artists.artistId, artistRecord.artistId)).returning();
+            if (updatedArtistWithMbid.length > 0) artistRecord = updatedArtistWithMbid[0];
+            console.log(`  Updated artist ${artistName} with MBID: ${mbid}`);
+          }
+
+          console.log(`  Fetching artist image for: ${artistName} using MBID: ${mbid}`);
           const artistDetails = await getArtistWithImages(mbid);
-          
           if (artistDetails) {
-            // Extract image URLs
             const imageUrls = extractArtistImageUrls(artistDetails);
-            
             if (imageUrls.length > 0) {
-              // Download the first image
               const imagePath = await albumArtUtils.downloadArtistImage(imageUrls[0]);
-              
               if (imagePath) {
-                // Update artist with image path
-                await db
+                const updatedArtistsWithImage = await db
                   .update(artists)
                   .set({ 
                     artistImage: imagePath,
                     updatedAt: sql`CURRENT_TIMESTAMP` 
                   })
-                  .where(eq(artists.artistId, artistId));
-                  
+                  .where(eq(artists.artistId, artistRecord.artistId))
+                  .returning();
+                if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0]; // Update local record
                 console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
               }
             }
           }
+        } else {
+          console.log(`  No MBID found for artist: ${artistName}`);
         }
       } catch (imageError: any) {
-        // Log error but continue - image is optional
         console.error(`  Error fetching artist image for ${artistName}: ${imageError.message}`);
       }
     }
 
-    // Link artist to user if not already linked
     if (userId) {
-      await linkUserToArtist(userId, artistId, artistName);
+      await linkUserToArtist(userId, artistRecord.artistId, artistName);
     }
 
-    return artistId;
+    return artistRecord; // Return the full artist object or relevant fields
   } catch (error: any) {
     console.error(`  Database error with artist ${artistName}: ${error.message}`);
     return null;
@@ -132,141 +145,176 @@ export async function findOrCreateArtist({
 }
 
 /**
- * Links a user to an artist if not already linked.
+ * Finds or creates an artist record by name, returning the basic artist object.
+ * This function does NOT handle image fetching or user linking.
  */
-async function linkUserToArtist(
-  userId: string, 
-  artistId: string, 
-  artistName: string
-): Promise<void> {
+export async function getOrCreateArtistMinimal({
+  artistName,
+}: GetOrCreateArtistMinimalParams): Promise<Artist | null> {
+  if (!artistName) return null;
+
   try {
-    const [existingLink] = await db
+    // Check if artist exists
+    let existingArtistRecord = await db
       .select()
-      .from(artistUsers)
-      .where(
-        and(
-          eq(artistUsers.userId, userId), 
-          eq(artistUsers.artistId, artistId)
-        )
-      )
+      .from(artists)
+      .where(eq(artists.name, artistName))
       .limit(1);
 
-    if (!existingLink) {
-      // Create new link
-      await db.insert(artistUsers).values({
-        artistUserId: uuidv7(),
-        userId,
-        artistId,
-      });
-      console.log(`  Linked user ${userId} to artist ${artistName} (${artistId})`);
+    if (existingArtistRecord.length > 0) {
+      return existingArtistRecord[0];
+    } else {
+      // Create a new artist
+      const newArtistResult = await db
+        .insert(artists)
+        .values({
+          artistId: uuidv7(),
+          name: artistName,
+        })
+        .returning();
+
+      if (!newArtistResult || newArtistResult.length === 0) {
+        return null;
+      }
+      return newArtistResult[0];
     }
   } catch (error: any) {
-    console.error(`  Error linking user ${userId} to artist ${artistId}: ${error.message}`);
+    // console.error(`  [Minimal] Database error creating/finding artist ${artistName}: ${error.message}`);
+    return null;
   }
 }
 
 /**
  * Finds or creates an album and updates its art if needed.
+ * Also creates many-to-many relationships with artists.
  */
 export async function findOrCreateAlbum({
   albumTitle,
-  artistId,
+  artistIds,
+  primaryArtistId,
   userId,
   year,
   coverPath,
   musicbrainzReleaseId,
-}: FindOrCreateAlbumParams): Promise<string | null> {
+}: FindOrCreateAlbumParams): Promise<Album | null> {
   if (!albumTitle) return null;
+  if (artistIds.length === 0) return null;
 
   try {
-    // Check if album exists
-    const [existingAlbum] = await db
-      .select({ 
-        albumId: albums.albumId, 
-        coverPath: albums.coverPath,
-        musicbrainzReleaseId: albums.musicbrainzReleaseId
-      })
+    // Check if album exists by title and user
+    let existingAlbumResult = await db
+      .select()
       .from(albums)
       .where(
         and(
           eq(albums.title, albumTitle),
-          artistId ? eq(albums.artistId, artistId) : sql`${albums.artistId} IS NULL`,
           eq(albums.userId, userId)
         )
       )
       .limit(1);
 
-    // If album exists, update art and musicbrainzReleaseId if needed
-    if (existingAlbum) {
-      const albumId = existingAlbum.albumId;
-      
+    let albumRecord: Album;
+    let isNewAlbum = false;
+
+    if (existingAlbumResult.length > 0) {
+      albumRecord = existingAlbumResult[0];
+      console.log(`  Found existing album: ${albumTitle} (ID: ${albumRecord.albumId})`);
+
+      // Check if we need to update existing album with new info
       const updates: Partial<typeof albums.$inferInsert> = {};
-      let needsUpdate = false;
-
-      // Update cover path if we have a new one from local sources
-      if (coverPath && coverPath !== existingAlbum.coverPath) {
-        updates.coverPath = coverPath;
-        needsUpdate = true;
-      }
-
-      // Update MusicBrainz release ID if we have a new one
-      if (musicbrainzReleaseId && musicbrainzReleaseId !== existingAlbum.musicbrainzReleaseId) {
+      if (musicbrainzReleaseId && !albumRecord.musicbrainzReleaseId) {
         updates.musicbrainzReleaseId = musicbrainzReleaseId;
-        needsUpdate = true;
       }
-      
-      // If we don't have a cover path but we have a MusicBrainz ID, try to get cover art from MusicBrainz
-      if (!existingAlbum.coverPath && !coverPath) {
-        const mbId = musicbrainzReleaseId || existingAlbum.musicbrainzReleaseId;
-        if (mbId) {
-          const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(mbId);
-          if (mbCoverPath) {
-            updates.coverPath = mbCoverPath;
-            needsUpdate = true;
-          }
-        }
+      if (coverPath && !albumRecord.coverPath) {
+        updates.coverPath = coverPath;
+      }
+      if (year !== undefined && year !== null && albumRecord.year === null) { // Check if existing year is null
+        updates.year = year;
       }
 
-      if (needsUpdate) {
-        await db
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = new Date().toISOString(); // Use ISO string for text date column
+        const updatedAlbums = await db
           .update(albums)
-          .set({
-            ...updates,
-            updatedAt: sql`CURRENT_TIMESTAMP`
-          })
-          .where(eq(albums.albumId, albumId));
+          .set(updates)
+          .where(eq(albums.albumId, albumRecord.albumId))
+          .returning();
+        if (updatedAlbums.length > 0) albumRecord = updatedAlbums[0]; // Update local record
+        console.log(`  Updated existing album ${albumTitle} with new details.`);
       }
+    } else {
+      // Create new album
+      isNewAlbum = true;
+      const newAlbumResult = await db
+        .insert(albums)
+        .values({
+          albumId: uuidv7(),
+          title: albumTitle,
+          userId,
+          year,
+          coverPath,
+          musicbrainzReleaseId,
+        })
+        .returning();
       
-      return albumId;
-    }
-
-    // Try to get cover art from MusicBrainz if we don't have one locally but have a MusicBrainz ID
-    let finalCoverPath = coverPath;
-    if (!coverPath && musicbrainzReleaseId) {
-      const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId);
-      if (mbCoverPath) {
-        finalCoverPath = mbCoverPath;
+      if (!newAlbumResult || newAlbumResult.length === 0) {
+        console.error(`  Failed to create album: ${albumTitle}`);
+        return null;
       }
-    }
-    
-    // Create new album
-    const [newAlbum] = await db
-      .insert(albums)
-      .values({
-        title: albumTitle,
-        artistId,
-        userId,
-        year,
-        coverPath: finalCoverPath,
-        musicbrainzReleaseId,
-      })
-      .returning({ albumId: albums.albumId });
-
-    if (!newAlbum) {
-      return null;
+      albumRecord = newAlbumResult[0];
+      console.log(`  Created new album: ${albumTitle} (ID: ${albumRecord.albumId})`);
     }
 
-    return newAlbum.albumId;
+    // Manage album-artist relationships
+    // First, get existing relationships for this album
+    const existingRelations = await db
+      .select({ artistId: albumArtists.artistId })
+      .from(albumArtists)
+      .where(eq(albumArtists.albumId, albumRecord.albumId));
+    const existingArtistIds = new Set(existingRelations.map(r => r.artistId));
+
+    // Determine new artists to link
+    const artistsToLink = artistIds.filter(id => !existingArtistIds.has(id));
+
+    if (artistsToLink.length > 0) {
+      await db.insert(albumArtists).values(
+        artistsToLink.map(artistId => ({
+          albumArtistId: uuidv7(),
+          albumId: albumRecord.albumId,
+          artistId: artistId,
+          isPrimaryArtist: artistId === primaryArtistId ? 1 : 0,
+        }))
+      );
+      console.log(`  Linked ${artistsToLink.length} new artists to album ${albumTitle}.`);
+    }
+
+    // If it's a new album or if the primary artist needs to be set/updated
+    // This logic ensures the primary artist is correctly marked.
+    if (primaryArtistId) {
+      const primaryArtistLink = await db.select().from(albumArtists)
+        .where(and(eq(albumArtists.albumId, albumRecord.albumId), eq(albumArtists.artistId, primaryArtistId))).limit(1);
+
+      if (primaryArtistLink.length === 0 && artistIds.includes(primaryArtistId)) {
+        // Link if not existing and part of current artistIds
+        await db.insert(albumArtists).values({
+          albumArtistId: uuidv7(),
+          albumId: albumRecord.albumId,
+          artistId: primaryArtistId,
+          isPrimaryArtist: 1,
+        });
+      } else if (primaryArtistLink.length > 0 && primaryArtistLink[0].isPrimaryArtist !== 1) {
+        // Update if existing but not marked as primary
+        await db.update(albumArtists)
+          .set({ isPrimaryArtist: 1 })
+          .where(eq(albumArtists.albumArtistId, primaryArtistLink[0].albumArtistId));
+      }
+      // Ensure other artists are not primary if this one is explicitly set
+      await db.update(albumArtists)
+        .set({ isPrimaryArtist: 0 })
+        .where(and(eq(albumArtists.albumId, albumRecord.albumId), sql`${albumArtists.artistId} != ${primaryArtistId}`));
+    }
+
+    return albumRecord; // Return the full album object or relevant fields
   } catch (error: any) {
     console.error(`  Database error with album ${albumTitle}: ${error.message}`);
     return null;
@@ -422,10 +470,71 @@ export async function linkAlbumToGenre(albumId: string, genreId: string): Promis
   }
 }
 
+/**
+ * Checks if an album has any genres linked in the database.
+ * @param albumId The ID of the album.
+ * @returns True if the album has one or more genres, false otherwise.
+ */
+export async function hasAlbumGenres(albumId: string): Promise<boolean> {
+  if (!albumId) {
+    console.warn('  hasAlbumGenres called with no albumId.');
+    return false;
+  }
+  try {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(albumGenres)
+      .where(eq(albumGenres.albumId, albumId))
+      .limit(1);
+
+    return result.length > 0 && result[0].count > 0;
+  } catch (error: any) {
+    console.error(`  Error checking genres for album ${albumId}: ${error.message}`);
+    return false; // Return false on error to prevent unintended blocking of MB calls
+  }
+}
+
+/**
+ * Links a user to an artist if not already linked.
+ */
+async function linkUserToArtist(
+  userId: string, 
+  artistId: string, 
+  artistName: string
+): Promise<void> {
+  try {
+    const [existingLink] = await db
+      .select()
+      .from(artistUsers)
+      .where(
+        and(
+          eq(artistUsers.userId, userId), 
+          eq(artistUsers.artistId, artistId)
+        )
+      )
+      .limit(1);
+
+    if (!existingLink) {
+      // Create new link
+      await db.insert(artistUsers).values({
+        artistUserId: uuidv7(),
+        userId,
+        artistId,
+      });
+      console.log(`  Linked user ${userId} to artist ${artistName} (${artistId})`);
+    }
+  } catch (error: any) {
+    console.error(`  Error linking user ${userId} to artist ${artistId}: ${error.message}`);
+  }
+}
+
 export const dbOperations = {
   findOrCreateArtist,
+  getOrCreateArtistMinimal,
   findOrCreateAlbum,
   findOrCreateTrack,
   findOrCreateGenre,
   linkAlbumToGenre,
+  linkUserToArtist,
+  hasAlbumGenres,
 } as const;

@@ -1,7 +1,7 @@
 // server/api/albums/index.get.ts
 import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '~/server/db'
-import { albums, artists, tracks } from '~/server/db/schema'
+import { albums, artists, tracks, albumArtists } from '~/server/db/schema'
 import { eq, asc, like, SQL, and } from 'drizzle-orm'
 import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
@@ -25,12 +25,13 @@ export default defineEventHandler(async (event) => {
       title: albums.title,
       coverPath: albums.coverPath,
       createdAt: albums.createdAt,
-      artistId: artists.artistId,
-      artistName: artists.name,
+      artistId: artists.artistId, // This will be the primary artist's ID
+      artistName: artists.name,   // This will be the primary artist's name
       year: albums.year
     })
       .from(albums)
-      .leftJoin(artists, eq(albums.artistId, artists.artistId))
+      .leftJoin(albumArtists, and(eq(albums.albumId, albumArtists.albumId), eq(albumArtists.isPrimaryArtist, 1)))
+      .leftJoin(artists, eq(albumArtists.artistId, artists.artistId))
       .leftJoin(tracks, eq(albums.albumId, tracks.albumId));
 
     const conditions: SQL[] = [];

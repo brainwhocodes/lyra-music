@@ -15,24 +15,35 @@ if (!userAgent) {
   );
 }
 
-const MAX_REQUESTS_PER_INTERVAL = 50;
-const INTERVAL_MS = 1000; // 1 second
+const MAX_REQUESTS_PROCESSED_AT_ONCE = 1; // Process one request at a time from queue for delay logic
+const INTRA_BURST_DELAY_MS = 200;    // 200ms = 5 requests per second within a burst
 
-const requestTimestamps: number[] = [];
+// New burst parameters
+const BURST_SIZE = 50;
+const BURST_PAUSE_MS = 5000; // 5 seconds
+
+// Options for musicBrainzApiRequest, extending ofetch options
+interface MusicBrainzRequestOptions extends Record<string, any> {
+  bypassBurstIncrement?: boolean;
+}
+
+const requestTimestamps: number[] = []; // Used for INTRA_BURST_DELAY_MS
 const requestQueue: Array<{
   url: string;
-  options: Record<string, any>; // For ofetch options
+  fetchOptions: Record<string, any>; // For ofetch options, excluding bypassBurstIncrement
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
+  bypassBurstIncrement?: boolean; // Flag to bypass burst counter increment
 }> = [];
 let isProcessingQueue = false;
+let burstRequestCount = 0; // Counter for requests in the current burst
 
 /**
- * Removes timestamps older than the defined interval from the log.
+ * Removes timestamps older than the defined intra-burst interval from the log.
  */
 function cleanupTimestamps(): void {
   const now = Date.now();
-  while (requestTimestamps.length > 0 && requestTimestamps[0] <= now - INTERVAL_MS) {
+  while (requestTimestamps.length > 0 && requestTimestamps[0] <= now - INTRA_BURST_DELAY_MS) {
     requestTimestamps.shift();
   }
 }
@@ -46,29 +57,57 @@ async function processQueue(): Promise<void> {
 
   try {
     while (requestQueue.length > 0) {
-      cleanupTimestamps();
+      cleanupTimestamps(); // For intra-burst pacing
 
-      if (requestTimestamps.length < MAX_REQUESTS_PER_INTERVAL) {
+      if (burstRequestCount >= BURST_SIZE) {
+        console.log(`MusicBrainz burst limit of ${BURST_SIZE} requests reached. Pausing for ${BURST_PAUSE_MS / 1000} seconds.`);
+        await new Promise(resolve => setTimeout(resolve, BURST_PAUSE_MS));
+        burstRequestCount = 0; // Reset burst counter
+        requestTimestamps.length = 0; // Clear timestamps for the new burst pacing
+        console.log(`MusicBrainz pause finished. Resuming queue. Queue size: ${requestQueue.length}`);
+        continue; // Re-evaluate conditions for the next request
+      }
+
+      if (requestTimestamps.length < MAX_REQUESTS_PROCESSED_AT_ONCE) {
         const requestDetails = requestQueue.shift();
         if (requestDetails) {
-          requestTimestamps.push(Date.now());
+          requestTimestamps.push(Date.now()); // Mark time for intra-burst pacing
           try {
             const headers = {
               'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)', // Default UA if not set
               'Accept': 'application/json',
-              ...(requestDetails.options.headers || {}),
+              ...(requestDetails.fetchOptions.headers || {}),
             };
-            const response = await ofetch(requestDetails.url, { ...requestDetails.options, headers });
+            // Configure ofetch retries for server errors and rate limit responses
+            const response = await ofetch(requestDetails.url, {
+              ...requestDetails.fetchOptions,
+              headers,
+              retry: 3,
+              retryDelay: 2000, // ms
+              retryStatusCodes: [408, 429, 500, 502, 503, 504] // Common codes for retry
+            });
             requestDetails.resolve(response);
-          } catch (error) {
+            if (!requestDetails.bypassBurstIncrement) {
+              burstRequestCount++; // Increment only if not bypassed
+            }
+          } catch (error: any) {
+            console.error(`MusicBrainz API Error for URL: ${requestDetails.url}. Status: ${error.status || 'N/A'}. Message: ${error.message}.`);
+            // Still increment burst count even if request fails, if not bypassed, as an attempt was made
+            if (!requestDetails.bypassBurstIncrement) {
+              burstRequestCount++; 
+            }
             requestDetails.reject(error);
           }
         }
       } else {
-        // Rate limit hit, calculate wait time for the oldest request in the window to expire
+        // Intra-burst delay needed to maintain desired rate (e.g., 5 req/s)
         const oldestRequestTime = requestTimestamps[0];
-        const waitTime = (oldestRequestTime + INTERVAL_MS) - Date.now();
-        await new Promise(resolve => setTimeout(resolve, Math.max(0, waitTime) + 10)); // Add a small buffer (10ms)
+        const waitTime = (oldestRequestTime + INTRA_BURST_DELAY_MS) - Date.now();
+        // Optional: log intra-burst delay if needed for debugging
+        // if (requestQueue.length > 0) {
+        //   console.log(`MusicBrainz intra-burst delay. Waiting for ${Math.max(0, waitTime) + 10}ms. Burst: ${burstRequestCount}/${BURST_SIZE}. Queue: ${requestQueue.length}`);
+        // }
+        await new Promise(resolve => setTimeout(resolve, Math.max(0, waitTime) + 10)); 
       }
     }
   } finally {
@@ -86,7 +125,7 @@ async function processQueue(): Promise<void> {
 export async function musicBrainzApiRequest<T>(
   endpoint: string,
   params: Record<string, string | number | undefined> = {},
-  options: Record<string, any> = {}
+  options: MusicBrainzRequestOptions = {} // Use our custom options type
 ): Promise<T> {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -98,12 +137,16 @@ export async function musicBrainzApiRequest<T>(
 
   const url = `${MUSICBRAINZ_API_BASE_URL}${endpoint}?${query.toString()}`;
 
+  // Separate our custom option from ofetch options
+  const { bypassBurstIncrement, ...fetchOptions } = options;
+
   return new Promise<T>((resolve, reject) => {
     requestQueue.push({
       url,
-      options,
+      fetchOptions, // Pass the remaining (ofetch) options
       resolve,
       reject,
+      bypassBurstIncrement, // Store our custom flag
     });
     if (!isProcessingQueue) {
       processQueue().catch(error => {
@@ -165,43 +208,82 @@ export async function getReleaseCoverArtUrls(mbid: string): Promise<string[]> {
     });
     
     const coverArtUrls: string[] = [];
-    
+    console.log(`[CAA Debug ${mbid}] Initial release relations:`, JSON.stringify(release?.relations, null, 2));
+
     if (release?.relations) {
       for (const relation of release.relations) {
-        // Check for cover art relations
         if (relation.type === 'cover art' && relation.url?.resource) {
-          const url = relation.url.resource;
-          
-          // Check if it's a Cover Art Archive URL
-          if (url.includes('coverartarchive.org')) {
-            try {
-              // Fetch the actual image URLs from Cover Art Archive
-              const coverArtData = await ofetch<CoverArtArchiveResponse>(`${url}`, { 
-                headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (default)' }
-              });
-              
-              if (coverArtData?.images) {
-                for (const image of coverArtData.images) {
-                  if (image.front && image.image) {
-                    coverArtUrls.push(image.image);
-                    break; // Just get the front cover
-                  }
+          const coverArtArchiveUrl = relation.url.resource;
+          console.log(`[CAA Debug ${mbid}] Found relation URL to Cover Art Archive: ${coverArtArchiveUrl}`);
+          try {
+            const caaResponse = await ofetch<CoverArtArchiveResponse>(coverArtArchiveUrl, {
+              headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
+              retry: 2, 
+              retryDelay: 1000,
+            });
+            console.log(`[CAA Debug ${mbid}] Response from ${coverArtArchiveUrl}:`, JSON.stringify(caaResponse, null, 2));
+
+            if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {
+              for (const image of caaResponse.images) {
+                if (image.front && image.image) { 
+                  coverArtUrls.push(image.image);
+                  console.log(`[CAA Debug ${mbid}] Added front cover from relation: ${image.image}`);
                 }
               }
-            } catch (coverArtError: any) {
-              console.error(`  Error fetching cover art from Cover Art Archive: ${coverArtError.message}`);
+              if (coverArtUrls.length === 0 && caaResponse.images[0]?.image) {
+                 coverArtUrls.push(caaResponse.images[0].image);
+                 console.log(`[CAA Debug ${mbid}] Added first available cover from relation (no front found): ${caaResponse.images[0].image}`);
+              }
+            } else {
+              console.log(`[CAA Debug ${mbid}] No images found in CAA response from relation URL ${coverArtArchiveUrl}. Images array:`, caaResponse?.images);
             }
-          } else {
-            // Direct image URL
-            coverArtUrls.push(url);
+          } catch (caaError: any) {
+            console.warn(`[CAA Debug ${mbid}] Could not fetch or parse from Cover Art Archive URL ${coverArtArchiveUrl}: ${caaError.message}`);
           }
         }
       }
     }
     
+    if (coverArtUrls.length === 0) {
+      console.log(`[CAA Debug ${mbid}] No direct cover art URLs found via relations. Attempting fallback to direct CAA query.`);
+      try {
+        const caaDirectUrl = `https://coverartarchive.org/release/${mbid}`;
+        console.log(`[CAA Debug ${mbid}] Fetching directly from CAA: ${caaDirectUrl}`);
+        const caaResponse = await ofetch<CoverArtArchiveResponse>(caaDirectUrl, {
+          headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
+          retry: 2,
+          retryDelay: 1000,
+        });
+        console.log(`[CAA Debug ${mbid}] Response from direct CAA query ${caaDirectUrl}:`, JSON.stringify(caaResponse, null, 2));
+
+        if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {
+          for (const image of caaResponse.images) {
+            if (image.front && image.image) {
+              coverArtUrls.push(image.image);
+              console.log(`[CAA Debug ${mbid}] Added front cover from direct CAA query: ${image.image}`);
+            }
+          }
+          if (coverArtUrls.length === 0 && caaResponse.images[0]?.image) {
+             coverArtUrls.push(caaResponse.images[0].image);
+             console.log(`[CAA Debug ${mbid}] Added first available cover from direct CAA query (no front found): ${caaResponse.images[0].image}`);
+          }
+        } else {
+          console.log(`[CAA Debug ${mbid}] No images found in direct CAA response from ${caaDirectUrl}. Images array:`, caaResponse?.images);
+        }
+      } catch (directCaaError: any) {
+        console.warn(`[CAA Debug ${mbid}] Error fetching directly from Cover Art Archive for ${mbid}: ${directCaaError.message}`);
+      }
+    }
+
+    if (coverArtUrls.length > 0) {
+      console.log(`[CAA Debug ${mbid}] Final cover art URLs found for ${mbid}:`, coverArtUrls);
+    } else {
+      console.log(`[CAA Debug ${mbid}] No cover art URLs found for release ${mbid} after all checks.`);
+    }
+    
     return coverArtUrls;
   } catch (error: any) {
-    console.error(`  Error fetching cover art URLs for release ${mbid}: ${error.message}`);
+    console.error(`[CAA Debug ${mbid}] Error fetching release relations for cover art (MBID: ${mbid}): ${error.message}`);
     return [];
   }
 }

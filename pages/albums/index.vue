@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-4">
+  <div class="w-full h-full p-4 bg-base-200">
     <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
 
     <div v-if="loading" class="text-center">
@@ -37,8 +37,9 @@
           <button 
             @click.stop="playAlbum(album_item.albumId)" 
             :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
-            class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
-            style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
+            class="album-play-button bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none 
+                   album-play-button-hover-effect" 
+            style=" position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
           >
             <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
             <Icon name="material-symbols:play-arrow-rounded" 
@@ -343,5 +344,16 @@ watch(() => route.query.artistId, () => {
 }
 .album-play-button {
     cursor: pointer;  
+}
+.album-play-button-hover-effect {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-in-out;
+}
+
+/* Targets the button when the AlbumCard (which has .group) is hovered */
+:deep(.group:hover) .album-play-button-hover-effect {
+  opacity: 1;
+  pointer-events: auto;
 }
 </style>

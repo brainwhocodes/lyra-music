@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="w-full h-full p-4 bg-base-200">
     <!-- Top Bar: Search + Sort + User -->
-    <div class="flex justify-between items-center mb-2 sticky top-0 bg-base-200/80 backdrop-blur py-2 z-10">
+    <div class="flex justify-between items-center mb-2 sticky top-0  backdrop-blur py-2 z-10">
        <div class="form-control">
          <input 
            type="text" 
@@ -51,7 +51,7 @@
         v-else 
         v-for="genre in genres" 
         :key="genre"
-        class="btn btn-xs"
+        class="btn btn-xs btn-ghost"
         :class="{ 'btn-active btn-primary': selectedGenre === genre }" 
         @click="selectedGenre = genre"
       >
@@ -97,6 +97,12 @@
                 class="w-8! h-8! text-white" />
               <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
             </button>
+          </template>
+          <template #artist>
+            <p class="text-xs truncate" :title="album_item.artistName || 'Unknown Artist'">{{ album_item.artistName || 'Unknown Artist' }}</p>
+          </template>
+          <template #actions>
+            <p class="text-xs text-gray-500 w-full text-left">{{ album_item.year || '' }}</p>
           </template>
         </AlbumCard>
      </div>

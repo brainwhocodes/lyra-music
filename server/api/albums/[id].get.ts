@@ -1,6 +1,6 @@
 import { H3Event, defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { albums, artists, tracks } from '~/server/db/schema';
+import { albums, artists, tracks, albumArtists } from '~/server/db/schema';
 import { eq, asc, and } from 'drizzle-orm';
 import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
@@ -32,16 +32,23 @@ export default defineEventHandler(async (event: H3Event) => {
         albumTitle: albums.title,
         albumYear: albums.year,
         coverPath: albums.coverPath,
-        artistId: artists.artistId,
-        artistName: artists.name,
+        artistId: artists.artistId, // Primary album artist
+        artistName: artists.name,   // Primary album artist name
         trackId: tracks.trackId,
         trackTitle: tracks.title,
         trackNumber: tracks.trackNumber,
         trackDuration: tracks.duration,
         trackFilePath: tracks.filePath,
+        trackGenre: tracks.genre,                 // Added
+        trackSpecificYear: tracks.year,           // Added (track's own year)
+        trackDiskNumber: tracks.diskNumber,       // Added
+        trackCreatedAt: tracks.createdAt,         // Added
+        trackUpdatedAt: tracks.updatedAt,         // Added
+        trackArtistId: tracks.artistId,           // Added (track's own artistId)
       })
       .from(albums)
-      .leftJoin(artists, eq(albums.artistId, artists.artistId))
+      .leftJoin(albumArtists, and(eq(albums.albumId, albumArtists.albumId), eq(albumArtists.isPrimaryArtist, 1)))
+      .leftJoin(artists, eq(albumArtists.artistId, artists.artistId))
       .leftJoin(tracks, eq(albums.albumId, tracks.albumId))
       .where(and(eq(albums.albumId, albumId), eq(albums.userId, user.userId)))
       .orderBy(asc(tracks.trackNumber))
@@ -72,8 +79,18 @@ export default defineEventHandler(async (event: H3Event) => {
           trackNumber: row.trackNumber!,
           duration: row.trackDuration!,
           filePath: row.trackFilePath!,
-          artistName: row.artistName ?? 'Unknown Artist',
+          // Use album's primary artist as a fallback if track specific artist info isn't fully joined/needed yet
+          // For now, the Track type on frontend expects artistName, so we provide the album's primary artist name.
+          // The trackArtistId is available if more specific linking is needed later.
+          artistName: row.artistName ?? 'Unknown Artist', 
           albumTitle: base.albumTitle,
+          genre: row.trackGenre,                   // Added
+          year: row.trackSpecificYear ?? base.albumYear, // Prefer track year, fallback to album year
+          diskNumber: row.trackDiskNumber,         // Added
+          createdAt: row.trackCreatedAt,           // Added
+          updatedAt: row.trackUpdatedAt,           // Added
+          // Add trackArtistId to the returned track object, frontend can use it if needed
+          artistId: row.trackArtistId ?? base.artistId, // Prefer track's artistId, fallback to album's primary artistId
         })),
     };
 

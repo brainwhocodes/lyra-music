@@ -22,7 +22,7 @@
         <Icon name="material-symbols:check-circle-outline" class="w-6 h-6" />
         <span>{{ successMessage }}</span>
         <div v-if="scanResults" class="mt-2 text-sm">
-          Processed: {{ scanResults.scanned }} files | Added: {{ scanResults.added }} tracks | Errors: {{ scanResults.errors }}
+          Processed: {{ scanResults.scanned }} folders | Added: {{ scanResults.addedTracks }} tracks, {{ scanResults.addedArtists }} artists, {{ scanResults.addedAlbums }} albums | Errors: {{ scanResults.errors }}
         </div>
         <button class="btn btn-sm btn-ghost" @click="successMessage = null">✕</button>
       </div>
