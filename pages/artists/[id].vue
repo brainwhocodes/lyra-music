@@ -73,6 +73,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
          diskNumber: t.diskNumber, // Added from API
          createdAt: t.createdAt, // Added from API
          updatedAt: t.updatedAt, // Added from API
+         explicit: t.explicit ?? null, // Add explicit field, defaulting to null if not present
       }));
       playerStore.loadQueue(tracksForPlayer);
     } else {

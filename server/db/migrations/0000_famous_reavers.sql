@@ -44,6 +44,7 @@ CREATE TABLE `artists` (
 	`artist_id` text PRIMARY KEY NOT NULL,
 	`artist_image` text,
 	`name` text NOT NULL,
+	`musicbrainz_artist_id` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -120,6 +121,7 @@ CREATE TABLE `tracks` (
 	`track_number` integer,
 	`disk_number` integer,
 	`duration` integer,
+	`explicit` integer DEFAULT false,
 	`file_path` text NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,

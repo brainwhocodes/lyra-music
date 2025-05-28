@@ -25,12 +25,21 @@ interface FindOrCreateAlbumParams {
   musicbrainzReleaseId?: string | null;
 }
 
+interface TrackFileMetadata {
+  duration?: number | null;
+  trackNumber?: number | null;
+  diskNumber?: number | null;
+  year?: number | null;
+  genre?: string | null;
+  explicit?: boolean | null;
+}
+
 interface FindOrCreateTrackParams {
   title: string;
   filePath: string;
   albumId: string | null;
   artistId: string | null;
-  metadata: any;
+  metadata: TrackFileMetadata;
 }
 
 /**
@@ -331,7 +340,16 @@ export async function findOrCreateTrack({
   artistId,
   metadata,
 }: FindOrCreateTrackParams): Promise<string | null> {
-  const common = metadata.common || {};
+  if (!title || !filePath) return null;
+
+  const { 
+    duration,
+    trackNumber,
+    diskNumber,
+    year,
+    genre,
+    explicit = false
+  } = metadata;
 
   try {
     const [existingTrack] = await db
@@ -340,50 +358,50 @@ export async function findOrCreateTrack({
       .where(eq(tracks.filePath, filePath))
       .limit(1);
 
-    // Common data payload for insert/update, excluding fields with DB defaults or not in schema
-    const trackDataPayload = {
-      title,
-      albumId,
-      artistId,
-      genre: common.genre?.join(', '),
-      year: common.year,
-      trackNumber: common.track?.no,
-      diskNumber: common.disk?.no,
-      duration: metadata.format.duration,
-      filePath,
-    };
-
     if (existingTrack) {
       // Update existing track
       // Consider adding logic here to check if an update is truly necessary by comparing fields
       await db
         .update(tracks)
         .set({
-          ...trackDataPayload,
-          updatedAt: sql`CURRENT_TIMESTAMP`, // Explicitly set updatedAt for updates
+          title,
+          artistId,
+          albumId,
+          genre: genre || null,
+          year: year || null,
+          trackNumber: trackNumber || null,
+          diskNumber: diskNumber || null,
+          duration: duration ? Math.round(duration) : null,
+          explicit: explicit,
+          updatedAt: sql`CURRENT_TIMESTAMP`,
         })
-        .where(eq(tracks.trackId, existingTrack.trackId));
+        .where(eq(tracks.filePath, filePath));
       
       console.log(`  Updated track: ${title} (ID: ${existingTrack.trackId})`);
       return existingTrack.trackId;
     }
 
     // Insert new track
-    const [newTrack] = await db
-      .insert(tracks)
-      .values({
-        ...trackDataPayload,
-        // trackId, createdAt, and updatedAt will use schema defaults
-      })
-      .returning({ trackId: tracks.trackId });
-
-    if (!newTrack) {
-      console.error(`  Failed to create track: ${title}`);
-      return null;
+    const newTrackResult = await db.insert(tracks).values({
+      trackId: uuidv7(),
+      title,
+      artistId,
+      albumId,
+      genre: genre || null,
+      year: year || null,
+      trackNumber: trackNumber || null,
+      diskNumber: diskNumber || null,
+      duration: duration ? Math.round(duration) : null,
+      filePath,
+      explicit: explicit,
+    }).returning();
+    if (newTrackResult.length > 0) {
+      console.log(`  Created new track: ${title} (ID: ${newTrackResult[0].trackId})`);
+      return newTrackResult[0].trackId;
     }
 
-    console.log(`  Created new track: ${title} (ID: ${newTrack.trackId})`);
-    return newTrack.trackId;
+    console.error(`  Failed to create track: ${title}`);
+    return null;
   } catch (error: any) {
     console.error(`  Database error with track ${title}: ${error.message}`);
     return null;

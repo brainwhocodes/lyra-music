@@ -89,6 +89,7 @@ export const tracks = sqliteTable('tracks', {
   trackNumber: integer('track_number'),
   diskNumber: integer('disk_number'),
   duration: integer('duration'), 
+  explicit: integer('explicit', { mode: 'boolean' }).default(false),
   filePath: text('file_path').notNull().unique(), 
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),

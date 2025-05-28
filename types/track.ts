@@ -12,6 +12,7 @@ export interface Track {
   genre: string | null;         // Add from schema
   year: number | null;          // Add from schema
   diskNumber: number | null;    // Add from schema
+  explicit: boolean | null;     // Add from schema
   createdAt: string;            // Add from schema
   updatedAt: string;            // Add from schema
 }
