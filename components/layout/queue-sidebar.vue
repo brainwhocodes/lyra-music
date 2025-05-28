@@ -22,7 +22,7 @@ const handleClickOnQueueItem = (index: number): void => {
 </script>
 
 <template>
-  <div class="w-80 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-16 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
+  <div class="w-96 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-16 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
     <h2 class="text-xl font-semibold mb-4">Up Next</h2>
 
     <div v-if="queue.length > 0" class="flex-grow overflow-y-auto space-y-1 pr-2">
@@ -31,25 +31,25 @@ const handleClickOnQueueItem = (index: number): void => {
         :key="`${track.trackId}-${index}`"
         :title="track.title+ ' - ' + track.artistName"
         class="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer group"
-        :class="{'bg-base-300 text-primary font-semibold': index === currentIndex}"
+        :class="{'bg-base-300 text-base-content font-semibold': index === currentIndex}"
         @click="handleClickOnQueueItem(index)"
       >
-        <div class="w-8 text-center text-xs text-neutral-content/70 mr-2">{{ index + 1 }}</div>
-        <div class="w-8 text-center mr-2">
+        <div class="w-8 text-center text-xs text-base-content/70 mr-2">{{ index + 1 }}</div>
+        <div :class="['w-8', 'text-center', 'mr-2', index === currentIndex ? 'text-primary' : 'text-base-content/70']">
           <Icon 
             v-if="index === currentIndex && playerStore.isPlaying" 
             name="material-symbols:volume-up-rounded" 
-            class="w-5 h-5 text-primary" 
+            class="w-5 h-5" 
             title="Currently Playing"/>
           <Icon 
             v-else-if="index === currentIndex && !playerStore.isPlaying" 
             name="material-symbols:play-arrow-rounded" 
-            class="w-5 h-5 text-primary" 
+            class="w-5 h-5" 
             title="Paused - Click to Play"/>
           <Icon 
             v-else 
             name="material-symbols:play-arrow-rounded" 
-            class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-base-content/70" 
+            class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-150" 
             title="Play this track" />
         </div>
         <!-- Cover Art Image -->
@@ -61,19 +61,18 @@ const handleClickOnQueueItem = (index: number): void => {
           />
         </div>
         <div class="w-10 h-10 mr-3 flex-shrink-0 bg-base-300 rounded flex items-center justify-center" v-else>
-          <Icon name="material-symbols:music-note" class="w-5 h-5 text-base-content/50" />
+          <Icon name="material-symbols:music-note" class="w-5 h-5 text-primary/50" />
         </div>
         <div class="flex-grow min-w-0">
-          <div class="font-medium text-sm truncate" :title="track.title">{{ truncateString(track.title ?? 'Unknown Track', 10) }}</div>
+          <div class="font-medium text-sm truncate w-full" :title="track.title" :class="index === currentIndex ? 'text-primary/90' : 'text-base-content/70'">{{ truncateString(track.title ?? 'Unknown Track', 15) }}</div>
           <div 
-            class="text-xs truncate"
-            :class="index === currentIndex ? 'text-primary/70' : 'text-neutral-content/70'"
+            class="text-xs truncate w-full text-base-content/70"
             :title="track.artistName"
           >
             {{ truncateString(track.artistName ?? 'Unknown Artist', 10) }}
           </div>
         </div>
-        <div class="text-xs ml-2 shrink-0" :class="index === currentIndex ? 'text-primary/90' : 'text-neutral-content/70'">
+        <div class="text-xs ml-2 shrink-0" :class="index === currentIndex ? 'text-base-content/90' : 'text-base-content/70'">
           {{ formatDuration(track.duration) }}
         </div>
       </div>

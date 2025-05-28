@@ -88,8 +88,8 @@
             <button 
               @click.stop="playAlbum(album_item.albumId)" 
               :title="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId ? 'Pause Album' : 'Play Album'" 
-              class="album-play-button w-12 h-12 flex items-center justify-center rounded-full hover:brightness-90 focus:outline-none pointer-events-auto" 
-              style="background-color: #FF6347; position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
+              class="album-play-button bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none pointer-events-auto album-play-button-hover-effect opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              style="position: absolute; bottom: 0.5rem; right: 0.5rem; z-index: 10;" 
             >
               <Icon name="material-symbols:progress-activity" class="w-8! h-8! animate-spin text-white" v-if="albumIdLoading === album_item.albumId && currentAlbumLoading" />
               <Icon name="material-symbols:play-arrow-rounded" 
@@ -97,12 +97,6 @@
                 class="w-8! h-8! text-white" />
               <Icon name="material-symbols:pause-rounded" v-else class="w-8! h-8! text-white" />
             </button>
-          </template>
-          <template #artist>
-            <p class="text-xs truncate" :title="album_item.artistName || 'Unknown Artist'">{{ album_item.artistName || 'Unknown Artist' }}</p>
-          </template>
-          <template #actions>
-            <p class="text-xs text-gray-500 w-full text-left">{{ album_item.year || '' }}</p>
           </template>
         </AlbumCard>
      </div>

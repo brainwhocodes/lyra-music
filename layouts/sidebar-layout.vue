@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex" :style="layoutStyle">
     <!-- Sidebar Navigation -->
     <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin">
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
@@ -26,7 +26,7 @@
 
     <!-- Main Content Area -->
     <main 
-      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(1.5rem+20rem)]': playerStore.isQueueSidebarVisible } ]"
+      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible } ]"
     >
       <slot /> <!-- Page content will be injected here -->
     </main>
@@ -44,8 +44,18 @@
 import GlobalAudioPlayer from '~/components/player/global-audio-player.vue'; // Import the player
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
+import { computed } from '#imports';
 
 const playerStore = usePlayerStore();
+
+const playerHeightCss = 'calc(var(--spacing) * 25)'; // Player's height
+
+const layoutStyle = computed(() => {
+  if (playerStore.currentTrack) {
+    return { height: `calc(100vh - ${playerHeightCss})` };
+  }
+  return { height: '100vh' };
+});
 
 // We'll use onMounted to check auth status to avoid redirect loops during SSR
 // This prevents the layout from redirecting during the initial render

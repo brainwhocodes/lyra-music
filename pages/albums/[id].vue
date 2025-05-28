@@ -165,6 +165,12 @@ const playerReadyTracks = computed(() => {
 
 // --- Check if this album is currently loaded ---
 const isCurrentAlbumLoaded = computed(() => {
+  console.log('Checking isCurrentAlbumLoaded:', {
+    contextType: playerStore.currentQueueContext.type,
+    contextId: playerStore.currentQueueContext.id,
+    albumId: album.value?.albumId,
+    isMatch: playerStore.currentQueueContext.type === 'album' && playerStore.currentQueueContext.id === album.value?.albumId
+  });
   return playerStore.currentQueueContext.type === 'album' && 
          playerStore.currentQueueContext.id === album.value?.albumId;
 });
@@ -223,23 +229,29 @@ const openAddAlbumToPlaylistModal = (): void => {
 
 // --- Click handler for the main cover button ---
 const playAlbum = (): void => {
-  if (!album.value?.albumId || !playerReadyTracks.value.length) return;
-  
-  const firstTrack = playerReadyTracks.value[0];
-  // Ensure thisAlbumContext matches the QueueContext from the store
-  const thisAlbumContext: QueueContext = { type: 'album', id: album.value.albumId, name: album.value.title };
+  console.log('playAlbum clicked. isCurrentAlbumLoaded:', isCurrentAlbumLoaded.value, 'playerStore.isPlaying:', playerStore.isPlaying);
+  if (!album.value || !playerReadyTracks.value || playerReadyTracks.value.length === 0) {
+    showNotification('No tracks in this album to play.', 'info');
+    return;
+  }
 
-  const isSameTrackAndContext = 
-    playerStore.currentTrack?.trackId === firstTrack.trackId &&
-    playerStore.currentQueueContext.type === thisAlbumContext.type &&
-    playerStore.currentQueueContext.id === thisAlbumContext.id;
-
-  if (isSameTrackAndContext) {
-    playerStore.togglePlayPause();
+  // Check if this album is already loaded and playing/paused
+  if (isCurrentAlbumLoaded.value) {
+    console.log('Calling playerStore.togglePlayPause()');
+    console.log('playerStore.isPlaying:', playerStore.isPlaying);
+    console.log('playerStore.currentTrack:', playerStore.currentTrack);
+    console.log('playerStore.currentQueueContext:', playerStore.currentQueueContext);
+    playerStore.togglePlayPause(); // If it's this album, just toggle
   } else {
-    // playerReadyTracks should be compatible with the store's Track[] type
-    playerStore.loadQueue(playerReadyTracks.value as Track[], thisAlbumContext);
-    playerStore.playFromQueue(0);
+    // If it's a different album or nothing is loaded, start this one
+    console.log('Calling playerStore.loadQueue() for new album');
+    const context: QueueContext = {
+      type: 'album',
+      id: album.value.albumId, // Ensure album.value is not null here
+      name: album.value.title,
+      // coverPath: album.value.coverPath // Optional: if you want to store context cover
+    };
+    playerStore.loadQueue(playerReadyTracks.value, context, true, 0);
   }
 };
 
@@ -315,10 +327,10 @@ const openEditAlbumModal = (): void => {
         <div class="flex flex-wrap gap-3">
           <button 
             @click="playAlbum" 
-            class="btn btn-primary gap-2"
+            class="btn btn-xl btn-circle btn-primary"
           >
-            <Icon name="material-symbols:play-arrow" class="w-5 h-5" />
-            Play
+            <Icon name="material-symbols:play-arrow" class="w-5 h-5" v-if="!playerStore.isPlaying"/>
+            <Icon name="material-symbols:pause" class="w-5 h-5" v-else/>
           </button>
           
           <OptionsMenu ref="albumOptionsMenuRef" :options="albumOptions" @option-selected="handleAlbumOption">

@@ -1,7 +1,7 @@
 <template>
   <div 
     v-if="playerStore.currentTrack"
-    class="fixed bottom-0 left-0 right-0 bg-base-300 text-base-content p-3 shadow-inner z-50 flex items-center gap-4 h-25"
+    class="fixed bottom-0 left-0 right-0 bg-base-100 text-base-content p-3 shadow-inner z-50 flex items-center gap-4 h-25"
   >
     <!-- Album Cover -->
     <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-base-200">
