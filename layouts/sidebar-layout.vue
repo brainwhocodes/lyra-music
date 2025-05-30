@@ -53,7 +53,7 @@
 
     <!-- Main Content Area -->
     <main 
-      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible && !isMobileOrTablet } ]" 
+      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
       @click="isMobileOrTablet && isMobileSidebarOpen ? toggleMobileSidebar() : null" 
     >
       <slot /> <!-- Page content will be injected here -->
@@ -91,13 +91,10 @@ const toggleMobileSidebar = (): void => {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 };
 
-const playerHeightCss = 'calc(var(--spacing) * 25)'; // Player's height
+const playerHeightCss = 'calc(var(--spacing) * 25)'; // Player's height (h-32)
 
 const layoutStyle = computed(() => {
   let height = '100vh';
-  if (showGlobalAudioPlayer.value) { // Desktop player
-    height = `calc(100vh - ${playerHeightCss})`;
-  }
   // On mobile, the main layout (excluding fullscreen player) takes full available height
   // The mini player is an overlay, so it doesn't subtract from this.
   return { height };
@@ -117,7 +114,7 @@ onMounted(() => {
 });
 
 // Screen width detection
-const screenWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0);
+const screenWidth = ref(0); // Initialize with 0 to match server behavior, will be updated in onMounted on client
 const MOBILE_BREAKPOINT: number = 1024; // Tablet and below
 
 const updateScreenWidth = (): void => {
