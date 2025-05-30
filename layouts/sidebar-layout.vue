@@ -1,5 +1,6 @@
 <template>
-  <div class="flex" :style="layoutStyle">
+  <FullScreenPlayer v-if="showFullScreenPlayer" />
+  <div v-else class="flex" :style="layoutStyle">
     <!-- Sidebar Navigation -->
     <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin">
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
@@ -41,10 +42,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import GlobalAudioPlayer from '~/components/player/global-audio-player.vue'; // Import the player
+import FullScreenPlayer from '~/components/player/full-screen-player.vue'; // Import the full-screen player
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
-import { computed } from '#imports';
 
 const playerStore = usePlayerStore();
 
@@ -67,8 +69,38 @@ onMounted(() => {
   }
   
   const authCookie = useCookie<string | null>('auth_token');
-  const authStore = useAuthStore();
+  // const authStore = useAuthStore(); // Ensure this is defined and imported if used
 });
+
+// Screen width detection
+const screenWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0);
+const MOBILE_BREAKPOINT: number = 1024; // Tablet and below
+
+const updateScreenWidth = (): void => {
+  if (typeof window !== 'undefined') {
+    screenWidth.value = window.innerWidth;
+  }
+};
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', updateScreenWidth);
+    updateScreenWidth(); // Initialize on mount
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', updateScreenWidth);
+  }
+});
+
+const isMobileOrTablet = computed<boolean>(() => screenWidth.value < MOBILE_BREAKPOINT);
+
+const showFullScreenPlayer = computed<boolean>(() => {
+  return !!playerStore.currentTrack && isMobileOrTablet.value;
+});
+
 // Layout specific script if needed in the future
 </script>
 

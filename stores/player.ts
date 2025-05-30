@@ -29,6 +29,9 @@ export const usePlayerStore = defineStore('player', () => {
   // State for Queue Sidebar Visibility
   const isQueueSidebarVisible = ref<boolean>(false);
 
+  // State for Full Screen Player Visibility
+  const isFullScreenPlayerVisible = ref<boolean>(false);
+
   // State for Seek Bar Dragging
   const isUserSeeking = ref<boolean>(false);
   const wasPlayingBeforeSeek = ref<boolean>(false);
@@ -454,6 +457,11 @@ export const usePlayerStore = defineStore('player', () => {
     isQueueSidebarVisible.value = !isQueueSidebarVisible.value;
   };
 
+  // --- Actions for Full Screen Player ---
+  const toggleFullScreenPlayer = (): void => {
+    isFullScreenPlayerVisible.value = !isFullScreenPlayerVisible.value;
+  };
+
   // --- Actions for Seek Bar Dragging ---
   const startSeeking = (): void => {
     if (!audioElement.value) return;
@@ -525,6 +533,7 @@ export const usePlayerStore = defineStore('player', () => {
     repeatMode,
     currentQueueContext, // Expose new state
     isQueueSidebarVisible, // Expose new state
+    isFullScreenPlayerVisible, // Expose new state
     isUserSeeking,        // Expose seek state
     wasPlayingBeforeSeek, // Expose seek state
 
@@ -547,6 +556,7 @@ export const usePlayerStore = defineStore('player', () => {
     showQueueSidebar,   // Expose new actions
     hideQueueSidebar,
     toggleQueueSidebar,
+    toggleFullScreenPlayer, // Expose new action
     startSeeking,         // Expose seek actions
     updateSeekPosition,
     endSeeking,
