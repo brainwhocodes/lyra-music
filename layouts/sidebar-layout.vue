@@ -19,11 +19,14 @@
       <aside 
         :class="[
           'bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin',
-          isMobileOrTablet 
-            ? 'fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out w-64 transform'
-            : 'w-64 relative', // Relative for desktop flow
-          isMobileOrTablet && isMobileSidebarOpen ? 'translate-x-0' : '',
-          isMobileOrTablet && !isMobileSidebarOpen ? '-translate-x-full' : ''
+          {
+            // Mobile specific classes
+            'fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out w-64 transform': isMobileOrTablet,
+            '-translate-x-full': isMobileOrTablet && !isMobileSidebarOpen,
+            'translate-x-0': isMobileOrTablet && isMobileSidebarOpen,
+            // Desktop specific classes - added prominent border for debugging
+            'w-64 relative': !isMobileOrTablet
+          }
         ]"
       >
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
