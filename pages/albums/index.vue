@@ -125,6 +125,7 @@ const loading = ref(true);
 const error = ref<string | null>(null); 
 const artistName = ref<string | null>(null); 
 const route = useRoute();
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 
 // Computed property for API query parameters for fetching the albums list
 const apiQuery = computed(() => {
@@ -141,7 +142,7 @@ async function fetchAlbums() {
   error.value = null;
   artistName.value = null; 
   try {
-    const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value });
+    const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value, headers: { 'Authorization': `Bearer ${userToken.value}` } });
     albums.value = data;
     if (apiQuery.value.artistId && data.length > 0 && data[0].artistName) {
         artistName.value = data[0].artistName;
@@ -161,7 +162,7 @@ async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
   let fetchedAlbum: Album | null = null;
 
   try {
-    const apiResponse = await $fetch<any>(`/api/albums/${id}`); 
+    const apiResponse = await $fetch<any>(`/api/albums/${id}`, { headers: { 'Authorization': `Bearer ${userToken.value}` } }); 
     console.log(`[AlbumsIndex] fetchAlbumDetailsById: API response for ${id}:`, apiResponse);
     // await new Promise(resolve => setTimeout(resolve, 1000));
     if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
@@ -272,7 +273,7 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
 // Fetch user's playlists
 async function fetchPlaylists(): Promise<void> {
   try {
-    const data = await $fetch<any[]>('/api/playlists');
+    const data = await $fetch<any[]>('/api/playlists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
     playlists.value = data;
   } catch (e: unknown) {
     console.error('Error fetching playlists:', e);
@@ -312,6 +313,7 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
   
   try {
     await $fetch(`/api/playlists/${playlistId}/tracks`, {
+      headers: { 'Authorization': `Bearer ${userToken.value}` },
       method: 'POST',
       body: {
         action: 'add',

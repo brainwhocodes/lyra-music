@@ -159,6 +159,10 @@ async function register() {
         name: result.data.name
       }
     })
+    useCookie('auth_token', {
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    }).value = response.token
 
     console.log('Registration successful:', response)
     successMessage.value = 'Registration successful! Redirecting to library...' 

@@ -2,11 +2,12 @@ import { db } from '~/server/db'
 import { mediaFolders } from '~/server/db/schema'
 import { eq } from 'drizzle-orm'
 import type { H3Event } from 'h3'
+import { getUserFromEvent } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event: H3Event) => {
   // 1. Ensure user is authenticated
-  const user = event.context.user
-  if (!user || !user.userId) {
+  const user = await getUserFromEvent(event)
+  if (!user) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized: Authentication required.'

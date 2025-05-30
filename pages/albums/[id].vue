@@ -20,7 +20,7 @@ const isAddToPlaylistModalOpen = ref(false);
 const openMenuForTrackId = ref<string | null>(null);
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 const isAddAlbumToPlaylistModalOpen = ref(false);
-
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 // Template ref for OptionsMenu
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
 
@@ -41,12 +41,13 @@ definePageMeta({
 // Fetch album details
 const { data: album, pending, error } = await useLazyFetch<Album>(`/api/albums/${albumId.value}`, {
   server: false,
+  headers: { 'Authorization': `Bearer ${userToken.value}` }
 });
 
 // Fetch user's playlists
 async function fetchPlaylists(): Promise<void> {
   try {
-    const data = await $fetch<Playlist[]>('/api/playlists');
+    const data = await $fetch<Playlist[]>('/api/playlists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
     playlists.value = data;
   } catch (e: unknown) {
     console.error('Error fetching playlists:', e);
@@ -107,6 +108,7 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[], succe
   try {
     await $fetch(`/api/playlists/${playlistId}/tracks`, {
       method: 'POST',
+      headers: { 'Authorization': `Bearer ${userToken.value}` },
       body: {
         action: 'add',
         trackIds,

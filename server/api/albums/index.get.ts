@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const titleFilter = query.title as string | undefined;
   const genreFilter = query.genre as string | undefined;
 
-  const user = getUserFromEvent(event);
+  const user = await getUserFromEvent(event);
   if (!user) {
     throw createError({
       statusCode: 401,
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
       .leftJoin(tracks, eq(albums.albumId, tracks.albumId));
 
     const conditions: SQL[] = [];
-    conditions.push(eq(albums.userId, user.userId));
+    conditions.push(eq(albums.userId, user?.userId));
 
     if (titleFilter) {
       conditions.push(like(albums.title, `%${titleFilter}%`));

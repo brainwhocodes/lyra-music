@@ -50,14 +50,13 @@ export default defineEventHandler(async (event) => {
   // Generate JWT token using the utility function
   const token = generateToken({ userId: user.userId, name: user.name, email: user.email });
 
-  // Set the token in an HttpOnly cookie
+  // Set cookie
   setCookie(event, 'auth_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    sameSite: 'lax', // Adjust as needed (lax or strict)
-    maxAge: 60 * 60 * 24, // 24 hours in seconds
-    path: '/', // Cookie available for all paths
-  });
+    secure: true,
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24 * 7 // 7 days
+  })
 
   return {
     token,

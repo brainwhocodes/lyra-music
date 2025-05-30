@@ -6,99 +6,92 @@ import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event: H3Event) => {
-  const albumIdParam = event.context.params?.id;
-
-  if (!albumIdParam) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Album ID is required',
-    });
+  const albumId = event.context.params?.id;
+  if (!albumId) {
+    throw createError({ statusCode: 400, statusMessage: 'Album ID is required' });
   }
 
-  const user = getUserFromEvent(event);
+  const user = await getUserFromEvent(event);
   if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
-    });
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
   }
-
-  const albumId = albumIdParam;
 
   try {
-    const data = await db
+    // 1) Fetch the album with its primary artist
+    const album = await db
       .select({
-        albumId: albums.albumId,
-        albumTitle: albums.title,
-        albumYear: albums.year,
-        coverPath: albums.coverPath,
-        artistId: artists.artistId, // Primary album artist
-        artistName: artists.name,   // Primary album artist name
-        trackId: tracks.trackId,
-        trackTitle: tracks.title,
-        trackNumber: tracks.trackNumber,
-        trackDuration: tracks.duration,
-        trackFilePath: tracks.filePath,
-        trackGenre: tracks.genre,                 // Added
-        trackSpecificYear: tracks.year,           // Added (track's own year)
-        trackDiskNumber: tracks.diskNumber,       // Added
-        trackCreatedAt: tracks.createdAt,         // Added
-        trackUpdatedAt: tracks.updatedAt,         // Added
-        trackArtistId: tracks.artistId,           // Added (track's own artistId)
+        albumId:    albums.albumId,
+        title:      albums.title,
+        year:       albums.year,
+        coverPath:  albums.coverPath,
+        artistId:   artists.artistId,
+        artistName: artists.name,
       })
       .from(albums)
-      .leftJoin(albumArtists, and(eq(albums.albumId, albumArtists.albumId), eq(albumArtists.isPrimaryArtist, 1)))
+      .leftJoin(
+        albumArtists,
+        and(eq(albums.albumId, albumArtists.albumId), eq(albumArtists.isPrimaryArtist, 1))
+      )
       .leftJoin(artists, eq(albumArtists.artistId, artists.artistId))
-      .leftJoin(tracks, eq(albums.albumId, tracks.albumId))
-      .where(and(eq(albums.albumId, albumId), eq(albums.userId, user.userId)))
+      .where(
+        and(
+          eq(albums.albumId, albumId),
+          eq(albums.userId, user.userId)
+        )
+      )
+      .get(); // single-row fetch
+
+    if (!album) {
+      throw createError({ statusCode: 404, statusMessage: 'Album not found or not authorized' });
+    }
+
+    // 2) Fetch all tracks for that album
+    const trackRows = await db
+      .select({
+        trackId:     tracks.trackId,
+        title:       tracks.title,
+        trackNumber: tracks.trackNumber,
+        duration:    tracks.duration,
+        filePath:    tracks.filePath,
+        genre:       tracks.genre,
+        year:        tracks.year,
+        diskNumber:  tracks.diskNumber,
+        createdAt:   tracks.createdAt,
+        updatedAt:   tracks.updatedAt,
+        artistId:    tracks.artistId,
+      })
+      .from(tracks)
+      .where(eq(tracks.albumId, albumId))
       .orderBy(asc(tracks.trackNumber))
       .all();
 
-    if (data.length === 0) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Album not found or not authorized',
-      });
-    }
-
+    // 3) Build the response
     const { getCoverArtUrl } = useCoverArt();
-
-    const base = data[0];
-    const result = {
-      albumId: base.albumId,
-      title: base.albumTitle,
-      year: base.albumYear,
-      coverPath: getCoverArtUrl(base.coverPath),
-      artistId: base.artistId,
-      artistName: base.artistName ?? 'Unknown Artist',
-      tracks: data
-        .filter(row => row.trackId !== null)
-        .map(row => ({
-          trackId: row.trackId!,
-          title: row.trackTitle!,
-          trackNumber: row.trackNumber!,
-          duration: row.trackDuration!,
-          filePath: row.trackFilePath!,
-          // Use album's primary artist as a fallback if track specific artist info isn't fully joined/needed yet
-          // For now, the Track type on frontend expects artistName, so we provide the album's primary artist name.
-          // The trackArtistId is available if more specific linking is needed later.
-          artistName: row.artistName ?? 'Unknown Artist', 
-          albumTitle: base.albumTitle,
-          genre: row.trackGenre,                   // Added
-          year: row.trackSpecificYear ?? base.albumYear, // Prefer track year, fallback to album year
-          diskNumber: row.trackDiskNumber,         // Added
-          createdAt: row.trackCreatedAt,           // Added
-          updatedAt: row.trackUpdatedAt,           // Added
-          // Add trackArtistId to the returned track object, frontend can use it if needed
-          artistId: row.trackArtistId ?? base.artistId, // Prefer track's artistId, fallback to album's primary artistId
-        })),
+    return {
+      albumId:   album.albumId,
+      title:     album.title,
+      year:      album.year,
+      coverPath: getCoverArtUrl(album.coverPath),
+      artistId:  album.artistId,
+      artistName: album.artistName ?? 'Unknown Artist',
+      tracks: trackRows.map(t => ({
+        trackId:     t.trackId!,
+        title:       t.title!,
+        trackNumber: t.trackNumber!,
+        duration:    t.duration!,
+        filePath:    t.filePath!,
+        artistId:    t.artistId ?? album.artistId,
+        artistName:  album.artistName ?? 'Unknown Artist',
+        albumTitle:  album.title,
+        genre:       t.genre,
+        year:        t.year ?? album.year,
+        diskNumber:  t.diskNumber,
+        createdAt:   t.createdAt,
+        updatedAt:   t.updatedAt,
+      })),
     };
-
-    return result;
-  } catch (error: any) {
-    if (error.statusCode) throw error;
-
-    console.error('Error processing album request:', error);
+  } catch (err: any) {
+    console.error('Error processing album request:', err);
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error processing request',

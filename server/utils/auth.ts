@@ -163,17 +163,15 @@ export const verifyToken = (token: string): any => {
 };
 
 // Get user from request
-export const getUserFromEvent = (event: H3Event): { userId: string; name: string; email: string } | null => {
-  const cookieToken = getCookieFromEvent(event, 'auth_token');
-  const authHeader = getHeader(event, 'authorization');
+export const getUserFromEvent = async (event: H3Event): Promise<{ userId: string; name: string; email: string } | null> => {
+  const authHeader = getHeader(event, 'Authorization');
   const bearerToken = authHeader && authHeader.startsWith('Bearer ') 
     ? authHeader.substring(7) 
     : null;
-  const token = cookieToken || bearerToken;
-  if (!token) {
+  if (!bearerToken) {
     return null;
   }
-  const user = verifyToken(token);
+  const user = verifyToken(bearerToken);
   if (!user) return null;
   return {
     userId: user.userId,

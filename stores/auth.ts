@@ -15,12 +15,7 @@ interface FullUserData extends User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  // Use cookie for persistence - stores the FullUserData
-  const userCookie = useCookie<string | null>('user-data', { // Store as string
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production'
-  });
+  const userCookie = useCookie('auth_token');
   
   // State: holds user data without ID
   const user = ref<User | null>(null);

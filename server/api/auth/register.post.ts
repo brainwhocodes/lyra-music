@@ -45,18 +45,10 @@ export default defineEventHandler(async (event) => {
     // Generate JWT token
     const token = generateToken({ userId: user.userId, name, email });
 
-    // Set cookie
-    setCookie(event, 'auth_token', token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/'
-    });
-
     // Return user data (without password)
     return {
-      id: user.userId,
-      email: user.email,
-      name: user.name,
+      token,
+      expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(),
     };
   } catch (error: any) {
     throw createError({

@@ -162,6 +162,8 @@ definePageMeta({
 });
 
 const playerStore = usePlayerStore(); 
+// there is currently a bug with cookies in nuxt 3, when using navigateTo, so we use localStorage for now
+const userToken = document ? localStorage.getItem('auth_token') : useCookie('auth_token').value;
 
 // Refs for play button loading state (similar to pages/albums/index.vue)
 const currentAlbumLoading = ref<boolean>(false);
@@ -183,6 +185,9 @@ const selectedGenre = ref<string | null>(null);
 
 // Fetch Genres
 const { data: genres, pending: pendingGenres, error: genresError } = useLazyFetch<string[]>('/api/genres', {
+  headers: {
+    Authorization: `Bearer ${userToken}`
+  },
   server: false
 });
 
@@ -206,16 +211,17 @@ const apiUrl = computed(() => {
   return `/api/albums${queryString ? '?' + queryString : ''}`;
 });
 
+
 // Fetch Albums - Now using the computed apiUrl
 const { 
   data: albums, 
-  pending: pendingAlbums, 
+  pending: pendingAlbums,
   error: albumsError, 
-  refresh: refreshAlbums // Get refresh function
-} = useFetch<Album[]>(apiUrl, { // Use computed apiUrl
-  lazy: true,
-  server: false, // Fetch on client-side only
-  watch: [debouncedSearchQuery, selectedGenre] // Re-fetch when debounced query or selectedGenre changes
+} = useLazyFetch<Album[]>('/api/albums', { // Use computed apiUrl
+  headers: {
+    Authorization: `Bearer ${userToken}`
+  },
+  server: false
 });
 
 const router = useRouter(); 
@@ -283,7 +289,11 @@ const playAlbum = async (albumId: string): Promise<void> => {
 
   try {
     // Fetch full album details including tracks directly from the album API endpoint
-    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`);
+    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
 
     if (!albumDetails || !albumDetails.tracks || albumDetails.tracks.length === 0) {
       console.warn(`No tracks found for album ${albumId}`);
@@ -407,7 +417,11 @@ async function loadAlbum(albumId: string): Promise<Album | null> {
   console.log(`[LibraryPage] loadAlbum: Fetching details for album ID: ${albumId}`);
   try {
     // Directly fetch from the API endpoint that returns a single album with tracks
-    const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`);
+    const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
     console.log(`[LibraryPage] loadAlbum: API response for ${albumId}:`, apiResponse);
 
     // Ensure the response has tracks and they are mapped correctly if necessary
