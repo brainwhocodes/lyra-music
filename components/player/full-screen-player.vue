@@ -1,12 +1,12 @@
 <template>
-  <div v-if="playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-8 sm:pt-4 select-none">
+  <div v-if="playerStore.isFullScreenPlayerVisible && playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-8 sm:pt-4 select-none">
     <!-- Top Bar -->
     <div class="flex justify-between items-center mb-6">
       <button @click="playerStore.toggleFullScreenPlayer()" class="p-2 -ml-2">
         <Icon name="material-symbols:keyboard-arrow-down-rounded" class="w-8 h-8" />
       </button>
       <div class="text-center">
-        <div class="text-xs uppercase text-neutral-400 tracking-wider">Playing from Album</div>
+        <div class="text-xs uppercase text-neutral-400 tracking-wider">Playing</div>
         <div class="text-base font-semibold truncate max-w-xs sm:max-w-sm md:max-w-md">{{ playerStore.currentTrack.albumTitle || 'Unknown Album' }}</div>
       </div>
       <button class="p-2 -mr-2">

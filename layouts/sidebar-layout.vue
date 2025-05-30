@@ -1,8 +1,31 @@
 <template>
-  <FullScreenPlayer v-if="showFullScreenPlayer" />
-  <div v-else class="flex" :style="layoutStyle">
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin">
+  <div> <!-- New root div -->
+    <FullScreenPlayer v-if="showFullScreenPlayer" />
+    <MiniPlayer v-if="showMiniPlayer" />
+    
+    <!-- Main application layout (sidebar, content) -->
+    <!-- This div is shown when FullScreenPlayer is NOT active -->
+    <div v-if="!showFullScreenPlayer" class="relative flex flex-col h-full" :style="layoutStyle"> <!-- Changed to flex-col for mobile header -->
+    <!-- Mobile Header with Hamburger -->
+    <header v-if="isMobileOrTablet" class="bg-base-100 p-2 shadow-md flex items-center z-30">
+      <button @click="toggleMobileSidebar" class="btn btn-ghost btn-square btn-sm">
+        <Icon name="material-symbols:menu-rounded" class="w-6 h-6" />
+      </button>
+      <h2 class="text-lg font-bold ml-2 text-primary">Hopeium</h2>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden"> <!-- New div to wrap sidebar and main for horizontal layout -->
+      <!-- Sidebar Navigation -->
+      <aside 
+        :class="[
+          'bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin',
+          isMobileOrTablet 
+            ? 'fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out w-64 transform'
+            : 'w-64 relative', // Relative for desktop flow
+          isMobileOrTablet && isMobileSidebarOpen ? 'translate-x-0' : '',
+          isMobileOrTablet && !isMobileSidebarOpen ? '-translate-x-full' : ''
+        ]"
+      >
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
 
       <!-- Recommend Section -->
@@ -27,36 +50,54 @@
 
     <!-- Main Content Area -->
     <main 
-      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible } ]"
+      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible && !isMobileOrTablet } ]" 
+      @click="isMobileOrTablet && isMobileSidebarOpen ? toggleMobileSidebar() : null" 
     >
       <slot /> <!-- Page content will be injected here -->
     </main>
 
-    <!-- Global Audio Player -->
-    <GlobalAudioPlayer />
-
     <!-- Queue Sidebar -->
-    <QueueSidebar v-if="playerStore.isQueueSidebarVisible" />
-  </div>
-  <!-- Note: Global Audio Player is now handled by this layout -->
+    <QueueSidebar v-if="playerStore.isQueueSidebarVisible && !isMobileOrTablet" /> <!-- Hide queue on mobile when sidebar is main focus -->
+    </div>
+  </div> <!-- End of new div for horizontal layout -->
+
+    <!-- Backdrop for mobile sidebar -->
+    <div 
+      v-if="isMobileOrTablet && isMobileSidebarOpen" 
+      @click="toggleMobileSidebar" 
+      class="fixed inset-0 bg-black/50 z-30 md:hidden"
+    ></div>
+
+    <!-- Global Audio Player (for desktop) -->
+    <GlobalAudioPlayer v-if="showGlobalAudioPlayer" />
+  </div> <!-- End of new root div -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import GlobalAudioPlayer from '~/components/player/global-audio-player.vue'; // Import the player
-import FullScreenPlayer from '~/components/player/full-screen-player.vue'; // Import the full-screen player
+import GlobalAudioPlayer from '~/components/player/global-audio-player.vue';
+import FullScreenPlayer from '~/components/player/full-screen-player.vue';
+import MiniPlayer from '~/components/player/mini-player.vue';
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
 
 const playerStore = usePlayerStore();
 
+const isMobileSidebarOpen = ref(false);
+const toggleMobileSidebar = (): void => {
+  isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
+};
+
 const playerHeightCss = 'calc(var(--spacing) * 25)'; // Player's height
 
 const layoutStyle = computed(() => {
-  if (playerStore.currentTrack) {
-    return { height: `calc(100vh - ${playerHeightCss})` };
+  let height = '100vh';
+  if (showGlobalAudioPlayer.value) { // Desktop player
+    height = `calc(100vh - ${playerHeightCss})`;
   }
-  return { height: '100vh' };
+  // On mobile, the main layout (excluding fullscreen player) takes full available height
+  // The mini player is an overlay, so it doesn't subtract from this.
+  return { height };
 });
 
 // We'll use onMounted to check auth status to avoid redirect loops during SSR
@@ -98,7 +139,15 @@ onUnmounted(() => {
 const isMobileOrTablet = computed<boolean>(() => screenWidth.value < MOBILE_BREAKPOINT);
 
 const showFullScreenPlayer = computed<boolean>(() => {
-  return !!playerStore.currentTrack && isMobileOrTablet.value;
+  return playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
+});
+
+const showMiniPlayer = computed<boolean>(() => {
+  return !playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
+});
+
+const showGlobalAudioPlayer = computed<boolean>(() => {
+  return !isMobileOrTablet.value && !!playerStore.currentTrack;
 });
 
 // Layout specific script if needed in the future
