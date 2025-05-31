@@ -112,18 +112,30 @@
     </div>
 
 
-    <!-- Lyrics Toggle -->
-    <div class="text-center mt-auto mb-2">
-      <button class="text-xs uppercase text-neutral-500 hover:text-accent tracking-wider">
+    <!-- Bottom Controls: Up Next & Lyrics -->
+    <div class="relative mt-auto mb-2 h-8 px-1"> <!-- Added h-8 for defined height and px-1 for consistency -->
+      <!-- Up Next Button (Bottom Left) -->
+      <button 
+        @click="playerStore.toggleFullScreenQueue()" 
+        class="absolute bottom-0 left-0 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2"
+      >
+        Up Next
+        <Icon name="material-symbols:menu-open-rounded" class="w-5 h-5 inline-block ml-1" /> <!-- Changed icon to menu-open -->
+      </button>
+
+      <!-- Lyrics Toggle (Bottom Center) -->
+      <button class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2">
         Lyrics
         <Icon name="material-symbols:keyboard-arrow-up-rounded" class="w-5 h-5 inline-block ml-1" />
       </button>
     </div>
+    <FullscreenQueue />
   </div>
 </template>
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import FullscreenQueue from '~/components/layout/fullscreen-queue.vue';
 
 const playerStore = usePlayerStore();
 

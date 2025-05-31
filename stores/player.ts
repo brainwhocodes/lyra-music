@@ -28,7 +28,8 @@ export const usePlayerStore = defineStore('player', () => {
   const playedTrackIdsInShuffle = ref<Set<string>>(new Set());
 
   // State for Queue Sidebar Visibility
-  const isQueueSidebarVisible = ref<boolean>(false);
+  const isQueueSidebarVisible = ref(false); // For desktop/tablet sidebar
+  const isFullScreenQueueVisible = ref(false); // For mobile fullscreen queue view
 
   // State for Full Screen Player Visibility
   const isFullScreenPlayerVisible = ref<boolean>(false);
@@ -464,6 +465,18 @@ export const usePlayerStore = defineStore('player', () => {
     isQueueSidebarVisible.value = true;
   };
 
+  const showFullScreenQueue = (): void => {
+    isFullScreenQueueVisible.value = true;
+  };
+
+  const hideFullScreenQueue = (): void => {
+    isFullScreenQueueVisible.value = false;
+  };
+
+  const toggleFullScreenQueue = (): void => {
+    isFullScreenQueueVisible.value = !isFullScreenQueueVisible.value;
+  };
+
   const hideQueueSidebar = (): void => {
     isQueueSidebarVisible.value = false;
   };
@@ -577,6 +590,7 @@ export const usePlayerStore = defineStore('player', () => {
     repeatMode,
     currentQueueContext,
     isQueueSidebarVisible,
+    isFullScreenQueueVisible,
     isFullScreenPlayerVisible,
     isUserSeeking,
     wasPlayingBeforeSeek,
@@ -598,6 +612,9 @@ export const usePlayerStore = defineStore('player', () => {
     toggleShuffle,
     toggleRepeatMode,
     showQueueSidebar,
+    showFullScreenQueue,
+    hideFullScreenQueue,
+    toggleFullScreenQueue,
     hideQueueSidebar,
     toggleQueueSidebar,
     toggleFullScreenPlayer,
