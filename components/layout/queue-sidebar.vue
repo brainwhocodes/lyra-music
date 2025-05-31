@@ -19,11 +19,47 @@ const handleClickOnQueueItem = (index: number): void => {
 
 // No need for useHead in a component like this
 // useHead({ title: 'Current Queue' });
+
+const handleClearQueue = (): void => {
+  playerStore.clearQueue();
+};
+
+// Helper function for resolving cover art (ensure it's defined or imported if used elsewhere)
+const resolveCoverArtUrl = (coverPath: string | null): string => {
+  if (!coverPath) return '/img/album-placeholder.png'; // Default placeholder
+  return coverPath.startsWith('http') || coverPath.startsWith('/') ? coverPath : `/${coverPath}`;
+};
+
+// Helper function for truncating strings (ensure it's defined or imported if used elsewhere)
+const truncateString = (str: string | undefined | null, maxLength: number): string => {
+  if (!str) return '';
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + '...';
+};
+
+// Helper function for formatting duration (ensure it's defined or imported if used elsewhere)
+const formatDuration = (seconds: number | null | undefined): string => {
+  if (seconds === null || seconds === undefined) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+};
 </script>
 
 <template>
   <div class="w-96 bg-base-100 p-4 h-screen flex flex-col fixed right-0 top-0 pt-8 shadow-lg z-30 overflow-y-auto" style="padding-bottom: 5rem;"> <!-- Added padding-bottom for player -->
-    <h2 class="text-xl font-semibold mb-4">Up Next</h2>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Up Next</h2>
+      <button 
+        v-if="queue.length > 0"
+        class="btn btn-ghost btn-sm text-error hover:bg-error/10"
+        title="Clear queue"
+        @click="handleClearQueue"
+      >
+        <Icon name="material-symbols:delete-sweep-outline-rounded" class="w-5 h-5" />
+        <span class="ml-1">Clear</span>
+      </button>
+    </div>
 
     <div v-if="queue.length > 0" class="flex-grow overflow-y-auto space-y-1 pr-2">
       <div

@@ -68,6 +68,15 @@ export const usePlayerStore = defineStore('player', () => {
     return currentTrack.value ? `/api/tracks/${currentTrack.value.trackId}/play` : null;
   });
 
+  function _resetState(): void {
+    _cleanupAudioElement();
+    isPlaying.value = false;
+    currentQueueIndex.value = -1;
+    currentTime.value = 0;
+    duration.value = 0;
+    isLoading.value = false;
+  }
+
   // Fisher-Yates (Knuth) Shuffle algorithm
   const shuffleArray = <T>(array: T[]): T[] => {
     let currentIndex = array.length;
@@ -123,10 +132,6 @@ export const usePlayerStore = defineStore('player', () => {
     const track = currentTrack.value; // Get computed value once
 
     if (!track) {
-      console.error("SetupAudioElement Error: currentTrack is null/undefined.", {
-        currentIndex: currentQueueIndex.value,
-        queueLength: queue.value.length,
-      });
       _resetState();
       return;
     }
@@ -135,17 +140,9 @@ export const usePlayerStore = defineStore('player', () => {
     const source = audioSource.value; // Get computed value once
 
     if (!source) {
-      console.error("SetupAudioElement Error: audioSource is null/undefined.", {
-        trackId: track.trackId, // Log track ID for which source failed
-        currentIndex: currentQueueIndex.value,
-        queueLength: queue.value.length,
-      });
       _resetState(); // Reset state if setup fails
       return;
     }
-
-    // Log successful setup attempt
-    console.log(`Setting up audio for track ID: ${track.trackId}, source: ${source}`);
 
     // Create new audio element
     audioElement.value = new Audio(source);
@@ -163,7 +160,6 @@ export const usePlayerStore = defineStore('player', () => {
     
     // Attempt to play
     audioElement.value.play().catch((error: any) => {
-      console.error('Error attempting to play audio:', error);
       // Autoplay might be blocked by the browser
       isPlaying.value = false; 
       isLoading.value = false;
@@ -205,7 +201,6 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
   const _handleError = (e: Event | string) => {
-    console.error('Audio Element Error:', audioElement.value?.error, e);
     _cleanupAudioElement();
     // Show error to user?
     // Optionally try to advance to next track on error?
@@ -246,7 +241,6 @@ export const usePlayerStore = defineStore('player', () => {
       }
     }
     // Optionally, show a notification or update UI
-    console.log(`${newTracks.length} new tracks added to queue. Queue length: ${queue.value.length}`);
     // Does not automatically start playback or change current track if one is playing.
   };
 
@@ -334,13 +328,11 @@ export const usePlayerStore = defineStore('player', () => {
           _setupAudioElement(); 
           playedTrackIdsInShuffle.value.add(nextTrackToPlay.trackId);
         } else {
-          console.error("Shuffle Error: Next track not found in original queue.");
           _resetState();
         }
       } else {
         // All tracks in shuffle mode have been played
         if (repeatMode.value === 'all' && isLoopingAll) {
-          console.log("Shuffle: All tracks played, repeating all.");
           playedTrackIdsInShuffle.value.clear();
           // If currentTrack.value just ended, it's fine not to re-add it here.
           if (queue.value.length > 0) {
@@ -353,7 +345,6 @@ export const usePlayerStore = defineStore('player', () => {
             _resetState();
           }
         } else {
-          console.log("Shuffle: All tracks played, not repeating.");
           _resetState(); 
         }
       }
@@ -518,25 +509,22 @@ export const usePlayerStore = defineStore('player', () => {
       audioElement.value.play().catch((error: any) => {
         _handleError(error);
       });
-    }
-    // Reset wasPlayingBeforeSeek if needed, though it's overwritten on next startSeek
-    // wasPlayingBeforeSeek.value = false; 
-  };
+    } // Closing the if block
+  }; // Closing the endSeeking function
 
-  const _resetState = () => {
+  const clearQueue = (): void => {
     _cleanupAudioElement();
-    isPlaying.value = false;
+    queue.value = [];
+    originalQueue.value = [];
     currentQueueIndex.value = -1;
-    // Do not clear queue.value or currentQueueContext here, as _resetState is often called
-    // when playback stops at the end of a queue, but the queue itself should remain.
-    // queue.value = [];
-    // currentQueueContext.value = { type: null, id: null, name: undefined };
+    currentQueueContext.value = { type: null, id: null, name: undefined };
+    isPlaying.value = false;
     currentTime.value = 0;
     duration.value = 0;
     isLoading.value = false;
-    // Clearing playedTrackIdsInShuffle here might be too aggressive.
-    // It's better managed by loadQueue, toggleShuffle, or when shuffle cycle completes.
-    // playedTrackIdsInShuffle.value.clear(); 
+    isShuffled.value = false;
+    playedTrackIdsInShuffle.value.clear();
+    // Do not reset volume or repeatMode as those are user preferences not tied to a specific queue
   };
 
   // Ensure cleanup when store instance is effectively destroyed (though Pinia stores are generally singletons)
@@ -617,7 +605,8 @@ export const usePlayerStore = defineStore('player', () => {
     updateSeekPosition,
     endSeeking,
     addAlbumToQueue,
-    updateAlbumDetailsInPlayer, // Moved here and ensured single instance
+    updateAlbumDetailsInPlayer, 
+    clearQueue
 
     // Internal methods exposed for potential direct use or testing (consider if really needed)
   };
