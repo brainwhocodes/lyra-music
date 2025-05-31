@@ -2,12 +2,11 @@
   <div> <!-- New root div -->
     <FullScreenPlayer v-if="showFullScreenPlayer" />
     <MiniPlayer v-if="showMiniPlayer" />
-    
     <!-- Main application layout (sidebar, content) -->
     <!-- This div is shown when FullScreenPlayer is NOT active -->
     <div v-if="!showFullScreenPlayer" class="relative flex flex-col h-full" :style="layoutStyle"> <!-- Changed to flex-col for mobile header -->
     <!-- Mobile Header with Hamburger -->
-    <header v-if="isMobileOrTablet" class="bg-base-100 p-2 shadow-md flex items-center z-30">
+    <header v-if="clientReady && isMobileOrTablet" class="bg-base-100 p-2 shadow-md flex items-center z-30">
       <button @click="toggleMobileSidebar" class="btn btn-ghost btn-square btn-sm">
         <Icon name="material-symbols:menu-rounded" class="w-6 h-6" />
       </button>
@@ -16,18 +15,18 @@
 
     <div class="flex flex-1 overflow-hidden"> <!-- New div to wrap sidebar and main for horizontal layout -->
       <!-- Sidebar Navigation -->
-      <aside 
+      <aside v-if="clientReady" 
         :class="[
           'bg-base-100 p-4 flex flex-col text-base-content shadow-lg overflow-y-auto scrollbar-thin',
-          {
+          clientReady && {
             // Mobile specific classes
             'fixed top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out w-64 transform': isMobileOrTablet,
             '-translate-x-full': isMobileOrTablet && !isMobileSidebarOpen,
             'translate-x-0': isMobileOrTablet && isMobileSidebarOpen,
-            // Desktop specific classes - added prominent border for debugging
+            // Desktop specific classes
             'w-64 relative': !isMobileOrTablet
           }
-        ]"
+        ].filter(Boolean)"
       >
       <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
 
@@ -53,20 +52,20 @@
 
     <!-- Main Content Area -->
     <main 
-      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
+      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': clientReady && playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
       @click="isMobileOrTablet && isMobileSidebarOpen ? toggleMobileSidebar() : null" 
     >
       <slot /> <!-- Page content will be injected here -->
     </main>
 
     <!-- Queue Sidebar -->
-    <QueueSidebar v-if="playerStore.isQueueSidebarVisible && !isMobileOrTablet" /> <!-- Hide queue on mobile when sidebar is main focus -->
+    <QueueSidebar v-if="clientReady && playerStore.isQueueSidebarVisible && !isMobileOrTablet" /> <!-- Hide queue on mobile when sidebar is main focus -->
     </div>
   </div> <!-- End of new div for horizontal layout -->
 
     <!-- Backdrop for mobile sidebar -->
     <div 
-      v-if="isMobileOrTablet && isMobileSidebarOpen" 
+      v-if="clientReady && isMobileOrTablet && isMobileSidebarOpen" 
       @click="toggleMobileSidebar" 
       class="fixed inset-0 bg-black/50 z-30 md:hidden"
     ></div>
@@ -83,8 +82,10 @@ import FullScreenPlayer from '~/components/player/full-screen-player.vue';
 import MiniPlayer from '~/components/player/mini-player.vue';
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
+import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 
 const playerStore = usePlayerStore();
+const clientReady = ref(false);
 
 const isMobileSidebarOpen = ref(false);
 const toggleMobileSidebar = (): void => {
@@ -123,11 +124,13 @@ const updateScreenWidth = (): void => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => { // This is line 126 in the provided snippet, now async
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', updateScreenWidth);
     updateScreenWidth(); // Initialize on mount
   }
+  await nextTick(); // Wait for reactive updates to settle (e.g., isMobileOrTablet)
+  clientReady.value = true;
 });
 
 onUnmounted(() => {
@@ -139,15 +142,15 @@ onUnmounted(() => {
 const isMobileOrTablet = computed<boolean>(() => screenWidth.value < MOBILE_BREAKPOINT);
 
 const showFullScreenPlayer = computed<boolean>(() => {
-  return playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
+  return clientReady.value && playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
 });
 
 const showMiniPlayer = computed<boolean>(() => {
-  return !playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
+  return clientReady.value && !playerStore.isFullScreenPlayerVisible && isMobileOrTablet.value && !!playerStore.currentTrack;
 });
 
 const showGlobalAudioPlayer = computed<boolean>(() => {
-  return !isMobileOrTablet.value && !!playerStore.currentTrack;
+  return clientReady.value && !isMobileOrTablet.value && !!playerStore.currentTrack;
 });
 
 // Layout specific script if needed in the future
