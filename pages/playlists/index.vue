@@ -167,16 +167,12 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
 import CreatePlaylistModal from '~/components/modals/create-playlist-modal.vue';
+import { usePageTitle } from '~/composables/page-defaults';
+import type { Playlist } from '~/types/playlist';
 
-// Define types
-interface Playlist {
-  playlistId: string;
-  userId: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  trackCount?: number; // This will be calculated on the frontend
-}
+useSeoMeta({
+    title: usePageTitle('Playlists')
+});
 
 // State
 const searchQuery = ref('');
@@ -193,23 +189,25 @@ const isDeletingPlaylist = ref(false);
 const editPlaylistModal = ref<HTMLDialogElement | null>(null);
 const deletePlaylistModal = ref<HTMLDialogElement | null>(null);
 const editPlaylistNameInput = ref<HTMLInputElement | null>(null);
-const userToken = typeof document !== 'undefined' ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 
 // Fetch playlists
-const { data: playlists, pending, error, refresh } = useFetch<Playlist[]>('/api/playlists', {
-  lazy: true,
-  server: false,
-  headers: {
-    'Authorization': `Bearer ${userToken.value}`
-  },
-  transform: (data: any[]) => {
-    // Add trackCount property (will be updated when we implement the API)
-    return data.map(playlist => ({
-      ...playlist,
-      trackCount: 0 // Placeholder, will be populated from API
-    }));
+const { data: playlists, pending, error, refresh } = useLazyFetch<Playlist[]>('/api/playlists', {
+});
+
+watch(playlists.value, (newPlaylists: Playlist[] | null) => {
+  if (newPlaylists) {
+    pending.value = false;
+    useSeoMeta({
+      title: usePageTitle('Playlists')
+    });
   }
 });
+
+if (playlists.value) {
+    useSeoMeta({
+      title: usePageTitle('Playlists')
+    });
+}
 
 // Initialize player store
 const playerStore = usePlayerStore();
@@ -257,7 +255,6 @@ const handleActualCreatePlaylist = async (name: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken.value}`
       },
       body: { name }
     });

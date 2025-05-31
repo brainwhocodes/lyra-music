@@ -65,26 +65,14 @@
         <h2 class="text-2xl font-semibold my-4">Tracks</h2>
         <div class="overflow-x-auto">
           <table class="table w-full">
-              <draggable
-              tag="tbody"
-              class="dragArea list-group"
-                v-model:list="playlist.tracks"
-                item-key="playlistTrackId"
-                group="playlist"
-                @end="updatePlaylistOrder"
-              >
-                <template #item="{ element, index }">
-                  <TrackItem
-                    :key="element.playlistTrackId"
-                    :track="mapPlaylistTrack(element)"
-                    :track-number="index + 1"
-                    :in-playlist="true"
-                    :playlists="playlist ? [playlist] : []" 
-                    @play-track="playTrackFromList"
-                    @track-options="handleTrackOptions($event, element)"
-                  />
-                </template>
-              </draggable>
+            <draggable tag="tbody" class="dragArea list-group" v-model:list="playlist.tracks" item-key="playlistTrackId"
+              group="playlist" @end="updatePlaylistOrder">
+              <template #item="{ element, index }">
+                <TrackItem :key="element.playlistTrackId" :track="mapPlaylistTrack(element)" :track-number="index + 1"
+                  :in-playlist="true" :playlists="playlist ? [playlist] : []" @play-track="playTrackFromList"
+                  @track-options="handleTrackOptions($event, element)" />
+              </template>
+            </draggable>
           </table>
         </div>
       </div>
@@ -124,23 +112,17 @@
       </div>
     </dialog>
     <!-- Remove Track Modal -->
-    <RemoveFromPlaylistModal
-      v-if="playlist"
-      v-model:open="isRemoveFromPlaylistModalOpen"
-      :track="trackToRemove ? mapPlaylistTrack(trackToRemove) : null"
-      :playlist-id="playlist.playlistId"
-      @playlist-updated="handlePlaylistUpdated"
-    />
+    <RemoveFromPlaylistModal v-if="playlist" v-model:open="isRemoveFromPlaylistModalOpen"
+      :track="trackToRemove ? mapPlaylistTrack(trackToRemove) : null" :playlist-id="playlist.playlistId"
+      @playlist-updated="handlePlaylistUpdated" />
 
     <!-- Add to Playlist Modal -->
-    <AddToPlaylistModal
-      v-model:open="isAddToPlaylistModalOpen"
-      :track="trackForAddToPlaylistModal"
-      @add-track="handleAddTrackToPlaylistConfirmed"
-    />
+    <AddToPlaylistModal v-model:open="isAddToPlaylistModalOpen" :track="trackForAddToPlaylistModal"
+      @add-track="handleAddTrackToPlaylistConfirmed" />
 
     <!-- Notification -->
-    <div v-if="notification.visible" :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
+    <div v-if="notification.visible"
+      :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
       {{ notification.message }}
     </div>
   </div>
@@ -161,15 +143,15 @@ definePageMeta({
   layout: 'sidebar-layout'
 });
 
-const route = useRoute();
-const router = useRouter();
+
 const playerStore = usePlayerStore();
+
+const route = useRoute();
 
 const playlistId = computed((): string => route.params.id as string);
 
 const pending = ref<boolean>(true);
 const error = ref<boolean>(false);
-const playlist = ref<Playlist | null>(null);
 
 const showRenameModal = ref(false);
 const showDeleteModal = ref(false);
@@ -191,23 +173,37 @@ function showNotification(message: string, type: 'success' | 'error' | 'info' = 
 /**
  * Fetch playlist details from API
  */
-async function fetchPlaylist(): Promise<void> {
-  pending.value = true;
-  error.value = false;
-  try {
-    const data = await $fetch<Playlist>(`/api/playlists/${playlistId.value}`, {
-      headers: { 'Authorization': `Bearer ${userToken.value}` }
-    });
-    playlist.value = data;
-    renameValue.value = data.name;
-  } catch (e) {
-    error.value = true;
-  } finally {
-    pending.value = false;
-  }
+pending.value = true;
+error.value = false;
+
+const { data: playlist, error: playlistError } = await useLazyFetch<Playlist>(`/api/playlists/${playlistId.value}`, {
+  headers: { 'Authorization': `Bearer ${userToken.value}` }
+});
+
+if (playlistError.value) {
+  error.value = true;
+  console.error('Failed to fetch playlist:', playlistError.value);
 }
 
-onMounted(fetchPlaylist);
+
+watch(playlist.value, (newPlaylist: Playlist | null) => {
+  if (newPlaylist) {
+    renameValue.value = newPlaylist.name;
+    pending.value = false;
+    useSeoMeta({
+      title: usePageTitle('Playlists | ' + newPlaylist?.name)
+    });
+  }
+});
+
+if (playlist.value) {
+    renameValue.value = playlist.value.name;
+    pending.value = false;
+    useSeoMeta({
+      title: usePageTitle('Playlists ' + playlist.value?.name)
+    });
+}
+
 
 const totalDuration = computed((): number => {
   if (!playlist.value) return 0;
@@ -247,7 +243,7 @@ function mapPlaylistTrack(pt: PlaylistTrack): Track {
 
 function playPlaylist(): void {
   if (!playlist.value?.tracks.length || !playlistId.value) return;
-  
+
   const tracks = playlist.value.tracks.map(mapPlaylistTrack);
   const firstTrack = tracks[0];
   if (!firstTrack) return;
@@ -312,7 +308,7 @@ function handleTrackOptions(event: { action: string; track: Track }, playlistTra
 
 async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlistId: string }): Promise<void> {
   if (!playlist.value) return;
-  
+
   try {
     await $fetch(`/api/playlists/${playlist.value.playlistId}/tracks`, {
       method: 'DELETE',
@@ -321,7 +317,7 @@ async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlis
         trackIds: [payload.trackId]
       }
     });
-    
+
     showNotification('Track removed from playlist');
     await fetchPlaylist(); // Refresh the playlist data
   } catch (error) {
@@ -331,7 +327,7 @@ async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlis
 
 async function handlePlaylistUpdated(updatedPlaylist: Playlist): Promise<void> {
   if (!updatedPlaylist) return;
-  
+
   // Update the local playlist data with the response from the API
   playlist.value = updatedPlaylist;
   showNotification('Playlist updated');
@@ -408,6 +404,7 @@ async function updatePlaylistOrder(): Promise<void> {
   background: #f0f0f0;
   border: 2px dashed #ccc;
 }
+
 .toast {
   position: fixed;
   bottom: 2rem;
@@ -419,6 +416,12 @@ async function updatePlaylistOrder(): Promise<void> {
   color: #fff;
   background: #323232;
 }
-.toast-success { background: #22c55e; }
-.toast-error { background: #ef4444; }
+
+.toast-success {
+  background: #22c55e;
+}
+
+.toast-error {
+  background: #ef4444;
+}
 </style>

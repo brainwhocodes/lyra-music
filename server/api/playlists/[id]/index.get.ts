@@ -3,7 +3,6 @@ import { db } from '~/server/db';
 import { playlists, playlistTracks, tracks, albums, artists } from '~/server/db/schema';
 import { and, eq, asc } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
-import { Album } from '~/types/album';
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event);
@@ -25,7 +24,9 @@ export default defineEventHandler(async (event) => {
   try {
     // Get the playlist
     const playlist = await db
-      .select()
+      .select({
+        playlistId: playlists.playlistId,
+      })
       .from(playlists)
       .where(
         and(
@@ -68,6 +69,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       ...playlist,
+      trackCount: playlistTrackResults.length,
       tracks: playlistTrackResults.map(item => ({
         playlistTrackId: item.playlistTrackId,
         order: item.order,

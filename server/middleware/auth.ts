@@ -2,7 +2,7 @@ import { defineEventHandler, createError, parseCookies, getHeader } from 'h3';
 import { getUserFromEvent, verifyToken } from '../utils/auth';
 
 // Authentication middleware
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   // Skip authentication for public routes
   const path = event.path || '';
   
@@ -16,7 +16,7 @@ export default defineEventHandler((event) => {
   }
 
   // Check if user is authenticated
-  let user = getUserFromEvent(event);
+  let user = await getUserFromEvent(event);
   
   // If no user is found in the event, try multiple auth methods
   if (!user) {

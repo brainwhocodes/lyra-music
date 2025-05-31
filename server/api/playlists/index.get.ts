@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3';
 import { db } from '~/server/db';
-import { playlists } from '~/server/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { playlists, playlistTracks } from '~/server/db/schema';
+import { eq, count } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event) => {
@@ -16,9 +16,22 @@ export default defineEventHandler(async (event) => {
   
   try {
     const userPlaylists = await db
-      .select()
+      .select({
+        playlistId: playlists.playlistId,
+        name: playlists.name,
+        trackCount: count(playlistTracks.trackId),
+        createdAt: playlists.createdAt,
+        updatedAt: playlists.updatedAt,
+      })
       .from(playlists)
+      .leftJoin(playlistTracks, eq(playlists.playlistId, playlistTracks.playlistId))
       .where(eq(playlists.userId, user.userId))
+      .groupBy(
+        playlists.playlistId,
+        playlists.name,
+        playlists.createdAt,
+        playlists.updatedAt
+      )
       .orderBy(playlists.updatedAt);
 
     return userPlaylists;

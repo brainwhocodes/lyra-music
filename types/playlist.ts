@@ -7,6 +7,7 @@ export interface Playlist {
   description?: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
+  trackCount: number;
   user?: {
     userId: string;
     name: string;
@@ -14,6 +15,8 @@ export interface Playlist {
   };
   tracks: PlaylistTrack[];
 }
+
+
 
 export interface PlaylistTrack {
   playlistTrackId: string;

@@ -168,10 +168,16 @@ export const getUserFromEvent = async (event: H3Event): Promise<{ userId: string
   const bearerToken = authHeader && authHeader.startsWith('Bearer ') 
     ? authHeader.substring(7) 
     : null;
-  if (!bearerToken) {
+ 
+  const cookieToken = parseCookies(event)['auth_token'];
+  // there is a bug in the client side that doens't send the cookie server side
+  // so we need to check both so we can have independent clients, like mobile and web
+
+  if (!bearerToken && !cookieToken) {
     return null;
   }
-  const user = verifyToken(bearerToken);
+  
+  const user = verifyToken(bearerToken || '') || verifyToken(cookieToken || '');
   if (!user) return null;
   return {
     userId: user.userId,
