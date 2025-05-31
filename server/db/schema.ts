@@ -1,7 +1,7 @@
 // This file will contain all Drizzle schema definitions (tables, relations, etc.)
 // Refer to Phase 1 for the planned schema.
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { sql, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
+import { sql, relations, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 // Phase 1: Define Tables
 
@@ -135,6 +135,54 @@ export const albumGenres = sqliteTable('album_genres', {
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
+
+// === Relations ===
+
+export const artistRelations = relations(artists, ({ many }) => ({
+  albumArtists: many(albumArtists),
+  artistUsers: many(artistUsers),
+}));
+
+export const albumRelations = relations(albums, ({ many, one }) => ({
+  albumArtists: many(albumArtists),
+  user: one(users, {
+    fields: [albums.userId],
+    references: [users.userId],
+  }),
+}));
+
+export const albumArtistRelations = relations(albumArtists, ({ one }) => ({
+  album: one(albums, {
+    fields: [albumArtists.albumId],
+    references: [albums.albumId],
+  }),
+  artist: one(artists, {
+    fields: [albumArtists.artistId],
+    references: [artists.artistId],
+  }),
+}));
+
+export const userRelations = relations(users, ({ many }) => ({
+  albums: many(albums),
+  artistUsers: many(artistUsers),
+  playlists: many(playlists),
+  mediaFolders: many(mediaFolders),
+  radioChannels: many(radioChannels),
+}));
+
+// Also adding relations for artistUsers for completeness, though not directly causing the current error
+export const artistUserRelations = relations(artistUsers, ({ one }) => ({
+  artist: one(artists, {
+    fields: [artistUsers.artistId],
+    references: [artists.artistId],
+  }),
+  user: one(users, {
+    fields: [artistUsers.userId],
+    references: [users.userId],
+  }),
+}));
+
+// Relations for tracks, playlists, etc. can be added here as needed for other queries.
 
 
 // === Inferred Types ===

@@ -1,7 +1,7 @@
 <template>
   <tr 
     class="hover:bg-base-200 group cursor-pointer"
-    :class="{'text-primary font-semibold bg-base-300': isCurrentTrack}"
+    :class="{'font-semibold bg-base-300': isCurrentTrack}"
     @click="onPlayTrack"
   >
     <td class="w-12 text-center text-sm color-primary-content">{{ trackNumber }}</td>
@@ -28,7 +28,7 @@
         class="w-10 h-10 rounded mr-3 object-cover"
       />
       <div>
-        <div class="font-medium">{{ track.title }}</div>
+        <div :class="['font-medium', isCurrentTrack ? 'text-primary' : '']">{{ track.title }}</div>
         <div v-if="track.artistName" class="text-sm text-base-content/70">{{ track.artistName }}</div>
       </div>
     </td>

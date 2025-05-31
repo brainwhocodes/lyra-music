@@ -3,10 +3,9 @@ import type { Album } from '~/types/album';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
+import { usePlayerStore } from '~/stores/player';
 import type { NotificationMessage } from '~/types/notification-message';
 import type { QueueContext } from '~/stores/player';
-
-import { usePlayerStore } from '~/stores/player';
 import { resolveCoverArtUrl } from '~/utils/formatters';
 
 import TrackItem from '~/components/track/track-item.vue';
@@ -150,10 +149,11 @@ const playerReadyTracks = computed(() => {
   const currentAlbumTitle = album.value.title; // Get album's title
 
   return album.value.tracks.map((track: Track) => ({
-    ...track,
+    ...track, // Spread original track properties first
+    albumId: album.value!.albumId, // Then, explicitly set/override albumId from the parent album
     artistName: track.artistName || albumArtist,
     albumTitle: track.albumTitle || currentAlbumTitle, // Ensure albumTitle is set
-    coverPath: track.coverPath || albumCover,        // Ensure coverPath is set
+    coverPath: track.coverPath || albumCover        // Ensure coverPath is set
   }));
 });
 
@@ -263,6 +263,25 @@ const openEditAlbumModal = (): void => {
   isEditAlbumModalOpen.value = true;
 };
 
+const onAlbumUpdated = (updatedAlbumData: Album): void => {
+  if (album.value) { // Ensure album.value is not null
+    // Merge updated data into the existing album ref
+    // This helps preserve reactivity if only parts of the album object are returned
+    // or if we want to be selective about what's updated.
+    // For a full replacement:
+    album.value = { ...album.value, ...updatedAlbumData };
+    playerStore.updateAlbumDetailsInPlayer(updatedAlbumData); // Update player store
+  }
+  isEditAlbumModalOpen.value = false;
+  showNotification('Album updated successfully!', 'success');
+};
+
+const onAlbumUpdateError = (errorMessage: string): void => {
+  showNotification(errorMessage || 'Failed to update album.', 'error');
+  // Modal likely closes itself or provides its own error state, 
+  // but if needed: isEditAlbumModalOpen.value = false;
+};
+
 // Set page title
 useHead(() => ({
   title: album.value ? `${album.value.title} by ${album.value.artistName || 'Unknown Artist'}` : 'Album Details'
@@ -274,7 +293,7 @@ useHead(() => ({
 
 <template>
   <div class="container mx-auto px-4 py-8 space-y-8">
-    <EditAlbumModal :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"/>
+    <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false" @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>

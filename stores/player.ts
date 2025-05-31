@@ -1,6 +1,7 @@
 // stores/player.ts
 import { defineStore } from 'pinia';
 import type { Track } from '~/types/track'; // Import consolidated Track type
+import type { Album } from '~/types/album'; // Import Album type
 
 export interface QueueContext {
   type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | null;
@@ -519,6 +520,38 @@ export const usePlayerStore = defineStore('player', () => {
   // If used within a component, cleanup might happen in onUnmounted
   // For a global store, explicit cleanup might be needed on app unload if necessary.
 
+  const updateAlbumDetailsInPlayer = (updatedAlbum: Pick<Album, 'albumId' | 'title' | 'coverPath'> & { artistName?: string }) => {
+    if (!updatedAlbum || !updatedAlbum.albumId) {
+      return;
+    }
+
+    const applyUpdates = (track: Track) => {
+      if (track.albumId === updatedAlbum.albumId) {
+        track.albumTitle = updatedAlbum.title;
+        track.coverPath = updatedAlbum.coverPath;
+        // If the updated album has a new artist name, apply it to the track.
+        // This assumes that if an album's primary artist changes, tracks from that album should reflect this.
+        // More complex scenarios (e.g., compilation albums, tracks with featured artists different from album artist)
+        // might require more granular data on the Track object itself.
+        if (updatedAlbum.artistName) {
+            track.artistName = updatedAlbum.artistName;
+        }
+      }
+    };
+
+    queue.value.forEach(applyUpdates);
+    originalQueue.value.forEach(applyUpdates);
+
+    // currentTrack is computed, so changes to queue.value[currentQueueIndex.value] will reflect.
+
+    if (
+      currentQueueContext.value.type === 'album' &&
+      currentQueueContext.value.id === updatedAlbum.albumId
+    ) {
+      currentQueueContext.value.name = updatedAlbum.title;
+    }
+  };
+
   return {
     // State
     queue,
@@ -531,11 +564,11 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading,
     isShuffled,
     repeatMode,
-    currentQueueContext, // Expose new state
-    isQueueSidebarVisible, // Expose new state
-    isFullScreenPlayerVisible, // Expose new state
-    isUserSeeking,        // Expose seek state
-    wasPlayingBeforeSeek, // Expose seek state
+    currentQueueContext,
+    isQueueSidebarVisible,
+    isFullScreenPlayerVisible,
+    isUserSeeking,
+    wasPlayingBeforeSeek,
 
     // Getters (Computed)
     audioSource,
@@ -553,14 +586,15 @@ export const usePlayerStore = defineStore('player', () => {
     setVolume,
     toggleShuffle,
     toggleRepeatMode,
-    showQueueSidebar,   // Expose new actions
+    showQueueSidebar,
     hideQueueSidebar,
     toggleQueueSidebar,
-    toggleFullScreenPlayer, // Expose new action
-    startSeeking,         // Expose seek actions
+    toggleFullScreenPlayer,
+    startSeeking,
     updateSeekPosition,
     endSeeking,
-    addAlbumToQueue, // Export the new action
+    addAlbumToQueue,
+    updateAlbumDetailsInPlayer, // Moved here and ensured single instance
 
     // Internal methods exposed for potential direct use or testing (consider if really needed)
   };
