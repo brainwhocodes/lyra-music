@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
 import type { Album } from '~/types/album';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
 import type { NotificationMessage } from '~/types/notification-message';
 import type { QueueContext } from '~/stores/player';
-import TrackItem from '~/components/track/track-item.vue';
-import OptionsMenu from '~/components/options-menu.vue'; // Import OptionsMenu
+
+import { usePlayerStore } from '~/stores/player';
 import { resolveCoverArtUrl } from '~/utils/formatters';
+
+import TrackItem from '~/components/track/track-item.vue';
+import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
+import OptionsMenu from '~/components/options-menu.vue'; 
+
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
@@ -23,6 +27,7 @@ const isAddAlbumToPlaylistModalOpen = ref(false);
 const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 // Template ref for OptionsMenu
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
+const isEditAlbumModalOpen = ref(false);
 
 // Simple notification system
 const showNotification = (message: string, type: MessageType = 'info') => {
@@ -78,19 +83,6 @@ const addTrackToPlaylist = async (playlistId: string): Promise<void> => {
   
   isAddToPlaylistModalOpen.value = false;
   selectedTrackForPlaylist.value = null;
-};
-
-// Toggle the track menu
-const toggleTrackMenu = (trackId: string, event?: Event): void => {
-  if (event) {
-    event.stopPropagation();
-  }
-  
-  if (openMenuForTrackId.value === trackId) {
-    openMenuForTrackId.value = null;
-  } else {
-    openMenuForTrackId.value = trackId;
-  }
 };
 
 // Function to add all album tracks to a playlist
@@ -267,20 +259,22 @@ const playTrack = (trackIndex: number): void => {
   }
 };
 
+const openEditAlbumModal = (): void => {
+  isEditAlbumModalOpen.value = true;
+};
+
 // Set page title
 useHead(() => ({
   title: album.value ? `${album.value.title} by ${album.value.artistName || 'Unknown Artist'}` : 'Album Details'
 }));
 
 // --- Function to open the album edit modal (placeholder) ---
-const openEditAlbumModal = (): void => {
-  // Placeholder for edit album functionality
-  showNotification(`Edit functionality for album "${album.value?.title}" is not yet implemented.`, 'info');
-};
+
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-8 space-y-8">
+    <EditAlbumModal :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"/>
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
