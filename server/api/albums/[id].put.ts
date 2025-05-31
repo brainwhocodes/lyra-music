@@ -93,7 +93,7 @@ export default defineEventHandler(async (event: H3Event) => {
     // Handle file upload if a new cover image is provided
     let newCoverPath: string | undefined = undefined;
     if (coverImageFile && coverImageExtension) {
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'album-covers');
+      const uploadsDir = path.join(process.cwd(), 'public', 'images', 'covers');
       // Ensure directory exists
       try {
         await access(uploadsDir);
@@ -104,7 +104,7 @@ export default defineEventHandler(async (event: H3Event) => {
       const uniqueFilename = `${uuidv4()}${coverImageExtension}`;
       const filePath = path.join(uploadsDir, uniqueFilename);
       await writeFile(filePath, coverImageFile);
-      newCoverPath = `/uploads/album-covers/${uniqueFilename}`; // Path to be stored in DB
+      newCoverPath = `/images/covers/${uniqueFilename}`; // Path to be stored in DB
     }
 
     // 2. Update the album
