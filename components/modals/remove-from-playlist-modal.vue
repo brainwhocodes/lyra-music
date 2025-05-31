@@ -22,7 +22,8 @@ const props = defineProps({
   },
   track: {
     type: Object as () => Track | null,
-    required: true,
+    required: false,
+    default: null,
   },
   playlistId: {
     type: String,

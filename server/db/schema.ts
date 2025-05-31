@@ -184,6 +184,37 @@ export const artistUserRelations = relations(artistUsers, ({ one }) => ({
 
 // Relations for tracks, playlists, etc. can be added here as needed for other queries.
 
+export const playlistRelations = relations(playlists, ({ one, many }) => ({
+  user: one(users, {
+    fields: [playlists.userId],
+    references: [users.userId],
+  }),
+  playlistTracks: many(playlistTracks),
+}));
+
+export const playlistTrackRelations = relations(playlistTracks, ({ one }) => ({
+  playlist: one(playlists, {
+    fields: [playlistTracks.playlistId],
+    references: [playlists.playlistId],
+  }),
+  track: one(tracks, {
+    fields: [playlistTracks.trackId],
+    references: [tracks.trackId],
+  }),
+}));
+
+export const trackRelations = relations(tracks, ({ one }) => ({
+  artist: one(artists, {
+    fields: [tracks.artistId],
+    references: [artists.artistId],
+  }),
+  album: one(albums, {
+    fields: [tracks.albumId],
+    references: [albums.albumId],
+  }),
+  // If tracks can have multiple genres or other relations, define them here
+}));
+
 
 // === Inferred Types ===
 export type User = InferSelectModel<typeof users>;

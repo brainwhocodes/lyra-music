@@ -65,18 +65,26 @@
         <h2 class="text-2xl font-semibold my-4">Tracks</h2>
         <div class="overflow-x-auto">
           <table class="table w-full">
-            <tbody>
-              <TrackItem
-                v-for="(track, i) in playlist.tracks"
-                :key="track.playlistTrackId"
-                :track="mapPlaylistTrack(track)"
-                :track-number="i + 1"
-                :in-playlist="true"
-                :playlists="[playlist]"
-                @play-track="playTrackFromList"
-                @track-options="handleTrackOptions($event, track)"
-              />
-            </tbody>
+              <draggable
+              tag="tbody"
+              class="dragArea list-group"
+                v-model:list="playlist.tracks"
+                item-key="playlistTrackId"
+                group="playlist"
+                @end="updatePlaylistOrder"
+              >
+                <template #item="{ element, index }">
+                  <TrackItem
+                    :key="element.playlistTrackId"
+                    :track="mapPlaylistTrack(element)"
+                    :track-number="index + 1"
+                    :in-playlist="true"
+                    :playlists="playlist ? [playlist] : []" 
+                    @play-track="playTrackFromList"
+                    @track-options="handleTrackOptions($event, element)"
+                  />
+                </template>
+              </draggable>
           </table>
         </div>
       </div>
@@ -124,6 +132,13 @@
       @playlist-updated="handlePlaylistUpdated"
     />
 
+    <!-- Add to Playlist Modal -->
+    <AddToPlaylistModal
+      v-model:open="isAddToPlaylistModalOpen"
+      :track="trackForAddToPlaylistModal"
+      @add-track="handleAddTrackToPlaylistConfirmed"
+    />
+
     <!-- Notification -->
     <div v-if="notification.visible" :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
       {{ notification.message }}
@@ -138,8 +153,9 @@ import TrackItem from '~/components/track/track-item.vue';
 import type { Playlist, PlaylistTrack } from '~/types/playlist';
 import type { Track } from '~/types/track';
 import type { NotificationMessage } from '~/types/notification-message';
-import CreatePlaylistModal from '~/components/modals/create-playlist-modal.vue';
 import RemoveFromPlaylistModal from '~/components/modals/remove-from-playlist-modal.vue';
+import AddToPlaylistModal from '~/components/modals/add-to-playlist-modal.vue'; // Added
+import draggable from 'vuedraggable';
 
 definePageMeta({
   layout: 'sidebar-layout'
@@ -160,11 +176,14 @@ const showDeleteModal = ref(false);
 const showAddTracksModal = ref(false);
 const renameValue = ref('');
 
+const isAddToPlaylistModalOpen = ref(false); // Added
+const trackForAddToPlaylistModal = ref<Track | null>(null); // Added
+
 const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 
-function showNotification(message: string, type: 'success' | 'error' = 'success'): void {
+function showNotification(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
   notification.value = { message, type, visible: true };
   setTimeout(() => (notification.value.visible = false), 2500);
 }
@@ -199,48 +218,31 @@ function formatTrackCount(count: number): string {
   return count === 1 ? '1 track' : `${count} tracks`;
 }
 
-function mapPlaylistTrack(playlistTrack: PlaylistTrack): Track {
-  // If the track is already in the nested format, return it directly
-  if (playlistTrack.track) {
+function mapPlaylistTrack(pt: PlaylistTrack): Track {
+  if (!pt.track) {
+    console.error('PlaylistTrack is missing the nested .track object. PlaylistTrack ID:', pt.playlistTrackId);
+    // Return a fallback/default track structure to prevent further errors in TrackItem
     return {
-      trackId: playlistTrack.track.trackId,
-      title: playlistTrack.track.title,
-      artistName: playlistTrack.track.artistName,
-      albumId: playlistTrack.track.albumId,
-      albumTitle: playlistTrack.track.albumTitle,
-      duration: playlistTrack.track.duration,
-      filePath: playlistTrack.track.filePath || '', // Ensure filePath is not null
-      coverPath: playlistTrack.track.coverPath,
-      trackNumber: playlistTrack.track.trackNumber ?? null,
-      artistId: playlistTrack.track.artistId,
+      trackId: pt.trackId || 'error-unknown-track-id',
+      title: 'Error: Track data unavailable',
+      artistName: 'Unknown Artist',
+      albumId: null,
+      albumTitle: 'Unknown Album',
+      duration: 0,
+      filePath: '',
+      coverPath: null,
+      trackNumber: null,
+      artistId: null,
       genre: null,
       year: null,
       diskNumber: null,
-      explicit: null,
-      createdAt: '', // Or new Date().toISOString()
-      updatedAt: '', // Or new Date().toISOString()
+      explicit: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
   }
-  
-  // Fallback for old format (should not happen with updated API)
-  return {
-    trackId: (playlistTrack as any).trackId,
-    title: (playlistTrack as any).title,
-    artistName: (playlistTrack as any).artistName,
-    albumId: (playlistTrack as any).albumId,
-    albumTitle: (playlistTrack as any).albumTitle,
-    duration: (playlistTrack as any).duration,
-    filePath: (playlistTrack as any).filePath || '',
-    coverPath: (playlistTrack as any).coverPath,
-    trackNumber: (playlistTrack as any).trackNumber ?? null,
-    artistId: (playlistTrack as any).artistId,
-    genre: null,
-    year: null,
-    diskNumber: null,
-    explicit: null,
-    createdAt: '', // Or new Date().toISOString()
-    updatedAt: '', // Or new Date().toISOString()
-  };
+  // The pt.track object should conform to the global Track type as per backend response and types/playlist.ts
+  return pt.track;
 }
 
 function playPlaylist(): void {
@@ -299,7 +301,12 @@ function handleTrackOptions(event: { action: string; track: Track }, playlistTra
     trackToRemove.value = playlistTrack;
     isRemoveFromPlaylistModalOpen.value = true;
   } else if (event.action === 'edit-track') {
-    // Handle edit track action if needed
+    // Handle edit track logic, e.g., open an edit modal or navigate to an edit page
+    console.log('Edit track:', event.track);
+    // router.push(`/tracks/${event.track.trackId}/edit`); // Example navigation
+  } else if (event.action === 'add-to-playlist') { // Added
+    trackForAddToPlaylistModal.value = event.track;
+    isAddToPlaylistModalOpen.value = true;
   }
 }
 
@@ -356,9 +363,51 @@ async function deletePlaylist(): Promise<void> {
     showNotification('Failed to delete playlist.', 'error');
   }
 }
+
+async function handleAddTrackToPlaylistConfirmed(payload: { trackId: string; playlistId: string }): Promise<void> {
+  // The modal already made the API call. We just show a notification.
+  // To show the target playlist's name, we might need to fetch all user playlists if it's not the current one.
+  if (playlist.value && payload.playlistId === playlist.value.playlistId) {
+    showNotification(`Track added to ${playlist.value.name}`, 'success');
+    // Optionally, re-fetch current playlist to show the newly added track if not already handled by modal's parent page update logic
+    // await fetchPlaylist(); // Uncomment if needed and if AddToPlaylistModal doesn't trigger a wider state update
+  } else {
+    showNotification('Track added to playlist', 'success');
+  }
+}
+
+async function updatePlaylistOrder(): Promise<void> {
+  if (!playlist.value || !playlist.value.tracks) return;
+
+  const orderedTrackIds = playlist.value.tracks.map((t: PlaylistTrack) => t.playlistTrackId);
+
+  try {
+    const userTokenValue = document ? localStorage.getItem('auth_token') || '' : userToken.value || '';
+    if (!userTokenValue) {
+      showNotification('Authentication token not found. Please log in.', 'error');
+      return;
+    }
+    const updatedPlaylistData = await $fetch<Playlist>(`/api/playlists/${playlistId.value}/reorder`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${userTokenValue}` },
+      body: { playlistTrackIds: orderedTrackIds },
+    });
+    playlist.value = updatedPlaylistData;
+    showNotification('Playlist order updated successfully!', 'success');
+  } catch (err: any) {
+    showNotification(`Error updating playlist order: ${err.data?.message || err.message || 'Unknown error'}`, 'error');
+    await fetchPlaylist(); // Revert optimistic update if API call fails
+  }
+}
+
 </script>
 
 <style scoped>
+.sortable-ghost {
+  opacity: 0.5;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+}
 .toast {
   position: fixed;
   bottom: 2rem;

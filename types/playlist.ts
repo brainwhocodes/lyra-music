@@ -1,3 +1,5 @@
+import type { Track } from './track';
+
 export interface Playlist {
   playlistId: string;
   name: string;
@@ -5,21 +7,19 @@ export interface Playlist {
   description?: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
+  user?: {
+    userId: string;
+    name: string;
+    // email?: string; // Add if needed by frontend, not in current backend mapping
+  };
+  tracks: PlaylistTrack[];
 }
 
 export interface PlaylistTrack {
   playlistTrackId: string;
+  playlistId: string; // Added
+  trackId: string; // Added for direct reference, often useful
   order: number;
-  track: {
-    trackId: string;
-    title: string;
-    duration: number;
-    trackNumber?: number | null;
-    filePath?: string | null;
-    albumId: string;
-    albumTitle: string;
-    coverPath?: string | null;
-    artistId: string;
-    artistName: string;
-  };
+  addedAt: string; // ISO date string, Added
+  track: Track; // Changed to use global Track type
 }

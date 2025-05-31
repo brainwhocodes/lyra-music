@@ -1,5 +1,6 @@
 <template>
   <tr
+    v-bind="$attrs"
     class="hover:bg-base-200 group cursor-pointer"
     :class="{'font-semibold bg-base-300': isCurrentTrack}"
     @click="onPlayTrack"
@@ -36,7 +37,7 @@
         <template #default>
           <button
             class="px-4 py-2 text-left hover:bg-base-300 flex items-center w-full"
-            @click.stop="openAddToPlaylistModal"
+            @click.stop="emit('track-options', { action: 'add-to-playlist', track })"
           >
             <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
             Add to Playlist
@@ -60,22 +61,16 @@
       </OptionsMenu>
     </td>
   </tr>
-
-  <AddToPlaylistModal
-    v-model:open="isAddToPlaylistModalOpen"
-    :track="track"
-    @add-track="handleAddTrackToPlaylist"
-  />
 </template>
 
 <script setup lang="ts">
+defineOptions({ inheritAttrs: false });
 // In Nuxt 3, these are auto-imported
 // No need to explicitly import ref and computed
 import { usePlayerStore } from '~/stores/player';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import OptionsMenu from '~/components/options-menu.vue';
-import AddToPlaylistModal from '~/components/modals/add-to-playlist-modal.vue';
 import { formatTrackDuration } from '~/utils/formatters'; // Assuming this is the correct path
 
 const props = defineProps({
@@ -98,7 +93,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['play-track', 'track-options', 'add-to-playlist']);
-const isAddToPlaylistModalOpen = ref(false);
 const playerStore = usePlayerStore();
 
 const isCurrentTrack = computed(() => {
@@ -115,14 +109,7 @@ const onPlayTrack = (): void => {
   emit('play-track', props.track);
 };
 
-const openAddToPlaylistModal = (): void => {
-  isAddToPlaylistModalOpen.value = true;
-};
 
-const handleAddTrackToPlaylist = (payload: { trackId: string; playlistId: string }): void => {
-  emit('add-to-playlist', payload);
-  // Modal closes itself via v-model:open, so no need to set isAddToPlaylistModalOpen.value = false here
-};
 </script>
 
 
