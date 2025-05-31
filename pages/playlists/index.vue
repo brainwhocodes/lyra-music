@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="w-full h-[calc(100vh+5rem)] p-4 bg-base-200">
     <!-- Top Bar: Search + Create Playlist Button -->
     <div class="flex justify-between items-center mb-2 sticky top-0 bg-base-200/80 backdrop-blur py-2 z-10">
       <div class="form-control">
@@ -13,7 +13,7 @@
       <div class="flex items-center gap-4">
         <button 
           class="btn btn-primary btn-sm" 
-          @click="openCreatePlaylistModal"
+          @click="isCreateModalOpen = true"
         >
           <Icon name="material-symbols:add" class="w-5 h-5 mr-1" />
           New Playlist
@@ -40,7 +40,7 @@
       </p>
       <button 
         class="btn btn-primary" 
-        @click="openCreatePlaylistModal"
+        @click="isCreateModalOpen = true"
       >
         <Icon name="material-symbols:add" class="w-5 h-5 mr-1" />
         Create Playlist
@@ -102,40 +102,7 @@
     </div>
 
     <!-- Create Playlist Modal -->
-    <dialog ref="createPlaylistModal" class="modal" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50;">
-      <div class="modal-box p-6 max-w-md">
-        <h3 class="font-bold text-lg mb-4">Create New Playlist</h3>
-        <form @submit.prevent="createPlaylist">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Playlist Name</span>
-            </label>
-            <input 
-              type="text" 
-              v-model="newPlaylistName" 
-              placeholder="My Awesome Playlist" 
-              class="input input-bordered w-full" 
-              required
-              ref="playlistNameInput"
-            />
-          </div>
-          <div class="modal-action">
-            <button type="button" class="btn" @click="closeCreatePlaylistModal">Cancel</button>
-            <button 
-              type="submit" 
-              class="btn btn-primary" 
-              :disabled="isCreatingPlaylist || !newPlaylistName.trim()"
-            >
-              <span v-if="isCreatingPlaylist" class="loading loading-spinner loading-xs mr-2"></span>
-              Create
-            </button>
-          </div>
-        </form>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+    <CreatePlaylistModal v-model:open="isCreateModalOpen" @create-playlist="handleActualCreatePlaylist" />
 
     <!-- Edit Playlist Modal -->
     <dialog ref="editPlaylistModal" class="modal modal-middle">
@@ -199,6 +166,7 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import CreatePlaylistModal from '~/components/modals/create-playlist-modal.vue';
 
 // Define types
 interface Playlist {
@@ -212,24 +180,28 @@ interface Playlist {
 
 // State
 const searchQuery = ref('');
-const newPlaylistName = ref('');
 const editPlaylistName = ref('');
-const currentPlaylistId = ref<string | null>(null);
-const isCreatingPlaylist = ref(false);
+const playlistToEdit = ref<Playlist | null>(null);
+const playlistToDeleteId = ref<string | null>(null);
+
+const isCreateModalOpen = ref(false); // For the new modal
+const isCreatingPlaylist = ref(false); // Kept for API call state
 const isUpdatingPlaylist = ref(false);
 const isDeletingPlaylist = ref(false);
 
-// Refs for modals
-const createPlaylistModal = ref<HTMLDialogElement | null>(null);
+// Modal refs
 const editPlaylistModal = ref<HTMLDialogElement | null>(null);
 const deletePlaylistModal = ref<HTMLDialogElement | null>(null);
-const playlistNameInput = ref<HTMLInputElement | null>(null);
 const editPlaylistNameInput = ref<HTMLInputElement | null>(null);
+const userToken = typeof document !== 'undefined' ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 
 // Fetch playlists
 const { data: playlists, pending, error, refresh } = useFetch<Playlist[]>('/api/playlists', {
   lazy: true,
   server: false,
+  headers: {
+    'Authorization': `Bearer ${userToken.value}`
+  },
   transform: (data: any[]) => {
     // Add trackCount property (will be updated when we implement the API)
     return data.map(playlist => ({
@@ -254,21 +226,8 @@ const filteredPlaylists = computed(() => {
 });
 
 // Modal functions
-const openCreatePlaylistModal = () => {
-  newPlaylistName.value = '';
-  createPlaylistModal.value?.showModal();
-  // Focus the input after the modal is shown
-  setTimeout(() => {
-    playlistNameInput.value?.focus();
-  }, 100);
-};
-
-const closeCreatePlaylistModal = () => {
-  createPlaylistModal.value?.close();
-};
-
 const openEditPlaylistModal = (playlist: Playlist) => {
-  currentPlaylistId.value = playlist.playlistId;
+  playlistToEdit.value = playlist;
   editPlaylistName.value = playlist.name;
   editPlaylistModal.value?.showModal();
   // Focus the input after the modal is shown
@@ -282,7 +241,7 @@ const closeEditPlaylistModal = () => {
 };
 
 const openDeletePlaylistModal = (playlistId: string) => {
-  currentPlaylistId.value = playlistId;
+  playlistToDeleteId.value = playlistId;
   deletePlaylistModal.value?.showModal();
 };
 
@@ -291,31 +250,23 @@ const closeDeletePlaylistModal = () => {
 };
 
 // CRUD operations
-const createPlaylist = async () => {
-  if (!newPlaylistName.value.trim()) return;
-  
+const handleActualCreatePlaylist = async (name: string) => {
+  isCreatingPlaylist.value = true;
   try {
-    isCreatingPlaylist.value = true;
-    
     await $fetch('/api/playlists', {
       method: 'POST',
-      body: {
-        name: newPlaylistName.value.trim()
-      }
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userToken.value}`
+      },
+      body: { name }
     });
-    
-    // Refresh the playlists list
-    await refresh();
-    
-    // Close the modal
-    closeCreatePlaylistModal();
-    
-    // Show success toast
-    // If you have a toast system, use it here
-  } catch (err: any) {
+    await refresh(); // Refresh the list
+    isCreateModalOpen.value = false; // Close modal on success
+    // TODO: Add success notification
+  } catch (err) {
     console.error('Failed to create playlist:', err);
-    // Show error toast
-    // If you have a toast system, use it here
+    // TODO: Add error notification
   } finally {
     isCreatingPlaylist.value = false;
   }
@@ -326,12 +277,12 @@ const editPlaylist = (playlist: Playlist) => {
 };
 
 const updatePlaylist = async () => {
-  if (!currentPlaylistId.value || !editPlaylistName.value.trim()) return;
+  if (!playlistToEdit.value?.playlistId || !editPlaylistName.value.trim()) return;
   
   try {
     isUpdatingPlaylist.value = true;
     
-    await $fetch(`/api/playlists/${currentPlaylistId.value}`, {
+    await $fetch(`/api/playlists/${playlistToEdit.value.playlistId}`, {
       method: 'PUT',
       body: {
         name: editPlaylistName.value.trim()
@@ -360,12 +311,12 @@ const deletePlaylist = (playlistId: string) => {
 };
 
 const confirmDeletePlaylist = async () => {
-  if (!currentPlaylistId.value) return;
+  if (!playlistToDeleteId.value) return;
   
   try {
     isDeletingPlaylist.value = true;
     
-    await $fetch(`/api/playlists/${currentPlaylistId.value}`, {
+    await $fetch(`/api/playlists/${playlistToDeleteId.value}`, {
       method: 'DELETE'
     });
     

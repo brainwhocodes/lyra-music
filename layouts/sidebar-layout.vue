@@ -10,7 +10,7 @@
       <button @click="toggleMobileSidebar" class="btn btn-ghost btn-square btn-sm">
         <Icon name="material-symbols:menu-rounded" class="w-6 h-6" />
       </button>
-      <h2 class="text-lg font-bold ml-2 text-primary">Hopeium</h2>
+      <h2 class="text-lg font-bold ml-2 text-primary">Lyra Music</h2>
     </header>
 
     <div class="flex flex-1 overflow-hidden"> <!-- New div to wrap sidebar and main for horizontal layout -->
