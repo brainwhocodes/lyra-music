@@ -127,6 +127,7 @@ import TrackItem from '~/components/track/track-item.vue';
 import type { Playlist, PlaylistTrack } from '~/types/playlist';
 import type { Track } from '~/types/track';
 import type { NotificationMessage } from '~/types/notification-message';
+import CreatePlaylistModal from '~/components/modals/create-playlist-modal.vue';
 
 definePageMeta({
   layout: 'sidebar-layout'
@@ -147,6 +148,8 @@ const showDeleteModal = ref(false);
 const showAddTracksModal = ref(false);
 const renameValue = ref('');
 
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
+
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 
 function showNotification(message: string, type: 'success' | 'error' = 'success'): void {
@@ -161,7 +164,9 @@ async function fetchPlaylist(): Promise<void> {
   pending.value = true;
   error.value = false;
   try {
-    const data = await $fetch<Playlist>(`/api/playlists/${playlistId.value}`);
+    const data = await $fetch<Playlist>(`/api/playlists/${playlistId.value}`, {
+      headers: { 'Authorization': `Bearer ${userToken.value}` }
+    });
     playlist.value = data;
     renameValue.value = data.name;
   } catch (e) {
@@ -192,8 +197,15 @@ function mapPlaylistTrack(track: PlaylistTrack): Track {
     duration: track.duration,
     filePath: track.filePath || '', // Ensure filePath is not null
     coverPath: track.coverPath,
-    trackNumber: track.trackNumber ?? null, // Added from PlaylistTrack
-    artistId: track.artistId, // Added from PlaylistTrack
+    trackNumber: track.trackNumber ?? null,
+    artistId: track.artistId,
+    // Add missing properties from Track interface
+    genre: null,
+    year: null,
+    diskNumber: null,
+    explicit: null,
+    createdAt: '', // Or new Date().toISOString()
+    updatedAt: '', // Or new Date().toISOString()
   };
 }
 
@@ -249,6 +261,7 @@ async function renamePlaylist(): Promise<void> {
   if (!playlist.value) return;
   try {
     await $fetch(`/api/playlists/${playlist.value.playlistId}/rename`, {
+      headers: { 'Authorization': `Bearer ${userToken.value}` },
       method: 'PUT',
       body: { name: renameValue.value },
     });
@@ -263,7 +276,7 @@ async function renamePlaylist(): Promise<void> {
 async function deletePlaylist(): Promise<void> {
   if (!playlist.value) return;
   try {
-    await $fetch(`/api/playlists/${playlist.value.playlistId}`, { method: 'DELETE' });
+    await $fetch(`/api/playlists/${playlist.value.playlistId}`, { headers: { 'Authorization': `Bearer ${userToken.value}` }, method: 'DELETE' });
     showNotification('Playlist deleted.', 'success');
     navigateTo('/playlists');
   } catch (e) {

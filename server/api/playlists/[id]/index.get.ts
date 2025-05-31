@@ -47,33 +47,42 @@ export default defineEventHandler(async (event) => {
       .select({
         playlistTrackId: playlistTracks.playlistTrackId,
         order: playlistTracks.order,
-        track: {
-          trackId: tracks.trackId,
-          title: tracks.title,
-          duration: tracks.duration,
-          trackNumber: tracks.trackNumber,
-          filePath: tracks.filePath,
-          // Flatten album and artist properties directly into the track
-          albumId: albums.albumId,
-          albumTitle: albums.title,
-          coverPath: albums.coverPath,
-          artistId: artists.artistId,
-          artistName: artists.name,
-        },
+        // Flattened track properties
+        trackId: tracks.trackId,
+        title: tracks.title,
+        duration: tracks.duration,
+        trackNumber: tracks.trackNumber,
+        filePath: tracks.filePath,
+        albumId: albums.albumId,
+        albumTitle: albums.title,
+        coverPath: albums.coverPath,
+        artistId: artists.artistId,
+        artistName: artists.name,
       })
       .from(playlistTracks)
-      .innerJoin(tracks, eq(playlistTracks.trackId, tracks.trackId))
-      .innerJoin(albums, eq(tracks.albumId, albums.albumId))
-      .innerJoin(artists, eq(albums.artistId, artists.artistId))
+      .innerJoin(tracks, eq(playlistTracks.trackId, tracks.trackId)) // A playlist track must have a corresponding track
+      .leftJoin(albums, eq(tracks.albumId, albums.albumId))         // A track might not have an album
+      .leftJoin(artists, eq(tracks.artistId, artists.artistId))     // A track might not have an artist / artistId could be null
       .where(eq(playlistTracks.playlistId, playlistId))
       .orderBy(asc(playlistTracks.order));
 
     return {
       ...playlist,
-      tracks: playlistTrackResults.map(({ track, playlistTrackId, order }) => ({
-        ...track,
-        playlistTrackId,
-        order,
+      tracks: playlistTrackResults.map(item => ({
+        playlistTrackId: item.playlistTrackId,
+        order: item.order,
+        track: {
+          trackId: item.trackId,
+          title: item.title,
+          duration: item.duration,
+          trackNumber: item.trackNumber,
+          filePath: item.filePath,
+          albumId: item.albumId,
+          albumTitle: item.albumTitle,
+          coverPath: item.coverPath,
+          artistId: item.artistId,
+          artistName: item.artistName,
+        },
       })),
     };
   } catch (error: any) {
