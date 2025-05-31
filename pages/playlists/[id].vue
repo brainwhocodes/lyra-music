@@ -180,26 +180,48 @@ onMounted(fetchPlaylist);
 
 const totalDuration = computed((): number => {
   if (!playlist.value) return 0;
-  return playlist.value.tracks.reduce((sum: number, t: PlaylistTrack) => sum + (t.duration || 0), 0);
+  return playlist.value.tracks.reduce((sum: number, t: PlaylistTrack) => sum + (t.track?.duration || 0), 0);
 });
 
 function formatTrackCount(count: number): string {
   return count === 1 ? '1 track' : `${count} tracks`;
 }
 
-function mapPlaylistTrack(track: PlaylistTrack): Track {
+function mapPlaylistTrack(playlistTrack: PlaylistTrack): Track {
+  // If the track is already in the nested format, return it directly
+  if (playlistTrack.track) {
+    return {
+      trackId: playlistTrack.track.trackId,
+      title: playlistTrack.track.title,
+      artistName: playlistTrack.track.artistName,
+      albumId: playlistTrack.track.albumId,
+      albumTitle: playlistTrack.track.albumTitle,
+      duration: playlistTrack.track.duration,
+      filePath: playlistTrack.track.filePath || '', // Ensure filePath is not null
+      coverPath: playlistTrack.track.coverPath,
+      trackNumber: playlistTrack.track.trackNumber ?? null,
+      artistId: playlistTrack.track.artistId,
+      genre: null,
+      year: null,
+      diskNumber: null,
+      explicit: null,
+      createdAt: '', // Or new Date().toISOString()
+      updatedAt: '', // Or new Date().toISOString()
+    };
+  }
+  
+  // Fallback for old format (should not happen with updated API)
   return {
-    trackId: track.trackId,
-    title: track.title,
-    artistName: track.artistName,
-    albumId: track.albumId,
-    albumTitle: track.albumTitle,
-    duration: track.duration,
-    filePath: track.filePath || '', // Ensure filePath is not null
-    coverPath: track.coverPath,
-    trackNumber: track.trackNumber ?? null,
-    artistId: track.artistId,
-    // Add missing properties from Track interface
+    trackId: (playlistTrack as any).trackId,
+    title: (playlistTrack as any).title,
+    artistName: (playlistTrack as any).artistName,
+    albumId: (playlistTrack as any).albumId,
+    albumTitle: (playlistTrack as any).albumTitle,
+    duration: (playlistTrack as any).duration,
+    filePath: (playlistTrack as any).filePath || '',
+    coverPath: (playlistTrack as any).coverPath,
+    trackNumber: (playlistTrack as any).trackNumber ?? null,
+    artistId: (playlistTrack as any).artistId,
     genre: null,
     year: null,
     diskNumber: null,

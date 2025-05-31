@@ -56,7 +56,6 @@
   <AddToPlaylistModal
     v-model:open="isAddToPlaylistModalOpen"
     :track="track"
-    :playlists="playlists"
     @add-track="handleAddTrackToPlaylist"
   />
 </template>

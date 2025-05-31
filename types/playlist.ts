@@ -10,14 +10,16 @@ export interface Playlist {
 export interface PlaylistTrack {
   playlistTrackId: string;
   order: number;
-  trackId: string;
-  title: string;
-  duration: number;
-  trackNumber?: number | null;
-  filePath?: string | null;
-  albumId: string;
-  albumTitle: string;
-  coverPath?: string | null;
-  artistId: string;
-  artistName: string;
+  track: {
+    trackId: string;
+    title: string;
+    duration: number;
+    trackNumber?: number | null;
+    filePath?: string | null;
+    albumId: string;
+    albumTitle: string;
+    coverPath?: string | null;
+    artistId: string;
+    artistName: string;
+  };
 }

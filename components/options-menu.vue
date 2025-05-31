@@ -62,10 +62,33 @@ const props = defineProps({
 const emit = defineEmits(['option-selected']);
 
 const isMenuOpen = ref(false);
+const menuPosition = ref({ top: '0px', left: '0px' });
 
 const toggleMenu = (event?: Event) => {
   if (event) event.stopPropagation();
+  
+  // Toggle menu state
   isMenuOpen.value = !isMenuOpen.value;
+  
+  // If opening the menu, calculate position
+  if (isMenuOpen.value && event) {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    
+    // Position the menu below the button and aligned to the right
+    menuPosition.value = {
+      top: `${rect.bottom + window.scrollY + 5}px`,
+      left: `${rect.left + window.scrollX - 120}px` // Offset to align right side of menu with button
+    };
+    
+    // Ensure menu doesn't go off-screen
+    const menuWidth = 224; // width of the menu (56 * 4)
+    if (rect.left - 120 < 0) {
+      menuPosition.value.left = `${rect.left}px`;
+    } else if (rect.left + menuWidth > window.innerWidth) {
+      menuPosition.value.left = `${window.innerWidth - menuWidth - 10}px`;
+    }
+  }
 };
 
 const closeMenu = () => {

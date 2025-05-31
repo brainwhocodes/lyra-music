@@ -80,6 +80,25 @@ export default defineEventHandler(async (event) => {
     }
 
     if (body.action === 'add') {
+      // Check for existing tracks in the playlist to avoid duplicates
+      const existingPlaylistTracks = await db
+        .select({ trackId: playlistTracks.trackId })
+        .from(playlistTracks)
+        .where(
+          and(
+            eq(playlistTracks.playlistId, playlistId),
+            sql`${playlistTracks.trackId} IN ${body.trackIds}`
+          )
+        );
+      
+      const existingPlaylistTrackIds = new Set(existingPlaylistTracks.map(pt => pt.trackId));
+      const tracksToAdd = body.trackIds.filter(id => !existingPlaylistTrackIds.has(id));
+      
+      // If all tracks are already in the playlist, return early
+      if (tracksToAdd.length === 0) {
+        return { message: 'All tracks are already in the playlist' };
+      }
+      
       // Get current max order to append new tracks at the end
       const maxOrderResult = await db
         .select({ maxOrder: sql<number>`MAX(${playlistTracks.order})` })
@@ -91,7 +110,7 @@ export default defineEventHandler(async (event) => {
       const now = sql`CURRENT_TIMESTAMP`;
 
       // Insert new tracks with sequential order values
-      const newPlaylistTracks = body.trackIds.map((trackId, index) => ({
+      const newPlaylistTracks = tracksToAdd.map((trackId, index) => ({
         playlistTrackId: uuidv7(),
         playlistId,
         trackId,

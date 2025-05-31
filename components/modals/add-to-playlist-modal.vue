@@ -11,7 +11,15 @@
         <h3 v-if="track" class="font-bold text-lg">
           Add "{{ track.title }}" to Playlist
         </h3>
-        <div v-if="playlists.length > 0" class="mt-4">
+        <div v-if="isLoading" class="mt-4 py-4 text-center">
+          <span class="loading loading-spinner loading-md"></span>
+          <p class="mt-2">Loading playlists...</p>
+        </div>
+        <div v-else-if="error" class="mt-4 py-4 text-center text-error">
+          <p>{{ error }}</p>
+          <button class="btn btn-sm btn-outline mt-2" @click="fetchPlaylists">Retry</button>
+        </div>
+        <div v-else-if="playlists.length > 0" class="mt-4">
           <ul class="menu bg-base-100 w-full p-0 rounded-box max-h-60 overflow-y-auto">
             <li v-for="playlist in playlists" :key="playlist.playlistId">
               <a @click="handleAddTrackToPlaylist(playlist.playlistId)">
@@ -39,10 +47,43 @@ import type { Playlist } from '~/types/playlist';
 interface Props {
   open: boolean;
   track: Track | null;
-  playlists: Playlist[];
 }
 
 const props = defineProps<Props>();
+
+// State for the component
+const playlists = ref<Playlist[]>([]);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
+
+/**
+ * Fetches the user's playlists from the API.
+ */
+const fetchPlaylists = async (): Promise<void> => {
+  isLoading.value = true;
+  error.value = null;
+  
+  try {
+    // Get auth token from localStorage
+    const authToken = typeof document !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    
+    // Fetch playlists from API
+    const response = await $fetch<Playlist[]>('/api/playlists', {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    
+    playlists.value = response;
+  } catch (err) {
+    console.error('Error fetching playlists:', err);
+    error.value = 'Failed to load playlists';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
 
 const emit = defineEmits(['update:open', 'add-track']);
 
@@ -57,18 +98,46 @@ const closeModal = (): void => {
  * Handles adding the track to the selected playlist.
  * @param playlistId - The ID of the playlist to add the track to.
  */
-const handleAddTrackToPlaylist = (playlistId: string): void => {
+const handleAddTrackToPlaylist = async (playlistId: string): Promise<void> => {
   if (props.track) {
-    emit('add-track', { trackId: props.track.trackId, playlistId });
+    try {
+      // Get auth token from localStorage
+      const authToken = typeof document !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      
+      // Make API call to add track to playlist
+      await $fetch(`/api/playlists/${playlistId}/tracks`, {
+        method: 'POST',
+        body: {
+          action: 'add',
+          trackIds: [props.track.trackId]
+        },
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      // Emit event for parent components to handle if needed
+      emit('add-track', { trackId: props.track.trackId, playlistId });
+      
+      // Success - let parent component handle notification
+    } catch (err) {
+      console.error('Error adding track to playlist:', err);
+      // Error - let parent component handle notification
+    }
   }
   closeModal();
 };
 
-// Close modal on escape key press
+// Watch for modal open state changes
 watch(() => props.open, (isOpen: boolean) => {
   if (isOpen) {
+    // Add keyboard event listener
     document.addEventListener('keydown', onKeyDown);
+    
+    // Fetch playlists when modal opens
+    fetchPlaylists();
   } else {
+    // Remove keyboard event listener when modal closes
     document.removeEventListener('keydown', onKeyDown);
   }
 });
