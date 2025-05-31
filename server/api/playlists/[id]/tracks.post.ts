@@ -133,18 +133,28 @@ export default defineEventHandler(async (event) => {
         .run();
 
       // Reorder remaining tracks to fill gaps
-      await db
-        .update(playlistTracks)
-        .set({
-          order: sql`(
-            SELECT COUNT(*) 
-            FROM ${playlistTracks} pt2 
-            WHERE pt2.playlist_id = ${playlistTracks.playlistId} 
-            AND pt2.order <= ${playlistTracks.order}
-          ) - 1`,
-          updatedAt: sql`CURRENT_TIMESTAMP`,
-        })
-        .where(eq(playlistTracks.playlistId, playlistId));
+      // First get all remaining tracks ordered by their current order
+      const remainingTracks = await db
+        .select()
+        .from(playlistTracks)
+        .where(eq(playlistTracks.playlistId, playlistId))
+        .orderBy(playlistTracks.order);
+      
+      // Then update each track with a new sequential order
+      for (let i = 0; i < remainingTracks.length; i++) {
+        await db
+          .update(playlistTracks)
+          .set({
+            order: i,
+            updatedAt: sql`CURRENT_TIMESTAMP`
+          })
+          .where(
+            and(
+              eq(playlistTracks.playlistId, playlistId),
+              eq(playlistTracks.playlistTrackId, remainingTracks[i].playlistTrackId)
+            )
+          );
+      }
     }
 
     // Update the playlist's updated_at timestamp

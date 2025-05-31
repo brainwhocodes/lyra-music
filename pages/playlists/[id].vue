@@ -71,8 +71,10 @@
                 :key="track.playlistTrackId"
                 :track="mapPlaylistTrack(track)"
                 :track-number="i + 1"
+                :in-playlist="true"
+                :playlists="[playlist]"
                 @play-track="playTrackFromList"
-                @track-options="openTrackOptions(track)"
+                @track-options="handleTrackOptions($event, track)"
               />
             </tbody>
           </table>
@@ -113,6 +115,15 @@
         </div>
       </div>
     </dialog>
+    <!-- Remove Track Modal -->
+    <RemoveFromPlaylistModal
+      v-if="playlist"
+      v-model:open="isRemoveFromPlaylistModalOpen"
+      :track="trackToRemove ? mapPlaylistTrack(trackToRemove) : null"
+      :playlist-id="playlist.playlistId"
+      @playlist-updated="handlePlaylistUpdated"
+    />
+
     <!-- Notification -->
     <div v-if="notification.visible" :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
       {{ notification.message }}
@@ -128,6 +139,7 @@ import type { Playlist, PlaylistTrack } from '~/types/playlist';
 import type { Track } from '~/types/track';
 import type { NotificationMessage } from '~/types/notification-message';
 import CreatePlaylistModal from '~/components/modals/create-playlist-modal.vue';
+import RemoveFromPlaylistModal from '~/components/modals/remove-from-playlist-modal.vue';
 
 definePageMeta({
   layout: 'sidebar-layout'
@@ -275,8 +287,47 @@ function playTrackFromList(clickedTrack: Track): void {
   }
 }
 
+const isRemoveFromPlaylistModalOpen = ref(false);
+const trackToRemove = ref<PlaylistTrack | null>(null);
+
 function openTrackOptions(track: PlaylistTrack): void {
-  // Implement options menu if needed
+  // Handle track options menu click
+}
+
+function handleTrackOptions(event: { action: string; track: Track }, playlistTrack: PlaylistTrack): void {
+  if (event.action === 'remove-from-playlist') {
+    trackToRemove.value = playlistTrack;
+    isRemoveFromPlaylistModalOpen.value = true;
+  } else if (event.action === 'edit-track') {
+    // Handle edit track action if needed
+  }
+}
+
+async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlistId: string }): Promise<void> {
+  if (!playlist.value) return;
+  
+  try {
+    await $fetch(`/api/playlists/${playlist.value.playlistId}/tracks`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${userToken.value}` },
+      body: {
+        trackIds: [payload.trackId]
+      }
+    });
+    
+    showNotification('Track removed from playlist');
+    await fetchPlaylist(); // Refresh the playlist data
+  } catch (error) {
+    showNotification('Failed to remove track from playlist', 'error');
+  }
+}
+
+async function handlePlaylistUpdated(updatedPlaylist: Playlist): Promise<void> {
+  if (!updatedPlaylist) return;
+  
+  // Update the local playlist data with the response from the API
+  playlist.value = updatedPlaylist;
+  showNotification('Playlist updated');
 }
 
 async function renamePlaylist(): Promise<void> {

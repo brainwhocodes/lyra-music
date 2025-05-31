@@ -48,6 +48,14 @@
             <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
             Edit Track
           </button>
+          <button
+            v-if="inPlaylist"
+            class="px-4 py-2 text-left hover:bg-base-300 flex items-center w-full text-error"
+            @click.stop="emit('track-options', { action: 'remove-from-playlist', track })"
+          >
+            <Icon name="material-symbols:playlist-remove" class="w-5 h-5 mr-2" />
+            Remove from Playlist
+          </button>
         </template>
       </OptionsMenu>
     </td>
@@ -61,7 +69,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+// In Nuxt 3, these are auto-imported
+// No need to explicitly import ref and computed
 import { usePlayerStore } from '~/stores/player';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
@@ -81,6 +90,10 @@ const props = defineProps({
   trackNumber: {
     type: Number,
     required: true,
+  },
+  inPlaylist: {
+    type: Boolean,
+    default: false,
   },
 });
 
