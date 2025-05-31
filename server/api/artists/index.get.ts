@@ -1,11 +1,11 @@
 import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { artists, albums, albumArtists } from '~/server/db/schema';
+import { artists, artistUsers } from '~/server/db/schema';
 import { asc, eq } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event) => {
-  const user = getUserFromEvent(event);
+  const user = await getUserFromEvent(event);
 
   if (!user) {
     throw createError({
@@ -22,16 +22,16 @@ export default defineEventHandler(async (event) => {
         artistImage: artists.artistImage,
       })
       .from(artists)
-      .innerJoin(albumArtists, eq(artists.artistId, albumArtists.artistId))
-      .innerJoin(albums, eq(albumArtists.albumId, albums.albumId))
-      .where(eq(albums.userId, user.userId))
-      .groupBy(artists.artistId, artists.name, artists.artistImage) // Ensure distinct artists
+      .innerJoin(artistUsers, eq(artists.artistId, artistUsers.artistId))
+      .where(eq(artistUsers.userId, user.userId)) // user is guaranteed to be non-null here due to the check above
+      .groupBy(artists.artistId, artists.name, artists.artistImage) // Ensure distinct artists if a user could have multiple entries for the same artist (though schema implies userArtistId is PK)
       .orderBy(asc(artists.name))
       .all();
 
+    console.log('API: Sending results:', JSON.stringify(results, null, 2));
     return results;
   } catch (error) {
-    console.error('Error fetching artists and albums:', error);
+    console.error('Error fetching artists for user via artistUsers:', error);
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch artists',

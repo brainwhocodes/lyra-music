@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event) => {
-  const user = getUserFromEvent(event);
+  const user = await getUserFromEvent(event);
 
   if (!user) {
     throw createError({

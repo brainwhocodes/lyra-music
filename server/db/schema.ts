@@ -136,13 +136,6 @@ export const albumGenres = sqliteTable('album_genres', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const userArtists = sqliteTable('user_artists', {
-  userArtistId: text('user_artist_id').primaryKey().$defaultFn(() => uuidv7()),
-  userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
-  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'cascade' }).notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
 
 // === Inferred Types ===
 export type User = InferSelectModel<typeof users>;
@@ -165,10 +158,6 @@ export type NewGenre = InferInsertModel<typeof genres>;
 
 export type AlbumGenre = InferSelectModel<typeof albumGenres>;
 export type NewAlbumGenre = InferInsertModel<typeof albumGenres>;
-
-export type UserArtist = InferSelectModel<typeof userArtists>;
-export type NewUserArtist = InferInsertModel<typeof userArtists>;
-
 export type RadioChannel = InferSelectModel<typeof radioChannels>;
 export type NewRadioChannel = InferInsertModel<typeof radioChannels>;
 

@@ -23,7 +23,7 @@ const loadingAlbumIdForPlay = ref<string | null>(null); // For individual album 
 // State for "Add Artist to Playlist" functionality
 const playlists = ref<Playlist[]>([]);
 const isAddArtistToPlaylistModalOpen = ref(false);
-
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 interface ArtistAlbum {
   id: string;
   title: string;
@@ -41,6 +41,7 @@ interface ArtistDetails {
 
 const { data: artist, pending, error } = await useLazyFetch<ArtistDetails>(`/api/artists/${artistId.value}`, {
   server: false,
+  headers: { 'Authorization': `Bearer ${userToken.value}` }
 });
 
 const getArtistImageUrl = (imagePath: string | null): string => {
@@ -70,7 +71,7 @@ const mappedAlbums = computed((): Album[] => {
 
 async function fetchPlaylists(): Promise<void> {
   try {
-    const data = await $fetch<Playlist[]>('/api/playlists');
+    const data = await $fetch<Playlist[]>('/api/playlists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
     playlists.value = data;
   } catch (e: unknown) {
     console.error('Error fetching playlists:', e);
@@ -90,7 +91,7 @@ async function getAllArtistTracks(): Promise<Track[]> {
   let allTracks: Track[] = [];
   try {
     for (const artistAlbum of artist.value.albums) {
-      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${artistAlbum.id}`);
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${artistAlbum.id}`, { headers: { 'Authorization': `Bearer ${userToken.value}` } });
       if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
         const tracksFromThisAlbum = albumDetails.tracks.map((t: any): Track => ({
           trackId: t.trackId,
@@ -208,7 +209,7 @@ const playAlbum = async (albumIdToPlay: string): Promise<void> => {
       playerStore.togglePlayPause();
     } else {
       console.log(`[ArtistPage] playAlbum: Fetching details for album: ${albumIdToPlay}`);
-      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${albumIdToPlay}`);
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${albumIdToPlay}`, { headers: { 'Authorization': `Bearer ${userToken.value}` } });
       console.log(`[ArtistPage] playAlbum: API response for ${albumIdToPlay}:`, albumDetails);
 
       if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
