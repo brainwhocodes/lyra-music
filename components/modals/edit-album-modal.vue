@@ -44,13 +44,19 @@ const props = defineProps<{ album: Album, open: boolean }>();
 
 const emit = defineEmits(['close', 'albumUpdated', 'updateError']);
 
+// Initialize with empty object but will be populated when modal opens
 const editableAlbum = ref<Partial<Album>>({});
 const selectedFile = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(null);
 const isOpen = ref(props.open);
 const isLoading = ref(false);
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token');
+
+// Initialize editableAlbum with album prop data immediately if available
+if (props.album) {
+  editableAlbum.value = JSON.parse(JSON.stringify(toRaw(props.album)));
+}
 
 watch(() => props.open, (newValue: boolean) => {
   isOpen.value = newValue;

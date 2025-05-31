@@ -20,15 +20,7 @@
       <AlbumCard
         v-for="album_item in albums"
         :key="album_item.albumId"
-        :album="{
-          albumId: album_item.albumId,
-          title: album_item.title,
-          artistName: album_item.artistName,
-          coverPath: album_item.coverPath,
-          year: album_item.year,
-          artistId: album_item.artistId,
-          tracks: album_item.tracks
-        }"
+        :album="album_item"
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
         :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
         @card-click="goToAlbum(album_item.albumId)"
@@ -68,6 +60,16 @@
     <!-- Click outside to close -->
     <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
   </div>
+
+  <!-- Edit Album Modal -->
+  <EditAlbumModal
+    v-if="selectedAlbumForEdit"
+    :album="selectedAlbumForEdit"
+    :open="isEditAlbumModalOpen"
+    @close="closeEditAlbumModal"
+    @albumUpdated="handleAlbumUpdated"
+    @updateError="handleUpdateError"
+  />
   
   <!-- Simple Notification Component -->
   <div v-if="notification.visible" 
@@ -97,6 +99,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
 import type { Album } from '~/types/album'; 
 import AlbumCard from '~/components/album/album-card.vue'; 
+import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import type { Track } from '~/types/track'; 
 import { useCoverArt } from '~/composables/use-cover-art'; 
 
@@ -116,6 +119,8 @@ const albumIdLoading = ref<string | null>(null);
 // --- State for Album Operations ---
 const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
+const selectedAlbumForEdit = ref<Album | null>(null);
+const isEditAlbumModalOpen = ref<boolean>(false);
 const playlists = ref<any[]>([]);
 const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false }); 
 
@@ -125,7 +130,7 @@ const loading = ref(true);
 const error = ref<string | null>(null); 
 const artistName = ref<string | null>(null); 
 const route = useRoute();
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
+const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token');
 
 // Computed property for API query parameters for fetching the albums list
 const apiQuery = computed(() => {
@@ -331,9 +336,40 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
   }
 };
 
-// Placeholder function for editing an album
+// Function to handle edit album action
 const handleEditAlbum = (album: Album): void => {
-  showNotification(`Edit functionality for "${album.title}" is not yet implemented.`, 'info');
+  selectedAlbumForEdit.value = album;
+  isEditAlbumModalOpen.value = true;
+};
+
+// Function to close the edit album modal
+const closeEditAlbumModal = (): void => {
+  isEditAlbumModalOpen.value = false;
+  // Keep the selected album for a moment to avoid UI flicker
+  setTimeout(() => {
+    selectedAlbumForEdit.value = null;
+  }, 300);
+};
+
+// Handle successful album update
+const handleAlbumUpdated = (updatedAlbum: Album): void => {
+  // Update the album in the albums list
+  const index = albums.value.findIndex((a: Album) => a.albumId === updatedAlbum.albumId);
+  if (index !== -1) {
+    albums.value[index] = { ...albums.value[index], ...updatedAlbum };
+  }
+  
+  // Update the album in the player store if it's loaded
+  playerStore.updateAlbumDetailsInPlayer(updatedAlbum);
+  
+  // Close the modal and show success notification
+  closeEditAlbumModal();
+  showNotification(`Album "${updatedAlbum.title}" updated successfully.`, 'success');
+};
+
+// Handle album update error
+const handleUpdateError = (errorMessage: string): void => {
+  showNotification(errorMessage || 'Failed to update album.', 'error');
 };
 
 // Fetch albums on component mount and when query (e.g., artistId) changes

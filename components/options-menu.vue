@@ -1,5 +1,5 @@
 <template>
-  <div class="relative" @click.stop>
+  <div class="relative options-menu-container" @click.stop>
     <button
       class="btn btn-ghost btn-sm p-1 focus:opacity-100"
       @click.stop="toggleMenu"
@@ -11,7 +11,8 @@
 
     <div
       v-if="isMenuOpen"
-      class="absolute right-0 top-full mt-1 w-56 bg-base-200 rounded-lg shadow-lg z-[1000] py-1 border border-base-300 max-h-96 overflow-y-auto"
+      class="fixed w-56 bg-base-200 rounded-lg shadow-lg z-[2000] py-1 border border-base-300 max-h-96 overflow-y-auto"
+      :style="menuPosition"
       role="menu"
       aria-orientation="vertical"
       aria-labelledby="options-menu-button"
@@ -78,9 +79,8 @@ const selectOption = (option: Option) => {
 
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
-  if (isMenuOpen.value && !target.closest('.relative')) {
-    closeMenu();
-  } else if (isMenuOpen.value && target.closest('.relative') === null) {
+  // Use a more specific selector to identify our options menu container
+  if (isMenuOpen.value && !target.closest('.options-menu-container')) {
     closeMenu();
   }
 };
