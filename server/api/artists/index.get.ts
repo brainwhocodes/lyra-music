@@ -28,10 +28,8 @@ export default defineEventHandler(async (event) => {
       .orderBy(asc(artists.name))
       .all();
 
-    console.log('API: Sending results:', JSON.stringify(results, null, 2));
     return results;
   } catch (error) {
-    console.error('Error fetching artists for user via artistUsers:', error);
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch artists',

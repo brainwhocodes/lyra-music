@@ -74,7 +74,6 @@ onMounted(async () => {
     const data = await $fetch<Artist[]>('/api/artists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
     artists.value = data;
   } catch (err: any) {
-    console.error('Error fetching artists:', err);
     error.value = err.data?.message || err.message || 'Failed to load artists.';
   } finally {
     loading.value = false;
@@ -89,12 +88,10 @@ function getArtistImageUrl(imagePath: string | null): string {
 function goToArtist(artistId: string): void {
   // Navigate to the artist detail page
   navigateTo(`/artists/${artistId}`);
-  console.log(`Navigate to view for artist ID: ${artistId}`);
 }
 
 // Handle artist options
 function handleArtistOptions(artist: Artist): void {
-  console.log(`Options for artist: ${artist.artistName}`);
   // Implement options menu functionality here
 }
 
