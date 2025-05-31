@@ -44,7 +44,7 @@
           class="btn btn-ghost btn-xl btn-circle"
           @click="playerStore.playPrevious"
           :disabled="!playerStore.canPlayPrevious || playerStore.isLoading"
-          title="Previous Track"
+          title="Click once to restart track, double-click to play previous track"
         >
           <Icon name="material-symbols:skip-previous-rounded" class="w-6 h-6" />
         </button>

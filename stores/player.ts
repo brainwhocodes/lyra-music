@@ -370,10 +370,33 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
+  // Track the last time previous button was clicked
+  const lastPreviousClickTime = ref<number>(0);
+  const DOUBLE_CLICK_THRESHOLD = 500; // ms
+
   const playPrevious = () => {
-    if (isShuffled.value) {
+    const now = Date.now();
+    const timeSinceLastClick = now - lastPreviousClickTime.value;
+    
+    // Update the last click time
+    lastPreviousClickTime.value = now;
+    
+    // If current track has played for more than 3 seconds or it's the first click (not a double click)
+    if (currentTime.value > 3 || timeSinceLastClick > DOUBLE_CLICK_THRESHOLD) {
+      // Restart current track
       if (audioElement.value && currentTrack.value) {
-        seek(0); // Restart current track
+        seek(0);
+        if (!isPlaying.value) audioElement.value.play().catch(_handleError);
+      }
+      return;
+    }
+    
+    // Double click detected or track just started - go to previous track
+    if (isShuffled.value) {
+      // In shuffle mode, we can't easily go back to the previous track
+      // Just restart the current track for now
+      if (audioElement.value && currentTrack.value) {
+        seek(0);
         if (!isPlaying.value) audioElement.value.play().catch(_handleError);
       }
     } else { 
