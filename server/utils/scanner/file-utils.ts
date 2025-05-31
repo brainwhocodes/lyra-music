@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import path from 'path';
 import { SUPPORTED_EXTENSIONS } from './types';
 
@@ -15,13 +15,13 @@ export function isSupportedAudioFile(filePath: string): boolean {
  */
 export async function findAudioFiles(dirPath: string): Promise<string[]> {
   let audioFiles: string[] = [];
-  
+
   try {
-    const entries = await fs.readdir(dirPath, { withFileTypes: true });
-    
+    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
-      
+
       if (entry.isDirectory()) {
         // Recursively scan subdirectories
         audioFiles = [...audioFiles, ...(await findAudioFiles(fullPath))];
@@ -32,16 +32,23 @@ export async function findAudioFiles(dirPath: string): Promise<string[]> {
   } catch (error: any) {
     console.error(`Error reading directory ${dirPath}: ${error.message}`);
   }
-  
+
   return audioFiles;
 }
 
 export const fileUtils = {
   isSupportedAudioFile,
   findAudioFiles,
-  ensureDir: fs.ensureDir,
-  pathExists: fs.pathExists,
-  readFile: fs.readFile,
-  writeFile: fs.writeFile,
-  readdir: fs.readdir,
+  ensureDir: fs.promises.mkdir,
+  pathExists: async (path: string) => {
+    try {
+      await fs.promises.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  readFile: fs.promises.readFile,
+  writeFile: fs.promises.writeFile,
+  readdir: fs.promises.readdir,
 } as const;

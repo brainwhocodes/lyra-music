@@ -1,5 +1,3 @@
-import { ofetch } from 'ofetch';
-
 // MusicBrainz API base URL
 const MUSICBRAINZ_API_BASE_URL = 'https://musicbrainz.org/ws/2/';
 
@@ -22,7 +20,7 @@ const INTRA_BURST_DELAY_MS = 200;    // 200ms = 5 requests per second within a b
 const BURST_SIZE = 50;
 const BURST_PAUSE_MS = 5000; // 5 seconds
 
-// Options for musicBrainzApiRequest, extending ofetch options
+// Options for musicBrainzApiRequest, extending fetch options
 interface MusicBrainzRequestOptions extends Record<string, any> {
   bypassBurstIncrement?: boolean;
 }
@@ -30,7 +28,7 @@ interface MusicBrainzRequestOptions extends Record<string, any> {
 const requestTimestamps: number[] = []; // Used for INTRA_BURST_DELAY_MS
 const requestQueue: Array<{
   url: string;
-  fetchOptions: Record<string, any>; // For ofetch options, excluding bypassBurstIncrement
+  fetchOptions: Record<string, any>; // For fetch options, excluding bypassBurstIncrement
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
   bypassBurstIncrement?: boolean; // Flag to bypass burst counter increment
@@ -78,15 +76,16 @@ async function processQueue(): Promise<void> {
               'Accept': 'application/json',
               ...(requestDetails.fetchOptions.headers || {}),
             };
-            // Configure ofetch retries for server errors and rate limit responses
-            const response = await ofetch(requestDetails.url, {
+            // Configure fetch retries for server errors and rate limit responses
+            const response = await fetch(requestDetails.url, {
               ...requestDetails.fetchOptions,
               headers,
               retry: 3,
               retryDelay: 2000, // ms
-              retryStatusCodes: [408, 429, 500, 502, 503, 504] // Common codes for retry
-            });
-            requestDetails.resolve(response);
+              retryStatusCodes: [408, 429, 500, 502, 503, 504]
+            } as any);
+            const data = await response.json();
+            requestDetails.resolve(data);
             if (!requestDetails.bypassBurstIncrement) {
               burstRequestCount++; // Increment only if not bypassed
             }
@@ -119,7 +118,7 @@ async function processQueue(): Promise<void> {
  * Makes a rate-limited request to the MusicBrainz API.
  * @param endpoint The API endpoint (e.g., 'artist', 'release-group').
  * @param params Query parameters for the API request.
- * @param options Additional ofetch options if needed.
+ * @param options Additional fetch options if needed.
  * @returns A promise that resolves with the API response.
  */
 export async function musicBrainzApiRequest<T>(
@@ -137,13 +136,13 @@ export async function musicBrainzApiRequest<T>(
 
   const url = `${MUSICBRAINZ_API_BASE_URL}${endpoint}?${query.toString()}`;
 
-  // Separate our custom option from ofetch options
+  // Separate our custom option from fetch options
   const { bypassBurstIncrement, ...fetchOptions } = options;
 
   return new Promise<T>((resolve, reject) => {
     requestQueue.push({
       url,
-      fetchOptions, // Pass the remaining (ofetch) options
+      fetchOptions, // Pass the remaining (fetch) options
       resolve,
       reject,
       bypassBurstIncrement, // Store our custom flag
@@ -216,11 +215,12 @@ export async function getReleaseCoverArtUrls(mbid: string): Promise<string[]> {
           const coverArtArchiveUrl = relation.url.resource;
           console.log(`[CAA Debug ${mbid}] Found relation URL to Cover Art Archive: ${coverArtArchiveUrl}`);
           try {
-            const caaResponse = await ofetch<CoverArtArchiveResponse>(coverArtArchiveUrl, {
+            const response = await fetch(coverArtArchiveUrl, {
               headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
               retry: 2, 
               retryDelay: 1000,
-            });
+            } as any);
+            const caaResponse = await response.json() as CoverArtArchiveResponse;
             console.log(`[CAA Debug ${mbid}] Response from ${coverArtArchiveUrl}:`, JSON.stringify(caaResponse, null, 2));
 
             if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {
@@ -249,11 +249,12 @@ export async function getReleaseCoverArtUrls(mbid: string): Promise<string[]> {
       try {
         const caaDirectUrl = `https://coverartarchive.org/release/${mbid}`;
         console.log(`[CAA Debug ${mbid}] Fetching directly from CAA: ${caaDirectUrl}`);
-        const caaResponse = await ofetch<CoverArtArchiveResponse>(caaDirectUrl, {
+        const response = await fetch(caaDirectUrl, {
           headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
           retry: 2,
           retryDelay: 1000,
-        });
+        } as any);
+        const caaResponse = await response.json() as CoverArtArchiveResponse;
         console.log(`[CAA Debug ${mbid}] Response from direct CAA query ${caaDirectUrl}:`, JSON.stringify(caaResponse, null, 2));
 
         if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {

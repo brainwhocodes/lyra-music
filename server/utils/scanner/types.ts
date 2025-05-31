@@ -1,9 +1,8 @@
-import type { artists, albums, tracks, userArtists } from '~/server/db/schema';
+import type { artists, albums, tracks } from '~/server/db/schema';
 
 export type Artist = typeof artists.$inferSelect;
 export type Album = typeof albums.$inferSelect;
 export type Track = typeof tracks.$inferSelect;
-export type UserArtist = typeof userArtists.$inferSelect;
 
 export interface TrackMetadata {
   common: {

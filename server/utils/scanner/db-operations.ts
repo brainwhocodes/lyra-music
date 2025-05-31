@@ -1,7 +1,7 @@
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
-import { artists, albums, tracks, artistUsers, genres, albumGenres, albumArtists, type Album, type Artist } from '~/server/db/schema';
+import { artists, albums, tracks, genres, albumGenres, albumArtists, type Album, type Artist, artistUsers } from '~/server/db/schema';
 import { searchArtistByName, getArtistWithImages, extractArtistImageUrls } from '~/server/utils/musicbrainz';
 import { albumArtUtils } from './album-art-utils';
 

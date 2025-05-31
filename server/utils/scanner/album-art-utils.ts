@@ -2,7 +2,6 @@ import crypto from 'crypto';
 import path from 'path';
 import { fileUtils } from './file-utils';
 import { EXTERNAL_COVER_FILENAMES } from './types';
-import { ofetch } from 'ofetch';
 import { getReleaseCoverArtUrls } from '~/server/utils/musicbrainz';
 
 const COVERS_DIR = path.join(process.cwd(), 'public', 'images', 'covers');
@@ -43,8 +42,8 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
     // Check if the file already exists
     if (!await fileUtils.pathExists(imageFullPath)) {
       // Download the image
-      const response = await ofetch(imageUrl, { responseType: 'arrayBuffer' });
-      const imageBuffer = Buffer.from(response);
+      const response = await fetch(imageUrl);
+      const imageBuffer = Buffer.from(await response.arrayBuffer());
       
       // Save the image to disk
       await fileUtils.writeFile(imageFullPath, imageBuffer);
@@ -159,8 +158,8 @@ export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: stri
     }
     
     console.log(`[MB Art DL ${musicbrainzReleaseId}] Downloading image from ${imageUrl}...`);
-    const response = await ofetch(imageUrl, { responseType: 'arrayBuffer', retry: 2, retryDelay: 1000 });
-    const imageBuffer = Buffer.from(response);
+    const response = await fetch(imageUrl);
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
     console.log(`[MB Art DL ${musicbrainzReleaseId}] Image downloaded successfully. Size: ${imageBuffer.length} bytes.`);
     
     await fileUtils.writeFile(imageFullPath, imageBuffer);
