@@ -1,7 +1,7 @@
 import { H3Event, readMultipartFormData, createError } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, users, albumArtists } from '~/server/db/schema';
-import fs from 'fs-extra'; // For file system operations
+import { writeFile, mkdir, access } from 'node:fs/promises'; // For promise-based file system operations
 import path from 'path';   // For path manipulation
 import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 import { eq, and } from 'drizzle-orm';
@@ -13,7 +13,7 @@ import { getUserFromEvent } from '~/server/utils/auth';
 export default defineEventHandler(async (event: H3Event) => {
   const user = await getUserFromEvent(event);
   if (!user) {
-    throw createError({
+    throw createError({ 
       statusCode: 401,
       statusMessage: 'Unauthorized',
     });
@@ -94,10 +94,16 @@ export default defineEventHandler(async (event: H3Event) => {
     let newCoverPath: string | undefined = undefined;
     if (coverImageFile && coverImageExtension) {
       const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'album-covers');
-      await fs.ensureDir(uploadsDir); // Ensure directory exists
+      // Ensure directory exists
+      try {
+        await access(uploadsDir);
+      } catch (error) {
+        // Directory doesn't exist, create it recursively
+        await mkdir(uploadsDir, { recursive: true });
+      }
       const uniqueFilename = `${uuidv4()}${coverImageExtension}`;
       const filePath = path.join(uploadsDir, uniqueFilename);
-      await fs.writeFile(filePath, coverImageFile);
+      await writeFile(filePath, coverImageFile);
       newCoverPath = `/uploads/album-covers/${uniqueFilename}`; // Path to be stored in DB
     }
 

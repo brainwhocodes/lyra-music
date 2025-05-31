@@ -1,5 +1,5 @@
-import fs from 'node:fs';
-import path from 'path';
+import { mkdir, access, readFile, writeFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 import { SUPPORTED_EXTENSIONS } from './types';
 
 /**
@@ -17,7 +17,7 @@ export async function findAudioFiles(dirPath: string): Promise<string[]> {
   let audioFiles: string[] = [];
 
   try {
-    const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+    const entries = await readdir(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
@@ -39,16 +39,23 @@ export async function findAudioFiles(dirPath: string): Promise<string[]> {
 export const fileUtils = {
   isSupportedAudioFile,
   findAudioFiles,
-  ensureDir: fs.promises.mkdir,
-  pathExists: async (path: string) => {
-    try {
-      await fs.promises.access(path);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-  readFile: fs.promises.readFile,
-  writeFile: fs.promises.writeFile,
-  readdir: fs.promises.readdir,
+  ensureDir,
+  pathExists,
+  readFile,
+  writeFile,
+  readdir,
 } as const;
+
+async function ensureDir(dirPath: string): Promise<void> {
+  await mkdir(dirPath, { recursive: true });
+  return;
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+} 

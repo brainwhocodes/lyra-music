@@ -1,11 +1,11 @@
 import crypto from 'crypto';
-import path from 'path';
+import { join, extname } from 'node:path';
 import { fileUtils } from './file-utils';
 import { EXTERNAL_COVER_FILENAMES } from './types';
 import { getReleaseCoverArtUrls } from '~/server/utils/musicbrainz';
 
-const COVERS_DIR = path.join(process.cwd(), 'public', 'images', 'covers');
-const ARTIST_IMAGES_DIR = path.join(process.cwd(), 'public', 'images', 'artists');
+const COVERS_DIR = join(process.cwd(), 'public', 'images', 'covers');
+const ARTIST_IMAGES_DIR = join(process.cwd(), 'public', 'images', 'artists');
 
 /**
  * Ensures the covers directory exists.
@@ -33,11 +33,11 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
     
     // Determine the file extension from the URL or default to jpg
     const urlPath = new URL(imageUrl).pathname;
-    const extension = path.extname(urlPath).toLowerCase() || '.jpg';
+    const extension = extname(urlPath).toLowerCase() || '.jpg';
     const cleanExtension = extension.replace('.', '').replace('jpeg', 'jpg');
     
     const imageFilename = `${hash}.${cleanExtension}`;
-    const imageFullPath = path.join(ARTIST_IMAGES_DIR, imageFilename);
+    const imageFullPath = join(ARTIST_IMAGES_DIR, imageFilename);
     
     // Check if the file already exists
     if (!await fileUtils.pathExists(imageFullPath)) {
@@ -70,7 +70,7 @@ export async function saveArtToCache(
     const hash = crypto.createHash('sha256').update(imageData).digest('hex');
     const extension = (imageFormat.split('/')[1] || imageFormat).toLowerCase().replace('jpeg', 'jpg');
     const coverFilename = `${hash}.${extension}`;
-    const coverFullPath = path.join(COVERS_DIR, coverFilename);
+    const coverFullPath = join(COVERS_DIR, coverFilename);
 
     if (!await fileUtils.pathExists(coverFullPath)) {
       await fileUtils.writeFile(coverFullPath, imageData);
@@ -89,12 +89,12 @@ export async function saveArtToCache(
  */
 export async function processExternalAlbumArt(albumDir: string): Promise<string | null> {
   for (const coverFilename of EXTERNAL_COVER_FILENAMES) {
-    const potentialCoverPath = path.join(albumDir, coverFilename);
+    const potentialCoverPath = join(albumDir, coverFilename);
     
     if (await fileUtils.pathExists(potentialCoverPath)) {
       try {
         const coverData = await fileUtils.readFile(potentialCoverPath);
-        const format = path.extname(potentialCoverPath).substring(1);
+        const format = extname(potentialCoverPath).substring(1);
         return await saveArtToCache(coverData, format, `external file ${coverFilename}`);
       } catch (error: any) {
         console.error(`  Error processing external cover ${potentialCoverPath}:`, error.message);
@@ -145,10 +145,10 @@ export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: stri
     
     const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
     const urlPath = new URL(imageUrl).pathname;
-    const extension = path.extname(urlPath).toLowerCase() || '.jpg';
+    const extension = extname(urlPath).toLowerCase() || '.jpg';
     const cleanExtension = extension.replace('.', '').replace('jpeg', 'jpg');
     const imageFilename = `${hash}.${cleanExtension}`;
-    const imageFullPath = path.join(COVERS_DIR, imageFilename);
+    const imageFullPath = join(COVERS_DIR, imageFilename);
     
     console.log(`[MB Art DL ${musicbrainzReleaseId}] Target save path: ${imageFullPath}`);
 

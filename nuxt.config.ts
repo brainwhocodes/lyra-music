@@ -26,5 +26,7 @@ export default defineNuxtConfig({
   },
   vite: {
     plugins: [tailwindcss()]
-  }
+  },
+  sourcemap: process.env.NODE_ENV === 'development' ? true : false
+
 })

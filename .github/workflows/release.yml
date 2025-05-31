@@ -11,6 +11,8 @@ permissions:
 jobs:
   build_and_tag:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,6 +33,8 @@ jobs:
 
       - name: Build application
         run: pnpm build
+        env:
+          NODE_ENV: production
 
       - name: Configure Git
         run: |

@@ -1,5 +1,5 @@
 import * as mm from 'music-metadata';
-import path from 'path';
+import { dirname, basename } from 'node:path';
 import { db } from '~/server/db';
 import { albums, tracks, artistUsers } from '~/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -24,7 +24,7 @@ async function extractMetadata(filePath: string): Promise<{
 }> {
   try {
     const metadata = await mm.parseFile(filePath, { duration: true, skipCovers: false });
-    const albumDir = path.dirname(filePath);
+    const albumDir = dirname(filePath);
     
     // Process external album art first (folder.jpg, etc.)
     let albumArtPath = await albumArtUtils.processExternalAlbumArt(albumDir);
@@ -361,7 +361,7 @@ export async function pruneOrphanedAlbumArtPaths(): Promise<void> {
     for (const album of albumsWithArt) {
       if (!album.coverPath) continue;
       
-      const filename = path.basename(album.coverPath);
+      const filename = basename(album.coverPath);
       
       if (!existingCoverFiles.has(filename)) {
         console.log(`  Found orphaned cover path for album "${album.title}" (ID: ${album.albumId}): ${album.coverPath}`);

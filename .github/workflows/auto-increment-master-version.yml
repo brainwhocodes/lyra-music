@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     # Prevent workflow from running on commits made by this workflow's GITHUB_TOKEN
     if: github.actor != 'github-actions[bot]'
+    env:
+      NODE_ENV: production
 
     steps:
       - name: Checkout master branch
@@ -41,6 +43,8 @@ jobs:
 
       - name: Build Project
         run: pnpm build
+        env:
+          NODE_ENV: production
 
       - name: Calculate New Semantic Version
         id: versioning
