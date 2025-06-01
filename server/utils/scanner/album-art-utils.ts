@@ -5,8 +5,22 @@ import { EXTERNAL_COVER_FILENAMES } from './types';
 import type { CoverArtArchiveResponse, CoverArtArchiveImage, MusicBrainzReleaseWithRelations } from '~/types/musicbrainz/musicbrainz';
 import { musicBrainzApiRequest } from '~/server/utils/musicbrainz';
 
-const COVERS_DIR = join(process.cwd(), 'public', 'images', 'covers');
-const ARTIST_IMAGES_DIR = join(process.cwd(), 'public', 'images', 'artists');
+// Determine base path for public assets
+const projectRoot = process.cwd(); // Assuming process.cwd() is the project root
+
+let publicDir;
+if (process.env.NODE_ENV === 'production') {
+  // In production, Nitro serves from '.output/public'.
+  // We assume the server process is started with the project root as cwd, 
+  // or this path needs to be adjusted based on actual production CWD.
+  publicDir = join(projectRoot, '.output', 'public');
+} else {
+  // In development, it's directly 'public' in the project root.
+  publicDir = join(projectRoot, 'public');
+}
+
+const COVERS_DIR = join(publicDir, 'images', 'covers');
+const ARTIST_IMAGES_DIR = join(publicDir, 'images', 'artists');
 
 /**
  * Ensures the covers directory exists.
