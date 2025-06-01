@@ -17,13 +17,11 @@ const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
 
 // State for "Add to Playlist" functionality
-const playlists = ref<Playlist[]>([]);
 const selectedTrackForPlaylist = ref<Track | null>(null);
 const isAddToPlaylistModalOpen = ref(false);
 const openMenuForTrackId = ref<string | null>(null);
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 const isAddAlbumToPlaylistModalOpen = ref(false);
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 // Template ref for OptionsMenu
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
 const isEditAlbumModalOpen = ref(false);
@@ -43,15 +41,40 @@ definePageMeta({
 });
 
 // Fetch album details
-const { data: album, pending, error } = await useLazyFetch<Album>(`/api/albums/${albumId.value}`, {
-  server: false,
-  headers: { 'Authorization': `Bearer ${userToken.value}` }
+const { data: album, pending, error } = await useLazyFetch<Album>(`/api/albums/${albumId.value}`);
+
+watch(album.value, (newAlbum: Album | null) => {
+  if (newAlbum) {
+    useSeoMeta({
+      title: usePageTitle(`Album | ${newAlbum.title}`)
+    });
+    album.value = newAlbum;
+  }
 });
+
+if (album.value) {
+  useSeoMeta({
+    title: usePageTitle(`Album | ${album.value.title}`)
+  });
+  album.value = album.value;
+}
+
+const { data: playlists } = await useLazyFetch<Playlist[]>('/api/playlists');
+
+watch(playlists.value, (newPlaylists: Playlist[] | null) => {
+  if (newPlaylists) {
+    playlists.value = newPlaylists;
+  }
+});
+
+if (playlists.value) {
+  playlists.value = playlists.value;
+}
 
 // Fetch user's playlists
 async function fetchPlaylists(): Promise<void> {
   try {
-    const data = await $fetch<Playlist[]>('/api/playlists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
+    const data = await $fetch<Playlist[]>('/api/playlists');
     playlists.value = data;
   } catch (e: unknown) {
     console.error('Error fetching playlists:', e);
@@ -60,10 +83,6 @@ async function fetchPlaylists(): Promise<void> {
   }
 }
 
-// Call fetchPlaylists when the component is mounted
-onMounted(() => {
-  fetchPlaylists();
-});
 
 // Function to open the "Add to Playlist" modal
 const openAddToPlaylistModal = (track: Track): void => {
@@ -90,6 +109,7 @@ const addAlbumToPlaylist = (playlistId: string): void => {
   
   const trackIds = album.value.tracks.map((track: Track) => track.trackId);
   addTracksToPlaylist(playlistId, trackIds, `Album "${album.value.title}" added to playlist.`);
+  isAddAlbumToPlaylistModalOpen.value = false;
 };
 
 // Generic function to add tracks to a playlist
@@ -99,7 +119,6 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[], succe
   try {
     await $fetch(`/api/playlists/${playlistId}/tracks`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${userToken.value}` },
       body: {
         action: 'add',
         trackIds,
@@ -282,13 +301,6 @@ const onAlbumUpdateError = (errorMessage: string): void => {
   // but if needed: isEditAlbumModalOpen.value = false;
 };
 
-// Set page title
-useHead(() => ({
-  title: album.value ? `${album.value.title} by ${album.value.artistName || 'Unknown Artist'}` : 'Album Details'
-}));
-
-// --- Function to open the album edit modal (placeholder) ---
-
 </script>
 
 <template>
@@ -364,6 +376,7 @@ useHead(() => ({
                 coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath) // Use resolveCoverArtUrl here too
               }"
               :track-number="index + 1"
+              :playlists="playlists" 
               @play-track="playTrack(index)"
               @track-options="handleTrackOptions"
             />
@@ -377,14 +390,14 @@ useHead(() => ({
   <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
     <div class="modal-box">
       <h3 class="font-bold text-lg">Add "{{ selectedTrackForPlaylist?.title }}" to Playlist</h3>
-      <ul v-if="playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
+      <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
         <li v-for="playlist in playlists" :key="playlist.playlistId">
           <a @click="addTrackToPlaylist(playlist.playlistId)">
             {{ playlist.name }}
           </a>
         </li>
       </ul>
-      <p v-else-if="!playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
+      <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
       <p v-else class="py-4">Loading playlists...</p>
       <div class="modal-action">
         <button class="btn" @click="isAddToPlaylistModalOpen = false">Close</button>
@@ -396,15 +409,15 @@ useHead(() => ({
   <div v-if="isAddAlbumToPlaylistModalOpen" class="modal modal-open">
     <div class="modal-box">
       <h3 class="font-bold text-lg">Add album "{{ album?.title }}" to Playlist</h3>
-      <ul v-if="playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
+      <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
         <li v-for="playlist in playlists" :key="playlist.playlistId">
           <!-- The existing addAlbumToPlaylist function will be called -->
-          <a @click="addAlbumToPlaylist(playlist.playlistId); isAddAlbumToPlaylistModalOpen = false;">
+          <a @click="addAlbumToPlaylist(playlist.playlistId)">
             {{ playlist.name }}
           </a>
         </li>
       </ul>
-      <p v-else-if="!playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
+      <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
       <p v-else class="py-4">Loading playlists...</p>
       <div class="modal-action">
         <button class="btn" @click="isAddAlbumToPlaylistModalOpen = false">Close</button>

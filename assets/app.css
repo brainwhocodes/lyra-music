@@ -7,3 +7,8 @@
     prefix: ;
     logs: true;
   }
+
+.modal {
+    overflow: hidden !important;
+    padding: 0 !important;
+}

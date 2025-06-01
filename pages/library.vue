@@ -162,9 +162,6 @@ definePageMeta({
 });
 
 const playerStore = usePlayerStore(); 
-// there is currently a bug with cookies in nuxt 3, when using navigateTo, so we use localStorage for now
-const userToken = document ? localStorage.getItem('auth_token') : useCookie('auth_token').value;
-
 // Refs for play button loading state (similar to pages/albums/index.vue)
 const currentAlbumLoading = ref<boolean>(false);
 const albumIdLoading = ref<string | null>(null);
@@ -184,12 +181,23 @@ let debounceTimer: NodeJS.Timeout | null = null;
 const selectedGenre = ref<string | null>(null);
 
 // Fetch Genres
-const { data: genres, pending: pendingGenres, error: genresError } = useLazyFetch<string[]>('/api/genres', {
-  headers: {
-    Authorization: `Bearer ${userToken}`
-  },
-  server: false
+const { data: genres, pending: pendingGenres, error: genresError } = useLazyFetch<string[]>('/api/genres');
+
+watch(genres, (newGenres: string[]) => {
+  if (newGenres) {
+    useSeoMeta({
+      title: usePageTitle('Genres')
+    });
+    genres.value = newGenres;
+  }
 });
+
+if (genres.value) {
+  useSeoMeta({
+    title: usePageTitle('Genres')
+  });
+  genres.value = genres.value;
+}
 
 watch(searchQuery, (newValue: string) => {
   if (debounceTimer) clearTimeout(debounceTimer);
@@ -198,34 +206,28 @@ watch(searchQuery, (newValue: string) => {
   }, 300); // 300ms debounce
 });
 
-// Computed API URL based on search and genre query
-const apiUrl = computed(() => {
-  const params = new URLSearchParams();
-  if (debouncedSearchQuery.value) {
-    params.set('title', debouncedSearchQuery.value);
-  }
-  if (selectedGenre.value) {
-    params.set('genre', selectedGenre.value);
-  }
-  const queryString = params.toString();
-  return `/api/albums${queryString ? '?' + queryString : ''}`;
-});
-
-
 // Fetch Albums - Now using the computed apiUrl
 const { 
   data: albums, 
   pending: pendingAlbums,
   error: albumsError, 
-} = useLazyFetch<Album[]>('/api/albums', { // Use computed apiUrl
-  headers: {
-    Authorization: `Bearer ${userToken}`
-  },
-  server: false
+} = useLazyFetch<Album[]>('/api/albums');
+
+watch(albums, (newAlbums: Album[]) => {
+  if (newAlbums) {
+    useSeoMeta({
+      title: usePageTitle('Library')
+    });
+
+    albums.value = newAlbums;
+  }
 });
 
-const router = useRouter(); 
-
+if (albums.value) {
+  useSeoMeta({
+    title: usePageTitle('Library')
+  });
+}
 // --- Event Handler for AlbumCard's @play event ---
 const handleAlbumPlayEvent = async (album: Album): Promise<void> => {
   console.log(`[LibraryPage] handleAlbumPlayEvent: Received play event for album:`, album);
@@ -289,11 +291,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
 
   try {
     // Fetch full album details including tracks directly from the album API endpoint
-    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`, {
-      headers: {
-        Authorization: `Bearer ${userToken}`
-      }
-    });
+    const albumDetails = await $fetch<any>(`/api/albums/${albumId}`);
 
     if (!albumDetails || !albumDetails.tracks || albumDetails.tracks.length === 0) {
       console.warn(`No tracks found for album ${albumId}`);
@@ -417,11 +415,7 @@ async function loadAlbum(albumId: string): Promise<Album | null> {
   console.log(`[LibraryPage] loadAlbum: Fetching details for album ID: ${albumId}`);
   try {
     // Directly fetch from the API endpoint that returns a single album with tracks
-    const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`, {
-      headers: {
-        Authorization: `Bearer ${userToken}`
-      }
-    });
+    const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`);
     console.log(`[LibraryPage] loadAlbum: API response for ${albumId}:`, apiResponse);
 
     // Ensure the response has tracks and they are mapped correctly if necessary

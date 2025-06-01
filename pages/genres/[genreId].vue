@@ -17,13 +17,12 @@ const route = useRoute();
 const router = useRouter(); 
 const playerStore = usePlayerStore(); 
 const genreId = route.params.genreId as string;
-
+const genreName = ref<string | null>(null);
 const loadingAlbumIdForPlay = ref<string | null>(null);
 
 
 
 const { data: albums, pending, error } = await useLazyFetch<Album[]>(`/api/genres/${genreId}/albums`, {
-  server: false,
   transform: (fetchedAlbums: Album[]) => {
     return fetchedAlbums.map(album => ({
       ...album,
@@ -32,16 +31,53 @@ const { data: albums, pending, error } = await useLazyFetch<Album[]>(`/api/genre
   }
 });
 
-const { data: allGenres } = await useFetch<GenreBasicInfo[]>(`/api/genres`); 
-const currentGenre = computed(() => {
-  if (allGenres.value && genreId) {
-    return allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId);
+const { data: allGenres } = await useLazyFetch<GenreBasicInfo[]>(`/api/genres`); 
+
+if (allGenres.value && genreId) {
+    const genre = allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId);
+    if (genre) {
+      useSeoMeta({
+        title: usePageTitle(`${genre.name} | Albums`)
+      });
+    }
   }
-  return null;
+watch(allGenres.value, (newGenres: GenreBasicInfo[] | null) => {
+  if (newGenres) {
+    genreName.value = newGenres.find(g => g.genreId === genreId)?.name;
+    useSeoMeta({
+      title: usePageTitle(`${genreName.value} | Albums`)
+    });
+    allGenres.value = newGenres;
+  }
 });
 
-const genrePageTitle = computed(() => currentGenre.value ? `${currentGenre.value.name} Albums` : 'Genre Albums');
-useHead({ title: genrePageTitle });
+if (allGenres.value) {
+  genreName.value = allGenres.value.find(g => g.genreId === genreId)?.name;
+  useSeoMeta({
+    title: usePageTitle(`${genreName.value} | Albums`)
+  });
+}
+
+
+
+watch(albums.value, (newAlbums: Album[] | null) => {
+  if (newAlbums) {
+    pending.value = false;
+    useSeoMeta({
+      title: usePageTitle(`${allGenres.value?.find(g => g.genreId === genreId)?.name} | Albums`)
+    });
+    albums.value = newAlbums;
+  }
+});
+
+if (albums.value) {
+  useSeoMeta({
+    title: usePageTitle(`${currentGenre?.name} | Albums`)
+  });
+  albums.value = albums.value;
+}
+
+
 
 definePageMeta({
   layout: 'sidebar-layout'

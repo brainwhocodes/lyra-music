@@ -1,18 +1,26 @@
 
 <script setup lang="ts">
-import { useLazyFetch } from 'nuxt/app';
-
-// Define the expected structure from the API
-interface Genre {
-  genreId: string;
-  name: string;
-  albumCount: number; 
-}
+import type { Genre } from '~/types/genre';
 
 // Fetch genres from the API endpoint /api/genres/index.get.ts
-const { data: genres, pending, error } = await useLazyFetch<Genre[]>('/api/genres', {
-  server: false,
+const { data: genres, pending, error } = await useLazyFetch<Genre[]>('/api/genres');
+
+watch(genres.value, (newGenres: Genre[] | null) => {
+  if (newGenres) {
+    pending.value = false;
+    useSeoMeta({
+      title: usePageTitle('Genres')
+    });
+    genres.value = newGenres;
+  }
 });
+
+if (genres.value) {
+  useSeoMeta({
+    title: usePageTitle('Genres')
+  });
+  genres.value = genres.value;
+}
 
 // Simple fuzzy search filtering
 const searchQuery = ref('');
@@ -27,7 +35,7 @@ const filteredGenres = computed(() => {
 });
 
 
-useHead({ title: 'Genres' });
+
 
 definePageMeta({
   layout: 'sidebar-layout'

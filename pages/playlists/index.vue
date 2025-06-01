@@ -200,6 +200,7 @@ watch(playlists.value, (newPlaylists: Playlist[] | null) => {
     useSeoMeta({
       title: usePageTitle('Playlists')
     });
+    playlists.value = newPlaylists;
   }
 });
 
@@ -207,6 +208,7 @@ if (playlists.value) {
     useSeoMeta({
       title: usePageTitle('Playlists')
     });
+    playlists.value = playlists.value;
 }
 
 // Initialize player store

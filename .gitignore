@@ -136,7 +136,7 @@ coverage/
 .idea
 
 # Ignore all files in image directories but keep the directories themselves
-public/images/covers/*
+public/images/covers/
 public/images/artists/*
 
 # Don't ignore .gitkeep files to keep empty directories in git

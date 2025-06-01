@@ -160,9 +160,6 @@ const renameValue = ref('');
 
 const isAddToPlaylistModalOpen = ref(false); // Added
 const trackForAddToPlaylistModal = ref<Track | null>(null); // Added
-
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
-
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 
 function showNotification(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
@@ -176,9 +173,7 @@ function showNotification(message: string, type: 'success' | 'error' | 'info' = 
 pending.value = true;
 error.value = false;
 
-const { data: playlist, error: playlistError } = await useLazyFetch<Playlist>(`/api/playlists/${playlistId.value}`, {
-  headers: { 'Authorization': `Bearer ${userToken.value}` }
-});
+const { data: playlist, error: playlistError } = await useLazyFetch<Playlist>(`/api/playlists/${playlistId.value}`);
 
 if (playlistError.value) {
   error.value = true;
@@ -195,6 +190,11 @@ watch(playlist.value, (newPlaylist: Playlist | null) => {
     });
   }
 });
+
+async function fetchPlaylist() {
+  const playlist = await $fetch(`/api/playlists/${playlistId.value}`);
+  return playlist;
+}
 
 if (playlist.value) {
     renameValue.value = playlist.value.name;
@@ -312,7 +312,6 @@ async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlis
   try {
     await $fetch(`/api/playlists/${playlist.value.playlistId}/tracks`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${userToken.value}` },
       body: {
         trackIds: [payload.trackId]
       }
@@ -337,7 +336,6 @@ async function renamePlaylist(): Promise<void> {
   if (!playlist.value) return;
   try {
     await $fetch(`/api/playlists/${playlist.value.playlistId}/rename`, {
-      headers: { 'Authorization': `Bearer ${userToken.value}` },
       method: 'PUT',
       body: { name: renameValue.value },
     });
@@ -352,7 +350,7 @@ async function renamePlaylist(): Promise<void> {
 async function deletePlaylist(): Promise<void> {
   if (!playlist.value) return;
   try {
-    await $fetch(`/api/playlists/${playlist.value.playlistId}`, { headers: { 'Authorization': `Bearer ${userToken.value}` }, method: 'DELETE' });
+    await $fetch(`/api/playlists/${playlist.value.playlistId}`, { method: 'DELETE' });
     showNotification('Playlist deleted.', 'success');
     navigateTo('/playlists');
   } catch (e) {
@@ -378,14 +376,8 @@ async function updatePlaylistOrder(): Promise<void> {
   const orderedTrackIds = playlist.value.tracks.map((t: PlaylistTrack) => t.playlistTrackId);
 
   try {
-    const userTokenValue = document ? localStorage.getItem('auth_token') || '' : userToken.value || '';
-    if (!userTokenValue) {
-      showNotification('Authentication token not found. Please log in.', 'error');
-      return;
-    }
     const updatedPlaylistData = await $fetch<Playlist>(`/api/playlists/${playlistId.value}/reorder`, {
       method: 'PUT',
-      headers: { 'Authorization': `Bearer ${userTokenValue}` },
       body: { playlistTrackIds: orderedTrackIds },
     });
     playlist.value = updatedPlaylistData;
