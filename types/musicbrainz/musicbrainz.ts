@@ -196,6 +196,15 @@ interface MusicBrainzReleaseBase {
 // Actual definition of MusicBrainzRelease now that all its dependent types are defined
 // export interface MusicBrainzRelease extends MusicBrainzReleaseBase {} // Already declared for forward reference
 
+
+export interface MusicBrainzReleaseTrackDetail {
+  recordingId: string;
+  title: string;
+  trackNumber: number; // Position on the medium
+  diskNumber: number;  // Position of the medium
+  length: number | null; // Duration in milliseconds
+}
+
 export interface MusicBrainzTrackInfo {
   id: string;
   title: string;

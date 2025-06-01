@@ -10,6 +10,7 @@ import type {
   MusicBrainzRelease,
   MusicBrainzReleaseSearchResponse,
   MusicBrainzTrackInfo,
+  MusicBrainzReleaseTrackDetail, // Added import
   MusicBrainzReleaseWithRelations as MusicBrainzReleaseWithRelationsImport, // aliasing to avoid potential naming conflicts if used internally
   CoverArtArchiveResponse as CoverArtArchiveResponseImport // aliasing
 } from '../../types/musicbrainz/musicbrainz';
@@ -194,6 +195,65 @@ export async function getTrackInfo(musicbrainzTrackId: string): Promise<MusicBra
     return data;
   } catch (error: any) {
     console.error(`Error fetching track info for MBID ${musicbrainzTrackId}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Fetches the complete tracklist for a given MusicBrainz release, including disk numbers, track numbers, and durations.
+ * @param musicbrainzReleaseId The MusicBrainz ID (MBID) of the release.
+ * @returns A promise that resolves with an array of MusicBrainzReleaseTrackDetail objects, or null if an error occurs or the release is not found.
+ */
+export async function getReleaseTracklist(musicbrainzReleaseId: string): Promise<MusicBrainzReleaseTrackDetail[] | null> {
+  if (!musicbrainzReleaseId) {
+    console.warn('getReleaseTracklist called with no musicbrainzReleaseId.');
+    return null;
+  }
+
+  try {
+    const releaseData = await musicBrainzApiRequest<MusicBrainzRelease>(
+      `release/${musicbrainzReleaseId}`,
+      { inc: 'media+recordings' } // Essential: includes disc info and track-recording links
+    );
+
+    if (!releaseData || !releaseData.media || releaseData.media.length === 0) {
+      // console.log(`No media found for release MBID ${musicbrainzReleaseId}`);
+      return null;
+    }
+
+    const tracklist: MusicBrainzReleaseTrackDetail[] = [];
+
+    releaseData.media.forEach((medium) => {
+      const diskNumber = medium.position ?? 1; // Default to disk 1 if position is not specified
+      if (medium.tracks && medium.tracks.length > 0) {
+        medium.tracks.forEach((track) => {
+          if (track.recording) { // Ensure recording data is present
+            tracklist.push({
+              recordingId: track.recording.id,
+              title: track.recording.title || track.title || 'Unknown Track',
+              trackNumber: track.position, // This is the track number on the medium
+              diskNumber: diskNumber,
+              length: track.length ?? track.recording.length ?? null, // Prefer track.length, fallback to recording.length
+            });
+          }
+        });
+      }
+    });
+
+    if (tracklist.length === 0) {
+      // console.log(`No tracks processed for release MBID ${musicbrainzReleaseId}, though media was present.`);
+      return null;
+    }
+
+    return tracklist.sort((a, b) => {
+      if (a.diskNumber !== b.diskNumber) {
+        return a.diskNumber - b.diskNumber;
+      }
+      return a.trackNumber - b.trackNumber;
+    });
+
+  } catch (error: any) {
+    console.error(`Error fetching or parsing tracklist for release MBID ${musicbrainzReleaseId}:`, error.message);
     return null;
   }
 }
