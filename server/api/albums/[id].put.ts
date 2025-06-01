@@ -9,6 +9,20 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 import { eq, and } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
+// Utility function to split artist strings (copied from scanner utils, ideally shared)
+function splitArtistString(artistString: string): string[] {
+  if (!artistString || typeof artistString !== 'string') return [];
+  const trimmedArtist = artistString.trim();
+  if (!trimmedArtist) return [];
+  const separators = [', ', '; ', ' feat. ', ' featuring ', ' ft. ', ' with ', ' & ', ' and ', ' x '];
+  for (const separator of separators) {
+    if (trimmedArtist.includes(separator)) {
+      return trimmedArtist.split(separator).map(part => part.trim()).filter(part => part.length > 0);
+    }
+  }
+  return [trimmedArtist];
+}
+
 // Define the expected request body type
 // Request body will be FormData, so we'll parse fields individually
 
@@ -33,6 +47,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
   let title: string | undefined;
   let artistsJsonString: string | undefined;
+  let artistNameString: string | undefined; // For single string artist name
   let year: number | null | undefined = undefined;
   let coverImageFile: Buffer | undefined;
   let coverImageExtension: string | undefined;
@@ -41,6 +56,7 @@ export default defineEventHandler(async (event: H3Event) => {
     for (const part of multipartFormData) {
       if (part.name === 'title') title = part.data.toString().trim();
       if (part.name === 'artistsJson') artistsJsonString = part.data.toString();
+      if (part.name === 'artistName') artistNameString = part.data.toString().trim(); // Read artistName
       if (part.name === 'year') {
         const yearStr = part.data.toString().trim();
         year = yearStr ? parseInt(yearStr, 10) : null;
@@ -64,20 +80,37 @@ export default defineEventHandler(async (event: H3Event) => {
   if (artistsJsonString) {
     try {
       artistsToUpdate = JSON.parse(artistsJsonString);
-      if (!Array.isArray(artistsToUpdate) || artistsToUpdate.length === 0) {
-        throw new Error('Artists array must not be empty.');
+      if (!Array.isArray(artistsToUpdate)) {
+        throw new Error('Parsed artistsJson is not an array.');
       }
-      // Basic validation for each artist object (can be more detailed)
+      if (artistsToUpdate.length === 0 && artistsJsonString.trim() !== '[]') { 
+        // Allow empty array if explicitly sent as '[]', otherwise error if non-empty string parses to empty array (should not happen with valid JSON)
+        throw new Error('Artists array from artistsJson must not be empty unless explicitly an empty array string.');
+      }
       for (const art of artistsToUpdate) {
         if (!art.name && !art.artistId) {
-          throw new Error('Each artist must have a name or an artistId.');
+          throw new Error('Each artist in artistsJson must have a name or an artistId.');
         }
       }
     } catch (e: any) {
       throw createError({ statusCode: 400, statusMessage: `Invalid artists JSON format: ${e.message}` });
     }
-  } else {
-    throw createError({ statusCode: 400, statusMessage: 'Artists information (artistsJson) is required' });
+  } else if (artistNameString) {
+    const parsedArtistNames = splitArtistString(artistNameString);
+    if (parsedArtistNames.length > 0) {
+      artistsToUpdate = parsedArtistNames.map((name, index) => ({
+        name: name,
+        // artistId is not known here, will be resolved by findOrCreateArtist logic using the name
+        role: 'performer', // Default role
+        isPrimaryArtist: index === 0, // First artist is primary
+      } as AlbumArtistDetail)); // Cast to satisfy type, downstream logic handles missing artistId by using name
+    }
+  }
+
+  // After attempting to populate from artistsJson or artistNameString, check if we have artists if title is present
+  // (An album must have at least one artist if it has a title)
+  if (title && artistsToUpdate.length === 0) {
+     throw createError({ statusCode: 400, statusMessage: 'Artist information is required (provide artistsJson or artistName).' });
   }
 
   // Start a transaction

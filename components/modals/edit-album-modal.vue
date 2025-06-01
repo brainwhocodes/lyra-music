@@ -45,7 +45,7 @@ const props = defineProps<{ album: Album, open: boolean }>();
 const emit = defineEmits(['close', 'albumUpdated', 'updateError']);
 
 // Initialize with empty object but will be populated when modal opens
-const editableAlbum = ref<Partial<Album>>({});
+const editableAlbum = ref<Partial<Album> & { artistName?: string }>({}); // Add artistName for the input field
 const selectedFile = ref<File | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(null);
@@ -53,16 +53,32 @@ const isOpen = ref(props.open);
 const isLoading = ref(false);
 const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token');
 
+// Helper function to get a display string from AlbumArtistDetail[]
+const getArtistNameString = (artists: import('~/types/album').AlbumArtistDetail[] | undefined): string => {
+  if (!artists || artists.length === 0) return '';
+  // Prioritize primary artists, then join all names if no primary, or just primary names
+  const primaryArtists = artists.filter(a => a.isPrimaryArtist);
+  const artistsToDisplay = primaryArtists.length > 0 ? primaryArtists : artists;
+  return artistsToDisplay.map(a => a.name).join(', ');
+};
+
 // Initialize editableAlbum with album prop data immediately if available
 if (props.album) {
-  editableAlbum.value = JSON.parse(JSON.stringify(toRaw(props.album)));
+  const albumCopy = JSON.parse(JSON.stringify(toRaw(props.album)));
+  editableAlbum.value = {
+    ...albumCopy,
+    artistName: getArtistNameString(albumCopy.artists),
+  };
 }
 
 watch(() => props.open, (newValue: boolean) => {
   isOpen.value = newValue;
   if (newValue && props.album) {
-    // Create a deep copy for editing to avoid mutating the prop directly
-    editableAlbum.value = JSON.parse(JSON.stringify(toRaw(props.album)));
+    const albumCopy = JSON.parse(JSON.stringify(toRaw(props.album)));
+    editableAlbum.value = {
+      ...albumCopy,
+      artistName: getArtistNameString(albumCopy.artists),
+    };
     selectedFile.value = null;
     previewUrl.value = null; // Reset preview on open if it's from a previous selection
   } else if (!newValue) {
@@ -74,7 +90,11 @@ watch(() => props.open, (newValue: boolean) => {
 
 watch(() => props.album, (newAlbum: Album) => {
   if (newAlbum && isOpen.value) {
-    editableAlbum.value = JSON.parse(JSON.stringify(toRaw(newAlbum)));
+    const albumCopy = JSON.parse(JSON.stringify(toRaw(newAlbum)));
+    editableAlbum.value = {
+      ...albumCopy,
+      artistName: getArtistNameString(albumCopy.artists),
+    };
     previewUrl.value = null; // Reset preview if album prop changes while open
   }
 }, { deep: true });
@@ -121,7 +141,7 @@ const updateAlbum = async () => {
   // Append text fields from editableAlbum
   formData.append('title', editableAlbum.value.title || '');
   // Ensure artistName is present in your Album type or editableAlbum structure
-  formData.append('artistName', (editableAlbum.value as any).artistName || ''); 
+  formData.append('artistName', editableAlbum.value.artistName || ''); 
   if (editableAlbum.value.year !== null && editableAlbum.value.year !== undefined) {
     formData.append('year', String(editableAlbum.value.year));
   }
