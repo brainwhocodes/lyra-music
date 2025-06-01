@@ -10,7 +10,11 @@ import { resolveCoverArtUrl } from '~/utils/formatters';
 
 import TrackItem from '~/components/track/track-item.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
-import OptionsMenu from '~/components/options-menu.vue'; 
+import OptionsMenu from '~/components/options-menu.vue';
+import { useTrackArtists, } from '~/composables/useTrackArtists';
+
+// Use the track artists composable for formatting track artists
+const { formatTrackWithArtists, getTrackArtistNameString, getFormattedTrackArtists } = useTrackArtists();
 
 const route = useRoute();
 const playerStore = usePlayerStore();
@@ -163,28 +167,55 @@ const displayAlbumArtistName = computed<string>(() => {
   if (!album.value?.artists?.length) {
     return 'Unknown Artist';
   }
-  const primaryArtist = album.value.artists.find((artist: import('~/types/album').AlbumArtistDetail) => artist.isPrimaryArtist);
-  if (primaryArtist) {
-    return primaryArtist.name;
+  
+  // Get all primary artists
+  const primaryArtists = album.value.artists.filter(
+    (artist: import('~/types/album').AlbumArtistDetail) => artist.isPrimaryArtist
+  );
+  
+  if (primaryArtists.length === 0) {
+    // If no primary artists, use all artists
+    primaryArtists.push(...album.value.artists);
   }
-  // If no primary, return the first artist's name as a simple fallback.
-  // More complex logic (e.g., "Various Artists", join names) could be added here.
-  return album.value.artists[0].name;
+  
+  if (primaryArtists.length > 3) {
+    // If more than 3 artists, show "Various Artists"
+    return 'Various Artists';
+  } else if (primaryArtists.length > 1) {
+    // Join multiple artists with commas and '&' for the last one
+    return primaryArtists
+      .map((artist: import('~/types/album').AlbumArtistDetail) => artist.name)
+      .join(', ')
+      .replace(/,([^,]*)$/, ' &$1');
+  }
+  
+  // Return single artist name
+  return primaryArtists[0].name;
 });
 
-// Helper to get display artist name from a track's artists array
-const getDisplayArtistNameForTrack = (trackArtists: import('~/types/track').TrackArtistDetail[]): string => {
-  const fallbackArtistName = displayAlbumArtistName.value; // Use the album's display artist as fallback
-  if (!trackArtists || trackArtists.length === 0) {
-    return fallbackArtistName;
+// Get all album artists with roles for detailed display
+const formattedAlbumArtists = computed(() => {
+  if (!album.value?.artists?.length) return [];
+  
+  return album.value.artists.map((artist: import('~/types/album').AlbumArtistDetail) => ({
+    ...artist,
+    url: `/artists/${artist.artistId}`,
+    displayRole: '', // Don't display roles, just use commas
+    isPrimary: !!artist.isPrimaryArtist
+  }));
+});
+
+// Helper to get display artist name from a track's artists array using the composable
+const getDisplayArtistNameForTrack = (track: Track): string => {
+  // If no artists, use the album's display artist as fallback
+  if (!track.artists || track.artists.length === 0) {
+    return displayAlbumArtistName.value;
   }
-  const primaryArtist = trackArtists.find(artist => artist.isPrimaryArtist);
-  if (primaryArtist) {
-    return primaryArtist.name;
-  }
-  // Fallback to the first artist in the list if no primary, or if isPrimaryArtist is not reliably set
-  return trackArtists[0]?.name || fallbackArtistName;
+  
+  return getTrackArtistNameString(track);
 };
+
+// No longer need the manual helper since we use the composable now
 
 // Create a computed property for tracks that are ready for the player
 const playerReadyTracks = computed(() => {
@@ -193,13 +224,21 @@ const playerReadyTracks = computed(() => {
   const albumCover = album.value.coverPath;
   const currentAlbumTitle = album.value.title;
 
-  return album.value.tracks.map((track: Track) => ({
-    ...track, 
-    albumId: album.value!.albumId, 
-    artistName: getDisplayArtistNameForTrack(track.artists), // Use the hoisted helper
-    albumTitle: track.albumTitle || currentAlbumTitle, 
-    coverPath: track.coverPath || albumCover        
-  }));
+  return album.value.tracks.map((track: Track) => {
+    // Process the track with proper artist formatting first
+    const processedTrack = formatTrackWithArtists({
+      ...track,
+      albumId: album.value!.albumId,
+      albumTitle: track.albumTitle || currentAlbumTitle,
+      coverPath: track.coverPath || albumCover
+    });
+    
+    // Then add the artistName string for display
+    return {
+      ...processedTrack,
+      artistName: getTrackArtistNameString(processedTrack)
+    };
+  });
 });
 
 // --- Check if this album is currently loaded ---
@@ -351,7 +390,21 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       <!-- Album Info -->
       <div class="flex-1">
         <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
-        <p class="text-xl text-base-content/80 mb-4">{{ displayAlbumArtistName }}</p>
+        
+        <!-- Album Artists with Links -->
+        <div class="text-xl text-base-content/80 mb-2">
+          <span v-if="formattedAlbumArtists.length === 0">Unknown Artist</span>
+          <template v-else>
+            <span v-for="(artist, index) in formattedAlbumArtists" :key="artist.artistId" class="mr-1">
+              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                {{ artist.name }}
+              </NuxtLink>
+              <span v-if="artist.displayRole" class="text-sm text-base-content/60">{{ artist.displayRole }}</span>
+              <span v-if="index < formattedAlbumArtists.length - 2">, </span>
+              <span v-else-if="index === formattedAlbumArtists.length - 2"> & </span>
+            </span>
+          </template>
+        </div>
         
         <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
           <div class="flex items-center">
@@ -399,7 +452,8 @@ const onAlbumUpdateError = (errorMessage: string): void => {
                 ...track,
                 artistName: getDisplayArtistNameForTrack(track.artists), // Use hoisted helper
                 albumTitle: album.title,
-                coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath) // Use resolveCoverArtUrl here too
+                coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath), // Use resolveCoverArtUrl here too
+                formattedArtists: getFormattedTrackArtists(track.artists) // Pass formatted artists for detailed display
               }"
               :track-number="index + 1"
               :playlists="playlists" 

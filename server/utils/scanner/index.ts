@@ -168,11 +168,12 @@ async function processAudioFile(
     // 2. Primary album artist (from common.albumartist)
     // 3. First artist in the set of all artists
     // 4. Fallback to 'Unknown Artist' if all else fails
+    // Cast to string to handle potential undefined values from .values().next().value
     const effectivePrimaryArtistName: string = 
-      primaryTrackArtistNames.size > 0 ? primaryTrackArtistNames.values().next().value : 
+      (primaryTrackArtistNames.size > 0 ? primaryTrackArtistNames.values().next().value : 
       primaryAlbumArtistNames.size > 0 ? primaryAlbumArtistNames.values().next().value : 
       allArtistNames.size > 0 ? allArtistNames.values().next().value : 
-      'Unknown Artist'; 
+      'Unknown Artist') || 'Unknown Artist'; 
 
     const artistRecordsMinimal: import('~/server/db/schema').Artist[] = [];
     
@@ -478,8 +479,8 @@ async function processAudioFile(
       };
 
       const trackRecord = await dbOperations.findOrCreateTrack({
-        title: trackTitle,
-        filePath,
+        title: trackTitle || 'Unknown Title', // Ensure title is never undefined
+        filePath: filePath || '', // Ensure filePath is never undefined
         albumId: albumRecord!.albumId, // Added non-null assertion
         artists: trackArtistsForDb,
         musicbrainzTrackId: musicbrainzRecordingIdFromMeta || (common as any).musicbrainz_trackid,

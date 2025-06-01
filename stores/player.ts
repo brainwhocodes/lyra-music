@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia';
 import type { Track } from '~/types/track'; // Import consolidated Track type
 import type { Album } from '~/types/album'; // Import Album type
+import { useTrackArtists } from '~/composables/useTrackArtists';
 
 export interface QueueContext {
   type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | null;
@@ -270,7 +271,11 @@ export const usePlayerStore = defineStore('player', () => {
     originalQueue.value = []; 
     playedTrackIdsInShuffle.value.clear(); 
 
-    queue.value = [...tracks];
+    // Process tracks to add formatted artists using the composable
+    const { formatTracksWithArtists } = useTrackArtists();
+    const processedTracks = formatTracksWithArtists(tracks);
+    
+    queue.value = processedTracks;
     currentQueueContext.value = context || { type: null, id: null, name: undefined };
 
     if (tracks.length > 0) {

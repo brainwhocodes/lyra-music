@@ -23,10 +23,24 @@
         <div class="font-semibold truncate" :title="playerStore.currentTrack.title">
           {{ playerStore.currentTrack.title || 'Unknown Track' }}
         </div>
-        <div class="text-sm text-base-content/70 truncate" :title="playerStore.currentTrack.artistName || ''">
-          <NuxtLink class="hover:underline" :to="`/artists/${playerStore.currentTrack.artistId}`">
-            {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
-          </NuxtLink>
+        <!-- Artist display with formatted artists if available -->
+        <div class="text-sm text-base-content/70 truncate">
+          <!-- Use formatted artists if available -->
+          <template v-if="playerStore.currentTrack.formattedArtists && playerStore.currentTrack.formattedArtists.length">
+            <span v-for="(artist, index) in playerStore.currentTrack.formattedArtists" :key="artist.artistId" class="mr-1">
+              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                {{ artist.name }}
+              </NuxtLink>
+              <span v-if="index < playerStore.currentTrack.formattedArtists.length - 2"> &</span>
+              <span v-else-if="index === playerStore.currentTrack.formattedArtists.length - 2"> &</span>
+            </span>
+          </template>
+          <!-- Fallback to simple artist name if no formatted artists -->
+          <span v-else>
+            <NuxtLink class="hover:underline" :to="`/artists/${playerStore.currentTrack.artistId}`">
+              {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
+            </NuxtLink>
+          </span>
         </div>
         <div v-if="playerStore.currentTrack.albumTitle" class="text-xs text-base-content/50 truncate">
           <NuxtLink class="hover:underline" :to="`/albums/${playerStore.currentTrack.albumId}`">

@@ -28,7 +28,24 @@
       />
       <div>
         <div :class="['font-medium', isCurrentTrack ? 'text-primary' : '']">{{ track.title }}</div>
-        <div v-if="track.artistName" class="text-sm text-base-content/70">{{ track.artistName }}</div>
+        
+        <!-- Artist display section -->
+        <div class="text-sm text-base-content/70">
+          <!-- If track has formatted artists from the composable -->
+          <template v-if="formattedArtists.length > 0">
+            <span v-for="(artist, index) in formattedArtists" :key="artist.artistId" class="mr-1">
+              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                {{ artist.name }}
+              </NuxtLink>
+              <span v-if="index < formattedArtists.length - 2"> &</span>
+              <span v-else-if="index === formattedArtists.length - 2"> &</span>
+            </span>
+          </template>
+          <!-- Fallback to simple artist name display -->
+          <template v-else>
+            {{ track.artistName || 'Unknown Artist' }}
+          </template>
+        </div>
       </div>
     </td>
     <td class="text-right text-sm color-primary-content">{{ formattedDuration }}</td>
@@ -72,6 +89,7 @@ import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import OptionsMenu from '~/components/options-menu.vue';
 import { formatTrackDuration } from '~/utils/formatters'; // Assuming this is the correct path
+import { useTrackArtists } from '~/composables/useTrackArtists';
 
 const props = defineProps({
   playlists: {
@@ -108,6 +126,15 @@ const formattedDuration = computed(() => {
 const onPlayTrack = (): void => {
   emit('play-track', props.track);
 };
+
+// Use the track artists composable
+const { formatTrackWithArtists } = useTrackArtists();
+
+// Format artists for display using the composable
+const formattedArtists = computed(() => {
+  const formattedTrack = formatTrackWithArtists(props.track);
+  return formattedTrack.formattedArtists || [];
+});
 
 
 </script>

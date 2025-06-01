@@ -23,8 +23,20 @@
         <div class="font-semibold truncate text-sm" :title="playerStore.currentTrack.title">
           {{ playerStore.currentTrack.title || 'Unknown Track' }}
         </div>
-        <div class="text-xs text-base-content/70 truncate" :title="playerStore.currentTrack.artistName || ''">
-          {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
+        <!-- Artist display with formatted artists if available -->
+        <div class="text-xs text-base-content/70 truncate">
+          <!-- Use formatted artists if available -->
+          <template v-if="playerStore.currentTrack.formattedArtists && playerStore.currentTrack.formattedArtists.length">
+            <span v-for="(artist, index) in playerStore.currentTrack.formattedArtists" :key="artist.artistId" class="mr-1">
+              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                {{ artist.name }}
+              </NuxtLink>
+              <span v-if="index < playerStore.currentTrack.formattedArtists.length - 2">, </span>
+              <span v-else-if="index === playerStore.currentTrack.formattedArtists.length - 2"> &</span>
+            </span>
+          </template>
+          <!-- Fallback to simple artist name if no formatted artists -->
+          <span v-else>{{ playerStore.currentTrack.artistName || 'Unknown Artist' }}</span>
         </div>
       </div>
 
