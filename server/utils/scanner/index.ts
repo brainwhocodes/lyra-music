@@ -10,6 +10,45 @@ import { dbOperations, type TrackFileMetadata } from './db-operations'; // Added
 import { TrackMetadata } from './types';
 import { getReleaseInfoWithTags, searchReleaseByTitleAndArtist, getReleaseTracklist } from '~/server/utils/musicbrainz';
 
+/**
+ * Splits a combined artist string into individual artist names.
+ * Handles various formats like "Artist A, Artist B", "Artist X feat. Artist Y", etc.
+ * @param artistString The combined artist string to split
+ * @returns Array of individual artist names
+ */
+function splitArtistString(artistString: string): string[] {
+  if (!artistString || typeof artistString !== 'string') return [];
+  
+  // Trim the input string
+  const trimmedArtist = artistString.trim();
+  if (!trimmedArtist) return [];
+  
+  // Common separators in artist strings
+  const separators = [
+    ', ', // Standard comma separation (Eminem, Dr. Dre)
+    '; ', // Semicolon separation
+    ' feat. ', // Featured artist notation
+    ' featuring ', // Full featured artist notation
+    ' ft. ', // Alternative featured artist notation
+    ' with ', // Collaboration notation
+    ' & ', // Ampersand separation
+    ' and ', // Text 'and' separation
+    ' x ', // Modern collaboration notation (Artist x Artist)
+  ];
+  
+  // First, try splitting with common separators
+  for (const separator of separators) {
+    if (trimmedArtist.includes(separator)) {
+      return trimmedArtist.split(separator)
+        .map(part => part.trim())
+        .filter(part => part.length > 0);
+    }
+  }
+  
+  // If no separator was found, return the original artist name as a single-element array
+  return [trimmedArtist];
+}
+
 interface ScanLibraryParams {
   libraryId: string;
   libraryPath: string;
@@ -77,19 +116,84 @@ async function processAudioFile(
 
     // --- Initial Artist ID Gathering ---
     const allArtistNames = new Set<string>();
-    if (rawTrackArtistName) allArtistNames.add(rawTrackArtistName);
+    const primaryAlbumArtistNames = new Set<string>();
+    const primaryTrackArtistNames = new Set<string>();
+    
+    // Process track artist
+    if (rawTrackArtistName) {
+      const splitTrackArtists = splitArtistString(rawTrackArtistName);
+      splitTrackArtists.forEach(artist => {
+        allArtistNames.add(artist);
+        primaryTrackArtistNames.add(artist);
+      });
+    }
+    
+    // Process album artist
     const albumArtistNameFromMeta = (common as any).albumartist?.trim();
-    if (albumArtistNameFromMeta) allArtistNames.add(albumArtistNameFromMeta);
+    if (albumArtistNameFromMeta) {
+      const splitAlbumArtists = splitArtistString(albumArtistNameFromMeta);
+      splitAlbumArtists.forEach(artist => {
+        allArtistNames.add(artist);
+        primaryAlbumArtistNames.add(artist);
+      });
+    }
+    
+    // Process additional artists array if present
     ((common as any).artists || []).forEach((artist: string) => {
-      if (artist) allArtistNames.add(artist.trim());
+      if (artist) {
+        splitArtistString(artist.trim()).forEach(splitArtist => {
+          allArtistNames.add(splitArtist);
+        });
+      }
+    });
+    
+    // Process featured artists if present
+    ((common as any).featuredartists || []).forEach((artist: string) => {
+      if (artist) {
+        splitArtistString(artist.trim()).forEach(splitArtist => {
+          allArtistNames.add(splitArtist);
+          // Not adding to primary artists since these are featured
+        });
+      }
     });
 
-    if (allArtistNames.size === 0) allArtistNames.add('Unknown Artist');
-    const effectivePrimaryArtistName = rawTrackArtistName || albumArtistNameFromMeta || allArtistNames.values().next().value;
+    if (allArtistNames.size === 0) {
+      allArtistNames.add('Unknown Artist');
+      primaryTrackArtistNames.add('Unknown Artist');
+      primaryAlbumArtistNames.add('Unknown Artist');
+    }
+    
+    // Determine effective primary artist name based on priority:
+    // 1. Primary track artist (from track.artist)
+    // 2. Primary album artist (from common.albumartist)
+    // 3. First artist in the set of all artists
+    // 4. Fallback to 'Unknown Artist' if all else fails
+    const effectivePrimaryArtistName: string = 
+      primaryTrackArtistNames.size > 0 ? primaryTrackArtistNames.values().next().value : 
+      primaryAlbumArtistNames.size > 0 ? primaryAlbumArtistNames.values().next().value : 
+      allArtistNames.size > 0 ? allArtistNames.values().next().value : 
+      'Unknown Artist'; 
 
     const artistRecordsMinimal: import('~/server/db/schema').Artist[] = [];
+    
+    // For primary artists, use findOrCreateArtist to fetch images
+    const primaryArtistNames = new Set<string>([...primaryAlbumArtistNames, ...primaryTrackArtistNames]);
+    
     for (const name of allArtistNames) {
-      const artistRec = await dbOperations.getOrCreateArtistMinimal({ artistName: name });
+      let artistRec;
+      
+      // Use findOrCreateArtist for primary artists to fetch images
+      if (primaryArtistNames.has(name)) {
+        artistRec = await dbOperations.findOrCreateArtist({
+          artistName: name,
+          userId: userId,
+          skipRemoteImageFetch: false // Explicitly set to fetch images
+        });
+      } else {
+        // Use minimal version for non-primary artists
+        artistRec = await dbOperations.getOrCreateArtistMinimal({ artistName: name });
+      }
+      
       if (artistRec) artistRecordsMinimal.push(artistRec);
     }
 
@@ -104,9 +208,13 @@ async function processAudioFile(
     // Prepare AlbumArtistInfo for findOrCreateAlbum
     const albumArtistsInfo: AlbumArtistInfo[] = artistRecordsMinimal.map(artistRec => ({
       artistId: artistRec.artistId,
-      isPrimary: artistRec.name === effectivePrimaryArtistName || (artistRecordsMinimal.length === 1 && artistRec.artistId === artistRecordsMinimal[0].artistId),
-      // Role determination can be enhanced later. For now, primary is 'main', others null.
-      role: (artistRec.name === effectivePrimaryArtistName || (artistRecordsMinimal.length === 1 && artistRec.artistId === artistRecordsMinimal[0].artistId)) ? 'main' : null,
+      isPrimary: primaryAlbumArtistNames.has(artistRec.name) || 
+                (primaryTrackArtistNames.has(artistRec.name) && primaryAlbumArtistNames.size === 0) || 
+                (artistRecordsMinimal.length === 1),
+      // Role determination: primary album artists get 'main', others get null
+      role: primaryAlbumArtistNames.has(artistRec.name) || 
+            (primaryTrackArtistNames.has(artistRec.name) && primaryAlbumArtistNames.size === 0) || 
+            (artistRecordsMinimal.length === 1) ? 'main' : null,
     }));
 
     // Ensure at least one primary artist if multiple artists exist and none were matched by name
@@ -174,21 +282,38 @@ async function processAudioFile(
     }
     // --- Track Artist Preparation ---
     const trackSpecificArtistNames = new Set<string>();
-    if (rawTrackArtistName) {
-      trackSpecificArtistNames.add(rawTrackArtistName.trim());
+    
+    // Use already processed primary track artists
+    primaryTrackArtistNames.forEach(artist => trackSpecificArtistNames.add(artist));
+    
+    // Add primary album artists if there are no track artists
+    if (trackSpecificArtistNames.size === 0) {
+      primaryAlbumArtistNames.forEach(artist => trackSpecificArtistNames.add(artist));
     }
-    // Add album artist if available
-    if (albumArtistNameFromMeta) {
-      trackSpecificArtistNames.add(albumArtistNameFromMeta.trim());
-    }
+    
+    // Add all artists from common.artists that we've already split
     (((common as any).artists || []) as string[]).forEach((artist: string) => {
-      if (artist) trackSpecificArtistNames.add(artist.trim());
+      if (artist) {
+        splitArtistString(artist.trim()).forEach(splitArtist => {
+          trackSpecificArtistNames.add(splitArtist);
+        });
+      }
+    });
+
+    // Add featured artists if available
+    (((common as any).featuredartists || []) as string[]).forEach((artist: string) => {
+      if (artist) {
+        splitArtistString(artist.trim()).forEach(splitArtist => {
+          trackSpecificArtistNames.add(splitArtist);
+        });
+      }
     });
 
     // If no specific track artists found, fall back to the effective primary artist for the file
     if (trackSpecificArtistNames.size === 0 && effectivePrimaryArtistName) {
       trackSpecificArtistNames.add(effectivePrimaryArtistName);
     }
+    
     // If still nothing, use "Unknown Artist"
     if (trackSpecificArtistNames.size === 0) {
         trackSpecificArtistNames.add('Unknown Artist');
@@ -369,11 +494,15 @@ async function processAudioFile(
     }
 
     // Return album info for batch cover processing
+    if (!albumRecord) {
+      return null;
+    }
+    
     return {
-      albumId: albumRecord!.albumId,
-      title: albumRecord!.title,
-      primaryArtistName: effectivePrimaryArtistName,
-      needsCover: !albumRecord!.coverPath && !albumRecord!.musicbrainzReleaseId,
+      albumId: albumRecord.albumId,
+      title: albumRecord.title,
+      primaryArtistName: effectivePrimaryArtistName || 'Unknown Artist', // Provide fallback for undefined
+      needsCover: !albumRecord.coverPath && !albumRecord.musicbrainzReleaseId,
     };
   } catch (error: any) { // Catch for the main try block of processAudioFile
     // console.error(`Failed to process ${filePath}:`, error.message, error.stack);

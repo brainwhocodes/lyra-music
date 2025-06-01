@@ -236,12 +236,53 @@ export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: stri
   }
 }
 
+/**
+ * Downloads artist image from MusicBrainz using the artist ID.
+ * @param musicbrainzArtistId The MusicBrainz artist ID.
+ * @returns A promise that resolves with the path to the downloaded artist image, or null if not found or error.
+ */
+export async function downloadArtistImageFromMusicBrainz(musicbrainzArtistId: string): Promise<string | null> {
+  if (!musicbrainzArtistId) {
+    return null;
+  }
+
+  const userAgent = process.env.MUSICBRAINZ_USER_AGENT || 'Otogami/1.0.0 (https://otogami.app)';
+
+  try {
+    // Import at function level to avoid circular dependencies
+    const { getArtistWithImages, extractArtistImageUrls } = await import('~/server/utils/musicbrainz');
+    
+    // Get artist data with relations that include image URLs
+    const artist = await getArtistWithImages(musicbrainzArtistId);
+    if (!artist) {
+      return null;
+    }
+    
+    // Extract image URLs from the artist relations
+    const imageUrls = extractArtistImageUrls(artist);
+    
+    // If we found image URLs, download the first one
+    if (imageUrls.length > 0) {
+      const imageUrl = imageUrls[0]; // Use the first image URL
+      return await downloadArtistImage(imageUrl);
+    }
+    
+    return null;
+  } catch (error: any) {
+    // console.error(`Failed to download artist image from MusicBrainz for ${musicbrainzArtistId}: ${error.message}`);
+    return null;
+  }
+}
+
 export const albumArtUtils = {
   saveArtToCache,
   processExternalAlbumArt,
   processEmbeddedAlbumArt,
   downloadArtistImage,
   downloadAlbumArtFromMusicBrainz,
+  downloadArtistImageFromMusicBrainz,
+  ensureCoversDirectory,
+  ensureArtistImagesDirectory,
   COVERS_DIR,
   ARTIST_IMAGES_DIR,
 } as const;

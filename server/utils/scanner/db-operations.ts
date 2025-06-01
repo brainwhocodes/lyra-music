@@ -121,10 +121,11 @@ export async function findOrCreateArtist({
       artistRecord = existingArtistRecord[0];
       console.log(`  Found existing artist: ${artistName} (ID: ${artistRecord.artistId}, Current MBID: ${artistRecord.musicbrainzArtistId})`);
 
-      // Only update if the artist doesn't have an MBID yet but we have one to provide
-      const needsUpdate: boolean = mbidToUse !== null && artistRecord.musicbrainzArtistId === null;
+      // Check if we need to update MBID or fetch image
+      const needsMbidUpdate: boolean = mbidToUse !== null && artistRecord.musicbrainzArtistId === null;
+      const needsImageUpdate: boolean = !artistRecord.artistImage && !skipRemoteImageFetch;
       
-      if (needsUpdate) {
+      if (needsMbidUpdate) {
         const updatedArtistWithMbid = await db.update(artists).set({
           musicbrainzArtistId: mbidToUse,
           updatedAt: sql`CURRENT_TIMESTAMP`
@@ -133,14 +134,17 @@ export async function findOrCreateArtist({
         if (updatedArtistWithMbid.length > 0) {
           artistRecord = updatedArtistWithMbid[0];
         }
-      } else {
+      }
+      
+      // Only skip image fetch if the artist already has an image
+      if (artistRecord.artistImage) {
         skipRemoteImageFetch = true;
       }
       
       // Use the artist's existing MBID if available, otherwise use the provided one
       mbidToUse = artistRecord.musicbrainzArtistId || mbidToUse; 
 
-      if (!artistRecord.artistImage && !skipRemoteImageFetch) {
+      if (needsImageUpdate) {
         shouldFetchArtistImage = true;
       }
     } else {
@@ -193,24 +197,19 @@ export async function findOrCreateArtist({
           }
 
           console.log(`  Fetching artist image for: ${artistName} using MBID: ${mbidToUse}`);
-          const artistDetails = await getArtistWithImages(mbidToUse);
-          if (artistDetails) {
-            const imageUrls = extractArtistImageUrls(artistDetails);
-            if (imageUrls.length > 0) {
-              const imagePath = await albumArtUtils.downloadArtistImage(imageUrls[0]);
-              if (imagePath) {
-                const updatedArtistsWithImage = await db
-                  .update(artists)
-                  .set({ 
-                    artistImage: imagePath,
-                    updatedAt: sql`CURRENT_TIMESTAMP` 
-                  })
-                  .where(eq(artists.artistId, artistRecord.artistId))
-                  .returning();
-                if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0];
-                console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
-              }
-            }
+          // Use the new downloadArtistImageFromMusicBrainz function
+          const imagePath = await albumArtUtils.downloadArtistImageFromMusicBrainz(mbidToUse);
+          if (imagePath) {
+            const updatedArtistsWithImage = await db
+              .update(artists)
+              .set({ 
+                artistImage: imagePath,
+                updatedAt: sql`CURRENT_TIMESTAMP` 
+              })
+              .where(eq(artists.artistId, artistRecord.artistId))
+              .returning();
+            if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0];
+            console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
           }
         } else {
           console.log(`  No MBID found for artist (image fetch): ${artistName}`);

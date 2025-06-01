@@ -64,14 +64,13 @@ const artists = ref<Artist[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const viewMode = ref<'grid' | 'table'>('grid');
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 
 // Fetch artists on component mount
 onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
-    const data = await $fetch<Artist[]>('/api/artists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
+    const data = await $fetch<Artist[]>('/api/artists');
     artists.value = data;
   } catch (err: any) {
     error.value = err.data?.message || err.message || 'Failed to load artists.';
