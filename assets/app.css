@@ -6,9 +6,14 @@
     exclude: ;
     prefix: ;
     logs: true;
-  }
-
-.modal {
-    overflow: hidden !important;
-    padding: 0 !important;
 }
+
+
+/* This is a bug with modal open state for daisyui so we override it
+ it is probably caused by having a sidebar open when the modal is opened
+*/
+html.modal-open {
+  scrollbar-gutter: initial; /* Override for modal open state */
+}
+
+
