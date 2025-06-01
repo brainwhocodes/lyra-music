@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full p-4 bg-base-200">
+  <div class="w-full h-full p-4 bg-base-200 overflow-y-auto">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold">Artists</h1>
     </div>

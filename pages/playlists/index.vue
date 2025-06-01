@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-[calc(100vh+5rem)] p-4 bg-base-200">
+  <div class="w-full h-[calc(100vh+5rem)] p-4 bg-base-200 overflow-y-auto">
     <!-- Top Bar: Search + Create Playlist Button -->
     <div class="flex justify-between items-center mb-2 sticky top-0 bg-base-200/80 backdrop-blur py-2 z-10">
       <div class="form-control">

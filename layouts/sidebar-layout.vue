@@ -52,7 +52,7 @@
 
     <!-- Main Content Area -->
     <main 
-      :class="['flex-1', 'overflow-y-auto', { 'pr-[calc(var(--spacing)*96)]': clientReady && playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
+      :class="['flex-1', { 'pr-[calc(var(--spacing)*96)]': clientReady && playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
       @click="isMobileOrTablet && isMobileSidebarOpen ? toggleMobileSidebar() : null" 
     >
       <slot /> <!-- Page content will be injected here -->

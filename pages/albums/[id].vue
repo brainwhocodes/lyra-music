@@ -225,18 +225,15 @@ const playerReadyTracks = computed(() => {
   const currentAlbumTitle = album.value.title;
 
   return album.value.tracks.map((track: Track) => {
-    // Process the track with proper artist formatting first
-    const processedTrack = formatTrackWithArtists({
-      ...track,
+    // Pass along original track.artists. Explicitly set formattedArtists and artistName to undefined
+    // to ensure the player store handles all formatting.
+    return {
+      ...track, // This includes the original track.artists array
       albumId: album.value!.albumId,
       albumTitle: track.albumTitle || currentAlbumTitle,
-      coverPath: track.coverPath || albumCover
-    });
-    
-    // Then add the artistName string for display
-    return {
-      ...processedTrack,
-      artistName: getTrackArtistNameString(processedTrack)
+      coverPath: track.coverPath || albumCover,
+      formattedArtists: undefined,
+      artistName: undefined
     };
   });
 });
@@ -369,7 +366,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8 space-y-8">
+  <div class="container mx-auto px-4 py-8 space-y-8 overflow-y-auto">
     <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false" @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>

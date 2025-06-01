@@ -271,11 +271,24 @@ export const usePlayerStore = defineStore('player', () => {
     originalQueue.value = []; 
     playedTrackIdsInShuffle.value.clear(); 
 
-    // Process tracks to add formatted artists using the composable
-    const { formatTracksWithArtists } = useTrackArtists();
-    const processedTracks = formatTracksWithArtists(tracks);
-    
-    queue.value = processedTracks;
+    const { formatTrackWithArtists, getTrackArtistNameString } = useTrackArtists();
+
+    const fullyProcessedTracks = tracks.map(track => {
+      // Step 1: Generate formattedArtists from track.artists
+      // The formatTrackWithArtists function is now idempotent, so if track.formattedArtists is already populated (it shouldn't be here),
+      // it would use it. Otherwise, it generates from track.artists.
+      const trackWithFormattedArtists = formatTrackWithArtists(track);
+
+      // Step 2: Generate artistName string from the (newly) formatted artists
+      const artistNameString = getTrackArtistNameString(trackWithFormattedArtists);
+
+      return {
+        ...trackWithFormattedArtists,
+        artistName: artistNameString,
+      };
+    });
+
+    queue.value = fullyProcessedTracks;
     currentQueueContext.value = context || { type: null, id: null, name: undefined };
 
     if (tracks.length > 0) {

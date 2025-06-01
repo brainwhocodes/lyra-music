@@ -34,6 +34,11 @@ export const useTrackArtists = () => {
    * @returns The same track with formatted artists added
    */
   const formatTrackWithArtists = (track: Track): Track => {
+    // If formattedArtists already exists and is a non-empty array, assume it's correctly pre-processed.
+    if (track.formattedArtists && Array.isArray(track.formattedArtists) && track.formattedArtists.length > 0) {
+      return track;
+    }
+    // Otherwise, generate it from track.artists.
     return {
       ...track,
       formattedArtists: getFormattedTrackArtists(track.artists || []),

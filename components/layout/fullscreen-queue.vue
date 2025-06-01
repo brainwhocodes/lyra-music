@@ -62,8 +62,19 @@ const getTrackKey = (track: Track, index: number): string => {
             >
               {{ track.title }}
             </p>
-            <p class="text-xs text-base-content/70 truncate">
-              {{ track.artistName }}
+            <p class="text-xs text-base-content/70 truncate" :title="track.artistName || 'Unknown Artist'">
+              <template v-if="track.formattedArtists && track.formattedArtists.length > 0">
+                <span v-for="(artist, artistIndex) in track.formattedArtists" :key="artist.artistId">
+                  <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                    {{ artist.name }}
+                  </NuxtLink>
+                  <span v-if="artistIndex < track.formattedArtists.length - 2">, </span>
+                  <span v-else-if="artistIndex === track.formattedArtists.length - 2"> & </span>
+                </span>
+              </template>
+              <template v-else>
+                {{ track.artistName || 'Unknown Artist' }}
+              </template>
             </p>
           </div>
           <span class="text-xs text-base-content/70 font-mono flex-shrink-0">

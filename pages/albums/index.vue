@@ -1,5 +1,5 @@
 <template>
-  <div class="albums w-full h-[calc(100vh+5rem)] p-4 bg-base-200">
+  <div :class="`albums w-full h-[calc(100vh)] px-4 pt-4 pb-[${albums.length * 10}rem] bg-base-200 overflow-y-auto`">
     <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
 
     <div v-if="loading" class="text-center">

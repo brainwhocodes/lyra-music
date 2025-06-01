@@ -86,9 +86,20 @@ const formatDuration = (seconds: number | null | undefined): string => {
           <div class="font-medium text-sm truncate w-full" :title="track.title" :class="index === currentIndex ? 'text-primary/90' : 'text-base-content/70'">{{ truncateString(track.title ?? 'Unknown Track', 50) }}</div>
           <div 
             class="text-xs truncate w-full text-base-content/70"
-            :title="track.artistName"
+            :title="track.artistName || 'Unknown Artist'"
           >
-            {{ truncateString(track.artistName ?? 'Unknown Artist', 50) }}
+            <template v-if="track.formattedArtists && track.formattedArtists.length > 0">
+              <span v-for="(artist, artistIndex) in track.formattedArtists" :key="artist.artistId">
+                <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
+                  {{ artist.name }}
+                </NuxtLink>
+                <span v-if="artistIndex < track.formattedArtists.length - 2">, </span>
+                <span v-else-if="artistIndex === track.formattedArtists.length - 2"> & </span>
+              </span>
+            </template>
+            <template v-else>
+              {{ truncateString(track.artistName ?? 'Unknown Artist', 50) }}
+            </template>
           </div>
         </div>
         <div class="text-xs ml-2 shrink-0" :class="index === currentIndex ? 'text-base-content/90' : 'text-base-content/70'">

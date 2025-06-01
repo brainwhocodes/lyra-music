@@ -165,9 +165,9 @@ const formatTime = (seconds: number): string => {
 
 const handleContinuousSeekInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  if (playerStore.isSeeking) {
-    playerStore.currentTime = parseFloat(target.value);
-  }
+  // playerStore.isUserSeeking should be true here if startSeeking was successful
+  // Call the store action to update the position
+  playerStore.updateSeekPosition(parseFloat(target.value));
 };
 
 </script>

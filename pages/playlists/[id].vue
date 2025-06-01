@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8 space-y-8">
+  <div class="container mx-auto px-4 py-8 space-y-8 overflow-y-auto">
     <!-- Loading -->
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
