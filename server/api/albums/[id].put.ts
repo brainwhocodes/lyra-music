@@ -1,8 +1,10 @@
 import { H3Event, readMultipartFormData, createError } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, users, albumArtists } from '~/server/db/schema';
+import type { AlbumArtistDetail } from '~/types/album';
 import { writeFile, mkdir, access } from 'node:fs/promises'; // For promise-based file system operations
 import path from 'path';   // For path manipulation
+import { useCoverArt } from '~/composables/use-cover-art';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 import { eq, and } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
@@ -30,7 +32,7 @@ export default defineEventHandler(async (event: H3Event) => {
     const multipartFormData = await readMultipartFormData(event);
 
   let title: string | undefined;
-  let artistName: string | undefined;
+  let artistsJsonString: string | undefined;
   let year: number | null | undefined = undefined;
   let coverImageFile: Buffer | undefined;
   let coverImageExtension: string | undefined;
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event: H3Event) => {
   if (multipartFormData) {
     for (const part of multipartFormData) {
       if (part.name === 'title') title = part.data.toString().trim();
-      if (part.name === 'artistName') artistName = part.data.toString().trim();
+      if (part.name === 'artistsJson') artistsJsonString = part.data.toString();
       if (part.name === 'year') {
         const yearStr = part.data.toString().trim();
         year = yearStr ? parseInt(yearStr, 10) : null;
@@ -58,36 +60,80 @@ export default defineEventHandler(async (event: H3Event) => {
       statusMessage: 'Album title is required',
     });
   }
-  if (!artistName) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Artist name is required',
-    });
+  let artistsToUpdate: AlbumArtistDetail[] = [];
+  if (artistsJsonString) {
+    try {
+      artistsToUpdate = JSON.parse(artistsJsonString);
+      if (!Array.isArray(artistsToUpdate) || artistsToUpdate.length === 0) {
+        throw new Error('Artists array must not be empty.');
+      }
+      // Basic validation for each artist object (can be more detailed)
+      for (const art of artistsToUpdate) {
+        if (!art.name && !art.artistId) {
+          throw new Error('Each artist must have a name or an artistId.');
+        }
+      }
+    } catch (e: any) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid artists JSON format: ${e.message}` });
+    }
+  } else {
+    throw createError({ statusCode: 400, statusMessage: 'Artists information (artistsJson) is required' });
   }
 
   // Start a transaction
   return await db.transaction(async (tx) => {
-    // 1. Find or create the artist
-    let artist = await tx.query.artists.findFirst({
-      where: (artistsTable, { eq }) => eq(artistsTable.name, artistName as string),
-    });
+    // 1. Process artists: find or create each, and collect their IDs and details for albumArtists table
+    const processedArtistLinks: Array<Omit<typeof albumArtists.$inferInsert, 'albumId' | 'albumArtistId'>> = [];
 
-    if (!artist) {
-      // Create new artist if not found
-      const [newArtist] = await tx
-        .insert(artists)
-        .values({
-          name: artistName as string,
-        })
-        .returning();
-      
-      if (!newArtist) {
-        throw createError({
-          statusCode: 500,
-          statusMessage: 'Failed to create artist',
+    for (const inputArtist of artistsToUpdate) {
+      let artistIdToLink: string;
+
+      if (inputArtist.artistId) {
+        // If artistId is provided, try to find the artist
+        const existingArtist = await tx.query.artists.findFirst({
+          where: eq(artists.artistId, inputArtist.artistId),
         });
+        if (!existingArtist) {
+          throw createError({
+            statusCode: 404,
+            statusMessage: `Artist with ID ${inputArtist.artistId} not found.`,
+          });
+        }
+        artistIdToLink = existingArtist.artistId;
+      } else if (inputArtist.name) {
+        // If name is provided, find or create by name
+        let artistRecord = await tx.query.artists.findFirst({
+          where: eq(artists.name, inputArtist.name),
+        });
+        if (!artistRecord) {
+          const [newArtist] = await tx
+            .insert(artists)
+            .values({ name: inputArtist.name })
+            .returning();
+          if (!newArtist) {
+            throw createError({ statusCode: 500, statusMessage: `Failed to create artist ${inputArtist.name}` });
+          }
+          artistRecord = newArtist;
+        }
+        artistIdToLink = artistRecord.artistId;
+      } else {
+        // Should be caught by earlier validation, but as a safeguard:
+        throw createError({ statusCode: 400, statusMessage: 'Artist data is incomplete.' });
       }
-      artist = newArtist;
+
+      processedArtistLinks.push({
+        artistId: artistIdToLink,
+        role: inputArtist.role || 'performer', // Default role if not provided
+        isPrimaryArtist: inputArtist.isPrimaryArtist ? 1 : 0,
+      });
+    }
+
+    // Ensure at least one primary artist if artists are provided
+    if (processedArtistLinks.length > 0 && !processedArtistLinks.some(link => link.isPrimaryArtist === 1)) {
+        // Default the first artist to primary if none are marked and artists exist
+        // Or throw an error: throw createError({ statusCode: 400, statusMessage: 'At least one artist must be marked as primary.' });
+        // For now, let's default the first one if applicable
+        processedArtistLinks[0].isPrimaryArtist = 1;
     }
 
     // Handle file upload if a new cover image is provided
@@ -136,50 +182,57 @@ export default defineEventHandler(async (event: H3Event) => {
       });
     }
 
-    // Manage albumArtists junction table
-    if (artist && artist.artistId) {
-      // Remove existing primary artist entries for this album
-      await tx.delete(albumArtists)
-        .where(and(
-          eq(albumArtists.albumId, albumId as string),
-          eq(albumArtists.isPrimaryArtist, 1)
-        ));
+    // 2. Update albumArtists junction table
+    // First, remove all existing artist links for this album
+    await tx.delete(albumArtists).where(eq(albumArtists.albumId, albumId as string));
 
-      // Add new primary artist entry
-      await tx.insert(albumArtists).values({
+    // Then, insert the new artist links
+    if (processedArtistLinks.length > 0) {
+      const albumArtistValues = processedArtistLinks.map(link => ({
         albumId: albumId as string,
-        artistId: artist.artistId,
-        isPrimaryArtist: 1, // Mark as primary artist
-      });
+        artistId: link.artistId,
+        role: link.role,
+        isPrimaryArtist: link.isPrimaryArtist,
+      }));
+      await tx.insert(albumArtists).values(albumArtistValues);
     }
 
-    // Fetch the updated album with artist details to return
-    const finalUpdatedAlbum = await tx.query.albums.findFirst({
+    // 3. Fetch the updated album with artist details to return (similar to GET /api/albums/[id])
+    const finalAlbumData = await tx.query.albums.findFirst({
       where: eq(albums.albumId, albumId as string),
+      // No 'with' clause here, artist details fetched separately
     });
 
-    if (!finalUpdatedAlbum) {
+    if (!finalAlbumData) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Updated album not found after linking artist.',
+        statusMessage: 'Updated album not found.',
       });
     }
 
-    // To include artistName in the response, you'd fetch it:
-    let artistNameForResponse = artistName; // from input
-    if (artist && artist.artistId) {
-      const primaryArtistLink = await tx.query.albumArtists.findFirst({
-        where: and(eq(albumArtists.albumId, finalUpdatedAlbum.albumId), eq(albumArtists.isPrimaryArtist, 1)),
-        with: { artist: true }
-      });
-      if (primaryArtistLink && primaryArtistLink.artist && typeof (primaryArtistLink.artist as any).name === 'string') {
-        artistNameForResponse = (primaryArtistLink.artist as any).name;
-      }
-    }
+    const finalAlbumArtistsRaw = await tx.query.albumArtists.findMany({
+      where: eq(albumArtists.albumId, albumId as string),
+      with: {
+        artist: {
+          columns: {
+            artistId: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    const finalAlbumArtistDetails: AlbumArtistDetail[] = finalAlbumArtistsRaw.map(link => ({
+      artistId: link.artist.artistId,
+      name: link.artist.name,
+      role: link.role === null ? undefined : link.role,
+      isPrimaryArtist: link.isPrimaryArtist === 1,
+    }));
 
     return {
-      ...finalUpdatedAlbum,
-      artistName: artistNameForResponse, // Add artistName for client convenience
+      ...finalAlbumData,
+      coverPath: finalAlbumData.coverPath ? useCoverArt().getCoverArtUrl(finalAlbumData.coverPath) : undefined,
+      artists: finalAlbumArtistDetails,
     };
   });
 });

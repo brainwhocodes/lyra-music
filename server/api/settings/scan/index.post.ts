@@ -9,7 +9,7 @@ import { getUserFromEvent } from '~/server/utils/auth';
 export default defineEventHandler(async (event) => {
   console.log('Received request to start media scan...');
 
-  const user = getUserFromEvent(event); 
+  const user = await getUserFromEvent(event); 
   if (!user) { 
     throw createError({
       statusCode: 401,

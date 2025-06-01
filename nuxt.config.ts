@@ -21,8 +21,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'development-secret',
-    musicbrainzUserAgent: process.env.MUSICBRAINZ_USER_AGENT || 'Otogami/1.0.0 (mille@otogami.com)',
-
+    musicbrainzUserAgent: process.env.MUSICBRAINZ_USER_AGENT,
   },
   vite: {
     plugins: [tailwindcss()]

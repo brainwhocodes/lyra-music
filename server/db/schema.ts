@@ -1,6 +1,6 @@
 // This file will contain all Drizzle schema definitions (tables, relations, etc.)
 // Refer to Phase 1 for the planned schema.
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 import { sql, relations, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 // Phase 1: Define Tables
@@ -82,15 +82,25 @@ export const radioChannelTracks = sqliteTable('radio_channel_tracks', {
 export const tracks = sqliteTable('tracks', {
   trackId: text('track_id').primaryKey().$defaultFn(() => uuidv7()),
   title: text('title').notNull(),
-  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'set null' }), 
   albumId: text('album_id').references(() => albums.albumId, { onDelete: 'cascade' }), 
   genre: text('genre'),
   year: integer('year'), 
   trackNumber: integer('track_number'),
   diskNumber: integer('disk_number'),
   duration: integer('duration'), 
-  explicit: integer('explicit', { mode: 'boolean' }).default(false),
+  explicit: integer('explicit', { mode: 'boolean' }).default(false).notNull(),
   filePath: text('file_path').notNull().unique(), 
+  musicbrainzTrackId: text('musicbrainz_track_id').unique(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const artistsTracks = sqliteTable('artists_tracks', {
+  artistsTracksId: text('artists_tracks_id').primaryKey().$defaultFn(() => uuidv7()),
+  artistId: text('artist_id').references(() => artists.artistId, { onDelete: 'cascade' }).notNull(),
+  trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
+  role: text('role'), // e.g., "main", "featured", "remixer"
+  isPrimaryArtist: integer('is_primary_artist').default(0).notNull(),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -141,6 +151,7 @@ export const albumGenres = sqliteTable('album_genres', {
 export const artistRelations = relations(artists, ({ many }) => ({
   albumArtists: many(albumArtists),
   artistUsers: many(artistUsers),
+  artistsTracks: many(artistsTracks),
 }));
 
 export const albumRelations = relations(albums, ({ many, one }) => ({
@@ -159,6 +170,27 @@ export const albumArtistRelations = relations(albumArtists, ({ one }) => ({
   artist: one(artists, {
     fields: [albumArtists.artistId],
     references: [artists.artistId],
+  }),
+}));
+
+export const tracksRelations = relations(tracks, ({ one, many }) => ({
+  album: one(albums, {
+    fields: [tracks.albumId],
+    references: [albums.albumId],
+  }),
+  playlistTracks: many(playlistTracks),
+  radioChannelTracks: many(radioChannelTracks),
+  artistsTracks: many(artistsTracks),
+}));
+
+export const artistsTracksRelations = relations(artistsTracks, ({ one }) => ({
+  artist: one(artists, {
+    fields: [artistsTracks.artistId],
+    references: [artists.artistId],
+  }),
+  track: one(tracks, {
+    fields: [artistsTracks.trackId],
+    references: [tracks.trackId],
   }),
 }));
 
@@ -203,18 +235,6 @@ export const playlistTrackRelations = relations(playlistTracks, ({ one }) => ({
   }),
 }));
 
-export const trackRelations = relations(tracks, ({ one }) => ({
-  artist: one(artists, {
-    fields: [tracks.artistId],
-    references: [artists.artistId],
-  }),
-  album: one(albums, {
-    fields: [tracks.albumId],
-    references: [albums.albumId],
-  }),
-  // If tracks can have multiple genres or other relations, define them here
-}));
-
 
 // === Inferred Types ===
 export type User = InferSelectModel<typeof users>;
@@ -228,6 +248,8 @@ export type NewAlbum = InferInsertModel<typeof albums>;
 
 export type Track = InferSelectModel<typeof tracks>;
 export type NewTrack = InferInsertModel<typeof tracks>;
+export type ArtistsTracks = InferSelectModel<typeof artistsTracks>;
+export type NewArtistsTracks = InferInsertModel<typeof artistsTracks>;
 
 export type MediaFolder = InferSelectModel<typeof mediaFolders>;
 export type NewMediaFolder = InferInsertModel<typeof mediaFolders>;

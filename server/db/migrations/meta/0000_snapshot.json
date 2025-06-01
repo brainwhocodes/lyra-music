@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b07fd1e4-307e-4b0f-b43a-ab4ab33a873e",
+  "id": "37d9bab5-3123-4303-97a4-8c406ed26f32",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "album_artists": {
@@ -358,6 +358,95 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "artists_tracks": {
+      "name": "artists_tracks",
+      "columns": {
+        "artists_tracks_id": {
+          "name": "artists_tracks_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "track_id": {
+          "name": "track_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_primary_artist": {
+          "name": "is_primary_artist",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artists_tracks_artist_id_artists_artist_id_fk": {
+          "name": "artists_tracks_artist_id_artists_artist_id_fk",
+          "tableFrom": "artists_tracks",
+          "tableTo": "artists",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "artist_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "artists_tracks_track_id_tracks_track_id_fk": {
+          "name": "artists_tracks_track_id_tracks_track_id_fk",
+          "tableFrom": "artists_tracks",
+          "tableTo": "tracks",
+          "columnsFrom": [
+            "track_id"
+          ],
+          "columnsTo": [
+            "track_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -819,13 +908,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "artist_id": {
-          "name": "artist_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "album_id": {
           "name": "album_id",
           "type": "text",
@@ -872,7 +954,7 @@
           "name": "explicit",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": false
         },
@@ -881,6 +963,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "musicbrainz_track_id": {
+          "name": "musicbrainz_track_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -907,22 +996,16 @@
             "file_path"
           ],
           "isUnique": true
+        },
+        "tracks_musicbrainz_track_id_unique": {
+          "name": "tracks_musicbrainz_track_id_unique",
+          "columns": [
+            "musicbrainz_track_id"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {
-        "tracks_artist_id_artists_artist_id_fk": {
-          "name": "tracks_artist_id_artists_artist_id_fk",
-          "tableFrom": "tracks",
-          "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "artist_id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "tracks_album_id_albums_album_id_fk": {
           "name": "tracks_album_id_albums_album_id_fk",
           "tableFrom": "tracks",
@@ -932,80 +1015,6 @@
           ],
           "columnsTo": [
             "album_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "user_artists": {
-      "name": "user_artists",
-      "columns": {
-        "user_artist_id": {
-          "name": "user_artist_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "artist_id": {
-          "name": "artist_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_artists_user_id_users_user_id_fk": {
-          "name": "user_artists_user_id_users_user_id_fk",
-          "tableFrom": "user_artists",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_artists_artist_id_artists_artist_id_fk": {
-          "name": "user_artists_artist_id_artists_artist_id_fk",
-          "tableFrom": "user_artists",
-          "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "artist_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"

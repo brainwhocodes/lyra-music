@@ -1,26 +1,46 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, or } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
-import { artists, albums, tracks, genres, albumGenres, albumArtists, type Album, type Artist, artistUsers } from '~/server/db/schema';
-import { searchArtistByName, getArtistWithImages, extractArtistImageUrls } from '~/server/utils/musicbrainz';
+import {
+  artists,
+  albums,
+  tracks,
+  genres,
+  albumGenres,
+  albumArtists,
+  artistsTracks, // Added for many-to-many track-artist relationship
+  type Album,
+  type Artist,
+  type Track, // Added Track type
+  artistUsers,
+} from '~/server/db/schema';
+import { searchArtistByName, getArtistWithImages, extractArtistImageUrls, searchReleaseByTitleAndArtist } from '~/server/utils/musicbrainz';
 import { albumArtUtils } from './album-art-utils';
+
+// Interface for artist information when creating/updating albums
+export interface AlbumArtistInfo {
+  artistId: string;
+  role?: string | null;
+  isPrimary: boolean;
+}
 
 interface FindOrCreateArtistParams {
   artistName: string;
   userId: string;
+  musicbrainzArtistId?: string | null; // Added for MBID integration
   skipRemoteImageFetch?: boolean;
 }
 
 interface GetOrCreateArtistMinimalParams {
   artistName: string;
+  musicbrainzArtistId?: string | null; // Added for MBID integration
 }
 
 interface FindOrCreateAlbumParams {
   albumTitle: string;
-  artistIds: string[];
-  primaryArtistId?: string | null;
+  artistsArray: AlbumArtistInfo[]; // Changed from artistIds and primaryArtistId
   userId: string;
-  year?: number;
+  year?: number | null;
   coverPath?: string | null;
   musicbrainzReleaseId?: string | null;
 }
@@ -34,11 +54,19 @@ interface TrackFileMetadata {
   explicit?: boolean | null;
 }
 
+// New interface for handling multiple artists per track with roles
+export interface TrackArtistInfo {
+  artistId: string;
+  role: string; // e.g., 'main', 'featured', 'producer', 'remixer'
+  isPrimary: boolean; // To identify primary artist(s) for display or main credit
+}
+
 interface FindOrCreateTrackParams {
   title: string;
   filePath: string;
   albumId: string | null;
-  artistId: string | null;
+  artists: TrackArtistInfo[]; // Replaces single artistId
+  musicbrainzTrackId?: string | null; // Added for MBID integration (maps to musicbrainzRecordingId in schema)
   metadata: TrackFileMetadata;
 }
 
@@ -49,37 +77,60 @@ interface FindOrCreateTrackParams {
 export async function findOrCreateArtist({
   artistName,
   userId,
+  musicbrainzArtistId, // New parameter
   skipRemoteImageFetch = false,
 }: FindOrCreateArtistParams): Promise<Artist | null> {
   if (!artistName) return null;
 
   try {
-    // Check if artist exists
+    // Check if artist exists by name or provided MBID
+    let queryCondition = musicbrainzArtistId
+      ? or(eq(artists.name, artistName), eq(artists.musicbrainzArtistId, musicbrainzArtistId))
+      : eq(artists.name, artistName);
+
     let existingArtistRecord = await db
       .select()
       .from(artists)
-      .where(eq(artists.name, artistName))
+      .where(queryCondition)
       .limit(1);
 
     let artistRecord: Artist;
     let shouldFetchArtistImage = false;
-    
+    let mbidToUse: string | null = musicbrainzArtistId || null; // Start with provided MBID
+
     if (existingArtistRecord.length > 0) {
       artistRecord = existingArtistRecord[0];
-      console.log(`  Found existing artist: ${artistName} (ID: ${artistRecord.artistId}, MBID: ${artistRecord.musicbrainzArtistId})`);
+      console.log(`  Found existing artist: ${artistName} (ID: ${artistRecord.artistId}, Current MBID: ${artistRecord.musicbrainzArtistId})`);
+
+      // If a new MBID is provided and it's different, or if the existing record has no MBID yet
+      if (mbidToUse && (!artistRecord.musicbrainzArtistId || artistRecord.musicbrainzArtistId !== mbidToUse)) {
+        const updatedArtistWithMbid = await db.update(artists).set({
+          musicbrainzArtistId: mbidToUse,
+          updatedAt: sql`CURRENT_TIMESTAMP`
+        }).where(eq(artists.artistId, artistRecord.artistId)).returning();
+        if (updatedArtistWithMbid.length > 0) artistRecord = updatedArtistWithMbid[0];
+        console.log(`  Updated existing artist ${artistName} with MBID: ${mbidToUse}`);
+      }
       
+      // Use the potentially updated MBID from the record for image fetching
+      mbidToUse = artistRecord.musicbrainzArtistId || mbidToUse; 
+
       if (!artistRecord.artistImage) {
         shouldFetchArtistImage = true;
       }
     } else {
       // Create a new artist
+      const newArtistValues: Partial<Artist> = {
+        artistId: uuidv7(),
+        name: artistName,
+      };
+      if (mbidToUse) { // If MBID was provided for new artist
+        newArtistValues.musicbrainzArtistId = mbidToUse;
+      }
+
       const newArtistResult = await db
         .insert(artists)
-        .values({
-          artistId: uuidv7(),
-          name: artistName 
-          // musicbrainzArtistId will be updated later if found
-        })
+        .values(newArtistValues as Artist) // Cast if properties are optional initially
         .returning();
 
       if (!newArtistResult || newArtistResult.length === 0) {
@@ -88,34 +139,36 @@ export async function findOrCreateArtist({
       }
       
       artistRecord = newArtistResult[0];
-      console.log(`  Created new artist: ${artistName} (ID: ${artistRecord.artistId})`);
+      console.log(`  Created new artist: ${artistName} (ID: ${artistRecord.artistId}, MBID: ${artistRecord.musicbrainzArtistId})`);
       shouldFetchArtistImage = true;
+      // mbidToUse is already set from params or is null
     }
 
     // Fetch artist image from MusicBrainz if needed and not skipped
     if (shouldFetchArtistImage && !skipRemoteImageFetch) {
       try {
-        let mbid: string | null = artistRecord.musicbrainzArtistId || null;
-
-        if (!mbid) { // Only search by name if we don't have an MBID
-          console.log(`  Searching MusicBrainz ID for: ${artistName}`);
-          mbid = await searchArtistByName(artistName);
+        // If mbidToUse is still null (neither provided nor on existing record), try searching by name
+        if (!mbidToUse) { 
+          console.log(`  Searching MusicBrainz ID for (artist image fetch): ${artistName}`);
+          const foundArtistByName = await searchArtistByName(artistName);
+          if (foundArtistByName) {
+            mbidToUse = foundArtistByName.id;
+          }
         }
         
-        if (mbid) {
-          // If mbid was found and not already stored, or if it's different (though unlikely to change often)
-          // Or if the artist was just created and mbid was found
-          if (!artistRecord.musicbrainzArtistId || artistRecord.musicbrainzArtistId !== mbid) {
+        if (mbidToUse) {
+          // If MBID was just found by search and not on record, update the record
+          if (!artistRecord.musicbrainzArtistId || artistRecord.musicbrainzArtistId !== mbidToUse) {
             const updatedArtistWithMbid = await db.update(artists).set({
-              musicbrainzArtistId: mbid,
+              musicbrainzArtistId: mbidToUse,
               updatedAt: sql`CURRENT_TIMESTAMP`
             }).where(eq(artists.artistId, artistRecord.artistId)).returning();
             if (updatedArtistWithMbid.length > 0) artistRecord = updatedArtistWithMbid[0];
-            console.log(`  Updated artist ${artistName} with MBID: ${mbid}`);
+            console.log(`  Updated artist ${artistName} with fetched MBID for image: ${mbidToUse}`);
           }
 
-          console.log(`  Fetching artist image for: ${artistName} using MBID: ${mbid}`);
-          const artistDetails = await getArtistWithImages(mbid);
+          console.log(`  Fetching artist image for: ${artistName} using MBID: ${mbidToUse}`);
+          const artistDetails = await getArtistWithImages(mbidToUse);
           if (artistDetails) {
             const imageUrls = extractArtistImageUrls(artistDetails);
             if (imageUrls.length > 0) {
@@ -129,13 +182,13 @@ export async function findOrCreateArtist({
                   })
                   .where(eq(artists.artistId, artistRecord.artistId))
                   .returning();
-                if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0]; // Update local record
+                if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0];
                 console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
               }
             }
           }
         } else {
-          console.log(`  No MBID found for artist: ${artistName}`);
+          console.log(`  No MBID found for artist (image fetch): ${artistName}`);
         }
       } catch (imageError: any) {
         console.error(`  Error fetching artist image for ${artistName}: ${imageError.message}`);
@@ -146,7 +199,7 @@ export async function findOrCreateArtist({
       await linkUserToArtist(userId, artistRecord.artistId, artistName);
     }
 
-    return artistRecord; // Return the full artist object or relevant fields
+    return artistRecord;
   } catch (error: any) {
     console.error(`  Database error with artist ${artistName}: ${error.message}`);
     return null;
@@ -154,38 +207,52 @@ export async function findOrCreateArtist({
 }
 
 /**
- * Finds or creates an artist record by name, returning the basic artist object.
+ * Finds or creates an artist record by name or MBID, returning the basic artist object.
  * This function does NOT handle image fetching or user linking.
  */
 export async function getOrCreateArtistMinimal({
   artistName,
+  musicbrainzArtistId, // New parameter
 }: GetOrCreateArtistMinimalParams): Promise<Artist | null> {
   if (!artistName) return null;
 
   try {
-    // Check if artist exists
+    let queryCondition = musicbrainzArtistId 
+      ? or(eq(artists.name, artistName), eq(artists.musicbrainzArtistId, musicbrainzArtistId))
+      : eq(artists.name, artistName);
+
     let existingArtistRecord = await db
       .select()
       .from(artists)
-      .where(eq(artists.name, artistName))
+      .where(queryCondition)
       .limit(1);
 
     if (existingArtistRecord.length > 0) {
-      return existingArtistRecord[0];
+      const artist = existingArtistRecord[0];
+      // If MBID was provided and differs from (or is missing on) the existing record, update it.
+      if (musicbrainzArtistId && (!artist.musicbrainzArtistId || artist.musicbrainzArtistId !== musicbrainzArtistId)) {
+        const updated = await db.update(artists)
+          .set({ musicbrainzArtistId: musicbrainzArtistId, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .where(eq(artists.artistId, artist.artistId))
+          .returning();
+        return updated.length > 0 ? updated[0] : artist;
+      }
+      return artist;
     } else {
       // Create a new artist
+      const newArtistValues: Partial<Artist> = {
+        artistId: uuidv7(),
+        name: artistName,
+      };
+      if (musicbrainzArtistId) {
+        newArtistValues.musicbrainzArtistId = musicbrainzArtistId;
+      }
       const newArtistResult = await db
         .insert(artists)
-        .values({
-          artistId: uuidv7(),
-          name: artistName,
-        })
+        .values(newArtistValues as Artist)
         .returning();
 
-      if (!newArtistResult || newArtistResult.length === 0) {
-        return null;
-      }
-      return newArtistResult[0];
+      return newArtistResult.length > 0 ? newArtistResult[0] : null;
     }
   } catch (error: any) {
     // console.error(`  [Minimal] Database error creating/finding artist ${artistName}: ${error.message}`);
@@ -199,136 +266,179 @@ export async function getOrCreateArtistMinimal({
  */
 export async function findOrCreateAlbum({
   albumTitle,
-  artistIds,
-  primaryArtistId,
+  artistsArray, // Changed from artistIds and primaryArtistId
   userId,
   year,
   coverPath,
   musicbrainzReleaseId,
 }: FindOrCreateAlbumParams): Promise<Album | null> {
-  if (!albumTitle) return null;
-  if (artistIds.length === 0) return null;
+  if (!albumTitle || !artistsArray || artistsArray.length === 0) {
+    return null;
+  }
 
   try {
-    // Check if album exists by title and user
-    let existingAlbumResult = await db
-      .select()
-      .from(albums)
-      .where(
-        and(
-          eq(albums.title, albumTitle),
-          eq(albums.userId, userId)
-        )
-      )
-      .limit(1);
+    let existingAlbumQuery; 
+    const primaryArtistInfo = artistsArray.find(a => a.isPrimary);
 
+    if (musicbrainzReleaseId) {
+      existingAlbumQuery = db.select().from(albums).where(eq(albums.musicbrainzReleaseId, musicbrainzReleaseId)).limit(1);
+    } else if (primaryArtistInfo) {
+      existingAlbumQuery = db.select({
+        albumId: albums.albumId,
+        title: albums.title,
+        year: albums.year,
+        coverPath: albums.coverPath,
+        musicbrainzReleaseId: albums.musicbrainzReleaseId,
+        userId: albums.userId,
+        createdAt: albums.createdAt,
+        updatedAt: albums.updatedAt
+      })
+        .from(albums)
+        .leftJoin(albumArtists, eq(albums.albumId, albumArtists.albumId))
+        .where(and(
+          eq(albums.title, albumTitle),
+          eq(albumArtists.artistId, primaryArtistInfo.artistId),
+          eq(albumArtists.isPrimaryArtist, 1)
+        ))
+        .limit(1);
+    } else {
+      // Fallback: if no MBID and no primary artist specified, try by title only (less reliable)
+      existingAlbumQuery = db.select({
+        albumId: albums.albumId,
+        title: albums.title,
+        year: albums.year,
+        coverPath: albums.coverPath,
+        musicbrainzReleaseId: albums.musicbrainzReleaseId,
+        userId: albums.userId,
+        createdAt: albums.createdAt,
+        updatedAt: albums.updatedAt
+      }).from(albums).where(eq(albums.title, albumTitle)).limit(1);
+    }
+    
+    const existingAlbumResult = await existingAlbumQuery;
     let albumRecord: Album;
-    let isNewAlbum = false;
 
     if (existingAlbumResult.length > 0) {
-      albumRecord = existingAlbumResult[0];
-      console.log(`  Found existing album: ${albumTitle} (ID: ${albumRecord.albumId})`);
-
-      // Check if we need to update existing album with new info
-      const updates: Partial<typeof albums.$inferInsert> = {};
-      if (musicbrainzReleaseId && !albumRecord.musicbrainzReleaseId) {
-        updates.musicbrainzReleaseId = musicbrainzReleaseId;
+      const firstResultItem = existingAlbumResult[0];
+      // Check if the result item has a nested 'albums' property, which indicates a specific structure from a join query.
+      if (firstResultItem && typeof firstResultItem === 'object' && 'albums' in firstResultItem && firstResultItem.albums !== null && typeof firstResultItem.albums === 'object') {
+        // If so, the actual album data is within firstResultItem.albums
+        albumRecord = firstResultItem.albums as Album;
+      } else {
+        // Otherwise, the item itself should be the album data.
+        // This branch handles cases where the query result is directly an Album object.
+        albumRecord = firstResultItem as Album;
       }
-      if (coverPath && !albumRecord.coverPath) {
-        updates.coverPath = coverPath;
-      }
-      if (year !== undefined && year !== null && albumRecord.year === null) { // Check if existing year is null
-        updates.year = year;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        updates.updatedAt = new Date().toISOString(); // Use ISO string for text date column
-        const updatedAlbums = await db
-          .update(albums)
-          .set(updates)
+      // console.log(`  Found existing album: ${albumTitle} (ID: ${albumRecord.albumId})`);
+      // If album exists, ensure MBID is up-to-date if provided
+      if (musicbrainzReleaseId && albumRecord.musicbrainzReleaseId !== musicbrainzReleaseId) {
+        const updatedResult = await db.update(albums)
+          .set({ musicbrainzReleaseId: musicbrainzReleaseId, updatedAt: sql`CURRENT_TIMESTAMP` })
           .where(eq(albums.albumId, albumRecord.albumId))
           .returning();
-        if (updatedAlbums.length > 0) albumRecord = updatedAlbums[0]; // Update local record
-        console.log(`  Updated existing album ${albumTitle} with new details.`);
+        if (updatedResult.length > 0) albumRecord = updatedResult[0];
+        // console.log(`  Updated album ${albumTitle} with MBID: ${musicbrainzReleaseId}`);
       }
     } else {
-      // Create new album
-      isNewAlbum = true;
+      const newAlbumId = uuidv7();
       const newAlbumResult = await db
         .insert(albums)
         .values({
-          albumId: uuidv7(),
+          albumId: newAlbumId,
           title: albumTitle,
-          userId,
-          year,
-          coverPath,
-          musicbrainzReleaseId,
+          year: year,
+          coverPath: coverPath,
+          musicbrainzReleaseId: musicbrainzReleaseId,
+          userId: userId,
         })
         .returning();
-      
+
       if (!newAlbumResult || newAlbumResult.length === 0) {
-        console.error(`  Failed to create album: ${albumTitle}`);
+        // console.error(`  Failed to create album: ${albumTitle}`);
         return null;
       }
       albumRecord = newAlbumResult[0];
-      console.log(`  Created new album: ${albumTitle} (ID: ${albumRecord.albumId})`);
+      // console.log(`  Created new album: ${albumTitle} (ID: ${albumRecord.albumId})`);
     }
+
+    // --- Attempt to find MusicBrainz Release ID if missing ---
+    if (!albumRecord.musicbrainzReleaseId && primaryArtistInfo && albumTitle) {
+      const primaryArtistRecordResult = await db
+        .select({ name: artists.name })
+        .from(artists)
+        .where(eq(artists.artistId, primaryArtistInfo.artistId))
+        .limit(1);
+
+      if (primaryArtistRecordResult.length > 0 && primaryArtistRecordResult[0].name) {
+        const primaryArtistName = primaryArtistRecordResult[0].name;
+        const newMusicbrainzReleaseId = await searchReleaseByTitleAndArtist(albumTitle, primaryArtistName);
+
+        if (newMusicbrainzReleaseId) {
+          const updatedResult = await db
+            .update(albums)
+            .set({ musicbrainzReleaseId: newMusicbrainzReleaseId, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .where(eq(albums.albumId, albumRecord.albumId))
+            .returning();
+          if (updatedResult.length > 0) {
+            albumRecord = updatedResult[0]; // Ensure albumRecord is the most up-to-date version
+          }
+        }
+      }
+    }
+    // --- End of MusicBrainz Release ID search ---
 
     // Manage album-artist relationships
-    // First, get existing relationships for this album
-    const existingRelations = await db
-      .select({ artistId: albumArtists.artistId })
-      .from(albumArtists)
-      .where(eq(albumArtists.albumId, albumRecord.albumId));
-    const existingArtistIds = new Set(existingRelations.map(r => r.artistId));
+    // First, clear existing relationships for this album
+    await db.delete(albumArtists).where(eq(albumArtists.albumId, albumRecord.albumId));
 
-    // Determine new artists to link
-    const artistsToLink = artistIds.filter(id => !existingArtistIds.has(id));
-
-    if (artistsToLink.length > 0) {
-      await db.insert(albumArtists).values(
-        artistsToLink.map(artistId => ({
-          albumArtistId: uuidv7(),
-          albumId: albumRecord.albumId,
-          artistId: artistId,
-          isPrimaryArtist: artistId === primaryArtistId ? 1 : 0,
-        }))
-      );
-      console.log(`  Linked ${artistsToLink.length} new artists to album ${albumTitle}.`);
-    }
-
-    // If it's a new album or if the primary artist needs to be set/updated
-    // This logic ensures the primary artist is correctly marked.
-    if (primaryArtistId) {
-      const primaryArtistLink = await db.select().from(albumArtists)
-        .where(and(eq(albumArtists.albumId, albumRecord.albumId), eq(albumArtists.artistId, primaryArtistId))).limit(1);
-
-      if (primaryArtistLink.length === 0 && artistIds.includes(primaryArtistId)) {
-        // Link if not existing and part of current artistIds
+    // Then, insert new relationships
+    for (const artistInfo of artistsArray) {
+      try {
         await db.insert(albumArtists).values({
-          albumArtistId: uuidv7(),
           albumId: albumRecord.albumId,
-          artistId: primaryArtistId,
-          isPrimaryArtist: 1,
+          artistId: artistInfo.artistId,
+          role: artistInfo.role ?? null,
+          isPrimaryArtist: artistInfo.isPrimary ? 1 : 0,
         });
-      } else if (primaryArtistLink.length > 0 && primaryArtistLink[0].isPrimaryArtist !== 1) {
-        // Update if existing but not marked as primary
-        await db.update(albumArtists)
-          .set({ isPrimaryArtist: 1 })
-          .where(eq(albumArtists.albumArtistId, primaryArtistLink[0].albumArtistId));
+      } catch (linkError: any) {
+        // console.warn(`  Could not link artist ${artistInfo.artistId} to album ${albumRecord.albumId}: ${linkError.message}`);
+        // Optionally, collect errors or re-throw if critical
       }
-      // Ensure other artists are not primary if this one is explicitly set
-      await db.update(albumArtists)
-        .set({ isPrimaryArtist: 0 })
-        .where(and(eq(albumArtists.albumId, albumRecord.albumId), sql`${albumArtists.artistId} != ${primaryArtistId}`));
+    }
+    
+    // Logic for fetching/updating cover art
+    // Check if we need to fetch cover art from MusicBrainz
+    const shouldFetchFromMusicBrainz = albumRecord.musicbrainzReleaseId && !albumRecord.coverPath;
+
+    if (shouldFetchFromMusicBrainz && albumRecord.musicbrainzReleaseId) { // Ensure MBID is valid before fetching
+      const downloadedArtPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(albumRecord.musicbrainzReleaseId);
+      if (downloadedArtPath) {
+        const updatedResult = await db
+          .update(albums)
+          .set({ coverPath: downloadedArtPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .where(eq(albums.albumId, albumRecord.albumId))
+          .returning();
+        if (updatedResult.length > 0) albumRecord = updatedResult[0];
+        // console.log(`  Updated album ${albumTitle} with cover art: ${downloadedCoverPath}`);
+      }
+    } else if (coverPath && !albumRecord.coverPath) {
+      // If a local coverPath is provided and the album doesn't have one, update it
+      const updatedResult = await db
+        .update(albums)
+        .set({ coverPath: coverPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+        .where(eq(albums.albumId, albumRecord.albumId))
+        .returning();
+      if (updatedResult.length > 0) albumRecord = updatedResult[0];
+      // console.log(`  Updated album ${albumTitle} with local cover art: ${coverPath}`);
     }
 
-    return albumRecord; // Return the full album object or relevant fields
+    return albumRecord;
   } catch (error: any) {
-    console.error(`  Database error with album ${albumTitle}: ${error.message}`);
+    // console.error(`  Database error with album ${albumTitle}: ${error.message}`);
     return null;
   }
 }
+
 
 /**
  * Finds or creates a track in the database.
@@ -337,73 +447,103 @@ export async function findOrCreateTrack({
   title,
   filePath,
   albumId,
-  artistId,
+  artists: trackArtists, // Changed from artistId
+  musicbrainzTrackId,    // New field (maps to musicbrainzRecordingId in schema)
   metadata,
-}: FindOrCreateTrackParams): Promise<string | null> {
-  if (!title || !filePath) return null;
-
-  const { 
-    duration,
-    trackNumber,
-    diskNumber,
-    year,
-    genre,
-    explicit = false
-  } = metadata;
+}: FindOrCreateTrackParams): Promise<Track | null> { // Return Track object or null
+  if (!title || !filePath || !trackArtists || trackArtists.length === 0) {
+    // Consider a more robust logging solution or simply return null for expected missing data.
+    return null;
+  }
 
   try {
-    const [existingTrack] = await db
-      .select({ trackId: tracks.trackId, filePath: tracks.filePath })
+    let existingTrack = await db
+      .select()
       .from(tracks)
-      .where(eq(tracks.filePath, filePath))
+      .where(eq(tracks.filePath, filePath)) // Assuming filePath is unique identifier for a track file
       .limit(1);
 
-    if (existingTrack) {
-      // Update existing track
-      // Consider adding logic here to check if an update is truly necessary by comparing fields
-      await db
+    let trackRecord: Track;
+    const trackData = {
+      title: title,
+      filePath: filePath,
+      albumId: albumId,
+      // artistId is removed, handled by artistsToTracks table
+      duration: metadata.duration,
+      trackNumber: metadata.trackNumber,
+      diskNumber: metadata.diskNumber,
+      year: metadata.year,
+      musicbrainzTrackId: musicbrainzTrackId, // Correct field name for tracks table
+      explicit: metadata.explicit ?? false, // Default to false if null/undefined
+    };
+
+    if (existingTrack.length > 0) {
+      trackRecord = existingTrack[0];
+      // Update existing track with new data
+      const updatedTrackResult = await db
         .update(tracks)
         .set({
-          title,
-          artistId,
-          albumId,
-          genre: genre || null,
-          year: year || null,
-          trackNumber: trackNumber || null,
-          diskNumber: diskNumber || null,
-          duration: duration ? Math.round(duration) : null,
-          explicit: explicit,
+          ...trackData,
+          title: title,
+          albumId: albumId,
+          musicbrainzTrackId: musicbrainzTrackId, // Correct field name
+          explicit: metadata.explicit ?? false,
           updatedAt: sql`CURRENT_TIMESTAMP`,
         })
-        .where(eq(tracks.filePath, filePath));
+        .where(eq(tracks.trackId, trackRecord.trackId))
+        .returning();
+      if (updatedTrackResult.length > 0) trackRecord = updatedTrackResult[0];
+      // console.log(`  Updated existing track: ${title} (ID: ${trackRecord.trackId})`);
+    } else {
+      const newTrackId = uuidv7();
+      const newTrackResult = await db
+        .insert(tracks)
+        .values({
+          trackId: newTrackId,
+          ...trackData, // Spread new data
+        })
+        .returning();
       
-      console.log(`  Updated track: ${title} (ID: ${existingTrack.trackId})`);
-      return existingTrack.trackId;
+      if (!newTrackResult || newTrackResult.length === 0) {
+        // console.error(`  Failed to create track: ${title}`);
+        return null;
+      }
+      trackRecord = newTrackResult[0];
+      // console.log(`  Created new track: ${title} (ID: ${trackRecord.trackId})`);
     }
 
-    // Insert new track
-    const newTrackResult = await db.insert(tracks).values({
-      trackId: uuidv7(),
-      title,
-      artistId,
-      albumId,
-      genre: genre || null,
-      year: year || null,
-      trackNumber: trackNumber || null,
-      diskNumber: diskNumber || null,
-      duration: duration ? Math.round(duration) : null,
-      filePath,
-      explicit: explicit,
-    }).returning();
-    if (newTrackResult.length > 0) {
-      console.log(`  Created new track: ${title} (ID: ${newTrackResult[0].trackId})`);
-      return newTrackResult[0].trackId;
+    // Manage artist-track relationships in artistsToTracks
+    // First, clear existing relationships for this track to handle updates correctly (e.g., artist changes)
+    // console.log(`  Clearing existing artist links for track: ${trackRecord.trackId}`);
+    await db.delete(artistsTracks).where(eq(artistsTracks.trackId, trackRecord.trackId));
+    
+    // Then, insert new relationships 
+    // console.log(`  Inserting new artist links for track: ${trackRecord.trackId}`);
+    for (const artistInfo of trackArtists) {
+      try {
+        await db.insert(artistsTracks).values({
+          artistId: artistInfo.artistId,
+          trackId: trackRecord.trackId,
+          role: artistInfo.role,
+          isPrimaryArtist: artistInfo.isPrimary ? 1 : 0,
+        });
+      } catch (linkError: any) {
+        // console.error(`  Error linking artist ${artistInfo.artistId} to track ${trackRecord.trackId} with role ${artistInfo.role}: ${linkError.message}`);
+        // Depending on desired behavior, might re-throw or collect errors
+      }
     }
+    // console.log(`  Processed ${trackArtists.length} artist links for track: ${title}`);
 
-    console.error(`  Failed to create track: ${title}`);
-    return null;
+    // Handle genre (linking to album, as tracks don't directly link to genres in this schema)
+    if (metadata.genre) {
+      const genreId = await findOrCreateGenre(metadata.genre);
+      if (genreId && albumId) { 
+        await linkAlbumToGenre(albumId, genreId);
+      }
+    }
+    return trackRecord; // Return the full track object
   } catch (error: any) {
-    console.error(`  Database error with track ${title}: ${error.message}`);
+    // console.error(`  Database error with track ${title}: ${error.message}`);
     return null;
   }
 }
@@ -414,42 +554,28 @@ export async function findOrCreateTrack({
  * @returns The ID of the found or created genre, or null if an error occurs or name is empty.
  */
 export async function findOrCreateGenre(genreName: string): Promise<string | null> {
-  if (!genreName || genreName.trim() === '') {
-    console.warn('  Attempted to find or create an empty genre name.');
-    return null;
-  }
-
-  const trimmedGenreName = genreName.trim();
+  if (!genreName) return null;
 
   try {
-    const [existingGenre] = await db
-      .select({ genreId: genres.genreId })
+    let existingGenre = await db
+      .select()
       .from(genres)
-      .where(eq(genres.name, trimmedGenreName))
+      .where(eq(genres.name, genreName))
       .limit(1);
 
-    if (existingGenre) {
-      console.log(`  Found existing genre: ${trimmedGenreName} (ID: ${existingGenre.genreId})`);
-      return existingGenre.genreId;
+    if (existingGenre.length > 0) {
+      return existingGenre[0].genreId;
+    } else {
+      const newGenreId = uuidv7();
+      const newGenreResult = await db
+        .insert(genres)
+        .values({ genreId: newGenreId, name: genreName })
+        .returning({ genreId: genres.genreId });
+      
+      return newGenreResult.length > 0 ? newGenreResult[0].genreId : null;
     }
-
-    const [newGenre] = await db
-      .insert(genres)
-      .values({
-        genreId: uuidv7(),
-        name: trimmedGenreName,
-      })
-      .returning({ genreId: genres.genreId });
-
-    if (!newGenre) {
-      console.error(`  Failed to create genre: ${trimmedGenreName}`);
-      return null;
-    }
-
-    console.log(`  Created new genre: ${trimmedGenreName} (ID: ${newGenre.genreId})`);
-    return newGenre.genreId;
   } catch (error: any) {
-    console.error(`  Database error with genre ${trimmedGenreName}: ${error.message}`);
+    console.error(`  Database error with genre ${genreName}: ${error.message}`);
     return null;
   }
 }
@@ -460,29 +586,24 @@ export async function findOrCreateGenre(genreName: string): Promise<string | nul
  * @param genreId The ID of the genre.
  */
 export async function linkAlbumToGenre(albumId: string, genreId: string): Promise<void> {
-  if (!albumId || !genreId) {
-    console.warn('  Attempted to link album to genre with missing IDs.');
-    return;
-  }
+  if (!albumId || !genreId) return;
 
   try {
-    const [existingLink] = await db
+    // Check if the link already exists
+    const existingLink = await db
       .select()
       .from(albumGenres)
       .where(and(eq(albumGenres.albumId, albumId), eq(albumGenres.genreId, genreId)))
       .limit(1);
 
-    if (existingLink) {
-      // console.log(`  Album ${albumId} already linked to genre ${genreId}`);
-      return; // Link already exists
+    if (existingLink.length === 0) {
+      await db.insert(albumGenres).values({
+        albumGenreId: uuidv7(),
+        albumId: albumId,
+        genreId: genreId,
+      });
+      // console.log(`  Linked album ${albumId} to genre ${genreId}`);
     }
-
-    await db.insert(albumGenres).values({
-      albumGenreId: uuidv7(),
-      albumId,
-      genreId,
-    });
-    console.log(`  Linked album ${albumId} to genre ${genreId}`);
   } catch (error: any) {
     console.error(`  Error linking album ${albumId} to genre ${genreId}: ${error.message}`);
   }
@@ -494,57 +615,49 @@ export async function linkAlbumToGenre(albumId: string, genreId: string): Promis
  * @returns True if the album has one or more genres, false otherwise.
  */
 export async function hasAlbumGenres(albumId: string): Promise<boolean> {
-  if (!albumId) {
-    console.warn('  hasAlbumGenres called with no albumId.');
-    return false;
-  }
+  if (!albumId) return false;
   try {
     const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(albumGenres)
-      .where(eq(albumGenres.albumId, albumId))
-      .limit(1);
-
-    return result.length > 0 && result[0].count > 0;
-  } catch (error: any) {
-    console.error(`  Error checking genres for album ${albumId}: ${error.message}`);
-    return false; // Return false on error to prevent unintended blocking of MB calls
+      .where(eq(albumGenres.albumId, albumId));
+    return result[0].count > 0;
+  } catch (error) {
+    console.error(`Error checking genres for album ${albumId}:`, error);
+    return false;
   }
 }
 
 /**
  * Links a user to an artist if not already linked.
  */
-async function linkUserToArtist(
+export async function linkUserToArtist(
   userId: string, 
   artistId: string, 
-  artistName: string
+  artistName: string // For logging
 ): Promise<void> {
+  if (!userId || !artistId) return;
+
   try {
-    const [existingLink] = await db
+    const existingLink = await db
       .select()
       .from(artistUsers)
-      .where(
-        and(
-          eq(artistUsers.userId, userId), 
-          eq(artistUsers.artistId, artistId)
-        )
-      )
+      .where(and(eq(artistUsers.userId, userId), eq(artistUsers.artistId, artistId)))
       .limit(1);
 
-    if (!existingLink) {
-      // Create new link
+    if (existingLink.length === 0) {
       await db.insert(artistUsers).values({
         artistUserId: uuidv7(),
-        userId,
-        artistId,
+        userId: userId,
+        artistId: artistId,
       });
-      console.log(`  Linked user ${userId} to artist ${artistName} (${artistId})`);
+      console.log(`  Linked user ${userId} to artist ${artistName} (ID: ${artistId})`);
     }
   } catch (error: any) {
-    console.error(`  Error linking user ${userId} to artist ${artistId}: ${error.message}`);
+    console.error(`  Error linking user ${userId} to artist ${artistName} (ID: ${artistId}): ${error.message}`);
   }
 }
+
 
 export const dbOperations = {
   findOrCreateArtist,
@@ -553,6 +666,6 @@ export const dbOperations = {
   findOrCreateTrack,
   findOrCreateGenre,
   linkAlbumToGenre,
-  linkUserToArtist,
   hasAlbumGenres,
-} as const;
+  linkUserToArtist,
+};

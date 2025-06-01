@@ -2,7 +2,8 @@ import crypto from 'crypto';
 import { join, extname } from 'node:path';
 import { fileUtils } from './file-utils';
 import { EXTERNAL_COVER_FILENAMES } from './types';
-import { getReleaseCoverArtUrls } from '~/server/utils/musicbrainz';
+import type { CoverArtArchiveResponse, CoverArtArchiveImage, MusicBrainzReleaseWithRelations } from '~/types/musicbrainz/musicbrainz';
+import { musicBrainzApiRequest } from '~/server/utils/musicbrainz';
 
 const COVERS_DIR = join(process.cwd(), 'public', 'images', 'covers');
 const ARTIST_IMAGES_DIR = join(process.cwd(), 'public', 'images', 'artists');
@@ -47,12 +48,12 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
       
       // Save the image to disk
       await fileUtils.writeFile(imageFullPath, imageBuffer);
-      console.log(`  Saved artist image from ${imageUrl} to: ${imageFullPath}`);
+      // console.log(`  Saved artist image from ${imageUrl} to: ${imageFullPath}`);
     }
     
     return `/images/artists/${imageFilename}`;
   } catch (error: any) {
-    console.error(`  Failed to download artist image from ${imageUrl}: ${error.message}`);
+    // console.error(`  Failed to download artist image from ${imageUrl}: ${error.message}`);
     return null;
   }
 }
@@ -74,12 +75,12 @@ export async function saveArtToCache(
 
     if (!await fileUtils.pathExists(coverFullPath)) {
       await fileUtils.writeFile(coverFullPath, imageData);
-      console.log(`  Saved album art from ${sourceDescription} to: ${coverFullPath}`);
+      // console.log(`  Saved album art from ${sourceDescription} to: ${coverFullPath}`);
     }
     
     return `/images/covers/${coverFilename}`;
   } catch (error: any) {
-    console.error(`  Failed to save album art from ${sourceDescription}: ${error.message}`);
+    // console.error(`  Failed to save album art from ${sourceDescription}: ${error.message}`);
     return null;
   }
 }
@@ -97,7 +98,7 @@ export async function processExternalAlbumArt(albumDir: string): Promise<string 
         const format = extname(potentialCoverPath).substring(1);
         return await saveArtToCache(coverData, format, `external file ${coverFilename}`);
       } catch (error: any) {
-        console.error(`  Error processing external cover ${potentialCoverPath}:`, error.message);
+        // console.error(`  Error processing external cover ${potentialCoverPath}:`, error.message);
       }
     }
   }
@@ -112,7 +113,7 @@ export async function processEmbeddedAlbumArt(pictures: Array<{ format: string; 
   if (!pictures || pictures.length === 0) return null;
   
   const picture = pictures[0];
-  console.log(`  Found embedded cover art (Format: ${picture.format}).`);
+  // console.log(`  Found embedded cover art (Format: ${picture.format}).`);
   const pictureBuffer = Buffer.from(picture.data);
   return await saveArtToCache(pictureBuffer, picture.format, 'embedded metadata');
 }
@@ -122,52 +123,115 @@ export async function processEmbeddedAlbumArt(pictures: Array<{ format: string; 
  * @param musicbrainzReleaseId The MusicBrainz release ID.
  * @returns A promise that resolves with the path to the downloaded cover art, or null if not found or error.
  */
+async function getReleaseCoverArtUrlsInternal(musicbrainzReleaseId: string, userAgent: string): Promise<string[]> {
+  const potentialImageUrls: string[] = [];
+
+  try {
+    // 1. Try fetching via release relations
+    const release = await musicBrainzApiRequest<MusicBrainzReleaseWithRelations>(`release/${musicbrainzReleaseId}`, {
+      inc: 'url-rels'
+    });
+
+    if (release?.relations) {
+      for (const relation of release.relations) {
+        if (relation.type === 'cover art' && relation.url?.resource) {
+          const coverArtArchiveUrlFromRelation = relation.url.resource;
+          try {
+            const caaResponseFromRelation = await fetch(coverArtArchiveUrlFromRelation, { headers: { 'User-Agent': userAgent } });
+            if (caaResponseFromRelation.ok) {
+              const caaData = await caaResponseFromRelation.json() as CoverArtArchiveResponse;
+              if (caaData?.images?.length) {
+                const frontImage = caaData.images.find(img => img.front && img.image);
+                if (frontImage?.image) potentialImageUrls.push(frontImage.image);
+                // Fallback to first approved, then first image if no front
+                if (!frontImage) {
+                  const approvedImage = caaData.images.find(img => img.approved && img.image);
+                  if (approvedImage?.image) potentialImageUrls.push(approvedImage.image);
+                  else if (caaData.images[0]?.image) potentialImageUrls.push(caaData.images[0].image);
+                }
+              }
+            }
+          } catch (e) { /* Silently ignore, will try direct CAA query */ }
+        }
+      }
+    }
+
+    // 2. If no URLs from relations, try direct CAA query
+    if (potentialImageUrls.length === 0) {
+      const directCaaUrl = `https://coverartarchive.org/release/${musicbrainzReleaseId}`;
+      try {
+        const directCaaResponse = await fetch(directCaaUrl, { headers: { 'User-Agent': userAgent } });
+        if (directCaaResponse.ok) {
+          const caaData = await directCaaResponse.json() as CoverArtArchiveResponse;
+          if (caaData?.images?.length) {
+            const frontImage = caaData.images.find(img => img.front && img.image);
+            if (frontImage?.image) potentialImageUrls.push(frontImage.image);
+            if (!frontImage) {
+              const approvedImage = caaData.images.find(img => img.approved && img.image);
+              if (approvedImage?.image) potentialImageUrls.push(approvedImage.image);
+              else if (caaData.images[0]?.image) potentialImageUrls.push(caaData.images[0].image);
+            }
+          }
+        }
+      } catch (e) { /* Silently ignore */ }
+    }
+  } catch (error: any) {
+    // console.warn(`Error fetching release relations or direct CAA for ${musicbrainzReleaseId}: ${error.message}`);
+  }
+  // Return unique URLs, prioritizing earlier finds (relations over direct)
+  return [...new Set(potentialImageUrls)];
+}
+
 export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: string): Promise<string | null> {
   if (!musicbrainzReleaseId) {
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Received null/empty MBID. Skipping.`);
     return null;
   }
-  
-  console.log(`[MB Art DL ${musicbrainzReleaseId}] Attempting to download album art.`);
+
+  const userAgent = process.env.MUSICBRAINZ_USER_AGENT || 'Otogami/1.0.0 (https://otogami.app)';
+  let imageUrl: string | undefined;
+
   try {
-    const coverArtUrls = await getReleaseCoverArtUrls(musicbrainzReleaseId);
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Received URLs from getReleaseCoverArtUrls:`, coverArtUrls);
-    
-    if (!coverArtUrls || coverArtUrls.length === 0) {
-      console.log(`[MB Art DL ${musicbrainzReleaseId}] No cover art URLs found by getReleaseCoverArtUrls.`);
+    const foundUrls = await getReleaseCoverArtUrlsInternal(musicbrainzReleaseId, userAgent);
+    if (foundUrls.length > 0) {
+      imageUrl = foundUrls[0]; // Already prioritized by getReleaseCoverArtUrlsInternal
+    }
+
+    if (!imageUrl) {
       return null;
     }
-    
-    const imageUrl = coverArtUrls[0]; // Using the first URL
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Selected image URL for download: ${imageUrl}`);
-    
+
     await ensureCoversDirectory();
-    
+
+    // Check cache before downloading
     const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
     const urlPath = new URL(imageUrl).pathname;
-    const extension = extname(urlPath).toLowerCase() || '.jpg';
-    const cleanExtension = extension.replace('.', '').replace('jpeg', 'jpg');
+    // Prioritize extension from URL, fallback to jpg for safety if missing/uncommon
+    let extension = extname(urlPath).toLowerCase().replace('.', '');
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+        extension = 'jpg'; 
+    }
+    const cleanExtension = extension === 'jpeg' ? 'jpg' : extension;
     const imageFilename = `${hash}.${cleanExtension}`;
     const imageFullPath = join(COVERS_DIR, imageFilename);
-    
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Target save path: ${imageFullPath}`);
 
     if (await fileUtils.pathExists(imageFullPath)) {
-      console.log(`[MB Art DL ${musicbrainzReleaseId}] Image already exists at ${imageFullPath}. Skipping download.`);
       return `/images/covers/${imageFilename}`;
     }
-    
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Downloading image from ${imageUrl}...`);
-    const response = await fetch(imageUrl);
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Image downloaded successfully. Size: ${imageBuffer.length} bytes.`);
-    
+
+    // Fetch the actual image file
+    const imageResponse = await fetch(imageUrl, { headers: { 'User-Agent': userAgent } }); // Add User-Agent for image fetch too
+    if (!imageResponse.ok || !imageResponse.body) {
+      return null;
+    }
+    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+    // Save to cache using saveArtToCache or similar logic (here, directly writing)
+    // If saveArtToCache is preferred, this part needs to adapt to its signature (e.g., getting imageFormat)
     await fileUtils.writeFile(imageFullPath, imageBuffer);
-    console.log(`[MB Art DL ${musicbrainzReleaseId}] Image saved successfully to ${imageFullPath}.`);
-    
-    return `/images/covers/${imageFilename}`;
+    return `/images/covers/${imageFilename}`; // Return the relative path for client use
+
   } catch (error: any) {
-    console.error(`[MB Art DL ${musicbrainzReleaseId}] Failed to download or save album cover art: ${error.message}`, error.stack);
+    // console.error(`Error in downloadAlbumArtFromMusicBrainz for MBID ${musicbrainzReleaseId}: ${error.message}`);
     return null;
   }
 }

@@ -2,7 +2,9 @@ import * as mm from 'music-metadata';
 import { dirname, basename } from 'node:path';
 import { db } from '~/server/db';
 import { albums, tracks, artistUsers } from '~/server/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
+import { v4 as uuidv4, v7 as uuidv7 } from 'uuid';
+import type { AlbumArtistInfo, TrackArtistInfo } from './db-operations';
 import { fileUtils } from './file-utils';
 import { albumArtUtils } from './album-art-utils';
 import { dbOperations } from './db-operations';
@@ -48,7 +50,7 @@ async function processAudioFile(
   filePath: string,
   { libraryId, userId }: { libraryId: string; userId: string }
 ): Promise<void> {
-  console.log(`Processing: ${filePath}`);
+  // console.log(`Processing: ${filePath}`);
   let skipMusicBrainzDetailsFetch = false;
 
   try {
@@ -70,7 +72,7 @@ async function processAudioFile(
     }
 
     if (!trackTitle) {
-      console.warn(`  Track title not found for ${filePath}. Skipping.`);
+      // console.warn(`  Track title not found for ${filePath}. Skipping.`);
       return;
     }
 
@@ -93,19 +95,36 @@ async function processAudioFile(
     }
 
     if (artistRecordsMinimal.length === 0) {
-      console.warn(`  No artist records could be processed for ${filePath}. Skipping album/track linking.`);
+      // console.warn(`  No artist records could be processed for ${filePath}. Skipping album/track linking.`);
       return; // Or handle track creation without album/artist if desired
     }
 
-    const primaryArtistMinimalRecord = artistRecordsMinimal.find(ar => ar.name === effectivePrimaryArtistName) || artistRecordsMinimal[0];
-    const primaryArtistIdFromMinimal = primaryArtistMinimalRecord.artistId;
-    const allArtistIdsFromMinimal = artistRecordsMinimal.map(ar => ar.artistId);
+    // Prepare AlbumArtistInfo for findOrCreateAlbum
+    const albumArtistsInfo: AlbumArtistInfo[] = artistRecordsMinimal.map(artistRec => ({
+      artistId: artistRec.artistId,
+      isPrimary: artistRec.name === effectivePrimaryArtistName || (artistRecordsMinimal.length === 1 && artistRec.artistId === artistRecordsMinimal[0].artistId),
+      // Role determination can be enhanced later. For now, primary is 'main', others null.
+      role: (artistRec.name === effectivePrimaryArtistName || (artistRecordsMinimal.length === 1 && artistRec.artistId === artistRecordsMinimal[0].artistId)) ? 'main' : null,
+    }));
+
+    // Ensure at least one primary artist if multiple artists exist and none were matched by name
+    if (albumArtistsInfo.length > 1 && !albumArtistsInfo.some(a => a.isPrimary)) {
+      const primaryDesignate = albumArtistsInfo.find(a => a.artistId === (artistRecordsMinimal.find(ar => ar.name === effectivePrimaryArtistName)?.artistId));
+      if (primaryDesignate) {
+        primaryDesignate.isPrimary = true;
+        primaryDesignate.role = 'main';
+      } else if (albumArtistsInfo.length > 0) {
+         // Fallback: if effectivePrimaryArtistName didn't match any in the list (e.g. was from a different tag set)
+         // or if there's only one artist, make it primary.
+        albumArtistsInfo[0].isPrimary = true;
+        albumArtistsInfo[0].role = 'main';
+      }
+    }
 
     // --- Initial Album Record Fetch/Creation ---
     let albumRecord = await dbOperations.findOrCreateAlbum({
       albumTitle: trackAlbumTitle || 'Unknown Album',
-      artistIds: allArtistIdsFromMinimal,
-      primaryArtistId: primaryArtistIdFromMinimal,
+      artistsArray: albumArtistsInfo, // Use the new structure
       userId,
       year: trackYear,
       coverPath: albumArtPath,
@@ -117,7 +136,7 @@ async function processAudioFile(
       const hasGenres = await dbOperations.hasAlbumGenres(albumRecord.albumId);
       if (albumRecord.musicbrainzReleaseId && albumRecord.year !== null && hasGenres) {
         skipMusicBrainzDetailsFetch = true;
-        console.log(`  Album '${albumRecord.title}' is complete. Skipping further MusicBrainz details fetch.`);
+        // console.log(`  Album '${albumRecord.title}' is complete. Skipping further MusicBrainz details fetch.`);
       }
     }
 
@@ -127,17 +146,69 @@ async function processAudioFile(
       const fullArtist = await dbOperations.findOrCreateArtist({
         artistName: minimalArtist.name,
         userId,
+        musicbrainzArtistId: minimalArtist.musicbrainzArtistId, // Pass MBID if available
         skipRemoteImageFetch: skipMusicBrainzDetailsFetch,
       });
       if (fullArtist) finalArtistRecords.push(fullArtist);
     }
-    const finalPrimaryArtistRecord = finalArtistRecords.find(ar => ar.name === effectivePrimaryArtistName) || (finalArtistRecords.length > 0 ? finalArtistRecords[0] : null);
-    const trackArtistId = finalPrimaryArtistRecord?.artistId;
+    // --- Track Artist Preparation ---
+    const trackSpecificArtistNames = new Set<string>();
+    if (rawTrackArtistName) {
+      trackSpecificArtistNames.add(rawTrackArtistName.trim());
+    }
+    // Add album artist if available
+    if (albumArtistNameFromMeta) {
+      trackSpecificArtistNames.add(albumArtistNameFromMeta.trim());
+    }
+    (((common as any).artists || []) as string[]).forEach((artist: string) => {
+      if (artist) trackSpecificArtistNames.add(artist.trim());
+    });
+
+    // If no specific track artists found, fall back to the effective primary artist for the file
+    if (trackSpecificArtistNames.size === 0 && effectivePrimaryArtistName) {
+      trackSpecificArtistNames.add(effectivePrimaryArtistName);
+    }
+    // If still nothing, use "Unknown Artist"
+    if (trackSpecificArtistNames.size === 0) {
+        trackSpecificArtistNames.add('Unknown Artist');
+    }
+
+    const trackArtistsForDb: TrackArtistInfo[] = [];
+    for (const artistName of trackSpecificArtistNames) {
+      const artistRecord = finalArtistRecords.find(ar => ar.name === artistName);
+      if (artistRecord) {
+        // Determine primary status for the track artist
+        let isPrimaryTrackArtist = false;
+        if (rawTrackArtistName && rawTrackArtistName === artistName) {
+          isPrimaryTrackArtist = true;
+        } else if (!rawTrackArtistName && trackSpecificArtistNames.size === 1) {
+          isPrimaryTrackArtist = true; // Only one artist for the track, make them primary
+        }
+
+        trackArtistsForDb.push({
+          artistId: artistRecord.artistId,
+          isPrimary: isPrimaryTrackArtist,
+          role: isPrimaryTrackArtist ? 'main' : 'artist', // Simplified role assignment
+        });
+      }
+    }
+
+    // Ensure at least one primary artist if multiple exist and primary wasn't clearly identified
+    if (trackArtistsForDb.length > 0 && !trackArtistsForDb.some(a => a.isPrimary)) {
+      // If rawTrackArtistName was present and matched an artist, that one should already be primary.
+      // This handles cases where rawTrackArtistName wasn't set or didn't match any in the list.
+      trackArtistsForDb[0].isPrimary = true;
+      trackArtistsForDb[0].role = 'main'; 
+    } else if (trackArtistsForDb.length === 1 && trackArtistsForDb[0]) {
+        // If only one artist, ensure it's primary and role is main
+        trackArtistsForDb[0].isPrimary = true;
+        trackArtistsForDb[0].role = 'main';
+    }
 
     // --- Conditional Album Cover Fetch ---
     if (!skipMusicBrainzDetailsFetch && albumRecord && !albumRecord.coverPath && albumRecord.musicbrainzReleaseId) {
       try {
-        console.log(`  Fetching MB cover art for ${albumRecord.title} (MBID: ${albumRecord.musicbrainzReleaseId})`);
+        // console.log(`  Fetching MB cover art for ${albumRecord.title} (MBID: ${albumRecord.musicbrainzReleaseId})`);
         const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(albumRecord.musicbrainzReleaseId);
         if (mbCoverPath) {
           const updatedAlbumResult = await db.update(albums)
@@ -146,7 +217,7 @@ async function processAudioFile(
           if (updatedAlbumResult.length > 0) albumRecord = updatedAlbumResult[0];
         }
       } catch (mbArtError: any) {
-        console.error(`  Error fetching cover art from MusicBrainz for album ${albumRecord.title}: ${mbArtError.message}`);
+        // console.error(`  Error fetching cover art from MusicBrainz for album ${albumRecord.title}: ${mbArtError.message}`);
       }
     }
 
@@ -155,7 +226,7 @@ async function processAudioFile(
       let mbReleaseIdToUseForGenres: string | undefined = albumRecord.musicbrainzReleaseId || musicbrainzReleaseIdFromMeta;
 
       if (!mbReleaseIdToUseForGenres && trackAlbumTitle && !skipMusicBrainzDetailsFetch) {
-        console.log(`  Searching MBID for album: ${trackAlbumTitle} by ${effectivePrimaryArtistName}`);
+        // console.log(`  Searching MBID for album: ${trackAlbumTitle} by ${effectivePrimaryArtistName}`);
         const searchResultMbId = await searchReleaseByTitleAndArtist(trackAlbumTitle, effectivePrimaryArtistName);
         if (searchResultMbId) {
           mbReleaseIdToUseForGenres = searchResultMbId;
@@ -164,14 +235,14 @@ async function processAudioFile(
               .set({ musicbrainzReleaseId: searchResultMbId, updatedAt: new Date().toISOString() })
               .where(eq(albums.albumId, albumRecord.albumId)).returning();
             if (updatedAlbumResult.length > 0) albumRecord = updatedAlbumResult[0];
-            console.log(`  Found and updated album ${albumRecord.title} with MBID: ${searchResultMbId}`);
+            // console.log(`  Found and updated album ${albumRecord.title} with MBID: ${searchResultMbId}`);
           }
         }
       }
 
       if (mbReleaseIdToUseForGenres && !skipMusicBrainzDetailsFetch) {
         try {
-          console.log(`  Fetching genres for album ${albumRecord.title} (MBID: ${mbReleaseIdToUseForGenres})`);
+          // console.log(`  Fetching genres for album ${albumRecord.title} (MBID: ${mbReleaseIdToUseForGenres})`);
           const releaseInfo = await getReleaseInfoWithTags(mbReleaseIdToUseForGenres);
           if (releaseInfo?.genres?.length) {
             for (const genre of releaseInfo.genres) {
@@ -180,21 +251,22 @@ async function processAudioFile(
                 await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
               }
             }
-            console.log(`  Processed ${releaseInfo.genres.length} genres for ${albumRecord.title}.`);
+            // console.log(`  Processed ${releaseInfo.genres.length} genres for ${albumRecord.title}.`);
           }
         } catch (genreError: any) {
-          console.error(`  Error fetching genres for ${albumRecord.title}: ${genreError.message}`);
+          // console.error(`  Error fetching genres for ${albumRecord.title}: ${genreError.message}`);
         }
       }
     }
 
     // --- Track Creation ---
-    if (trackTitle && albumRecord?.albumId) {
+    if (trackTitle && albumRecord?.albumId && trackArtistsForDb.length > 0) {
       const trackId = await dbOperations.findOrCreateTrack({
         title: trackTitle,
         filePath,
         albumId: albumRecord.albumId,
-        artistId: trackArtistId ?? null, // Use ID from fully processed primary artist, ensure null if undefined
+        artists: trackArtistsForDb, // Corrected property name
+        musicbrainzTrackId: (common as any).musicbrainz_trackid, // Pass MB Track ID as top-level param
         metadata: { // Pass relevant metadata including the explicit flag
           duration: metadata.format?.duration,
           trackNumber: common.track?.no,
@@ -202,19 +274,18 @@ async function processAudioFile(
           year: common.year, // Pass original year from track metadata if needed by findOrCreateTrack
           genre: common.genre?.join(', '), // Pass original genre from track metadata
           explicit: trackExplicit, // Pass determined explicit flag
-          // Pass any other common fields if findOrCreateTrack uses them
         },
       });
       if (trackId) {
-        console.log(`  Processed track: ${trackTitle} (ID: ${trackId})`);
+        // console.log(`  Processed track: ${trackTitle} (ID: ${trackId})`);
       }
     } else if (trackTitle) {
-      console.warn(`  Album record not found or not processed for track ${trackTitle}. Track not fully linked.`);
+      // console.warn(`  Album record not found, or no artists identified for track ${trackTitle}. Track not fully linked.`);
       // Optionally, create track without album/artist link or log differently
     }
 
   } catch (error: any) {
-    console.error(`Failed to process ${filePath}:`, error.message, error.stack);
+    // console.error(`Failed to process ${filePath}:`, error.message, error.stack);
     // Here, you might want to update scan statistics if you have a global stats object
   }
 }

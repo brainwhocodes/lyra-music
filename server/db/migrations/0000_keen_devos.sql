@@ -49,6 +49,18 @@ CREATE TABLE `artists` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE `artists_tracks` (
+	`artists_tracks_id` text PRIMARY KEY NOT NULL,
+	`artist_id` text NOT NULL,
+	`track_id` text NOT NULL,
+	`role` text,
+	`is_primary_artist` integer DEFAULT 0 NOT NULL,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artist_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`track_id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `genres` (
 	`genre_id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -114,32 +126,22 @@ CREATE TABLE `radio_channels` (
 CREATE TABLE `tracks` (
 	`track_id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
-	`artist_id` text,
 	`album_id` text,
 	`genre` text,
 	`year` integer,
 	`track_number` integer,
 	`disk_number` integer,
 	`duration` integer,
-	`explicit` integer DEFAULT false,
+	`explicit` integer DEFAULT false NOT NULL,
 	`file_path` text NOT NULL,
+	`musicbrainz_track_id` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artist_id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`album_id`) REFERENCES `albums`(`album_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `tracks_file_path_unique` ON `tracks` (`file_path`);--> statement-breakpoint
-CREATE TABLE `user_artists` (
-	`user_artist_id` text PRIMARY KEY NOT NULL,
-	`user_id` text NOT NULL,
-	`artist_id` text NOT NULL,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`artist_id`) REFERENCES `artists`(`artist_id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
+CREATE UNIQUE INDEX `tracks_musicbrainz_track_id_unique` ON `tracks` (`musicbrainz_track_id`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`user_id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,

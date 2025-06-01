@@ -158,21 +158,47 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
   openMenuForTrackId.value = null;
 };
 
+// Computed property to get a display name for the album's artist(s)
+const displayAlbumArtistName = computed<string>(() => {
+  if (!album.value?.artists?.length) {
+    return 'Unknown Artist';
+  }
+  const primaryArtist = album.value.artists.find((artist: import('~/types/album').AlbumArtistDetail) => artist.isPrimaryArtist);
+  if (primaryArtist) {
+    return primaryArtist.name;
+  }
+  // If no primary, return the first artist's name as a simple fallback.
+  // More complex logic (e.g., "Various Artists", join names) could be added here.
+  return album.value.artists[0].name;
+});
+
+// Helper to get display artist name from a track's artists array
+const getDisplayArtistNameForTrack = (trackArtists: import('~/types/track').TrackArtistDetail[]): string => {
+  const fallbackArtistName = displayAlbumArtistName.value; // Use the album's display artist as fallback
+  if (!trackArtists || trackArtists.length === 0) {
+    return fallbackArtistName;
+  }
+  const primaryArtist = trackArtists.find(artist => artist.isPrimaryArtist);
+  if (primaryArtist) {
+    return primaryArtist.name;
+  }
+  // Fallback to the first artist in the list if no primary, or if isPrimaryArtist is not reliably set
+  return trackArtists[0]?.name || fallbackArtistName;
+};
+
 // Create a computed property for tracks that are ready for the player
 const playerReadyTracks = computed(() => {
-  if (!album.value) return []; // Add this primary guard for the album object itself
-  if (!album.value.tracks || album.value.tracks.length === 0) return []; // Guard for tracks array
+  if (!album.value || !album.value.tracks || album.value.tracks.length === 0) return [];
 
-  const albumArtist = album.value.artistName || 'Unknown Artist'; 
-  const albumCover = album.value.coverPath; // Get album's cover path
-  const currentAlbumTitle = album.value.title; // Get album's title
+  const albumCover = album.value.coverPath;
+  const currentAlbumTitle = album.value.title;
 
   return album.value.tracks.map((track: Track) => ({
-    ...track, // Spread original track properties first
-    albumId: album.value!.albumId, // Then, explicitly set/override albumId from the parent album
-    artistName: track.artistName || albumArtist,
-    albumTitle: track.albumTitle || currentAlbumTitle, // Ensure albumTitle is set
-    coverPath: track.coverPath || albumCover        // Ensure coverPath is set
+    ...track, 
+    albumId: album.value!.albumId, 
+    artistName: getDisplayArtistNameForTrack(track.artists), // Use the hoisted helper
+    albumTitle: track.albumTitle || currentAlbumTitle, 
+    coverPath: track.coverPath || albumCover        
   }));
 });
 
@@ -325,7 +351,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       <!-- Album Info -->
       <div class="flex-1">
         <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
-        <p class="text-xl text-base-content/80 mb-4">{{ album.artistName }}</p>
+        <p class="text-xl text-base-content/80 mb-4">{{ displayAlbumArtistName }}</p>
         
         <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
           <div class="flex items-center">
@@ -371,7 +397,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
               :key="track.trackId"
               :track="{
                 ...track,
-                artistName: track.artistName || album.artistName,
+                artistName: getDisplayArtistNameForTrack(track.artists), // Use hoisted helper
                 albumTitle: album.title,
                 coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath) // Use resolveCoverArtUrl here too
               }"

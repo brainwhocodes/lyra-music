@@ -1,3 +1,10 @@
+export interface TrackArtistDetail {
+  artistId: string;
+  name: string;
+  role?: string; // From artistsToTracks
+  isPrimaryArtist?: boolean; // From artistsToTracks (converted from 0/1)
+}
+
 export interface Track {
   trackId: string;
   title: string;
@@ -5,14 +12,14 @@ export interface Track {
   filePath: string;
   albumId: string | null;       // Align with schema: was string, now string | null
   trackNumber: number | null;
-  artistId: string | null;
-  artistName?: string;          // Optional, for convenience, not in base schema track table
+  artists: TrackArtistDetail[]; // New field for multiple artists
   albumTitle?: string;          // Optional, for convenience, not in base schema track table
   coverPath?: string | null;    // Optional, for convenience, not in base schema track table
-  genre: string | null;         // Add from schema
-  year: number | null;          // Add from schema
-  diskNumber: number | null;    // Add from schema
-  explicit: boolean | null;     // Add from schema
-  createdAt: string;            // Add from schema
-  updatedAt: string;            // Add from schema
+  musicbrainzTrackId?: string; // MusicBrainz Recording ID
+  genre: string | null;
+  year: number | null;
+  diskNumber: number | null;
+  explicit: boolean;            // Corrected: DB schema is NOT NULL
+  createdAt: string;
+  updatedAt: string;
 }

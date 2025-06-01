@@ -1,8 +1,9 @@
 // server/api/albums/index.get.ts
 import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '~/server/db'
-import { albums, artists, tracks, albumArtists } from '~/server/db/schema'
-import { eq, asc, like, SQL, and } from 'drizzle-orm'
+import { albums, artists, tracks, albumArtists } from '~/server/db/schema';
+import type { AlbumArtistDetail } from '~/types/album';
+import { eq, asc, like, SQL, and, inArray } from 'drizzle-orm'
 import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
 
@@ -20,18 +21,17 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Select basic album info. Artist info will be fetched per album.
     let dbQuery = db.selectDistinct({
       albumId: albums.albumId,
       title: albums.title,
       coverPath: albums.coverPath,
       createdAt: albums.createdAt,
-      artistId: artists.artistId, // This will be the primary artist's ID
-      artistName: artists.name,   // This will be the primary artist's name
       year: albums.year
     })
       .from(albums)
-      .leftJoin(albumArtists, and(eq(albums.albumId, albumArtists.albumId), eq(albumArtists.isPrimaryArtist, 1)))
-      .leftJoin(artists, eq(albumArtists.artistId, artists.artistId))
+      // We join tracks only for genre filtering if needed.
+      // If genreFilter is not active, this join could be conditional for minor optimization.
       .leftJoin(tracks, eq(albums.albumId, tracks.albumId));
 
     const conditions: SQL[] = [];
@@ -49,17 +49,50 @@ export default defineEventHandler(async (event) => {
     }
 
     const filteredAlbums = await dbQuery
-      .orderBy(asc(artists.name), asc(albums.title))
+      .orderBy(asc(albums.title))
       .all();
 
     const { getCoverArtUrl } = useCoverArt();
-    const albumsWithFormattedCovers = filteredAlbums.map(album => ({
+    
+    if (filteredAlbums.length === 0) {
+      return [];
+    }
+
+    const albumIds = filteredAlbums.map(a => a.albumId!);
+
+    const allAlbumArtistLinks = await db
+      .select({
+        albumId: albumArtists.albumId,
+        artistId: artists.artistId,
+        name: artists.name,
+        role: albumArtists.role,
+        isPrimaryArtistDb: albumArtists.isPrimaryArtist,
+      })
+      .from(albumArtists)
+      .innerJoin(artists, eq(albumArtists.artistId, artists.artistId))
+      .where(inArray(albumArtists.albumId, albumIds))
+      .all();
+
+    const albumArtistsMap = new Map<string, AlbumArtistDetail[]>();
+    for (const link of allAlbumArtistLinks) {
+      if (!albumArtistsMap.has(link.albumId!)) {
+        albumArtistsMap.set(link.albumId!, []);
+      }
+      albumArtistsMap.get(link.albumId!)!.push({
+        artistId: link.artistId,
+        name: link.name,
+        role: link.role === null ? undefined : link.role,
+        isPrimaryArtist: link.isPrimaryArtistDb === 1,
+      });
+    }
+
+    const resultAlbums = filteredAlbums.map(album => ({
       ...album,
-      coverPath: getCoverArtUrl(album.coverPath)
+      coverPath: getCoverArtUrl(album.coverPath),
+      artists: albumArtistsMap.get(album.albumId!) || [],
     }));
 
-    console.log(albumsWithFormattedCovers); 
-    return albumsWithFormattedCovers;
+    return resultAlbums;
   } catch (error) {
     console.error('Error fetching albums:', error);
     throw createError({

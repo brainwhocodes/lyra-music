@@ -1,9 +1,22 @@
 // MusicBrainz API base URL
 const MUSICBRAINZ_API_BASE_URL = 'https://musicbrainz.org/ws/2/';
 
+import type {
+  MusicBrainzArtist,
+  MusicBrainzArtistCredit,
+  MusicBrainzArtistSearchResponse,
+  MusicBrainzRecording,
+  MusicBrainzRecordingSearchResult,
+  MusicBrainzRelease,
+  MusicBrainzReleaseSearchResponse,
+  MusicBrainzTrackInfo,
+  MusicBrainzReleaseWithRelations as MusicBrainzReleaseWithRelationsImport, // aliasing to avoid potential naming conflicts if used internally
+  CoverArtArchiveResponse as CoverArtArchiveResponseImport // aliasing
+} from '../../types/musicbrainz/musicbrainz';
+
 // Get User-Agent from environment variable
 const config = useRuntimeConfig();
-const userAgent = config.public.musicbrainzUserAgent;
+const userAgent = config.musicbrainzUserAgent;
 
 if (!userAgent) {
   console.warn(
@@ -167,237 +180,60 @@ export async function musicBrainzApiRequest<T>(
  * @param mbid The MusicBrainz ID (MBID) of the release.
  * @returns A promise that resolves with the release data including tags, genres, and cover art URLs.
  */
+/**
+ * Fetches detailed track information (recording) from MusicBrainz, including artist credits.
+ * @param musicbrainzTrackId The MusicBrainz ID (MBID) of the recording.
+ * @returns A promise that resolves with the track data.
+ */
+export async function getTrackInfo(musicbrainzTrackId: string): Promise<MusicBrainzTrackInfo | null> {
+  try {
+    const data = await musicBrainzApiRequest<MusicBrainzTrackInfo>(
+      `recording/${musicbrainzTrackId}`,
+      { inc: 'artist-credits+releases' }, // Include artist credits and associated releases
+    );
+    return data;
+  } catch (error: any) {
+    console.error(`Error fetching track info for MBID ${musicbrainzTrackId}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Searches for a track on MusicBrainz by title, and optionally artist and/or album title.
+ * @param title The title of the track.
+ * @param artistName The name of the primary artist (optional).
+ * @param albumTitle The title of the album the track appears on (optional).
+ * @returns A promise that resolves with search results, or null if an error occurs.
+ */
+export async function searchTrackOnMusicBrainz(
+  title: string,
+  artistName?: string,
+  albumTitle?: string,
+): Promise<MusicBrainzRecordingSearchResult | null> {
+  let query = `recording:\"${title.replace(/:/g, '\\:')}\"`; // Escape colons in title
+  if (artistName) {
+    query += ` AND artistname:\"${artistName.replace(/:/g, '\\:')}\"`;
+  }
+  if (albumTitle) {
+    query += ` AND release:\"${albumTitle.replace(/:/g, '\\:')}\"`;
+  }
+
+  try {
+    // It's good practice to limit results if you only need a few, e.g., limit: 5
+    const data = await musicBrainzApiRequest<MusicBrainzRecordingSearchResult>('recording', { query, limit: 10 });
+    return data;
+  } catch (error: any) {
+    console.error(`Error searching MusicBrainz for track "${title}":`, error.message);
+    return null;
+  }
+}
+
 export async function getReleaseInfoWithTags(mbid: string): Promise<any> { 
   return musicBrainzApiRequest(`release/${mbid}`, { 
     inc: 'artist-credits+labels+recordings+release-groups+media+discids+aliases+tags+genres+url-rels' 
   });
 }
 
-/**
- * Interface for MusicBrainz release with relations
- */
-interface MusicBrainzReleaseWithRelations extends MusicBrainzRelease {
-  relations?: Array<{
-    type: string;
-    url?: {
-      resource: string;
-    };
-  }>;
-}
-
-/**
- * Interface for Cover Art Archive response
- */
-interface CoverArtArchiveResponse {
-  images?: Array<{
-    front?: boolean;
-    image?: string;
-  }>;
-}
-
-/**
- * Fetches cover art URLs for a release from MusicBrainz.
- * @param mbid The MusicBrainz ID (MBID) of the release.
- * @returns A promise that resolves with an array of cover art URLs, or an empty array if none found.
- */
-export async function getReleaseCoverArtUrls(mbid: string): Promise<string[]> {
-  try {
-    const release = await musicBrainzApiRequest<MusicBrainzReleaseWithRelations>(`release/${mbid}`, { 
-      inc: 'url-rels' 
-    });
-    
-    const coverArtUrls: string[] = [];
-    console.log(`[CAA Debug ${mbid}] Initial release relations:`, JSON.stringify(release?.relations, null, 2));
-
-    if (release?.relations) {
-      for (const relation of release.relations) {
-        if (relation.type === 'cover art' && relation.url?.resource) {
-          const coverArtArchiveUrl = relation.url.resource;
-          console.log(`[CAA Debug ${mbid}] Found relation URL to Cover Art Archive: ${coverArtArchiveUrl}`);
-          try {
-            const response = await fetch(coverArtArchiveUrl, {
-              headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
-              retry: 2, 
-              retryDelay: 1000,
-            } as any);
-            const caaResponse = await response.json() as CoverArtArchiveResponse;
-            console.log(`[CAA Debug ${mbid}] Response from ${coverArtArchiveUrl}:`, JSON.stringify(caaResponse, null, 2));
-
-            if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {
-              for (const image of caaResponse.images) {
-                if (image.front && image.image) { 
-                  coverArtUrls.push(image.image);
-                  console.log(`[CAA Debug ${mbid}] Added front cover from relation: ${image.image}`);
-                }
-              }
-              if (coverArtUrls.length === 0 && caaResponse.images[0]?.image) {
-                 coverArtUrls.push(caaResponse.images[0].image);
-                 console.log(`[CAA Debug ${mbid}] Added first available cover from relation (no front found): ${caaResponse.images[0].image}`);
-              }
-            } else {
-              console.log(`[CAA Debug ${mbid}] No images found in CAA response from relation URL ${coverArtArchiveUrl}. Images array:`, caaResponse?.images);
-            }
-          } catch (caaError: any) {
-            console.warn(`[CAA Debug ${mbid}] Could not fetch or parse from Cover Art Archive URL ${coverArtArchiveUrl}: ${caaError.message}`);
-          }
-        }
-      }
-    }
-    
-    if (coverArtUrls.length === 0) {
-      console.log(`[CAA Debug ${mbid}] No direct cover art URLs found via relations. Attempting fallback to direct CAA query.`);
-      try {
-        const caaDirectUrl = `https://coverartarchive.org/release/${mbid}`;
-        console.log(`[CAA Debug ${mbid}] Fetching directly from CAA: ${caaDirectUrl}`);
-        const response = await fetch(caaDirectUrl, {
-          headers: { 'User-Agent': typeof userAgent === 'string' ? userAgent : 'Otogami/0.0.1 (UserAgentNotSet)' },
-          retry: 2,
-          retryDelay: 1000,
-        } as any);
-        const caaResponse = await response.json() as CoverArtArchiveResponse;
-        console.log(`[CAA Debug ${mbid}] Response from direct CAA query ${caaDirectUrl}:`, JSON.stringify(caaResponse, null, 2));
-
-        if (caaResponse && caaResponse.images && caaResponse.images.length > 0) {
-          for (const image of caaResponse.images) {
-            if (image.front && image.image) {
-              coverArtUrls.push(image.image);
-              console.log(`[CAA Debug ${mbid}] Added front cover from direct CAA query: ${image.image}`);
-            }
-          }
-          if (coverArtUrls.length === 0 && caaResponse.images[0]?.image) {
-             coverArtUrls.push(caaResponse.images[0].image);
-             console.log(`[CAA Debug ${mbid}] Added first available cover from direct CAA query (no front found): ${caaResponse.images[0].image}`);
-          }
-        } else {
-          console.log(`[CAA Debug ${mbid}] No images found in direct CAA response from ${caaDirectUrl}. Images array:`, caaResponse?.images);
-        }
-      } catch (directCaaError: any) {
-        console.warn(`[CAA Debug ${mbid}] Error fetching directly from Cover Art Archive for ${mbid}: ${directCaaError.message}`);
-      }
-    }
-
-    if (coverArtUrls.length > 0) {
-      console.log(`[CAA Debug ${mbid}] Final cover art URLs found for ${mbid}:`, coverArtUrls);
-    } else {
-      console.log(`[CAA Debug ${mbid}] No cover art URLs found for release ${mbid} after all checks.`);
-    }
-    
-    return coverArtUrls;
-  } catch (error: any) {
-    console.error(`[CAA Debug ${mbid}] Error fetching release relations for cover art (MBID: ${mbid}): ${error.message}`);
-    return [];
-  }
-}
-
-/**
- * Searches for an artist on MusicBrainz by name.
- * @param artistName The name of the artist.
- * @returns The MusicBrainz ID (MBID) of the first matching artist, or null if not found or error.
- */
-export async function searchArtistByName(
-  artistName: string
-): Promise<string | null> {
-  if (!artistName) return null;
-
-  try {
-    const response = await musicBrainzApiRequest<MusicBrainzArtistSearchResponse>('artist', { 
-      query: `artist:"${artistName}"`, 
-      limit: 1 
-    });
-
-    if (response && response.artists && response.artists.length > 0) {
-      const firstArtist = response.artists[0];
-      console.log(`  [MusicBrainz Search] Found artist: ${firstArtist.name} (ID: ${firstArtist.id})`);
-      return firstArtist.id;
-    }
-    console.log(`  [MusicBrainz Search] No artists found for query: ${artistName}`);
-    return null;
-  } catch (error: any) {
-    console.error(`  [MusicBrainz Search] Error searching for artist: ${error.message}`);
-    return null;
-  }
-}
-
-/**
- * Fetches artist information including relationships to get image URLs.
- * @param mbid The MusicBrainz ID (MBID) of the artist.
- * @returns A promise that resolves with the artist data including relationships.
- */
-export async function getArtistWithImages(mbid: string): Promise<MusicBrainzArtist | null> { 
-  try {
-    const artist = await musicBrainzApiRequest<MusicBrainzArtist>(`artist/${mbid}`, { 
-      inc: 'url-rels' 
-    });
-    return artist;
-  } catch (error: any) {
-    console.error(`  [MusicBrainz] Error fetching artist data: ${error.message}`);
-    return null;
-  }
-}
-
-/**
- * Extracts image URLs from artist relationships.
- * @param artist The MusicBrainz artist object with relationships.
- * @returns An array of image URLs, or null if none found.
- */
-export function extractArtistImageUrls(artist: MusicBrainzArtist): string[] {
-  const imageUrls: string[] = [];
-  
-  if (!artist.relations) return imageUrls;
-  
-  for (const relation of artist.relations) {
-    // Check for image relations
-    if (relation.type === 'image' && relation.url?.resource) {
-      // Convert Wikimedia Commons URLs to direct image URLs if needed
-      const url = relation.url.resource;
-      imageUrls.push(url);
-    }
-  }
-  
-  return imageUrls;
-}
-
-// Interface for the structure of a release object in MusicBrainz API responses
-interface MusicBrainzRelease { 
-  id: string;
-  title: string;
-  // Add other relevant fields if needed, e.g., 'artist-credit', 'date'
-}
-
-// Interface for the structure of an artist object in MusicBrainz API responses
-interface MusicBrainzArtist {
-  id: string;
-  name: string;
-  relations?: Array<{
-    type: string;
-    url?: {
-      resource: string;
-    };
-  }>;
-}
-
-// Interface for the MusicBrainz API response when searching for artists
-interface MusicBrainzArtistSearchResponse {
-  created?: string;
-  count?: number;
-  offset?: number;
-  artists: MusicBrainzArtist[];
-}
-
-// Interface for the MusicBrainz API response when searching for releases
-interface MusicBrainzReleaseSearchResponse {
-  created?: string;
-  count?: number;
-  offset?: number;
-  releases: MusicBrainzRelease[];
-}
-
-/**
- * Searches for a release on MusicBrainz by album title and optionally artist name.
- * @param albumTitle The title of the album.
- * @param artistName The name of the artist (optional).
- * @returns The MusicBrainz ID (MBID) of the first matching release, or null if not found or error.
- */
 export async function searchReleaseByTitleAndArtist(
   albumTitle: string,
   artistName?: string
@@ -410,20 +246,98 @@ export async function searchReleaseByTitleAndArtist(
   }
 
   try {
-    console.log(`  [MusicBrainz Search] Searching for release with query: ${query}`);
     const response = await musicBrainzApiRequest('release', { query, limit: 1 }) as MusicBrainzReleaseSearchResponse;
 
     if (response && response.releases && response.releases.length > 0) {
       const firstRelease = response.releases[0];
-      console.log(`  [MusicBrainz Search] Found release: ${firstRelease.title} (ID: ${firstRelease.id})`);
       return firstRelease.id;
     }
-    console.log(`  [MusicBrainz Search] No releases found for query: ${query}`);
     return null;
   } catch (error: any) {
-    console.error(`  [MusicBrainz Search] Error searching for release: ${error.message}`);
+    // Consider logging this error to a more permanent logging solution if available
+    // console.error(`  [MusicBrainz Search] Error searching for release: ${error.message}`);
     return null;
   }
+}
+
+/**
+ * Searches for an artist on MusicBrainz by name.
+ * @param artistName The name of the artist to search for.
+ * @returns A promise that resolves with the first matching artist, or null if not found or an error occurs.
+ */
+export async function searchArtistByName(artistName: string): Promise<MusicBrainzArtist | null> {
+  if (!artistName) return null;
+
+  const query = `artist:"${artistName.replace(/:/g, '\\:')}"`;
+  try {
+    console.log(`  [MusicBrainz Search] Searching for artist with query: ${query}`);
+    const response = await musicBrainzApiRequest<MusicBrainzArtistSearchResponse>('artist', { query, limit: 5 });
+
+    if (response && response.artists && response.artists.length > 0) {
+      // Potentially add more sophisticated logic here to pick the best match
+      const firstArtist = response.artists[0];
+      console.log(`  [MusicBrainz Search] Found artist: ${firstArtist.name} (ID: ${firstArtist.id})`);
+      return firstArtist;
+    }
+    console.log(`  [MusicBrainz Search] No artists found for query: ${query}`);
+    return null;
+  } catch (error: any) {
+    console.error(`  [MusicBrainz Search] Error searching for artist "${artistName}": ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Fetches an artist by their MusicBrainz ID, including URL relations for images.
+ * @param artistId The MusicBrainz ID (MBID) of the artist.
+ * @returns A promise that resolves with the artist data, or null if an error occurs.
+ */
+export async function getArtistWithImages(artistId: string): Promise<MusicBrainzArtist | null> {
+  if (!artistId) return null;
+
+  try {
+    const artistData = await musicBrainzApiRequest<MusicBrainzArtist>(
+      `artist/${artistId}`,
+      { inc: 'url-rels' } // Include URL relations
+    );
+    return artistData;
+  } catch (error: any) {
+    console.error(`Error fetching artist with images for MBID ${artistId}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Extracts image URLs from an artist's relations.
+ * @param artist The MusicBrainzArtist object (should include relations).
+ * @returns An array of image URLs.
+ */
+export function extractArtistImageUrls(artist: MusicBrainzArtist): string[] {
+  const imageUrls: string[] = [];
+  if (!artist.relations || artist.relations.length === 0) {
+    return imageUrls;
+  }
+
+  for (const relation of artist.relations) {
+    if (relation.type === 'image' && relation.url && relation.url.resource) {
+      imageUrls.push(relation.url.resource);
+      continue;
+    }
+    // Add more specific checks if needed, e.g., for wikidata, fanart.tv, etc.
+    // Example: Check for Wikimedia Commons images often linked via 'url' relation type
+    if (relation.url && relation.url.resource) {
+      const resourceUrl = relation.url.resource.toLowerCase();
+      if (resourceUrl.includes('wikimedia.org') && (resourceUrl.endsWith('.jpg') || resourceUrl.endsWith('.jpeg') || resourceUrl.endsWith('.png'))) {
+        imageUrls.push(relation.url.resource);
+      }
+      // Fanart.tv images might be linked differently, often via a specific relation type or a URL to a fanart.tv page
+      // This might require fetching the fanart.tv API if only a page URL is provided.
+      // For simplicity, we're currently only looking for direct image links or easily identifiable ones.
+    }
+  }
+
+  // Deduplicate URLs
+  return [...new Set(imageUrls)];
 }
 
 /**

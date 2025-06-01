@@ -13,8 +13,8 @@ const mediaFolderSchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  const user = getUserFromEvent(event);
-  if (!user || !user.userId) {
+  const user = await getUserFromEvent(event);
+  if (!user) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized: Authentication required.',
