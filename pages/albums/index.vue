@@ -97,10 +97,10 @@
 import { ref, onMounted, computed, watch } from '#imports';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
-import type { Album } from '~/types/album'; 
+import type { Album, AlbumArtistDetail } from '~/types/album'; 
 import AlbumCard from '~/components/album/album-card.vue'; 
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
-import type { Track } from '~/types/track'; 
+import type { Track, TrackArtistDetail } from '~/types/track'; 
 import { useCoverArt } from '~/composables/use-cover-art'; 
 
 // Apply the sidebar layout
@@ -148,8 +148,24 @@ async function fetchAlbums() {
   try {
     const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value });
     albums.value = data;
-    if (apiQuery.value.artistId && data.length > 0 && data[0].artistName) {
-        artistName.value = data[0].artistName;
+    if (apiQuery.value.artistId && data.length > 0) {
+      const currentArtistId = apiQuery.value.artistId;
+      // Assuming all albums in the response when filtered by artistId will relate to that artist.
+      // Find the artist details from the first album's artists array.
+      const firstAlbum = data[0];
+      if (firstAlbum && firstAlbum.artists) {
+        const primaryArtist = firstAlbum.artists.find(a => a.isPrimaryArtist);
+        const specificArtist = firstAlbum.artists.find(a => a.artistId === currentArtistId);
+        if (specificArtist) {
+          artistName.value = specificArtist.name;
+        } else if (primaryArtist) {
+          // Fallback to primary artist of the album if the specific one isn't listed (should not happen in this context)
+          artistName.value = primaryArtist.name;
+        } else if (firstAlbum.artists.length > 0 && firstAlbum.artists[0]) {
+          // Fallback to the first artist in the list if no primary or specific match (edge case)
+          artistName.value = firstAlbum.artists[0].name;
+        }
+      }
     }
   } catch (err: any) {
     error.value = err.data?.message || err.message || 'Failed to load albums.';
@@ -160,56 +176,71 @@ async function fetchAlbums() {
 
 // New function to fetch and map album details for playback
 async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
-  console.log(`[AlbumsIndex] fetchAlbumDetailsById: Fetching details for album ID: ${id}`);
   currentAlbumLoading.value = true;
   albumIdLoading.value = id;
   let fetchedAlbum: Album | null = null;
 
   try {
-    const apiResponse = await $fetch<any>(`/api/albums/${id}`); 
-    console.log(`[AlbumsIndex] fetchAlbumDetailsById: API response for ${id}:`, apiResponse);
+    const apiResponse = await $fetch<Album>(`/api/albums/${id}`);
     // await new Promise(resolve => setTimeout(resolve, 1000));
     if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
-      const tracksForPlayer: Track[] = apiResponse.tracks.map((t: any) => ({
-        trackId: t.trackId, 
-        title: t.title ?? 'Unknown Track',
-        artistName: t.artistName ?? apiResponse.artistName ?? 'Unknown Artist',
-        albumTitle: t.albumTitle ?? apiResponse.title ?? 'Unknown Album',
-        filePath: t.filePath,
-        duration: t.duration ?? 0,
-        coverPath: apiResponse.coverPath, 
-        albumId: apiResponse.albumId, 
-        artistId: apiResponse.artistId ?? '', 
-        trackNumber: t.trackNumber ?? null,
-      }));
+      const tracksForPlayer: Track[] = apiResponse.tracks.map((trackApiResponse: any /* Assuming track from API might be any */) => {
+        // Helper to get display artist name for a track
+        const getTrackDisplayArtistName = (trackArtists: TrackArtistDetail[]): string => {
+          if (!trackArtists || trackArtists.length === 0) return 'Unknown Artist';
+          const primary = trackArtists.find(a => a.isPrimaryArtist);
+          if (primary) return primary.name;
+          return trackArtists.map(a => a.name).join(', ');
+        };
+
+        return {
+          trackId: trackApiResponse.trackId,
+          title: trackApiResponse.title ?? 'Unknown Track',
+          // artists field should be directly mapped if API provides it in correct format
+          artists: trackApiResponse.artists, // Ensure this matches TrackArtistDetail[]
+          // artistName is now derived or handled by components that display track artists
+          albumTitle: trackApiResponse.albumTitle ?? apiResponse.title ?? 'Unknown Album',
+          filePath: trackApiResponse.filePath,
+          duration: trackApiResponse.duration ?? 0,
+          coverPath: apiResponse.coverPath, // Album cover for all tracks
+          albumId: apiResponse.albumId,
+          trackNumber: trackApiResponse.trackNumber ?? null,
+          // Fields from Track type that might not be in trackApiResponse directly
+          genre: trackApiResponse.genre ?? null,
+          year: trackApiResponse.year ?? null,
+          diskNumber: trackApiResponse.diskNumber ?? null,
+          explicit: trackApiResponse.explicit ?? false,
+          createdAt: trackApiResponse.createdAt ?? new Date().toISOString(),
+          updatedAt: trackApiResponse.updatedAt ?? new Date().toISOString(),
+          musicbrainzTrackId: trackApiResponse.musicbrainzTrackId ?? undefined,
+        };
+      });
+
       fetchedAlbum = {
-        albumId: apiResponse.albumId, 
+        albumId: apiResponse.albumId,
         title: apiResponse.title,
         year: apiResponse.year,
         coverPath: apiResponse.coverPath,
-        artistId: apiResponse.artistId ?? '',
-        artistName: apiResponse.artistName ?? 'Unknown Artist',
+        artists: apiResponse.artists, // Directly use the artists array from the API response
         tracks: tracksForPlayer,
       };
     } else {
-      console.warn(`[AlbumsIndex] fetchAlbumDetailsById: No tracks found or invalid response for album ID: ${id}`, apiResponse);
+      // console.warn(`[AlbumsIndex] fetchAlbumDetailsById: No tracks found or invalid response for album ID: ${id}`, apiResponse);
     }
   } catch (err) {
-    console.error(`[AlbumsIndex] fetchAlbumDetailsById: Error fetching album ${id}:`, err);
+    // console.error(`[AlbumsIndex] fetchAlbumDetailsById: Error fetching album ${id}:`, err);
     fetchedAlbum = null; // Ensure it's null on error
   } finally {
     currentAlbumLoading.value = false;
     // albumIdLoading.value = null; // Resetting here might be too soon if multiple clicks happen
   }
-  console.log(`[AlbumsIndex] fetchAlbumDetailsById: Returning for ${id}:`, fetchedAlbum);
   return fetchedAlbum;
 }
 
 // Function to play a specific album from the list
 const playAlbum = async (albumId: string): Promise<void> => {
-  console.log(`[AlbumsIndex] playAlbum: Attempting to play album ID: ${albumId}`);
   if (!albumId) {
-    console.warn('[AlbumsIndex] playAlbum: albumId is null or undefined.');
+    // console.warn('[AlbumsIndex] playAlbum: albumId is null or undefined.');
     return;
   }
 
@@ -252,11 +283,10 @@ const playAlbum = async (albumId: string): Promise<void> => {
 
 // New handler for the 'play' event from AlbumCard
 const handleAlbumCardPlayEvent = (album: Album): void => {
-  console.log(`[AlbumsIndex] handleAlbumCardPlayEvent: Received play event for album:`, album);
   if (album && album.albumId) {
     playAlbum(album.albumId);
   } else {
-    console.error('[AlbumsIndex] handleAlbumCardPlayEvent: Album or albumId is missing.', album);
+    // console.error('[AlbumsIndex] handleAlbumCardPlayEvent: Album or albumId is missing.', album);
   }
 };
 
@@ -280,7 +310,7 @@ async function fetchPlaylists(): Promise<void> {
     const data = await $fetch<any[]>('/api/playlists');
     playlists.value = data;
   } catch (e: unknown) {
-    console.error('Error fetching playlists:', e);
+    // console.error('Error fetching playlists:', e);
     showNotification('Could not load your playlists.', 'error');
     playlists.value = []; // Ensure it's an empty array on error
   }
@@ -327,7 +357,7 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
     isAddToPlaylistModalOpen.value = false;
     selectedAlbumForPlaylist.value = null;
   } catch (e: unknown) {
-    console.error('Error adding tracks to playlist:', e);
+    // console.error('Error adding tracks to playlist:', e);
     const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ? 
       String(e.data.message) : 'Failed to add to playlist.';
     showNotification(errorMessage, 'error');

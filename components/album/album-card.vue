@@ -51,9 +51,9 @@
       </h2>
       <p 
         class="text-xs color-primary-content truncate"
-        :title="album.artistName || 'Unknown Artist'"
+        :title="allArtistNames"
       >
-        {{ album.artistName || 'Unknown Artist' }}
+        {{ displayArtists }}
       </p>
       <p 
         class="text-xs color-primary-content truncate"
@@ -69,13 +69,32 @@
 </template>
 
 <script setup lang="ts">
-import type { Album } from '~/types/album';
+import { computed } from '#imports';
+import type { Album, AlbumArtistDetail } from '~/types/album';
 
 const props = defineProps<{
   album: Album;
   isPlayingThisAlbum?: boolean; // Is this album currently playing?
   isLoadingThisAlbum?: boolean; // Is this album currently being loaded for playback?
 }>();
+
+const displayArtists = computed(() => {
+  if (!props.album || !props.album.artists || props.album.artists.length === 0) {
+    return 'Unknown Artist';
+  }
+  const primaryArtist = props.album.artists.find((artist: AlbumArtistDetail) => artist.isPrimaryArtist);
+  if (primaryArtist) {
+    return primaryArtist.name;
+  }
+  return props.album.artists.map((artist: AlbumArtistDetail) => artist.name).join(', ');
+});
+
+const allArtistNames = computed(() => {
+  if (!props.album || !props.album.artists || props.album.artists.length === 0) {
+    return 'Unknown Artist';
+  }
+  return props.album.artists.map((artist: AlbumArtistDetail) => artist.name).join(', ');
+});
 
 const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum', 'play']);
 
@@ -90,7 +109,7 @@ const buttonTitle = computed(() => {
 });
 
 const handleImageError = () => {
-  console.warn(`Error loading image for album: ${props.album.title}, falling back to default.`);
+  // console.warn(`Error loading image for album: ${props.album.title}, falling back to default.`);
   imageError.value = true;
 };
 </script>
