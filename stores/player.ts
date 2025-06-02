@@ -161,10 +161,19 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.addEventListener('playing', _handlePlaying); // Loading finished
     
     // Attempt to play
-    audioElement.value.play().catch((error: any) => {
-      // Autoplay might be blocked by the browser
+    audioElement.value.play().then(() => {
+      // Playback started successfully or was allowed
+      // The 'play' event listener (_handlePlay) should set isPlaying.value = true
+    }).catch((error: any) => {
+      console.error('Error attempting to play audio in _setupAudioElement:', error.name, error.message, error);
+      // Log additional info if available
+      if (audioElement.value) {
+        console.error('Audio Element State: readyState=', audioElement.value.readyState, 'networkState=', audioElement.value.networkState, 'error=', audioElement.value.error);
+      }
       isPlaying.value = false; 
       isLoading.value = false;
+      // TODO: Consider setting a user-visible error message in the store or emitting an event
+      // For example: playbackError.value = 'Playback was blocked. Please tap play again.';
     });
   };
 
