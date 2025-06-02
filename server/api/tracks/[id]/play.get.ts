@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import fs from 'node:fs'; // Use node:fs for explicit import
 import path from 'node:path';
 import { getMimeType } from '~/server/utils/formatters';
+import { spawn } from 'node:child_process';
 
 export default defineEventHandler(async (event) => {
   const trackIdParam = getRouterParam(event, 'id');
@@ -65,16 +66,92 @@ export default defineEventHandler(async (event) => {
     setResponseHeader(event, 'Accept-Ranges', 'bytes');
 
     // Create a read stream and send it
-    const stream = fs.createReadStream(filePath);
+    const userAgent = event.node.req.headers['user-agent'] || '';
+    const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome') && !userAgent.includes('Edg');
 
-    // Handle stream errors
-    stream.on('error', (err) => {
-      console.error(`Error reading file stream for track ${trackId}:`, err);
-      // We might not be able to send an H3 error if headers are already sent
-      // event.node.res.end(); // Close the connection abruptly if possible
-    });
+    const originalMimeType = getMimeType(filePath);
+    const needsTranscoding = isSafari && (originalMimeType === 'audio/ogg' || originalMimeType === 'audio/flac' || originalMimeType === 'audio/x-flac');
 
-    return sendStream(event, stream);
+    if (needsTranscoding) {
+      console.log(`Transcoding track ${trackId} (${originalMimeType}) to AAC for Safari.`);
+      setResponseHeader(event, 'Content-Type', 'audio/aac');
+      // Content-Length and Accept-Ranges are omitted for live transcoding as they are hard to determine.
+
+      const ffmpegArgs = [
+        '-i', filePath,
+        '-f', 'adts',       // Output format AAC ADTS
+        '-c:a', 'aac',      // AAC codec
+        '-b:a', '192k',     // Audio bitrate
+        '-movflags', '+faststart', // Optimizes for streaming, may not be strictly needed for live pipe
+        'pipe:1'            // Output to stdout
+      ];
+
+      const ffmpegProcess = spawn('ffmpeg', ffmpegArgs);
+
+      // Pipe ffmpeg's stdout to the HTTP response
+      ffmpegProcess.stdout.pipe(event.node.res);
+
+      // Handle errors from ffmpeg process
+      ffmpegProcess.on('error', (err) => {
+        console.error(`Failed to start ffmpeg process for track ${trackId}:`, err);
+        if (!event.node.res.headersSent) {
+          event.node.res.writeHead(500, { 'Content-Type': 'text/plain' });
+        }
+        event.node.res.end('Error during transcoding process startup.');
+      });
+
+      ffmpegProcess.stderr.on('data', (data) => {
+        console.error(`ffmpeg stderr (track ${trackId}): ${data}`);
+      });
+
+      // Return a promise that resolves when the stream is finished or errors
+      return new Promise<void>((resolve, reject) => {
+        event.node.res.on('finish', () => {
+          console.log(`Transcoding stream finished for track ${trackId}`);
+          resolve();
+        });
+        event.node.res.on('close', () => { // Handle client closing connection
+          console.log(`Client closed connection during transcoding for track ${trackId}`);
+          ffmpegProcess.kill(); // Ensure ffmpeg process is killed
+          resolve(); // Resolve as the response is effectively over
+        });
+        ffmpegProcess.on('close', (code) => {
+          if (code !== 0 && code !== null) { // null can mean it was killed, 0 is success
+            console.error(`ffmpeg process for track ${trackId} exited with code ${code}`);
+            if (!event.node.res.writableEnded) {
+              // If response not already ended by an error or finish event
+              // event.node.res.end(); // This might already be handled by stdout pipe ending
+            }
+          }
+          // Resolve or reject based on how you want to handle ffmpeg exit
+          // If stdout pipe handles 'finish', this might just be for logging
+        });
+        // If ffmpegProcess.stdout errors, it should propagate to event.node.res and trigger 'error' or 'close'
+      }).finally(() => {
+        if (ffmpegProcess.exitCode === null && !ffmpegProcess.killed) {
+           console.log(`Attempting to kill ffmpeg process for track ${trackId} on promise resolution`);
+           ffmpegProcess.kill();
+        }
+      });
+
+    } else {
+      // Existing logic for non-transcoded files or non-Safari browsers
+      setResponseHeader(event, 'Content-Type', originalMimeType);
+      const stats = fs.statSync(filePath);
+      setResponseHeader(event, 'Content-Length', stats.size);
+      setResponseHeader(event, 'Accept-Ranges', 'bytes');
+
+      const stream = fs.createReadStream(filePath);
+      stream.on('error', (err) => {
+        console.error(`Error reading file stream for track ${trackId}:`, err);
+        // Potentially destroy stream and end response if possible
+        if (!event.node.res.headersSent) {
+            // throw createError ... or handle differently
+        }
+      });
+      return sendStream(event, stream);
+    }
+
 
   } catch (error: any) {
     // Handle known errors explicitly
