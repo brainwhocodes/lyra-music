@@ -9,7 +9,10 @@ export const users = sqliteTable('users', {
   userId: text('user_id').primaryKey().$defaultFn(() => uuidv7()),
   name: text('name').notNull(),
   email: text('email').unique().notNull(),
+  verified: integer('verified').default(0).notNull(),
   passwordHash: text('password_hash').notNull(),
+  loginAttempts: integer('login_attempts').default(0).notNull(),
+  lastLoginAt: text('last_login_at'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });

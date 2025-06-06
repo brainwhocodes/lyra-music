@@ -37,12 +37,27 @@ export default defineEventHandler(async (event) => {
       try {
         // Verify the JWT token
         const userData = verifyToken(authToken);
-        if (userData && userData.id) {
+
+        if (!userData.expiresAt || Date.parse(userData.expiresAt) < Date.now()) {
+          setCookie(event, 'auth_token', '', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 0
+          })
+          throw createError({
+            statusCode: 401,
+            message: 'Unauthorized: Invalid token'
+          });
+        }
+
+        if (userData && userData.userId) {
           // Create a user object from the token data
           user = {
-            userId: userData.id,
+            userId: userData.userId,
             name: userData.name || '',
-            email: userData.email || ''
+            email: userData.email || '',
+            expiresAt: userData.expiresAt || ''
           };
         }
       } catch (e) {

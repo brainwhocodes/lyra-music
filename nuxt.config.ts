@@ -22,6 +22,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'development-secret',
     musicbrainzUserAgent: process.env.MUSICBRAINZ_USER_AGENT,
+    secretAccessCode: process.env.SECRET_ACCESS_CODE,
   },
   vite: {
     plugins: [tailwindcss()]

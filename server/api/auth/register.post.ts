@@ -6,12 +6,20 @@ import { hashPassword, generateToken } from '~/server/utils/auth';
 import { eq, sql } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event);
   try {
     // Get request body
-    const { email, password, name } = await readBody(event);
+    const { email, password, name, accessCode } = await readBody(event);
+
+    if (accessCode !== config.secretAccessCode && process.env.NODE_ENV !== 'development') {
+      throw createError({
+        statusCode: 401,
+        message: 'Invalid access code'
+      });
+    }
 
     // Validate input
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !accessCode) {
       throw createError({
         statusCode: 400,
         message: 'Email, password, and name are required'
@@ -29,15 +37,15 @@ export default defineEventHandler(async (event) => {
 
     // Hash password
     const hashedPassword = await hashPassword(password);
-
-    // Create user
-    const now = Date.now();
     
     const [user] = await db.insert(users).values({
       userId: uuidv7(),
       email,
       passwordHash: hashedPassword,
       name,
+      verified: 0,
+      loginAttempts: 0,
+      lastLoginAt: sql`CURRENT_TIMESTAMP`,
       createdAt: sql`CURRENT_TIMESTAMP`,
       updatedAt: sql`CURRENT_TIMESTAMP`,
     }).returning();
@@ -54,7 +62,7 @@ export default defineEventHandler(async (event) => {
     // Return user data (without password)
     return {
       token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(), // 7 days
     };
   } catch (error: any) {
     throw createError({

@@ -68,6 +68,21 @@
               <span class="label-text-alt text-error">{{ validationErrors.confirmPassword }}</span>
             </div>
           </label>
+          <label class="form-control w-full">
+            <div class="label">
+              <span class="label-text">Access Code</span>
+            </div>
+            <input 
+              v-model="state.accessCode" 
+              type="text" 
+              placeholder="Enter your access code" 
+              class="input input-bordered w-full" 
+              required 
+            />
+            <div class="label" v-if="validationErrors.confirmPassword">
+              <span class="label-text-alt text-error">{{ validationErrors.confirmPassword }}</span>
+            </div>
+          </label>
 
           <div class="card-actions justify-end">
             <button type="submit" class="btn btn-primary w-full" :disabled="loading">
@@ -103,6 +118,7 @@ const registerSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(8, 'Password confirmation must be at least 8 characters'),
   name: z.string().min(3, 'Name must be at least 3 characters'),
+  accessCode: z.string().optional().default(''),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'] // path of error
@@ -115,13 +131,15 @@ interface ValidationError {
   password?: string;
   confirmPassword?: string;
   name?: string;
+  accessCode?: string;
 }
 
 const state = reactive<RegisterSchema>({
   email: '',
   password: '',
   confirmPassword: '',
-  name: ''
+  name: '',
+  accessCode: ''
 })
 
 const loading = ref(false)
@@ -156,13 +174,10 @@ async function register() {
       body: {
         email: result.data.email,
         password: result.data.password,
-        name: result.data.name
+        name: result.data.name,
+        accessCode: result.data.accessCode
       }
     })
-    useCookie('auth_token', {
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    }).value = response.token
 
     console.log('Registration successful:', response)
     successMessage.value = 'Registration successful! Redirecting to library...' 

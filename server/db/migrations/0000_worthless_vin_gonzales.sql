@@ -146,7 +146,10 @@ CREATE TABLE `users` (
 	`user_id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`email` text NOT NULL,
+	`verified` integer DEFAULT 0 NOT NULL,
 	`password_hash` text NOT NULL,
+	`login_attempts` integer DEFAULT 0 NOT NULL,
+	`last_login_at` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

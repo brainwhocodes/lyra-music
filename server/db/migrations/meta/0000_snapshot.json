@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "37d9bab5-3123-4303-97a4-8c406ed26f32",
+  "id": "e3382f11-3c9a-49ce-8112-4c02675efc24",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "album_artists": {
@@ -1048,11 +1048,34 @@
           "notNull": true,
           "autoincrement": false
         },
+        "verified": {
+          "name": "verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "password_hash": {
           "name": "password_hash",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "login_attempts": {
+          "name": "login_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {

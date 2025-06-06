@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { createError, readBody, defineEventHandler, setCookie } from 'h3'
 import { db } from '~/server/db'
 import { users } from '~/server/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { verifyPassword, generateToken } from '~/server/utils/auth';
 
 const loginSchema = z.object({
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   const { email, password } = result.data
 
   // Find user by email
-  const user = await db.select()
+  const user = db.select()
     .from(users)
     .where(eq(users.email, email))
     .get()
@@ -37,6 +37,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  db.update(users)
+    .set({
+      loginAttempts: user.loginAttempts + 1,
+    })
+    .where(eq(users.userId, user.userId))
+    .run()
+
   // Verify password using the utility function
   const isPasswordValid = await verifyPassword(password, user.passwordHash);
 
@@ -46,6 +53,14 @@ export default defineEventHandler(async (event) => {
       message: 'Invalid email or password'
     })
   }
+
+  db.update(users)
+    .set({
+      loginAttempts: 0,
+      lastLoginAt: sql`CURRENT_TIMESTAMP`,
+    })
+    .where(eq(users.userId, user.userId))
+    .run()
 
   // Generate JWT token using the utility function
   const token = generateToken({ userId: user.userId, name: user.name, email: user.email });
@@ -60,6 +75,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     token,
-    expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(),
+    expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(), // 7 days
   }
 })
