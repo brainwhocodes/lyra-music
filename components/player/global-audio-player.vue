@@ -89,7 +89,7 @@
         </button>
         <button 
           class="btn btn-ghost btn-xl btn-circle"
-          @click="playerStore.playNext"
+          @click="() => playerStore.playNext()"
           :disabled="!playerStore.canPlayNext || playerStore.isLoading"
           title="Next Track"
         >

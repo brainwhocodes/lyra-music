@@ -342,50 +342,24 @@ export const usePlayerStore = defineStore('player', () => {
     }
   };
 
-  const playNext = (isLoopingAll: boolean = false) => {
-    if (isShuffled.value) {
-      const availableTracks = queue.value.filter((track: Track) => !playedTrackIdsInShuffle.value.has(track.trackId));
-
-      if (availableTracks.length > 0) {
-        const randomIndex = Math.floor(Math.random() * availableTracks.length);
-        const nextTrackToPlay = availableTracks[randomIndex];
-        const originalIndex = queue.value.findIndex((t: Track) => t.trackId === nextTrackToPlay.trackId);
-
-        if (originalIndex !== -1) {
-          currentQueueIndex.value = originalIndex;
-          _setupAudioElement(); 
-          playedTrackIdsInShuffle.value.add(nextTrackToPlay.trackId);
-        } else {
-          _resetState();
-        }
-      } else {
-        // All tracks in shuffle mode have been played
-        if (repeatMode.value === 'all' && isLoopingAll) {
-          playedTrackIdsInShuffle.value.clear();
-          // If currentTrack.value just ended, it's fine not to re-add it here.
-          if (queue.value.length > 0) {
-            // Pick a new random track to start the new cycle
-            const randomIndex = Math.floor(Math.random() * queue.value.length);
-            currentQueueIndex.value = randomIndex; // Set to a random track from the full queue
-            _setupAudioElement();
-            if(currentTrack.value) playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
-          } else {
-            _resetState();
-          }
-        } else {
-          _resetState(); 
-        }
-      }
-    } else { // Not shuffled, linear playback
-      if (currentQueueIndex.value < queue.value.length - 1) {
-        currentQueueIndex.value++;
-        _setupAudioElement();
-      } else if (repeatMode.value === 'all' && isLoopingAll) {
-        currentQueueIndex.value = 0;
-        _setupAudioElement();
-      } else {
-        _resetState();
-      }
+  /**
+   * Play the next track in the queue
+   * With Option B implementation, we just move to the next track in the current queue
+   * since the queue is already shuffled or unshuffled based on the isShuffled state
+   */
+  const playNext = (isLoopingAll: boolean = false): void => {
+    // Linear playback: Move to next track in the queue (which is already shuffled or not)
+    if (currentQueueIndex.value < queue.value.length - 1) {
+      // Just move to the next track
+      currentQueueIndex.value++;
+      _setupAudioElement();
+    } else if (repeatMode.value === 'all' && isLoopingAll) {
+      // Loop back to the beginning if repeat all is enabled
+      currentQueueIndex.value = 0;
+      _setupAudioElement();
+    } else {
+      // End of queue with no repeat
+      _resetState();
     }
   };
 
@@ -393,7 +367,12 @@ export const usePlayerStore = defineStore('player', () => {
   const lastPreviousClickTime = ref<number>(0);
   const DOUBLE_CLICK_THRESHOLD = 500; // ms
 
-  const playPrevious = () => {
+  /**
+   * Play the previous track or restart the current track
+   * With Option B implementation, we can always move to the previous track in the current queue
+   * since the queue is already shuffled or unshuffled based on the isShuffled state
+   */
+  const playPrevious = (): void => {
     const now = Date.now();
     const timeSinceLastClick = now - lastPreviousClickTime.value;
     
@@ -411,18 +390,11 @@ export const usePlayerStore = defineStore('player', () => {
     }
     
     // Double click detected or track just started - go to previous track
-    if (isShuffled.value) {
-      // In shuffle mode, we can't easily go back to the previous track
-      // Just restart the current track for now
-      if (audioElement.value && currentTrack.value) {
-        seek(0);
-        if (!isPlaying.value) audioElement.value.play().catch(_handleError);
-      }
-    } else { 
-      if (currentQueueIndex.value > 0) {
-        currentQueueIndex.value--;
-        _setupAudioElement();
-      }
+    // We can now go to previous track regardless of shuffle state
+    // since queue is already in the correct shuffled/unshuffled order
+    if (currentQueueIndex.value > 0) {
+      currentQueueIndex.value--;
+      _setupAudioElement();
     }
   };
 
@@ -441,26 +413,38 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const toggleShuffle = () => {
+    // Store current track ID before making any changes
+    const currentPlayingTrackId = currentTrack.value?.trackId;
+    
+    // Toggle shuffle state
     isShuffled.value = !isShuffled.value;
+    
+    // Clear played tracks history as we're changing shuffle mode
     playedTrackIdsInShuffle.value.clear();
 
     if (isShuffled.value) {
-      // Store the current queue order if it's not already stored or different
-      // This check ensures originalQueue is set once when shuffle is first enabled for a queue.
-      if (originalQueue.value.length === 0 || originalQueue.value[0]?.trackId !== queue.value[0]?.trackId || originalQueue.value.length !== queue.value.length) {
-        originalQueue.value = [...queue.value];
-      }
-      if (currentTrack.value) {
-        playedTrackIdsInShuffle.value.add(currentTrack.value.trackId);
+      // --- SHUFFLE ON ---
+      // Store the original queue order before shuffling
+      originalQueue.value = [...queue.value];
+      
+      if (queue.value.length > 0) {
+        // Immediately shuffle the queue (Option B)
+        queue.value = shuffleArray([...queue.value]);
+        
+        // Find the current track's new position in the shuffled queue
+        if (currentPlayingTrackId) {
+          const newIndex = queue.value.findIndex((t: Track) => t.trackId === currentPlayingTrackId);
+          currentQueueIndex.value = (newIndex !== -1) ? newIndex : 0;
+        }
       }
     } else {
-      // When shuffle is turned off, restore the original queue order
-      // and try to find the current playing track in it.
+      // --- SHUFFLE OFF ---
+      // Restore the original queue order when turning shuffle off
       if (originalQueue.value.length > 0) {
-        const currentPlayingTrackId = currentTrack.value?.trackId;
-        queue.value = [...originalQueue.value]; 
+        queue.value = [...originalQueue.value];
         originalQueue.value = []; // Clear originalQueue as it's now active
 
+        // Find the current track in the restored queue
         if (currentPlayingTrackId) {
           const newIndex = queue.value.findIndex((t: Track) => t.trackId === currentPlayingTrackId);
           currentQueueIndex.value = (newIndex !== -1) ? newIndex : 0;
@@ -469,7 +453,6 @@ export const usePlayerStore = defineStore('player', () => {
           currentQueueIndex.value = (queue.value.length > 0) ? 0 : -1;
         }
       }
-      // playedTrackIdsInShuffle is already cleared at the start of the function.
     }
   };
 
