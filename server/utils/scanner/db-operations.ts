@@ -14,7 +14,12 @@ import {
   type Track, // Added Track type
   artistUsers,
 } from '~/server/db/schema';
-import { searchArtistByName, getArtistWithImages, extractArtistImageUrls, searchReleaseByTitleAndArtist } from '~/server/utils/musicbrainz';
+import { searchReleaseByTitleAndArtist } from '~/server/utils/musicbrainz'; // searchArtistByName, getArtistWithImages, extractArtistImageUrls removed as artist images will now be fetched from Genius
+import { GeniusService, type GeniusArtist as GeniusApiArtistInterface } from '~/server/utils/genius-service';
+import sharp from 'sharp';
+import { mkdir } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { useRuntimeConfig } from '#imports';
 import { albumArtUtils } from './album-art-utils';
 
 // In-memory cache for scan session
@@ -85,6 +90,16 @@ export interface AlbumArtistInfo {
  * Finds or creates an artist and links them to a user.
  * Also fetches and saves artist images from MusicBrainz if available.
  */
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w-]+/g, '') // Remove all non-word chars
+    .replace(/--+/g, '-'); // Replace multiple - with single -
+}
+
 export async function findOrCreateArtist({
   artistName,
   userId,
@@ -173,49 +188,62 @@ export async function findOrCreateArtist({
       // mbidToUse is already set from params or is null
     }
 
-    // Fetch artist image from MusicBrainz if needed and not skipped
+    // Fetch artist image from Genius API if needed and not skipped
     if (shouldFetchArtistImage && !skipRemoteImageFetch) {
       try {
-        // If mbidToUse is still null (neither provided nor on existing record), try searching by name
-        if (!mbidToUse) { 
-          console.log(`  Searching MusicBrainz ID for (artist image fetch): ${artistName}`);
-          const foundArtistByName = await searchArtistByName(artistName);
-          if (foundArtistByName) {
-            mbidToUse = foundArtistByName.id;
+        console.log(`  Fetching artist image for: ${artistName} using Genius API`);
+        const config = useRuntimeConfig();
+        const geniusService = new GeniusService(config.geniusApiClientId, config.geniusApiClientSecret);
+
+        const searchResults = await geniusService.searchSongs(artistName);
+        let geniusArtist: GeniusApiArtistInterface | null = null;
+        let imageUrl: string | null = null;
+
+        if (searchResults.response.hits.length > 0) {
+          for (const hit of searchResults.response.hits) {
+            if (hit.result.primary_artist && hit.result.primary_artist.name.toLowerCase() === artistName.toLowerCase()) {
+              geniusArtist = hit.result.primary_artist;
+              imageUrl = geniusArtist.image_url || geniusArtist.header_image_url || null;
+              if (imageUrl) break; // Found an artist match with an image
+            }
           }
         }
-        
-        if (mbidToUse) {
-          // If MBID was just found by search and not on record, update the record
-          if (!artistRecord.musicbrainzArtistId || artistRecord.musicbrainzArtistId !== mbidToUse) {
-            const updatedArtistWithMbid = await db.update(artists).set({
-              musicbrainzArtistId: mbidToUse,
-              updatedAt: sql`CURRENT_TIMESTAMP`
-            }).where(eq(artists.artistId, artistRecord.artistId)).returning();
-            if (updatedArtistWithMbid.length > 0) artistRecord = updatedArtistWithMbid[0];
-            console.log(`  Updated artist ${artistName} with fetched MBID for image: ${mbidToUse}`);
-          }
 
-          console.log(`  Fetching artist image for: ${artistName} using MBID: ${mbidToUse}`);
-          // Use the new downloadArtistImageFromMusicBrainz function
-          const imagePath = await albumArtUtils.downloadArtistImageFromMusicBrainz(mbidToUse);
-          if (imagePath) {
-            const updatedArtistsWithImage = await db
-              .update(artists)
-              .set({ 
-                artistImage: imagePath,
-                updatedAt: sql`CURRENT_TIMESTAMP` 
-              })
-              .where(eq(artists.artistId, artistRecord.artistId))
-              .returning();
-            if (updatedArtistsWithImage.length > 0) artistRecord = updatedArtistsWithImage[0];
-            console.log(`  Updated artist ${artistName} with image: ${imagePath}`);
+        if (geniusArtist && imageUrl) {
+          console.log(`    Found Genius artist: ${geniusArtist.name} (ID: ${geniusArtist.id}) with image URL: ${imageUrl}`);
+          const response = await fetch(imageUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to download image from ${imageUrl}: ${response.status} ${response.statusText}`);
+          }
+          const imageBuffer = await response.arrayBuffer();
+
+          const publicDir = resolve('./public');
+          const imageDir = join(publicDir, 'images', 'artists');
+          await mkdir(imageDir, { recursive: true });
+
+          const imageName = `${slugify(artistName)}-${geniusArtist.id}.webp`;
+          const localImagePath = join(imageDir, imageName);
+
+          await sharp(imageBuffer)
+            .resize(500, 500, { fit: 'cover' })
+            .webp({ quality: 80 })
+            .toFile(localImagePath);
+
+          const dbImagePath = `/images/artists/${imageName}`;
+          const updatedArtist = await db.update(artists).set({
+            artistImage: dbImagePath,
+            updatedAt: sql`CURRENT_TIMESTAMP`
+          }).where(eq(artists.artistId, artistRecord.artistId)).returning();
+
+          if (updatedArtist.length > 0) {
+            artistRecord = updatedArtist[0];
+            console.log(`    Saved artist image from Genius: ${dbImagePath}`);
           }
         } else {
-          console.log(`  No MBID found for artist (image fetch): ${artistName}`);
+          console.log(`    No suitable image found on Genius for artist: ${artistName}`);
         }
-      } catch (imageError: any) {
-        console.error(`  Error fetching artist image for ${artistName}: ${imageError.message}`);
+      } catch (error: any) {
+        console.error(`  Error fetching/processing artist image for ${artistName} from Genius:`, error.message || error);
       }
     }
 

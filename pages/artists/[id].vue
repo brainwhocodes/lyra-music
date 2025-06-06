@@ -23,13 +23,13 @@ const loadingAlbumIdForPlay = ref<string | null>(null); // For individual album 
 // State for "Add Artist to Playlist" functionality
 const playlists = ref<Playlist[]>([]);
 const isAddArtistToPlaylistModalOpen = ref(false);
-const userToken = document ? ref(localStorage.getItem('auth_token')) : useCookie('auth_token').value;
 interface ArtistAlbum {
   id: string;
   title: string;
   year: number | null;
   cover_path: string | null;
-  artist_id: string; 
+  albumArtistId: string | null; // ID of the album's primary artist
+  albumArtistName: string | null; // Name of the album's primary artist
 }
 
 interface ArtistDetails {
@@ -39,10 +39,22 @@ interface ArtistDetails {
   albums: ArtistAlbum[];
 }
 
-const { data: artist, pending, error } = await useLazyFetch<ArtistDetails>(`/api/artists/${artistId.value}`, {
-  server: false,
-  headers: { 'Authorization': `Bearer ${userToken.value}` }
+const { data: artist, pending, error } = await useLazyFetch<ArtistDetails>(`/api/artists/${artistId.value}`);
+
+watch(artist, () => {
+  if (artist.value) {
+    useSeoMeta({
+      title: usePageTitle(`Artists | ${artist.value.name}`),
+    });
+  }
 });
+
+if (artist.value) {
+  console.log('Artist data:', artist.value); 
+  useSeoMeta({
+    title: usePageTitle(`Artists | ${artist.value.name}`),
+  });
+}
 
 const getArtistImageUrl = (imagePath: string | null): string => {
   const defaultImage = '/images/icons/default-artist-art.webp';
@@ -61,17 +73,23 @@ const mappedAlbums = computed((): Album[] => {
   return artist.value.albums.map((artistAlbum: ArtistAlbum): Album => ({
     albumId: artistAlbum.id,
     title: artistAlbum.title,
-    artistName: artist.value!.name, 
     year: artistAlbum.year,
-    coverPath: resolveCoverArtUrl(artistAlbum.cover_path), 
-    artistId: artistAlbum.artist_id, 
+    coverPath: resolveCoverArtUrl(artistAlbum.cover_path),
+    artists: artistAlbum.albumArtistId && artistAlbum.albumArtistName 
+               ? [{ 
+                   artistId: artistAlbum.albumArtistId, 
+                   name: artistAlbum.albumArtistName, 
+                   isPrimaryArtist: true 
+                 }]
+               : [],
+    // artistId: artistAlbum.albumArtistId || '', // This was for the old Album type, 'artists' array is now preferred
     // tracks: [] // tracks is optional in Album type, can be omitted if not readily available
   }));
 });
 
 async function fetchPlaylists(): Promise<void> {
   try {
-    const data = await $fetch<Playlist[]>('/api/playlists', { headers: { 'Authorization': `Bearer ${userToken.value}` } });
+    const data = await $fetch<Playlist[]>('/api/playlists');
     playlists.value = data;
   } catch (e: unknown) {
     console.error('Error fetching playlists:', e);
@@ -91,26 +109,34 @@ async function getAllArtistTracks(): Promise<Track[]> {
   let allTracks: Track[] = [];
   try {
     for (const artistAlbum of artist.value.albums) {
-      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${artistAlbum.id}`, { headers: { 'Authorization': `Bearer ${userToken.value}` } });
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${artistAlbum.id}`);
       if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
-        const tracksFromThisAlbum = albumDetails.tracks.map((t: any): Track => ({
-          trackId: t.trackId,
-          trackNumber: t.trackNumber,
-          title: t.title,
-          artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist',
-          albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-          filePath: t.filePath,
-          duration: t.duration,
-          coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
-          albumId: albumDetails.albumId,
-          artistId: t.artistId ?? artist.value?.id,
-          genre: t.genre,
-          year: t.year,
-          diskNumber: t.diskNumber,
-          createdAt: t.createdAt,
-          updatedAt: t.updatedAt,
-          explicit: t.explicit ?? null,
-        }));
+        const tracksFromThisAlbum = albumDetails.tracks.map((t: any): Track => {
+          const primaryArtistName = t.artistName ?? artist.value?.name ?? 'Unknown Artist';
+          const primaryArtistId = t.artistId ?? artist.value?.id;
+          return {
+            trackId: t.trackId,
+            trackNumber: t.trackNumber,
+            title: t.title,
+            filePath: t.filePath,
+            duration: t.duration,
+            albumId: albumDetails.albumId,
+            genre: t.genre,
+            year: t.year,
+            diskNumber: t.diskNumber,
+            explicit: t.explicit ?? false, // Default to false if null
+            createdAt: t.createdAt,
+            updatedAt: t.updatedAt,
+            // Populate the required 'artists' array
+            artists: primaryArtistId ? [{ artistId: primaryArtistId, name: primaryArtistName, isPrimaryArtist: true }] : [],
+            // Optional convenience fields (can keep them if used elsewhere or for backward compatibility)
+            artistName: primaryArtistName,
+            artistId: primaryArtistId,
+            albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+            coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+            musicbrainzTrackId: t.musicbrainzTrackId,
+          };
+        });
         allTracks = allTracks.concat(tracksFromThisAlbum);
       }
     }
@@ -209,28 +235,34 @@ const playAlbum = async (albumIdToPlay: string): Promise<void> => {
       playerStore.togglePlayPause();
     } else {
       console.log(`[ArtistPage] playAlbum: Fetching details for album: ${albumIdToPlay}`);
-      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${albumIdToPlay}`, { headers: { 'Authorization': `Bearer ${userToken.value}` } });
+      const albumDetails = await $fetch<{ albumId: string; title: string; artistName?: string; coverPath: string | null; tracks: Track[] }>(`/api/albums/${albumIdToPlay}`);
       console.log(`[ArtistPage] playAlbum: API response for ${albumIdToPlay}:`, albumDetails);
 
       if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
-        const tracksToPlay = albumDetails.tracks.map((t: any): Track => ({
-          trackId: t.trackId,
-          trackNumber: t.trackNumber,
-          title: t.title,
-          artistName: t.artistName ?? artist.value?.name ?? 'Unknown Artist',
-          albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-          filePath: t.filePath,
-          duration: t.duration,
-          coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
-          albumId: albumDetails.albumId,
-          artistId: t.artistId ?? artist.value?.id,
-          genre: t.genre,
-          year: t.year,
-          diskNumber: t.diskNumber,
-          createdAt: t.createdAt,
-          updatedAt: t.updatedAt,
-          explicit: t.explicit ?? null,
-        }));
+        const tracksToPlay = albumDetails.tracks.map((t: any): Track => {
+          const primaryArtistName = t.artistName ?? albumDetails.artistName ?? 'Unknown Artist';
+          const primaryArtistId = t.artistId ?? (artist.value ? artist.value.id : undefined);
+          return {
+            trackId: t.trackId,
+            trackNumber: t.trackNumber,
+            title: t.title,
+            filePath: t.filePath,
+            duration: t.duration,
+            albumId: albumDetails.albumId,
+            genre: t.genre,
+            year: t.year,
+            diskNumber: t.diskNumber,
+            explicit: t.explicit ?? false,
+            createdAt: t.createdAt, // Assuming t.createdAt exists from API
+            updatedAt: t.updatedAt, // Assuming t.updatedAt exists from API
+            artists: primaryArtistId ? [{ artistId: primaryArtistId, name: primaryArtistName, isPrimaryArtist: true }] : [],
+            artistName: primaryArtistName,
+            artistId: primaryArtistId,
+            albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+            coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+            musicbrainzTrackId: t.musicbrainzTrackId, // Assuming t.musicbrainzTrackId exists from API
+          };
+        });
         const context: QueueContext = { type: 'album', id: albumDetails.albumId, name: albumDetails.title };
         console.log(`[ArtistPage] playAlbum: Calling playerStore.loadQueue with context:`, context, 'and tracks:', tracksToPlay);
         playerStore.loadQueue(tracksToPlay, context, true, 0);
@@ -253,11 +285,6 @@ const handlePlayAlbumEvent = (album: Album): void => {
     console.warn('[ArtistPage] handlePlayAlbumEvent: Invalid album data received.');
   }
 };
-
-useHead(() => ({
-  title: artist.value ? artist.value.name : 'Artist Details'
-}));
-
 </script>
 
 <template>

@@ -58,6 +58,9 @@ interface Artist {
   // albumCount?: number;
   // trackCount?: number;
 }
+useHead(() => ({
+  title: usePageTitle('Artists'),
+}));
 
 // State
 const artists = ref<Artist[]>([]);

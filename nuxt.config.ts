@@ -23,10 +23,12 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET || 'development-secret',
     musicbrainzUserAgent: process.env.MUSICBRAINZ_USER_AGENT,
     secretAccessCode: process.env.SECRET_ACCESS_CODE,
+    geniusApiClientId: process.env.GENIUS_API_CLIENT_ID,
+    geniusApiClientSecret: process.env.GENIUS_API_CLIENT_SECRET,
   },
   vite: {
     plugins: [tailwindcss()]
   },
   sourcemap: process.env.NODE_ENV === 'development' ? true : false
 
-})
+})  
