@@ -1,5 +1,5 @@
 <template>
-  <div :class="`albums w-full h-[calc(100vh)] px-4 pt-4 pb-[${albums.length * 10}rem] bg-base-200 overflow-y-auto`">
+  <div :class="`albums w-full h-[calc(100vh)] px-4 pt-4 pb-[${(albums && albums.length) ? albums.length * 10 : 0}rem] bg-base-200 overflow-y-auto`">
     <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
 
     <div v-if="loading" class="text-center">
@@ -11,14 +11,14 @@
       <span>Error loading albums: {{ error }}</span>
     </div>
 
-    <div v-else-if="albums.length === 0" class="text-center text-gray-500">
+    <div v-else-if="!albums || albums.length === 0" class="text-center text-gray-500">
       No albums found{{ artistName ? ` for ${artistName}` : '' }}.
     </div>
 
     <!-- Album List/Grid -->
     <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
       <AlbumCard
-        v-for="album_item in albums"
+        v-for="album_item in (albums || [])"
         :key="album_item.albumId"
         :album="album_item"
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
@@ -125,11 +125,8 @@ const playlists = ref<any[]>([]);
 const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false }); 
 
 // --- State for Albums List Display ---
-const albums = ref<Album[]>([]);
-const loading = ref(true); 
-const error = ref<string | null>(null); 
-const artistName = ref<string | null>(null); 
 const route = useRoute();
+const artistName = ref<string | null>(null);
 
 // Computed property for API query parameters for fetching the albums list
 const apiQuery = computed(() => {
@@ -140,39 +137,35 @@ const apiQuery = computed(() => {
   return query;
 });
 
-// Fetch albums list function
-async function fetchAlbums() {
-  loading.value = true;
-  error.value = null;
-  artistName.value = null; 
-  try {
-    const data = await $fetch<Album[]>('/api/albums', { query: apiQuery.value });
-    albums.value = data;
-    if (apiQuery.value.artistId && data.length > 0) {
-      const currentArtistId = apiQuery.value.artistId;
-      // Assuming all albums in the response when filtered by artistId will relate to that artist.
-      // Find the artist details from the first album's artists array.
-      const firstAlbum = data[0];
-      if (firstAlbum && firstAlbum.artists) {
-        const primaryArtist = firstAlbum.artists.find(a => a.isPrimaryArtist);
-        const specificArtist = firstAlbum.artists.find(a => a.artistId === currentArtistId);
-        if (specificArtist) {
-          artistName.value = specificArtist.name;
-        } else if (primaryArtist) {
-          // Fallback to primary artist of the album if the specific one isn't listed (should not happen in this context)
-          artistName.value = primaryArtist.name;
-        } else if (firstAlbum.artists.length > 0 && firstAlbum.artists[0]) {
-          // Fallback to the first artist in the list if no primary or specific match (edge case)
-          artistName.value = firstAlbum.artists[0].name;
-        }
+const { data: albums, pending: loading, error } = await useLazyFetch<Album[]>('/api/albums', {
+  query: apiQuery,
+  watch: [apiQuery], // Automatically re-fetch when apiQuery changes
+  immediate: true // Fetch immediately on component setup
+});
+
+// Watch the fetched albums data to derive artistName
+watch(albums, (newAlbums: Album[] | null) => {
+  artistName.value = null; // Reset artist name
+  if (newAlbums && newAlbums.length > 0 && apiQuery.value.artistId) {
+    const currentArtistId = apiQuery.value.artistId;
+    const firstAlbum = newAlbums[0];
+    if (firstAlbum && firstAlbum.artists) {
+      const primaryArtist = firstAlbum.artists.find((a: AlbumArtistDetail) => a.isPrimaryArtist);
+      const specificArtist = firstAlbum.artists.find((a: AlbumArtistDetail) => a.artistId === currentArtistId);
+      if (specificArtist) {
+        artistName.value = specificArtist.name;
+      } else if (primaryArtist) {
+        artistName.value = primaryArtist.name;
+      } else if (firstAlbum.artists.length > 0 && firstAlbum.artists[0]) {
+        artistName.value = firstAlbum.artists[0].name;
       }
     }
-  } catch (err: any) {
-    error.value = err.data?.message || err.message || 'Failed to load albums.';
-  } finally {
-    loading.value = false;
   }
-}
+});
+
+useSeoMeta({
+    title: usePageTitle(`Albums`)
+  });
 
 // New function to fetch and map album details for playback
 async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
@@ -382,8 +375,8 @@ const closeEditAlbumModal = (): void => {
 // Handle successful album update
 const handleAlbumUpdated = (updatedAlbum: Album): void => {
   // Update the album in the albums list
-  const index = albums.value.findIndex((a: Album) => a.albumId === updatedAlbum.albumId);
-  if (index !== -1) {
+  const index = albums.value ? albums.value.findIndex((a: Album) => a.albumId === updatedAlbum.albumId) : -1;
+  if (albums.value && index !== -1) {
     albums.value[index] = { ...albums.value[index], ...updatedAlbum };
   }
   
@@ -399,15 +392,6 @@ const handleAlbumUpdated = (updatedAlbum: Album): void => {
 const handleUpdateError = (errorMessage: string): void => {
   showNotification(errorMessage || 'Failed to update album.', 'error');
 };
-
-// Fetch albums on component mount and when query (e.g., artistId) changes
-onMounted(() => {
-  fetchAlbums();
-});
-
-watch(() => route.query.artistId, () => {
-    fetchAlbums();
-}, { immediate: false }); 
 
 </script>
 

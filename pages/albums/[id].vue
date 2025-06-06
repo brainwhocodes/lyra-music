@@ -11,6 +11,7 @@ import { resolveCoverArtUrl } from '~/utils/formatters';
 import TrackItem from '~/components/track/track-item.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import OptionsMenu from '~/components/options-menu.vue';
+import EditTrackModal from '~/components/modals/edit-track-modal.vue';
 import { useTrackArtists, } from '~/composables/useTrackArtists';
 
 // Use the track artists composable for formatting track artists
@@ -30,6 +31,10 @@ const isAddAlbumToPlaylistModalOpen = ref(false);
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
 const isEditAlbumModalOpen = ref(false);
 
+// State for EditTrackModal
+const isEditTrackModalOpen = ref(false);
+const selectedTrackForEdit = ref<Track | null>(null);
+
 // Simple notification system
 const showNotification = (message: string, type: MessageType = 'info') => {
   notification.value = { message, type, visible: true };
@@ -47,12 +52,11 @@ definePageMeta({
 // Fetch album details
 const { data: album, pending, error } = await useLazyFetch<Album>(`/api/albums/${albumId.value}`);
 
-watch(album.value, (newAlbum: Album | null) => {
+watch(album, (newAlbum: Album | null) => {
   if (newAlbum) {
     useSeoMeta({
       title: usePageTitle(`Album | ${newAlbum.title}`)
     });
-    album.value = newAlbum;
   }
 });
 
@@ -60,19 +64,16 @@ if (album.value) {
   useSeoMeta({
     title: usePageTitle(`Album | ${album.value.title}`)
   });
-  album.value = album.value;
 }
 
 const { data: playlists } = await useLazyFetch<Playlist[]>('/api/playlists');
 
-watch(playlists.value, (newPlaylists: Playlist[] | null) => {
+watch(playlists, (newPlaylists: Playlist[] | null) => {
   if (newPlaylists) {
-    playlists.value = newPlaylists;
   }
 });
 
 if (playlists.value) {
-  playlists.value = playlists.value;
 }
 
 // Fetch user's playlists
@@ -144,6 +145,33 @@ onMounted(() => {
   });
 });
 
+// Edit Track Modal Handlers
+const openEditTrackModal = (track: Track): void => {
+  selectedTrackForEdit.value = track;
+  isEditTrackModalOpen.value = true;
+};
+
+const handleEditTrackModalClose = (): void => {
+  isEditTrackModalOpen.value = false;
+  selectedTrackForEdit.value = null;
+};
+
+const handleTrackSuccessfullyUpdated = (updatedTrack: Track): void => {
+  showNotification(`Track '${updatedTrack.title}' updated successfully.`, 'success');
+  if (album.value && album.value.tracks) {
+    const index = album.value.tracks.findIndex((t: Track) => t.trackId === updatedTrack.trackId);
+    if (index !== -1) {
+      album.value.tracks[index] = { ...album.value.tracks[index], ...updatedTrack };
+      album.value.tracks = [...album.value.tracks]; // Ensure reactivity by creating a new array instance
+    }
+  }
+  handleEditTrackModalClose();
+};
+
+const handleEditTrackModalUpdateError = (errorMessage: string): void => {
+  showNotification(`Error updating track: ${errorMessage}`, 'error');
+};
+
 // Handle track options from TrackItem component
 const handleTrackOptions = (options: { action: string; track: Track }): void => {
   const { action, track } = options;
@@ -153,8 +181,7 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
       openAddToPlaylistModal(track);
       break;
     case 'edit-track':
-      // Placeholder for edit track functionality
-      showNotification(`Edit functionality for "${track.title}" is not yet implemented.`, 'info');
+      openEditTrackModal(track);
       break;
   }
   
@@ -358,6 +385,9 @@ const onAlbumUpdated = (updatedAlbumData: Album): void => {
 };
 
 const onAlbumUpdateError = (errorMessage: string): void => {
+
+
+
   showNotification(errorMessage || 'Failed to update album.', 'error');
   // Modal likely closes itself or provides its own error state, 
   // but if needed: isEditAlbumModalOpen.value = false;
@@ -368,6 +398,14 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 <template>
   <div class="container mx-auto px-4 py-8 space-y-8 overflow-y-auto">
     <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false" @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
+    <EditTrackModal
+      v-if="selectedTrackForEdit"
+      :track="selectedTrackForEdit"
+      :open="isEditTrackModalOpen"
+      @close="handleEditTrackModalClose"
+      @track-updated="handleTrackSuccessfullyUpdated"
+      @update-error="handleEditTrackModalUpdateError"
+    />
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
@@ -453,7 +491,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
                 formattedArtists: getFormattedTrackArtists(track.artists) // Pass formatted artists for detailed display
               }"
               :track-number="index + 1"
-              :playlists="playlists" 
+              :playlists="playlists || []" 
               @play-track="playTrack(index)"
               @track-options="handleTrackOptions"
             />

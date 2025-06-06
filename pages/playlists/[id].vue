@@ -120,6 +120,16 @@
     <AddToPlaylistModal v-model:open="isAddToPlaylistModalOpen" :track="trackForAddToPlaylistModal"
       @add-track="handleAddTrackToPlaylistConfirmed" />
 
+    <!-- Edit Track Modal -->
+    <EditTrackModal
+      v-if="selectedTrackForEdit"
+      :track="selectedTrackForEdit"
+      :open="isEditTrackModalOpen"
+      @close="handleEditModalClose"
+      @track-updated="handleTrackSuccessfullyUpdated"
+      @update-error="handleEditModalUpdateError"
+    />
+
     <!-- Notification -->
     <div v-if="notification.visible"
       :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
@@ -137,6 +147,7 @@ import type { Track } from '~/types/track';
 import type { NotificationMessage } from '~/types/notification-message';
 import RemoveFromPlaylistModal from '~/components/modals/remove-from-playlist-modal.vue';
 import AddToPlaylistModal from '~/components/modals/add-to-playlist-modal.vue'; // Added
+import EditTrackModal from '~/components/modals/edit-track-modal.vue';
 import draggable from 'vuedraggable';
 
 definePageMeta({
@@ -160,6 +171,10 @@ const renameValue = ref('');
 
 const isAddToPlaylistModalOpen = ref(false); // Added
 const trackForAddToPlaylistModal = ref<Track | null>(null); // Added
+
+// State for EditTrackModal
+const isEditTrackModalOpen = ref(false);
+const selectedTrackForEdit = ref<Track | null>(null);
 const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
 
 function showNotification(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
@@ -200,7 +215,7 @@ if (playlist.value) {
     renameValue.value = playlist.value.name;
     pending.value = false;
     useSeoMeta({
-      title: usePageTitle('Playlists ' + playlist.value?.name)
+      title: usePageTitle('Playlists | ' + playlist.value?.name)
     });
 }
 
@@ -221,17 +236,18 @@ function mapPlaylistTrack(pt: PlaylistTrack): Track {
     return {
       trackId: pt.trackId || 'error-unknown-track-id',
       title: 'Error: Track data unavailable',
-      artistName: 'Unknown Artist',
+      // artistName: 'Unknown Artist', // Removed: Use 'artists' array for artist info
       albumId: null,
       albumTitle: 'Unknown Album',
       duration: 0,
       filePath: '',
       coverPath: null,
       trackNumber: null,
-      artistId: null,
+      artistId: null, // Retained as it's an optional field in Track interface (string | null)
       genre: null,
       year: null,
       diskNumber: null,
+      artists: [], // Correctly provides an empty array for artists
       explicit: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -292,19 +308,32 @@ function openTrackOptions(track: PlaylistTrack): void {
   // Handle track options menu click
 }
 
-function handleTrackOptions(event: { action: string; track: Track }, playlistTrack: PlaylistTrack): void {
-  if (event.action === 'remove-from-playlist') {
-    trackToRemove.value = playlistTrack;
-    isRemoveFromPlaylistModalOpen.value = true;
-  } else if (event.action === 'edit-track') {
-    // Handle edit track logic, e.g., open an edit modal or navigate to an edit page
-    console.log('Edit track:', event.track);
-    // router.push(`/tracks/${event.track.trackId}/edit`); // Example navigation
-  } else if (event.action === 'add-to-playlist') { // Added
-    trackForAddToPlaylistModal.value = event.track;
+const handleTrackOptions = (event: { action: string; track: Track }, playlistTrackElement?: PlaylistTrack): void => {
+  const trackObject = event.track; // This is the full Track object from TrackItem's perspective
+
+  if (event.action === 'edit-track') {
+    // The EditTrackModal expects a Track object, which event.track should be.
+    openEditModal(trackObject);
+  } else if (event.action === 'add-to-playlist') {
+    // AddToPlaylistModal also expects a Track object.
+    trackForAddToPlaylistModal.value = trackObject;
     isAddToPlaylistModalOpen.value = true;
+  } else if (event.action === 'remove-from-playlist') {
+    // RemoveFromPlaylistModal uses trackToRemove (which is a PlaylistTrack)
+    // and mapPlaylistTrack to get the Track object for display.
+    // It needs playlistTrackElement to identify which item in playlist.tracks to remove.
+    if (playlistTrackElement) {
+      trackToRemove.value = playlistTrackElement;
+      isRemoveFromPlaylistModalOpen.value = true;
+    } else {
+      console.warn('Remove from playlist action called without playlistTrackElement for track:', trackObject.title);
+      // Fallback or error notification if playlistTrackElement is unexpectedly missing
+      showNotification('Could not identify track in playlist for removal.', 'error');
+    }
+  } else {
+    console.warn('Unhandled track option:', event.action, 'for track:', trackObject.title);
   }
-}
+};
 
 async function handleRemoveTrackFromPlaylist(payload: { trackId: string; playlistId: string }): Promise<void> {
   if (!playlist.value) return;
@@ -369,6 +398,42 @@ async function handleAddTrackToPlaylistConfirmed(payload: { trackId: string; pla
     showNotification('Track added to playlist', 'success');
   }
 }
+
+// Edit Track Modal Handlers
+const openEditModal = (track: Track): void => {
+  selectedTrackForEdit.value = track;
+  isEditTrackModalOpen.value = true;
+};
+
+const handleEditModalClose = (): void => {
+  isEditTrackModalOpen.value = false;
+  selectedTrackForEdit.value = null;
+};
+
+const handleTrackSuccessfullyUpdated = async (updatedTrack: Track): Promise<void> => {
+  showNotification(`Track '${updatedTrack.title}' updated.`, 'success');
+  if (playlist.value) {
+    const index = playlist.value.tracks.findIndex((pt: PlaylistTrack) => pt.track?.trackId === updatedTrack.trackId);
+    if (index !== -1 && playlist.value.tracks[index].track) {
+      // Create a new object for reactivity for the specific track
+      const newTrackData = { ...playlist.value.tracks[index].track, ...updatedTrack };
+      // Create a new object for the playlistTrack item for reactivity
+      playlist.value.tracks[index] = { ...playlist.value.tracks[index], track: newTrackData };
+      // Force a refresh of the array for components like draggable if necessary
+      playlist.value.tracks = [...playlist.value.tracks];
+    } else {
+      // Fallback: If track not found or structure is complex, refetch the whole playlist
+      const refreshedPlaylist = await fetchPlaylist(); // Ensure fetchPlaylist returns the new playlist data
+      if (refreshedPlaylist) playlist.value = refreshedPlaylist;
+    }
+  }
+  handleEditModalClose();
+};
+
+const handleEditModalUpdateError = (errorMessage: string): void => {
+  showNotification(`Error: ${errorMessage}`, 'error');
+  // Decide if modal should close or stay open for user to retry/see error
+};
 
 async function updatePlaylistOrder(): Promise<void> {
   if (!playlist.value || !playlist.value.tracks) return;

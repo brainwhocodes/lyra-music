@@ -32,7 +32,7 @@ export interface Track {
   
   // UI convenience properties - not in database schema
   artistName?: string;          // Simple artist name display
-  artistId?: string;            // Primary artist ID (for backwards compatibility)
+  artistId?: string | null;     // Primary artist ID (for backwards compatibility)
   formattedArtists?: FormattedArtist[]; // Formatted artist data for UI
   url?: string;                 // URL for audio playback
 }
