@@ -1,5 +1,6 @@
 <template>
-  <div :class="`albums w-full h-[calc(100vh)] px-4 pt-4 pb-[${(albums && albums.length) ? albums.length * 10 : 0}rem] bg-base-200 overflow-y-auto`">
+  <div
+    class="albums w-full h-full px-4 pt-4 pb-20 bg-base-200 overflow-y-auto">
     <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
 
     <div v-if="loading" class="text-center">
@@ -7,7 +8,10 @@
     </div>
 
     <div v-else-if="error" class="alert alert-error">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
       <span>Error loading albums: {{ error }}</span>
     </div>
 
@@ -16,18 +20,13 @@
     </div>
 
     <!-- Album List/Grid -->
-    <div v-else class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 h-[calc(350px)] gap-4">
-      <AlbumCard
-        v-for="album_item in (albums || [])"
-        :key="album_item.albumId"
-        :album="album_item"
+    <div v-else
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <AlbumCard v-for="album_item in (albums || [])" :key="album_item.albumId" :album="album_item"
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
         :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
-        @card-click="goToAlbum(album_item.albumId)"
-        @add-to-playlist="openAddToPlaylistModal"
-        @edit-album="handleEditAlbum"
-        @play="handleAlbumCardPlayEvent(album_item)" 
-      />
+        @card-click="goToAlbum(album_item.albumId)" @add-to-playlist="openAddToPlaylistModal"
+        @edit-album="handleEditAlbum" @play="handleAlbumCardPlayEvent(album_item)" />
     </div>
 
   </div>
@@ -38,13 +37,12 @@
       <h3 class="font-bold text-lg mb-4">
         Add "{{ selectedAlbumForPlaylist?.title }}" to playlist:
       </h3>
-      <button 
-        @click="isAddToPlaylistModalOpen = false" 
-        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-      >✕</button>
-      
+      <button @click="isAddToPlaylistModalOpen = false"
+        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+
       <div v-if="!playlists.length" class="text-center text-neutral-content italic py-4">
-        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink></p>
+        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink>
+        </p>
       </div>
       <ul v-else class="menu bg-base-100 rounded-box max-h-60 overflow-y-auto">
         <li v-for="playlist in playlists" :key="playlist.playlistId">
@@ -62,29 +60,19 @@
   </div>
 
   <!-- Edit Album Modal -->
-  <EditAlbumModal
-    v-if="selectedAlbumForEdit"
-    :album="selectedAlbumForEdit"
-    :open="isEditAlbumModalOpen"
-    @close="closeEditAlbumModal"
-    @albumUpdated="handleAlbumUpdated"
-    @updateError="handleUpdateError"
-  />
-  
+  <EditAlbumModal v-if="selectedAlbumForEdit" :album="selectedAlbumForEdit" :open="isEditAlbumModalOpen"
+    @close="closeEditAlbumModal" @albumUpdated="handleAlbumUpdated" @updateError="handleUpdateError" />
+
   <!-- Simple Notification Component -->
-  <div v-if="notification.visible" 
-       class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md"
-       :class="{
-         'bg-success text-success-content': notification.type === 'success',
-         'bg-error text-error-content': notification.type === 'error',
-         'bg-info text-info-content': notification.type === 'info'
-       }">
+  <div v-if="notification.visible" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md" :class="{
+    'bg-success text-success-content': notification.type === 'success',
+    'bg-error text-error-content': notification.type === 'error',
+    'bg-info text-info-content': notification.type === 'info'
+  }">
     <div class="flex items-center">
-      <Icon 
-        :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
-              notification.type === 'error' ? 'material-symbols:error-outline' : 
-              'material-symbols:info-outline'" 
-        class="w-6 h-6 mr-2" />
+      <Icon :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' :
+        notification.type === 'error' ? 'material-symbols:error-outline' :
+          'material-symbols:info-outline'" class="w-6 h-6 mr-2" />
       <span>{{ notification.message }}</span>
       <button @click="notification.visible = false" class="ml-2 p-1">
         <Icon name="material-symbols:close" class="w-4 h-4" />
@@ -97,11 +85,11 @@
 import { ref, onMounted, computed, watch } from '#imports';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
-import type { Album, AlbumArtistDetail } from '~/types/album'; 
-import AlbumCard from '~/components/album/album-card.vue'; 
+import type { Album, AlbumArtistDetail } from '~/types/album';
+import AlbumCard from '~/components/album/album-card.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
-import type { Track, TrackArtistDetail } from '~/types/track'; 
-import { useCoverArt } from '~/composables/use-cover-art'; 
+import type { Track, TrackArtistDetail } from '~/types/track';
+import { useCoverArt } from '~/composables/use-cover-art';
 
 // Apply the sidebar layout
 definePageMeta({
@@ -109,10 +97,10 @@ definePageMeta({
 });
 
 const playerStore = usePlayerStore();
-const { getCoverArtUrl } = useCoverArt(); 
+const { getCoverArtUrl } = useCoverArt();
 
 // --- State for Album Details and Playback ---
-const currentAlbum = ref<Album | null>(null); 
+const currentAlbum = ref<Album | null>(null);
 const currentAlbumLoading = ref<boolean>(false);
 const albumIdLoading = ref<string | null>(null);
 
@@ -122,7 +110,7 @@ const isAddToPlaylistModalOpen = ref<boolean>(false);
 const selectedAlbumForEdit = ref<Album | null>(null);
 const isEditAlbumModalOpen = ref<boolean>(false);
 const playlists = ref<any[]>([]);
-const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false }); 
+const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
 
 // --- State for Albums List Display ---
 const route = useRoute();
@@ -164,8 +152,8 @@ watch(albums, (newAlbums: Album[] | null) => {
 });
 
 useSeoMeta({
-    title: usePageTitle(`Albums`)
-  });
+  title: usePageTitle(`Albums`)
+});
 
 // New function to fetch and map album details for playback
 async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
@@ -253,7 +241,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
   }
 
   if (!albumDataForPlayback || !albumDataForPlayback.tracks || albumDataForPlayback.tracks.length === 0) {
-    return; 
+    return;
   }
 
   const trackIndex = 0; // Play from the first track
@@ -270,7 +258,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
   if (playerQueueAlbumId !== albumDataForPlayback.albumId) {
     playerStore.loadQueue(albumDataForPlayback.tracks);
   }
-  
+
   playerStore.playFromQueue(trackIndex);
 };
 
@@ -313,7 +301,7 @@ async function fetchPlaylists(): Promise<void> {
 const openAddToPlaylistModal = (album: Album): void => {
   selectedAlbumForPlaylist.value = album;
   isAddToPlaylistModalOpen.value = true;
-  fetchPlaylists(); 
+  fetchPlaylists();
 };
 
 // Add all album tracks to a playlist
@@ -329,7 +317,7 @@ const addAlbumToPlaylist = async (playlistId: string): Promise<void> => {
     }
     selectedAlbumForPlaylist.value = albumWithTracks;
   }
-  
+
   const trackIds = selectedAlbumForPlaylist.value.tracks.map((track: any) => track.trackId);
   await addTracksToPlaylist(playlistId, trackIds);
 };
@@ -337,7 +325,7 @@ const addAlbumToPlaylist = async (playlistId: string): Promise<void> => {
 // Generic function to add tracks to a playlist
 const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Promise<void> => {
   if (!trackIds.length) return;
-  
+
   try {
     await $fetch(`/api/playlists/${playlistId}/tracks`, {
       method: 'POST',
@@ -351,7 +339,7 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
     selectedAlbumForPlaylist.value = null;
   } catch (e: unknown) {
     // console.error('Error adding tracks to playlist:', e);
-    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ? 
+    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ?
       String(e.data.message) : 'Failed to add to playlist.';
     showNotification(errorMessage, 'error');
   }
@@ -379,10 +367,10 @@ const handleAlbumUpdated = (updatedAlbum: Album): void => {
   if (albums.value && index !== -1) {
     albums.value[index] = { ...albums.value[index], ...updatedAlbum };
   }
-  
+
   // Update the album in the player store if it's loaded
   playerStore.updateAlbumDetailsInPlayer(updatedAlbum);
-  
+
   // Close the modal and show success notification
   closeEditAlbumModal();
   showNotification(`Album "${updatedAlbum.title}" updated successfully.`, 'success');
@@ -397,12 +385,14 @@ const handleUpdateError = (errorMessage: string): void => {
 
 <style scoped>
 .card-title {
-    white-space: normal; 
-    overflow-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
+
 .album-play-button {
-    cursor: pointer;  
+  cursor: pointer;
 }
+
 .album-play-button-hover-effect {
   opacity: 0;
   pointer-events: none;

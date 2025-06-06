@@ -42,18 +42,18 @@ export default defineEventHandler(async (event: H3Event) => {
       .select({
         artistId: artists.artistId,
         name: artists.name,
-        role: albumArtists.role, // Select role
-        isPrimaryArtistDb: albumArtists.isPrimaryArtist, // Select raw integer value
+        role: albumArtists.role,
+        isPrimaryArtistDb: albumArtists.isPrimaryArtist,
       })
       .from(albumArtists)
       .innerJoin(artists, eq(albumArtists.artistId, artists.artistId))
-      .where(eq(albumArtists.albumId, albumId)) // Artists are linked via the album
+      .where(eq(albumArtists.albumId, albumId))
       .all();
 
     const albumArtistDetails: AlbumArtistDetail[] = rawAlbumArtists.map(a => ({
       artistId: a.artistId,
       name: a.name,
-      role: a.role === null ? undefined : a.role, // Map null role to undefined
+      role: a.role ?? undefined, // Use nullish coalescing
       isPrimaryArtist: a.isPrimaryArtistDb === 1,
     }));
 
@@ -68,13 +68,13 @@ export default defineEventHandler(async (event: H3Event) => {
         genre:       tracks.genre,
         year:        tracks.year,
         diskNumber:  tracks.diskNumber,
-        explicit:    tracks.explicit, // Select the explicit field
-        musicbrainzTrackId: tracks.musicbrainzTrackId, // Select musicbrainzTrackId
+        explicit:    tracks.explicit,
+        musicbrainzTrackId: tracks.musicbrainzTrackId,
         createdAt:   tracks.createdAt,
         updatedAt:   tracks.updatedAt,
       })
       .from(tracks)
-      .where(eq(tracks.albumId, albumId)) // Tracks belong to the album, which is user-owned
+      .where(eq(tracks.albumId, albumId))
       .orderBy(asc(tracks.trackNumber))
       .all();
 
@@ -92,18 +92,19 @@ export default defineEventHandler(async (event: H3Event) => {
         })
         .from(artistsTracks)
         .innerJoin(artists, eq(artistsTracks.artistId, artists.artistId))
-        .where(inArray(artistsTracks.trackId, trackIds)) // Filter by trackIds belonging to the album
+        .where(inArray(artistsTracks.trackId, trackIds))
         .all();
 
       const trackArtistsMap = new Map<string, TrackArtistDetail[]>();
       for (const link of allTrackArtistLinks) {
-        if (!trackArtistsMap.has(link.trackId!)) {
-          trackArtistsMap.set(link.trackId!, []);
+        const currentTrackId = link.trackId!;
+        if (!trackArtistsMap.has(currentTrackId)) {
+          trackArtistsMap.set(currentTrackId, []);
         }
-        trackArtistsMap.get(link.trackId!)!.push({
+        trackArtistsMap.get(currentTrackId)!.push({
           artistId: link.artistId,
           name: link.name,
-          role: link.roleDb === null ? undefined : link.roleDb,
+          role: link.roleDb ?? undefined, // Use nullish coalescing
           isPrimaryArtist: link.isPrimaryArtistDb === 1,
         });
       }
@@ -123,7 +124,7 @@ export default defineEventHandler(async (event: H3Event) => {
           diskNumber:  t.diskNumber,
           explicit:    t.explicit,
           coverPath:   undefined,
-          musicbrainzTrackId: t.musicbrainzTrackId === null ? undefined : t.musicbrainzTrackId,
+          musicbrainzTrackId: t.musicbrainzTrackId ?? undefined, // Use nullish coalescing
           createdAt:   t.createdAt,
           updatedAt:   t.updatedAt,
         });
@@ -141,11 +142,13 @@ export default defineEventHandler(async (event: H3Event) => {
       tracks:    tracksWithArtists,
     };
     return response;
-  } catch (err: any) {
-    console.error('Error processing album request:', err);
+  } catch (error) {
+    // Log more detailed error information
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Error processing album request for ID ${albumId}: ${errorMessage}`, { originalError: error });
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error processing request',
+      statusMessage: 'Internal server error processing request', // Keep user-facing message generic
     });
   }
 });

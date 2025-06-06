@@ -93,17 +93,17 @@ async function fetchPlaylists(): Promise<void> {
 const openAddToPlaylistModal = (track: Track): void => {
   selectedTrackForPlaylist.value = track;
   isAddToPlaylistModalOpen.value = true;
-  fetchPlaylists(); 
+  fetchPlaylists();
 };
 
 // Function to add the selected track to a chosen playlist
 const addTrackToPlaylist = async (playlistId: string): Promise<void> => {
   if (!selectedTrackForPlaylist.value) return;
-  
+
   const trackId = selectedTrackForPlaylist.value.trackId;
   const trackTitle = selectedTrackForPlaylist.value.title;
   await addTracksToPlaylist(playlistId, [trackId], `Track "${trackTitle}" added to playlist.`);
-  
+
   isAddToPlaylistModalOpen.value = false;
   selectedTrackForPlaylist.value = null;
 };
@@ -111,7 +111,7 @@ const addTrackToPlaylist = async (playlistId: string): Promise<void> => {
 // Function to add all album tracks to a playlist
 const addAlbumToPlaylist = (playlistId: string): void => {
   if (!album.value || !album.value.tracks || album.value.tracks.length === 0) return;
-  
+
   const trackIds = album.value.tracks.map((track: Track) => track.trackId);
   addTracksToPlaylist(playlistId, trackIds, `Album "${album.value.title}" added to playlist.`);
   isAddAlbumToPlaylistModalOpen.value = false;
@@ -132,7 +132,7 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[], succe
     showNotification(successMessage, 'success');
   } catch (e: unknown) {
     console.error('Error adding tracks to playlist:', e);
-    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ? 
+    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ?
       String(e.data.message) : 'Failed to add to playlist.';
     showNotification(errorMessage, 'error');
   }
@@ -175,7 +175,7 @@ const handleEditTrackModalUpdateError = (errorMessage: string): void => {
 // Handle track options from TrackItem component
 const handleTrackOptions = (options: { action: string; track: Track }): void => {
   const { action, track } = options;
-  
+
   switch (action) {
     case 'add-to-playlist':
       openAddToPlaylistModal(track);
@@ -184,7 +184,7 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
       openEditTrackModal(track);
       break;
   }
-  
+
   // Close any open menus
   openMenuForTrackId.value = null;
 };
@@ -194,17 +194,17 @@ const displayAlbumArtistName = computed<string>(() => {
   if (!album.value?.artists?.length) {
     return 'Unknown Artist';
   }
-  
+
   // Get all primary artists
   const primaryArtists = album.value.artists.filter(
     (artist: import('~/types/album').AlbumArtistDetail) => artist.isPrimaryArtist
   );
-  
+
   if (primaryArtists.length === 0) {
     // If no primary artists, use all artists
     primaryArtists.push(...album.value.artists);
   }
-  
+
   if (primaryArtists.length > 3) {
     // If more than 3 artists, show "Various Artists"
     return 'Various Artists';
@@ -215,7 +215,7 @@ const displayAlbumArtistName = computed<string>(() => {
       .join(', ')
       .replace(/,([^,]*)$/, ' &$1');
   }
-  
+
   // Return single artist name
   return primaryArtists[0].name;
 });
@@ -223,7 +223,7 @@ const displayAlbumArtistName = computed<string>(() => {
 // Get all album artists with roles for detailed display
 const formattedAlbumArtists = computed(() => {
   if (!album.value?.artists?.length) return [];
-  
+
   return album.value.artists.map((artist: import('~/types/album').AlbumArtistDetail) => ({
     ...artist,
     url: `/artists/${artist.artistId}`,
@@ -238,7 +238,7 @@ const getDisplayArtistNameForTrack = (track: Track): string => {
   if (!track.artists || track.artists.length === 0) {
     return displayAlbumArtistName.value;
   }
-  
+
   return getTrackArtistNameString(track);
 };
 
@@ -267,8 +267,8 @@ const playerReadyTracks = computed(() => {
 
 // --- Check if this album is currently loaded ---
 const isCurrentAlbumLoaded = computed(() => {
-  return playerStore.currentQueueContext.type === 'album' && 
-         playerStore.currentQueueContext.id === album.value?.albumId;
+  return playerStore.currentQueueContext.type === 'album' &&
+    playerStore.currentQueueContext.id === album.value?.albumId;
 });
 
 // --- Album Options Menu ---
@@ -331,8 +331,8 @@ const playOrPauseCurrentAlbum = (): void => {
     return;
   }
 
-  const isThisAlbumContextActive = playerStore.currentQueueContext.type === 'album' && 
-                                 playerStore.currentQueueContext.id === album.value.albumId;
+  const isThisAlbumContextActive = playerStore.currentQueueContext.type === 'album' &&
+    playerStore.currentQueueContext.id === album.value.albumId;
 
   if (isThisAlbumContextActive) {
     // If this album is already the active context, just toggle play/pause.
@@ -348,12 +348,12 @@ const playOrPauseCurrentAlbum = (): void => {
 // --- Play a specific track (existing function) ---
 const playTrack = (trackIndex: number): void => {
   if (!album.value?.albumId || !playerReadyTracks.value.length || trackIndex < 0 || trackIndex >= playerReadyTracks.value.length) return;
-  
+
   const trackToPlay = playerReadyTracks.value[trackIndex];
   // Ensure thisAlbumContext matches the QueueContext from the store
   const thisAlbumContext: QueueContext = { type: 'album', id: album.value.albumId, name: album.value.title };
 
-  const isSameTrackAndContext = 
+  const isSameTrackAndContext =
     playerStore.currentTrack?.trackId === trackToPlay.trackId &&
     playerStore.currentQueueContext.type === thisAlbumContext.type &&
     playerStore.currentQueueContext.id === thisAlbumContext.id;
@@ -396,162 +396,152 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8 space-y-8 overflow-y-auto">
-    <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false" @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
-    <EditTrackModal
-      v-if="selectedTrackForEdit"
-      :track="selectedTrackForEdit"
-      :open="isEditTrackModalOpen"
-      @close="handleEditTrackModalClose"
-      @track-updated="handleTrackSuccessfullyUpdated"
-      @update-error="handleEditTrackModalUpdateError"
-    />
-    <div v-if="pending" class="text-center">
-      <span class="loading loading-spinner loading-lg"></span>
-    </div>
-    <div v-else-if="error" class="text-center text-error">
-      Error loading album: {{ error.message }}
-    </div>
-    <div v-else-if="album" class="flex flex-col md:flex-row gap-8 items-center">
-      <!-- Album Cover -->
-      <div class="md:w-1/3">
-        <img 
-          :src="resolveCoverArtUrl(album.coverPath)" 
-          :alt="`${album.title} cover`"
-          class="w-full aspect-square rounded-lg shadow-xl object-cover"
-        />
+  <div class="px-4 py-8 overflow-y-auto w-full h-[calc(100vh)]">
+    <div class="container mx-auto">
+      <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"
+        @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
+      <EditTrackModal v-if="selectedTrackForEdit" :track="selectedTrackForEdit" :open="isEditTrackModalOpen"
+        @close="handleEditTrackModalClose" @track-updated="handleTrackSuccessfullyUpdated"
+        @update-error="handleEditTrackModalUpdateError" />
+      <div v-if="pending" class="text-center">
+        <span class="loading loading-spinner loading-lg"></span>
       </div>
-
-      <!-- Album Info -->
-      <div class="flex-1">
-        <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
-        
-        <!-- Album Artists with Links -->
-        <div class="text-xl text-base-content/80 mb-2">
-          <span v-if="formattedAlbumArtists.length === 0">Unknown Artist</span>
-          <template v-else>
-            <span v-for="(artist, index) in formattedAlbumArtists" :key="artist.artistId" class="mr-1">
-              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
-                {{ artist.name }}
-              </NuxtLink>
-              <span v-if="artist.displayRole" class="text-sm text-base-content/60">{{ artist.displayRole }}</span>
-              <span v-if="index < formattedAlbumArtists.length - 2">, </span>
-              <span v-else-if="index === formattedAlbumArtists.length - 2"> & </span>
-            </span>
-          </template>
+      <div v-else-if="error" class="text-center text-error">
+        Error loading album: {{ error.message }}
+      </div>
+      <div v-else-if="album" class="flex flex-col md:flex-row gap-8 items-center">
+        <!-- Album Cover -->
+        <div class="md:w-1/3">
+          <img :src="resolveCoverArtUrl(album.coverPath)" :alt="`${album.title} cover`"
+            class="w-full aspect-square rounded-lg shadow-xl object-cover" />
         </div>
-        
-        <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
-          <div class="flex items-center">
-            <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
-            <span>{{ playerReadyTracks.length || 0 }} tracks</span>
+
+        <!-- Album Info -->
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
+
+          <!-- Album Artists with Links -->
+          <div class="text-xl text-base-content/80 mb-2">
+            <span v-if="formattedAlbumArtists.length === 0">Unknown Artist</span>
+            <template v-else>
+              <span v-for="(artist, index) in formattedAlbumArtists" :key="artist.artistId" class="mr-1">
+                <NuxtLink :to="artist.url" class="hover:underline" :class="{ 'font-semibold': artist.isPrimary }">
+                  {{ artist.name }}
+                </NuxtLink>
+                <span v-if="artist.displayRole" class="text-sm text-base-content/60">{{ artist.displayRole }}</span>
+                <span v-if="index < formattedAlbumArtists.length - 2">, </span>
+                <span v-else-if="index === formattedAlbumArtists.length - 2"> & </span>
+              </span>
+            </template>
           </div>
-          <div class="flex items-center">
-            <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
-            <span>{{ formatDuration(playerReadyTracks?.reduce((total: number, track: Track) => total + (track.duration || 0), 0)) }}</span>
+
+          <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
+            <div class="flex items-center">
+              <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
+              <span>{{ playerReadyTracks.length || 0 }} tracks</span>
+            </div>
+            <div class="flex items-center">
+              <Icon name="material-symbols:schedule" class="w-4 h-4 mr-1" />
+              <span>{{formatDuration(playerReadyTracks?.reduce((total: number, track: Track) => total + (track.duration
+                || 0),
+                0)) }}</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-3">
+            <button @click="playOrPauseCurrentAlbum" class="btn btn-xl btn-circle btn-primary">
+              <Icon name="material-symbols:play-arrow" class="w-5 h-5"
+                v-if="!isCurrentAlbumLoaded || !playerStore.isPlaying" />
+              <Icon name="material-symbols:pause" class="w-5 h-5" v-else />
+            </button>
+
+            <OptionsMenu ref="albumOptionsMenuRef" :options="albumOptions" @option-selected="handleAlbumOption">
+            </OptionsMenu>
           </div>
         </div>
+      </div>
+      <div v-else class="text-center text-warning">
+        Album data not available or not found.
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-3">
-          <button 
-            @click="playOrPauseCurrentAlbum" 
-            class="btn btn-xl btn-circle btn-primary"
-          >
-            <Icon name="material-symbols:play-arrow" class="w-5 h-5" v-if="!isCurrentAlbumLoaded || !playerStore.isPlaying"/>
-            <Icon name="material-symbols:pause" class="w-5 h-5" v-else/>
-          </button>
-          
-          <OptionsMenu ref="albumOptionsMenuRef" :options="albumOptions" @option-selected="handleAlbumOption">
-          </OptionsMenu>
+      <!-- Track List -->
+      <div v-if="album">
+        <h2 class="text-2xl font-semibold my-4">Tracks</h2>
+        <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
+          <p class="text-neutral-content italic">No tracks found for this album.</p>
         </div>
-      </div>
-    </div>
-    <div v-else class="text-center text-warning">
-      Album data not available or not found.
-    </div>
-
-    <!-- Track List -->
-    <div v-if="album">
-      <h2 class="text-2xl font-semibold my-4">Tracks</h2>
-      <div v-if="!album.tracks || album.tracks.length === 0" class="mt-4">
-        <p class="text-neutral-content italic">No tracks found for this album.</p>
-      </div>
-      <div v-else class="overflow-x-auto">
-        <table class="table w-full">
-          <tbody>
-            <TrackItem 
-              v-for="(track, index) in album.tracks" 
-              :key="track.trackId"
-              :track="{
+        <div v-else class="overflow-x-auto">
+          <table class="table w-full">
+            <tbody>
+              <TrackItem v-for="(track, index) in album.tracks" :key="track.trackId" :track="{
                 ...track,
                 artistName: getDisplayArtistNameForTrack(track.artists), // Use hoisted helper
                 albumTitle: album.title,
                 coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath), // Use resolveCoverArtUrl here too
                 formattedArtists: getFormattedTrackArtists(track.artists) // Pass formatted artists for detailed display
-              }"
-              :track-number="index + 1"
-              :playlists="playlists || []" 
-              @play-track="playTrack(index)"
-              @track-options="handleTrackOptions"
-            />
-          </tbody>
-        </table>
+              }" :track-number="index + 1" :playlists="playlists || []" @play-track="playTrack(index)"
+                @track-options="handleTrackOptions" />
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Add to Playlist Modal (for single tracks) -->
-  <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Add "{{ selectedTrackForPlaylist?.title }}" to Playlist</h3>
-      <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
-        <li v-for="playlist in playlists" :key="playlist.playlistId">
-          <a @click="addTrackToPlaylist(playlist.playlistId)">
-            {{ playlist.name }}
-          </a>
-        </li>
-      </ul>
-      <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
-      <p v-else class="py-4">Loading playlists...</p>
-      <div class="modal-action">
-        <button class="btn" @click="isAddToPlaylistModalOpen = false">Close</button>
+    <!-- Add to Playlist Modal (for single tracks) -->
+    <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add "{{ selectedTrackForPlaylist?.title }}" to Playlist</h3>
+        <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
+          <li v-for="playlist in playlists" :key="playlist.playlistId">
+            <a @click="addTrackToPlaylist(playlist.playlistId)">
+              {{ playlist.name }}
+            </a>
+          </li>
+        </ul>
+        <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink
+            to="/playlists" class="link">Create one?</NuxtLink>
+        </p>
+        <p v-else class="py-4">Loading playlists...</p>
+        <div class="modal-action">
+          <button class="btn" @click="isAddToPlaylistModalOpen = false">Close</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Add Album to Playlist Modal -->
-  <div v-if="isAddAlbumToPlaylistModalOpen" class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Add album "{{ album?.title }}" to Playlist</h3>
-      <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
-        <li v-for="playlist in playlists" :key="playlist.playlistId">
-          <!-- The existing addAlbumToPlaylist function will be called -->
-          <a @click="addAlbumToPlaylist(playlist.playlistId)">
-            {{ playlist.name }}
-          </a>
-        </li>
-      </ul>
-      <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink to="/playlists" class="link">Create one?</NuxtLink></p>
-      <p v-else class="py-4">Loading playlists...</p>
-      <div class="modal-action">
-        <button class="btn" @click="isAddAlbumToPlaylistModalOpen = false">Close</button>
+    <!-- Add Album to Playlist Modal -->
+    <div v-if="isAddAlbumToPlaylistModalOpen" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add album "{{ album?.title }}" to Playlist</h3>
+        <ul v-if="playlists && playlists.length > 0" class="menu bg-base-100 w-full p-2 rounded-box">
+          <li v-for="playlist in playlists" :key="playlist.playlistId">
+            <!-- The existing addAlbumToPlaylist function will be called -->
+            <a @click="addAlbumToPlaylist(playlist.playlistId)">
+              {{ playlist.name }}
+            </a>
+          </li>
+        </ul>
+        <p v-else-if="!playlists || !playlists.length" class="py-4">You don't have any playlists yet. <NuxtLink
+            to="/playlists" class="link">Create one?</NuxtLink>
+        </p>
+        <p v-else class="py-4">Loading playlists...</p>
+        <div class="modal-action">
+          <button class="btn" @click="isAddAlbumToPlaylistModalOpen = false">Close</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Global Notification -->
-  <div v-if="notification.visible" class="toast toast-top toast-center min-w-max">
-    <div class="flex items-center">
-      <Icon 
-        :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
-              notification.type === 'error' ? 'material-symbols:error-outline' : 
-              'material-symbols:info-outline'" 
-        class="w-6 h-6 mr-2" />
-      <span>{{ notification.message }}</span>
-      <button @click="notification.visible = false" class="ml-2 p-1">
-        <Icon name="material-symbols:close" class="w-4 h-4" />
-      </button>
+    <!-- Global Notification -->
+    <div v-if="notification.visible" class="toast toast-top toast-center min-w-max">
+      <div class="flex items-center">
+        <Icon :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' :
+          notification.type === 'error' ? 'material-symbols:error-outline' :
+            'material-symbols:info-outline'" class="w-6 h-6 mr-2" />
+        <span>{{ notification.message }}</span>
+        <button @click="notification.visible = false" class="ml-2 p-1">
+          <Icon name="material-symbols:close" class="w-4 h-4" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
