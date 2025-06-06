@@ -2,6 +2,59 @@
 <template>
   <div class="flex h-screen bg-base-200">
 
+    <!-- Custom File Browser Modal -->
+    <dialog id="fileBrowserModal" class="modal modal-bottom sm:modal-middle" :class="{'modal-open': showFileBrowserModal}">
+      <div class="modal-box w-11/12 max-w-2xl">
+        <h3 class="font-bold text-lg mb-2">Browse for Folder</h3>
+        <p class="text-sm text-base-content/70 mb-1">Current Path: <span class="font-mono bg-base-300 px-1 rounded">{{ browserCurrentPath || 'Loading...' }}</span></p>
+        
+        <div v-if="browserIsLoading" class="text-center my-4">
+          <span class="loading loading-spinner text-primary"></span> Loading entries...
+        </div>
+        <div v-if="browserError" role="alert" class="alert alert-error my-2 py-2 px-3 text-sm">
+          <Icon name="material-symbols:error-outline" class="w-5 h-5" />
+          <span>{{ browserError }}</span>
+        </div>
+
+        <div class="max-h-96 overflow-y-auto bg-base-100 border border-base-300 rounded-md p-2 min-h-48">
+          <ul class="menu p-0">
+            <li v-if="browserParentPath !== null">
+              <a @click.prevent="navigateBrowserUp()" class="flex items-center">
+                <Icon name="material-symbols:arrow-upward-rounded" class="w-5 h-5 mr-2" />
+                ..
+              </a>
+            </li>
+            <li v-for="entry in browserEntries" :key="entry.fullPath">
+              <a @click.prevent="entry.isDirectory ? navigateBrowser(entry.fullPath) : null" 
+                 :class="{'cursor-pointer hover:bg-base-200': entry.isDirectory, 'opacity-50 cursor-not-allowed': !entry.isDirectory}"
+                 class="flex items-center">
+                <Icon :name="entry.isDirectory ? 'material-symbols:folder-outline-rounded' : 'material-symbols:draft-outline'" class="w-5 h-5 mr-2" />
+                {{ entry.name }}
+              </a>
+            </li>
+            <li v-if="!browserIsLoading && browserEntries.length === 0 && browserParentPath === null && !browserError">
+              <span class="italic text-base-content/60">No drives or locations found.</span>
+            </li>
+             <li v-else-if="!browserIsLoading && browserEntries.length === 0 && browserParentPath !== null && !browserError">
+              <span class="italic text-base-content/60">Folder is empty.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="modal-action mt-4">
+          <button class="btn btn-primary" @click="selectFolderFromBrowser" :disabled="browserIsLoading || !browserCurrentPath || browserCurrentPath === 'Computer' || !!browserError">
+            <Icon name="material-symbols:check-circle-outline-rounded" class="w-4 h-4 mr-1" /> Select this folder
+          </button>
+          <button class="btn btn-ghost" @click="closeFileBrowser">Cancel</button>
+        </div>
+      </div>
+      <!-- Click outside to close -->
+      <form method="dialog" class="modal-backdrop">
+        <button @click="closeFileBrowser">close</button>
+      </form>
+    </dialog>
+
+
     <!-- Main Content Area -->
     <main class="flex-1 p-6 overflow-y-auto">
       <!-- Top Bar Placeholder -->
@@ -77,10 +130,10 @@
                 id="folder-path-input"
               />
               <button 
-                class="btn btn-square btn-sm absolute right-2 top-1/2 -translate-y-1/2" 
-                @click="browseFolders"
+                class="btn btn-square btn-sm absolute right-2 " 
+                @click="openFileBrowser"
                 :disabled="isLoading"
-                title="Browse for folder"
+                title="Browse for folder using custom browser"
               >
                 <Icon name="material-symbols:folder-open-outline-rounded" class="w-4 h-4" />
               </button>
@@ -130,6 +183,19 @@ interface ScanResponse {
 
 // Reactive state for media folders
 const mediaFolders: Ref<MediaFolder[]> = ref([]);
+
+// Custom File Browser State
+const showFileBrowserModal: Ref<boolean> = ref(false);
+const browserCurrentPath: Ref<string> = ref('');
+const browserParentPath: Ref<string | null> = ref(null);
+interface BrowserEntry {
+  name: string;
+  fullPath: string;
+  isDirectory: boolean;
+}
+const browserEntries: Ref<BrowserEntry[]> = ref([]);
+const browserIsLoading: Ref<boolean> = ref(false);
+const browserError: Ref<string | null> = ref(null);
 const newFolderPath: Ref<string> = ref('');
 const isLoading: Ref<boolean> = ref(false); // For loading state
 const errorMessage: Ref<string | null> = ref(null); // For displaying errors
@@ -309,6 +375,127 @@ const handleFolderSelect = (event: Event): void => {
     input.value = '';
   }
 };
+
+const selectDirectory = async (): Promise<void> => {
+  try {
+    if (typeof window === 'undefined' || !('showDirectoryPicker' in window)) {
+      errorMessage.value = 'Your browser does not support the File System Access API for folder selection. Please type the path manually.';
+      // If you wish to fall back to the old method, you could call it here:
+      // console.log("Falling back to old folder browse method.");
+      // browseFolders(); // Make sure browseFolders() is still defined and works.
+      return;
+    }
+
+    const dirHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker();
+    // The File System Access API returns a FileSystemDirectoryHandle.
+    // For security reasons, the full file path is not directly exposed.
+    // We can get the name of the selected directory using dirHandle.name.
+    // Example: if user selects "C:\Users\Name\Documents\Music", dirHandle.name will be "Music".
+    // This name is then assigned to newFolderPath.value.
+    // If your backend '/api/settings/folders' (called by addFolder)
+    // expects a full absolute path, sending just the directory name will likely not work as intended.
+    // You may need to adjust backend expectations or inform the user about this limitation.
+    newFolderPath.value = dirHandle.name;
+
+    // Clear previous error messages related to folder picking if any
+    if (errorMessage.value && (errorMessage.value.includes('folder selection') || errorMessage.value.includes('selecting folder'))) {
+        errorMessage.value = null;
+    }
+    successMessage.value = `Selected folder name: "${dirHandle.name}". Review and click 'Add Folder'.`;
+    // Clear success message after a few seconds
+    setTimeout(() => { if (successMessage.value && successMessage.value.includes(dirHandle.name)) successMessage.value = null; }, 5000);
+
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      // User cancelled the directory picker. This is not an error condition requiring a user-facing message.
+      console.info('Folder picker dialog was dismissed by the user.');
+    } else {
+      // Other errors (e.g., security restrictions, API not supported).
+      console.error('Error using showDirectoryPicker:', error);
+      errorMessage.value = `Error selecting folder: ${error.message}. This feature may require a secure context (HTTPS or localhost) and explicit user permission.`;
+    }
+  }
+};
+
+// File Browser Logic
+const fetchBrowserEntries = async (pathToBrowse?: string | null): Promise<void> => {
+  browserIsLoading.value = true;
+  browserError.value = null;
+  try {
+    const params = pathToBrowse ? { path: pathToBrowse } : {};
+    const response = await $fetch<{ currentPath: string; parentPath: string | null; entries: BrowserEntry[]; error?: string }>('/api/filesystem/browse', { params });
+    if (response.error) {
+      browserError.value = response.error;
+      // Keep current path and entries if there's an error, but show parent from response if available
+      browserCurrentPath.value = response.currentPath || (pathToBrowse ?? '');
+      browserParentPath.value = response.parentPath;
+      browserEntries.value = response.entries || []; // Show empty entries on error or what was returned
+    } else {
+      browserCurrentPath.value = response.currentPath;
+      browserParentPath.value = response.parentPath;
+      browserEntries.value = response.entries;
+    }
+  } catch (error: any) {
+    console.error('Error fetching browser entries:', error);
+    browserError.value = error.data?.message || error.message || 'An unexpected error occurred while browsing files.';
+    // Attempt to set path context even on error
+    browserCurrentPath.value = pathToBrowse || '';
+    // Simplified parent path derivation for error fallback, avoiding 'path.sep'
+    if (pathToBrowse) {
+      const lastSlash = Math.max(pathToBrowse.lastIndexOf('/'), pathToBrowse.lastIndexOf('\\'));
+      if (lastSlash > 0) {
+        browserParentPath.value = pathToBrowse.substring(0, lastSlash);
+      } else if (lastSlash === 0 && pathToBrowse.length > 1) { // Root like /foo or C:\foo
+        browserParentPath.value = pathToBrowse.substring(0, 1);
+      } else {
+        browserParentPath.value = null; // Could be a drive letter like 'C:' or a root directory name
+      }
+    } else {
+      browserParentPath.value = null;
+    }
+    browserEntries.value = [];
+  } finally {
+    browserIsLoading.value = false;
+  }
+};
+
+const openFileBrowser = (): void => {
+  showFileBrowserModal.value = true;
+  browserError.value = null; // Clear previous errors
+  // Fetch initial directory (e.g., 'Computer' on Windows, or user's home dir)
+  fetchBrowserEntries(); 
+};
+
+const closeFileBrowser = (): void => {
+  showFileBrowserModal.value = false;
+  // Optionally reset browser state if desired
+  // browserCurrentPath.value = '';
+  // browserParentPath.value = null;
+  // browserEntries.value = [];
+  // browserError.value = null;
+};
+
+const navigateBrowser = (entryPath: string): void => {
+  fetchBrowserEntries(entryPath);
+};
+
+const navigateBrowserUp = (): void => {
+  if (browserParentPath.value !== null) {
+    fetchBrowserEntries(browserParentPath.value);
+  }
+};
+
+const selectFolderFromBrowser = (): void => {
+  if (browserCurrentPath.value && browserCurrentPath.value !== 'Computer' && !browserError.value) {
+    newFolderPath.value = browserCurrentPath.value;
+    closeFileBrowser();
+  } else if (browserCurrentPath.value === 'Computer') {
+    browserError.value = "Cannot select 'Computer'. Please navigate into a drive or folder.";
+  } else if (browserError.value) {
+    // If there's an error, don't select, user should resolve error or cancel
+  }
+};
+
 
 // Fetch folders when the component is mounted
 onMounted(fetchFolders);
