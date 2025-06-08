@@ -35,6 +35,12 @@ export const usePlayerStore = defineStore('player', () => {
   // State for Full Screen Player Visibility
   const isFullScreenPlayerVisible = ref<boolean>(false);
 
+  // State for Full Screen Lyrics Visibility
+  const isFullScreenLyricsVisible = ref<boolean>(false);
+
+  // State for Standard Lyrics Modal Visibility
+  const isLyricsModalVisible = ref<boolean>(false);
+
   // State for Seek Bar Dragging
   const isUserSeeking = ref<boolean>(false);
   const wasPlayingBeforeSeek = ref<boolean>(false);
@@ -500,9 +506,39 @@ export const usePlayerStore = defineStore('player', () => {
     isFullScreenPlayerVisible.value = !isFullScreenPlayerVisible.value;
   };
 
+  // --- Actions for Full Screen Lyrics ---
+  const showFullScreenLyrics = (): void => {
+    isFullScreenLyricsVisible.value = true;
+  };
+
+  const hideFullScreenLyrics = (): void => {
+    isFullScreenLyricsVisible.value = false;
+  };
+
+  const toggleFullScreenLyrics = (): void => {
+    isFullScreenLyricsVisible.value = !isFullScreenLyricsVisible.value;
+  };
+
+  // --- Actions for Standard Lyrics Modal ---
+  const showLyricsModal = (): void => {
+    if (currentTrack.value) isLyricsModalVisible.value = true;
+  };
+
+  const hideLyricsModal = (): void => {
+    isLyricsModalVisible.value = false;
+  };
+
+  const toggleLyricsModal = (): void => {
+    if (currentTrack.value) {
+      isLyricsModalVisible.value = !isLyricsModalVisible.value;
+    } else {
+      isLyricsModalVisible.value = false; // Ensure it's hidden if no track
+    }
+  };
+
   // --- Actions for Seek Bar Dragging ---
   const startSeeking = (): void => {
-    if (!audioElement.value) return;
+    // ...
     isUserSeeking.value = true;
     wasPlayingBeforeSeek.value = isPlaying.value;
     if (isPlaying.value) {
@@ -602,6 +638,8 @@ export const usePlayerStore = defineStore('player', () => {
     isQueueSidebarVisible,
     isFullScreenQueueVisible,
     isFullScreenPlayerVisible,
+    isFullScreenLyricsVisible,
+    isLyricsModalVisible,
     isUserSeeking,
     wasPlayingBeforeSeek,
 
@@ -628,6 +666,12 @@ export const usePlayerStore = defineStore('player', () => {
     hideQueueSidebar,
     toggleQueueSidebar,
     toggleFullScreenPlayer,
+    showFullScreenLyrics,
+    hideFullScreenLyrics,
+    toggleFullScreenLyrics,
+    showLyricsModal,
+    hideLyricsModal,
+    toggleLyricsModal,
     startSeeking,
     updateSeekPosition,
     endSeeking,

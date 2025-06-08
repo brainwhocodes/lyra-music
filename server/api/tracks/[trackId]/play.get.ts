@@ -9,7 +9,7 @@ import { getMimeType } from '~/server/utils/formatters';
 import { spawn } from 'node:child_process';
 
 export default defineEventHandler(async (event) => {
-  const trackIdParam = getRouterParam(event, 'id');
+  const trackIdParam = getRouterParam(event, 'trackId');
   if (!trackIdParam) {
     throw createError({
       statusCode: 400,

@@ -1,6 +1,6 @@
 // This file will contain all Drizzle schema definitions (tables, relations, etc.)
 // Refer to Phase 1 for the planned schema.
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sql, relations, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 // Phase 1: Define Tables
@@ -149,6 +149,22 @@ export const albumGenres = sqliteTable('album_genres', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+// Add new table definition before relations
+export const lyrics = sqliteTable('lyrics', {
+  lyricsId: text('lyrics_id').primaryKey().$defaultFn(() => uuidv7()),
+  trackId: text('track_id').notNull().references(() => tracks.trackId, { onDelete: 'cascade' }),
+  lyricsJson: text('lyrics_json', { mode: 'json' }).$type<Array<{ time: string; text: string }>>(), // Store as JSON
+  source: text('source'), // e.g., 'generated_llm', 'manual_upload', 'synced_lrc', 'user_edited'
+  llmModelUsed: text('llm_model_used'), // e.g., 'gemini-2.5-flash'
+  rawLlmOutput: text('raw_llm_output'), // Raw output from LLM for debugging
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => {
+  return {
+    trackIdx: uniqueIndex('lyrics_track_idx').on(table.trackId), // Enforce one-to-one by unique index on trackId
+  };
+});
+
 // === Relations ===
 
 export const artistRelations = relations(artists, ({ many }) => ({
@@ -184,6 +200,17 @@ export const tracksRelations = relations(tracks, ({ one, many }) => ({
   playlistTracks: many(playlistTracks),
   radioChannelTracks: many(radioChannelTracks),
   artistsTracks: many(artistsTracks),
+  lyrics: one(lyrics, {
+    fields: [tracks.trackId], // This refers to the PK on tracks
+    references: [lyrics.trackId], // This refers to the FK on lyrics that points to tracks.trackId
+  }),
+}));
+
+export const lyricsRelations = relations(lyrics, ({ one }) => ({
+  track: one(tracks, {
+    fields: [lyrics.trackId],
+    references: [tracks.trackId],
+  }),
 }));
 
 export const artistsTracksRelations = relations(artistsTracks, ({ one }) => ({
@@ -267,3 +294,9 @@ export type NewRadioChannel = InferInsertModel<typeof radioChannels>;
 
 export type RadioChannelTrack = InferSelectModel<typeof radioChannelTracks>;
 export type NewRadioChannelTrack = InferInsertModel<typeof radioChannelTracks>;
+
+// Inferred types for lyrics
+export type Lyrics = InferSelectModel<typeof lyrics>;
+export type NewLyrics = InferInsertModel<typeof lyrics>;
+
+

@@ -1,5 +1,6 @@
 <template>
   <div v-if="playerStore.isFullScreenPlayerVisible && playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-8 sm:pt-4 select-none">
+    <FullScreenLyrics v-if="playerStore.isFullScreenLyricsVisible" />
     <!-- Top Bar -->
     <div class="flex justify-between items-center mb-6">
       <button @click="playerStore.toggleFullScreenPlayer()" class="p-2 -ml-2">
@@ -139,9 +140,14 @@
       </button>
 
       <!-- Lyrics Toggle (Bottom Center) -->
-      <button class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2">
+      <button 
+        @click="playerStore.toggleFullScreenLyrics()"
+        class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2"
+        :class="{'text-accent': playerStore.isFullScreenLyricsVisible}"
+        title="Toggle Lyrics"
+      >
         Lyrics
-        <Icon name="material-symbols:keyboard-arrow-up-rounded" class="w-5 h-5 inline-block ml-1" />
+        <Icon name="material-symbols:lyrics-rounded" class="w-5 h-5 inline-block ml-1" />
       </button>
     </div>
     <FullscreenQueue />
@@ -151,6 +157,7 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
 import FullscreenQueue from '~/components/layout/fullscreen-queue.vue';
+import FullScreenLyrics from '~/components/player/fullscreen-lyrics.vue';
 
 const playerStore = usePlayerStore();
 

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { join, extname } from 'node:path';
+import sharp from 'sharp';
 import { fileUtils } from './file-utils';
 import { EXTERNAL_COVER_FILENAMES } from './types';
 import type { CoverArtArchiveResponse, CoverArtArchiveImage, MusicBrainzReleaseWithRelations } from '~/types/musicbrainz/musicbrainz';
@@ -37,7 +38,7 @@ async function ensureArtistImagesDirectory(): Promise<void> {
 }
 
 /**
- * Downloads an image from a URL and saves it to the artist images directory.
+ * Downloads an image from a URL and saves it to the artist images directory as WebP format.
  */
 export async function downloadArtistImage(imageUrl: string): Promise<string | null> {
   try {
@@ -46,34 +47,42 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
     // Generate a hash of the URL to use as the filename
     const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
     
-    // Determine the file extension from the URL or default to jpg
-    const urlPath = new URL(imageUrl).pathname;
-    const extension = extname(urlPath).toLowerCase() || '.jpg';
-    const cleanExtension = extension.replace('.', '').replace('jpeg', 'jpg');
-    
-    const imageFilename = `${hash}.${cleanExtension}`;
+    // Always use WebP extension for the destination file
+    const imageFilename = `${hash}.webp`;
     const imageFullPath = join(ARTIST_IMAGES_DIR, imageFilename);
     
     // Check if the file already exists
     if (!await fileUtils.pathExists(imageFullPath)) {
       // Download the image
       const response = await fetch(imageUrl);
+      if (!response.ok) {
+        return null;
+      }
+      
       const imageBuffer = Buffer.from(await response.arrayBuffer());
       
-      // Save the image to disk
-      await fileUtils.writeFile(imageFullPath, imageBuffer);
-      // console.log(`  Saved artist image from ${imageUrl} to: ${imageFullPath}`);
+      try {
+        // Convert the image to WebP format using Sharp
+        const webpBuffer = await sharp(imageBuffer)
+          .webp({ quality: 80 }) // You can adjust quality as needed (0-100)
+          .toBuffer();
+        
+        // Save the WebP image to disk
+        await fileUtils.writeFile(imageFullPath, webpBuffer);
+      } catch (sharpError) {
+        // If Sharp conversion fails, return null
+        return null;
+      }
     }
     
     return `/images/artists/${imageFilename}`;
   } catch (error: any) {
-    // console.error(`  Failed to download artist image from ${imageUrl}: ${error.message}`);
     return null;
   }
 }
 
 /**
- * Saves image data to the covers directory with a hash-based filename.
+ * Saves image data to the covers directory with a hash-based filename, converting to WebP format.
  */
 export async function saveArtToCache(
   imageData: Buffer,
@@ -83,24 +92,32 @@ export async function saveArtToCache(
   try {
     await ensureCoversDirectory();
     const hash = crypto.createHash('sha256').update(imageData).digest('hex');
-    const extension = (imageFormat.split('/')[1] || imageFormat).toLowerCase().replace('jpeg', 'jpg');
-    const coverFilename = `${hash}.${extension}`;
+    const coverFilename = `${hash}.webp`;
     const coverFullPath = join(COVERS_DIR, coverFilename);
 
     if (!await fileUtils.pathExists(coverFullPath)) {
-      await fileUtils.writeFile(coverFullPath, imageData);
-      // console.log(`  Saved album art from ${sourceDescription} to: ${coverFullPath}`);
+      // Convert the image to WebP format using Sharp
+      const webpBuffer = await sharp(imageData)
+        .webp({ quality: 80 }) // You can adjust quality as needed (0-100)
+        .toBuffer();
+
+      await fileUtils.writeFile(coverFullPath, webpBuffer);
     }
     
     return `/images/covers/${coverFilename}`;
   } catch (error: any) {
-    // console.error(`  Failed to save album art from ${sourceDescription}: ${error.message}`);
+    // Handle specific sharp errors better
+    if (error.message?.includes('Input buffer contains unsupported image format')) {
+      // If Sharp can't process it, try saving original format as a fallback (optional)
+      return null;
+    }
     return null;
   }
 }
 
 /**
  * Processes external album art files in the same directory as the audio file.
+ * Converts all found covers to WebP format.
  */
 export async function processExternalAlbumArt(albumDir: string): Promise<string | null> {
   for (const coverFilename of EXTERNAL_COVER_FILENAMES) {
@@ -109,10 +126,10 @@ export async function processExternalAlbumArt(albumDir: string): Promise<string 
     if (await fileUtils.pathExists(potentialCoverPath)) {
       try {
         const coverData = await fileUtils.readFile(potentialCoverPath);
-        const format = extname(potentialCoverPath).substring(1);
-        return await saveArtToCache(coverData, format, `external file ${coverFilename}`);
+        // We're using 'image/webp' as format as it's handled by saveArtToCache which now always outputs WebP
+        return await saveArtToCache(coverData, 'image/webp', `external file ${coverFilename}`);
       } catch (error: any) {
-        // console.error(`  Error processing external cover ${potentialCoverPath}:`, error.message);
+        // Silent error - try next potential cover file
       }
     }
   }
@@ -122,13 +139,16 @@ export async function processExternalAlbumArt(albumDir: string): Promise<string 
 
 /**
  * Processes embedded album art from audio file metadata.
+ * Converts to WebP format regardless of original format.
  */
 export async function processEmbeddedAlbumArt(pictures: Array<{ format: string; data: Uint8Array }>): Promise<string | null> {
   if (!pictures || pictures.length === 0) return null;
   
+  // Use the first available picture
   const picture = pictures[0];
-  // console.log(`  Found embedded cover art (Format: ${picture.format}).`);
   const pictureBuffer = Buffer.from(picture.data);
+  
+  // saveArtToCache will handle the WebP conversion
   return await saveArtToCache(pictureBuffer, picture.format, 'embedded metadata');
 }
 
@@ -196,6 +216,11 @@ async function getReleaseCoverArtUrlsInternal(musicbrainzReleaseId: string, user
   return [...new Set(potentialImageUrls)];
 }
 
+/**
+ * Downloads album cover art from MusicBrainz using the release ID and converts it to WebP format.
+ * @param musicbrainzReleaseId The MusicBrainz release ID
+ * @returns A promise that resolves with the path to the downloaded cover art in WebP format, or null if not found or error
+ */
 export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: string): Promise<string | null> {
   if (!musicbrainzReleaseId) {
     return null;
@@ -214,38 +239,19 @@ export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: stri
       return null;
     }
 
-    await ensureCoversDirectory();
-
-    // Check cache before downloading
-    const hash = crypto.createHash('sha256').update(imageUrl).digest('hex');
-    const urlPath = new URL(imageUrl).pathname;
-    // Prioritize extension from URL, fallback to jpg for safety if missing/uncommon
-    let extension = extname(urlPath).toLowerCase().replace('.', '');
-    if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-        extension = 'jpg'; 
-    }
-    const cleanExtension = extension === 'jpeg' ? 'jpg' : extension;
-    const imageFilename = `${hash}.${cleanExtension}`;
-    const imageFullPath = join(COVERS_DIR, imageFilename);
-
-    if (await fileUtils.pathExists(imageFullPath)) {
-      return `/images/covers/${imageFilename}`;
-    }
-
     // Fetch the actual image file
-    const imageResponse = await fetch(imageUrl, { headers: { 'User-Agent': userAgent } }); // Add User-Agent for image fetch too
+    const imageResponse = await fetch(imageUrl, { headers: { 'User-Agent': userAgent } });
     if (!imageResponse.ok || !imageResponse.body) {
       return null;
     }
+    
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-
-    // Save to cache using saveArtToCache or similar logic (here, directly writing)
-    // If saveArtToCache is preferred, this part needs to adapt to its signature (e.g., getting imageFormat)
-    await fileUtils.writeFile(imageFullPath, imageBuffer);
-    return `/images/covers/${imageFilename}`; // Return the relative path for client use
+    
+    // Use our saveArtToCache function which now converts all images to WebP
+    // The format doesn't matter since we're converting to WebP regardless
+    return await saveArtToCache(imageBuffer, 'image/webp', `MusicBrainz release ${musicbrainzReleaseId}`);
 
   } catch (error: any) {
-    // console.error(`Error in downloadAlbumArtFromMusicBrainz for MBID ${musicbrainzReleaseId}: ${error.message}`);
     return null;
   }
 }

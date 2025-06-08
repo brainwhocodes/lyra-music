@@ -112,6 +112,14 @@
         >
           <Icon name="material-symbols:queue-music-rounded" class="w-5 h-5" />
         </button>
+        <button
+          class="btn btn-ghost btn-xl btn-circle"
+          :class="{'text-primary': playerStore.isLyricsModalVisible}"
+          @click="playerStore.toggleLyricsModal()"
+          title="Show Lyrics"
+        >
+          <Icon name="material-symbols:lyrics-rounded" class="w-5 h-5" />
+        </button>
       </div>
 
       <!-- Seek Bar -->
@@ -167,8 +175,10 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+// import { useModalStore } from '~/stores/modal'; // Removed modalStore
 
 const playerStore = usePlayerStore();
+// const modalStore = useModalStore(); // Removed modalStore
 
 // Handle seek bar input during drag
 const handleContinuousSeekInput = (event: Event) => {

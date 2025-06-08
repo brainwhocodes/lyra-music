@@ -37,7 +37,6 @@
             <li><NuxtLink to="/albums" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:album-outline" class="w-5 h-5" /> Albums</NuxtLink></li>
             <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
             <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
-            <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:featured-play-list-outline" class="w-5 h-5" /> Playlists</NuxtLink></li>
           </ul>
       </nav>
 
@@ -72,17 +71,19 @@
 
     <!-- Global Audio Player (for desktop) -->
     <GlobalAudioPlayer v-if="showGlobalAudioPlayer" />
+    <LyricsModal :open="playerStore.isLyricsModalVisible" @close="playerStore.hideLyricsModal()" />
   </div> <!-- End of new root div -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+
 import GlobalAudioPlayer from '~/components/player/global-audio-player.vue';
 import FullScreenPlayer from '~/components/player/full-screen-player.vue';
 import MiniPlayer from '~/components/player/mini-player.vue';
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
+import LyricsModal from '~/components/modals/lyrics-modal.vue';
 
 const playerStore = usePlayerStore();
 const clientReady = ref(false);
@@ -91,6 +92,7 @@ const isMobileSidebarOpen = ref(false);
 const toggleMobileSidebar = (): void => {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 };
+
 
 const playerHeightCss = 'calc(var(--spacing) * 25)'; // Player's height (h-32)
 
