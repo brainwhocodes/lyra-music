@@ -12,6 +12,7 @@ import TrackItem from '~/components/track/track-item.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import OptionsMenu from '~/components/options-menu.vue';
 import EditTrackModal from '~/components/modals/edit-track-modal.vue';
+import EditLyricsModal from '~/components/modals/edit-lyrics-modal.vue'; // Import the new modal
 import { useTrackArtists, } from '~/composables/useTrackArtists';
 
 // Use the track artists composable for formatting track artists
@@ -34,6 +35,10 @@ const isEditAlbumModalOpen = ref(false);
 // State for EditTrackModal
 const isEditTrackModalOpen = ref(false);
 const selectedTrackForEdit = ref<Track | null>(null);
+
+// State for EditLyricsModal
+const isEditLyricsModalOpen = ref(false);
+const selectedTrackForLyrics = ref<Track | null>(null);
 
 // Simple notification system
 const showNotification = (message: string, type: MessageType = 'info') => {
@@ -145,6 +150,30 @@ onMounted(() => {
   });
 });
 
+// Edit Lyrics Modal Handlers
+const openEditLyricsModal = (track: Track): void => {
+  selectedTrackForLyrics.value = track;
+  isEditLyricsModalOpen.value = true;
+};
+
+const handleEditLyricsModalClose = (): void => {
+  isEditLyricsModalOpen.value = false;
+  selectedTrackForLyrics.value = null;
+};
+
+const handleLyricsSuccessfullyUpdated = (/* updatedLyrics: import('~/types/lyrics').Lyrics */): void => {
+  // The modal emits the full Lyrics object, but we might not need to use it directly here
+  // if we re-fetch lyrics on demand or if the track object itself doesn't store lyrics.
+  showNotification('Lyrics updated successfully.', 'success');
+  handleEditLyricsModalClose();
+};
+
+const handleEditLyricsModalUpdateError = (errorMessage: string): void => {
+  showNotification(`Error updating lyrics: ${errorMessage}`, 'error');
+  // Optionally, keep the modal open if preferred, or close it.
+  // handleEditLyricsModalClose(); 
+};
+
 // Edit Track Modal Handlers
 const openEditTrackModal = (track: Track): void => {
   selectedTrackForEdit.value = track;
@@ -182,6 +211,9 @@ const handleTrackOptions = (options: { action: string; track: Track }): void => 
       break;
     case 'edit-track':
       openEditTrackModal(track);
+      break;
+    case 'edit-lyrics': // Add new case for editing lyrics
+      openEditLyricsModal(track);
       break;
   }
 
@@ -401,14 +433,18 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"
         @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
       <EditTrackModal v-if="selectedTrackForEdit" :track="selectedTrackForEdit" :open="isEditTrackModalOpen"
-        @close="handleEditTrackModalClose" @track-updated="handleTrackSuccessfullyUpdated"
-        @update-error="handleEditTrackModalUpdateError" />
+        @close="handleEditTrackModalClose" @trackUpdated="handleTrackSuccessfullyUpdated"
+        @updateError="handleEditTrackModalUpdateError" />
+      <EditLyricsModal v-if="selectedTrackForLyrics" :track="selectedTrackForLyrics" :open="isEditLyricsModalOpen"
+        @close="handleEditLyricsModalClose" @lyricsUpdated="handleLyricsSuccessfullyUpdated"
+        @updateError="handleEditLyricsModalUpdateError" />
       <div v-if="pending" class="text-center">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
       <div v-else-if="error" class="text-center text-error">
         Error loading album: {{ error.message }}
       </div>
+      <!-- ... (rest of the template remains the same) -->
       <div v-else-if="album" class="flex flex-col md:flex-row gap-8 items-center">
         <!-- Album Cover -->
         <div class="md:w-1/3">

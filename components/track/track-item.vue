@@ -67,6 +67,13 @@
             Edit Track
           </button>
           <button
+            class="px-4 py-2 text-left hover:bg-base-300 flex items-center w-full"
+            @click.stop="emit('track-options', { action: 'edit-lyrics', track })"
+          >
+            <Icon name="material-symbols:lyrics-outline" class="w-5 h-5 mr-2" />
+            Edit Lyrics
+          </button>
+          <button
             v-if="inPlaylist"
             class="px-4 py-2 text-left hover:bg-base-300 flex items-center w-full text-error"
             @click.stop="emit('track-options', { action: 'remove-from-playlist', track })"
