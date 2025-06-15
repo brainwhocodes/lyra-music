@@ -3,6 +3,12 @@ import { db } from '~/server/db';
 import { tracks, lyrics, artists, artistsTracks, type NewLyrics } from '~/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { transcribeAudioWithTimestamps } from '~/server/utils/gemini-service';
+import { exec as execCallback } from 'child_process';
+import { promisify } from 'util';
+import { mkdir, rm, unlink } from 'node:fs';
+import path from 'node:path';
+
+const exec = promisify(execCallback);
 
 export default defineEventHandler(async (event) => {
   const trackId: string | undefined = getRouterParam(event, 'trackId');
@@ -13,6 +19,9 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Track ID is required for generating lyrics.',
     });
   }
+
+  let processedFilePath: string | null = null;
+  let tempProcessedDir: string | null = null;
 
   try {
     // 1. Verify track exists and get its file path, title, and primary artist name
@@ -26,9 +35,8 @@ export default defineEventHandler(async (event) => {
     .leftJoin(artistsTracks, eq(tracks.trackId, artistsTracks.trackId))
     .leftJoin(artists, eq(artistsTracks.artistId, artists.artistId))
     .where(eq(tracks.trackId, trackId))
-    // .where(eq(artistsTracks.isPrimaryArtist, true)) // Ideal: filter for primary artist
-    // For now, we'll take the first artist found if multiple. A more robust solution might be needed.
-    .groupBy(tracks.trackId) // Ensure we get one row per track if multiple artists and no primary filter
+    // .where(eq(artistsTracks.isPrimaryArtist, true)) // Consider re-evaluating primary artist logic
+    .groupBy(tracks.trackId)
     .get();
 
     if (!trackData || !trackData.filePath || !trackData.title || !trackData.artistName) {
@@ -38,69 +46,98 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // 2. Transcribe audio to get timestamped lyrics
-    // Determine MIME type based on file extension (simple approach)
-    const mimeType = trackData.filePath.toLowerCase().endsWith('.mp3') ? 'audio/mp3' : 
-                    trackData.filePath.toLowerCase().endsWith('.wav') ? 'audio/wav' : 
-                    trackData.filePath.toLowerCase().endsWith('.ogg') ? 'audio/ogg' : 
-                    trackData.filePath.toLowerCase().endsWith('.flac') ? 'audio/flac' : 
-                    'audio/mpeg'; // Default fallback
-    
-    // Transcribe audio to get lyrics with timestamps
-    console.log(`[LyricsGeneration] Starting transcription for track: ${trackData.title} by ${trackData.artistName}`);
+    // 2. Process audio with ffmpeg to attempt vocal isolation
+    const originalFilePath: string = trackData.filePath;
+    // Create a unique temporary directory for this operation
+    tempProcessedDir = path.join(path.dirname(originalFilePath), `temp_processed_lyrics_${trackId}_${Date.now()}`);
+    mkdir(tempProcessedDir, { recursive: true } as any, (err) => {
+      if (err) {
+        console.error(`[LyricsGeneration] Error creating temp directory ${tempProcessedDir}:`, err);
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Failed to create temp directory: ${err.message || 'Unknown error'}`,
+        });
+      }
+    });
+
+    const tempFileName: string = `processed_${path.basename(originalFilePath)}.mp3`;
+    processedFilePath = path.join(tempProcessedDir, tempFileName);
+
+    // IMPORTANT: Ensure ffmpeg is installed and in the system PATH on the server
+    const ffmpegCommand: string = `ffmpeg -i "${originalFilePath}" -af "pan=mono|c0=0.5*c0+0.5*c1" -y "${processedFilePath}"`;
+
+    console.log(`[LyricsGeneration] Processing audio with ffmpeg for track ${trackId}: ${ffmpegCommand}`);
+    try {
+      const { stdout, stderr } = await exec(ffmpegCommand);
+      // ffmpeg often outputs informational data to stderr, so we check if it specifically contains 'error'
+      // or rely on exec throwing an error for non-zero exit codes.
+      if (stderr) {
+        if (stderr.toLowerCase().includes('error')) {
+          console.error(`[LyricsGeneration] ffmpeg stderr (error) for track ${trackId}: ${stderr}`);
+        } else {
+          console.info(`[LyricsGeneration] ffmpeg stderr (info) for track ${trackId}: ${stderr.substring(0, 500)}${stderr.length > 500 ? '...' : ''}`);
+        }
+      }
+      if (stdout) {
+        console.log(`[LyricsGeneration] ffmpeg stdout for track ${trackId}: ${stdout.substring(0, 500)}${stdout.length > 500 ? '...' : ''}`);
+      }
+      console.log(`[LyricsGeneration] Audio processed successfully for track ${trackId}: ${processedFilePath}`);
+    } catch (ffmpegError: any) {
+      console.error(`[LyricsGeneration] ffmpeg execution failed for track ${trackId}:`, ffmpegError);
+      // The 'finally' block will handle cleanup of processedFilePath and tempProcessedDir if they were set.
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Failed to process audio with ffmpeg: ${ffmpegError.message || 'Unknown ffmpeg error'}`,
+      });
+    }
+
+    // 3. Transcribe processed audio to get timestamped lyrics
+    console.log(`[LyricsGeneration] Starting transcription for processed track: ${trackData.title} by ${trackData.artistName}`);
     let generatedLyrics;
     try {
       generatedLyrics = await transcribeAudioWithTimestamps(
-        trackData.filePath,
-        mimeType,
+        processedFilePath, // Use the processed file
+        'audio/mp3',       // MIME type is now mp3 as ffmpeg output is mp3
         trackData.title,
         trackData.artistName
       );
-      console.log(`[LyricsGeneration] Successfully transcribed ${generatedLyrics.length} lyric lines`);
-    } catch (transcriptionError) {
-      console.error('[LyricsGeneration] Transcription failed:', transcriptionError);
+      console.log(`[LyricsGeneration] Successfully transcribed ${generatedLyrics.length} lyric lines for track ${trackId}`);
+    } catch (transcriptionError: any) {
+      console.error(`[LyricsGeneration] Transcription failed for track ${trackId}:`, transcriptionError);
       throw createError({
         statusCode: 500,
-        statusMessage: `Failed to transcribe audio: ${transcriptionError instanceof Error ? transcriptionError.message : 'Unknown error'}`,
+        statusMessage: `Failed to transcribe audio: ${transcriptionError.message || 'Unknown error'}`,
       });
     }
     
-    // Use the transcribed lyrics as the final result
     const generatedLyricsJson = generatedLyrics;
-    console.log('[LyricsGeneration Debug] trackId for DB operation:', trackId);
-    console.log('[LyricsGeneration Debug] generatedLyricsJson (type:', typeof generatedLyricsJson, 'length:', generatedLyricsJson?.length, '):', JSON.stringify(generatedLyricsJson, null, 2));
 
-    // 3. Prepare lyrics data for database insertion/update
+    // 4. Prepare lyrics data for database insertion/update
     const lyricsData: NewLyrics = {
-      trackId: trackId, // Use the trackId from the route parameter directly
-      lyricsJson: generatedLyricsJson, // Assign the array directly, Drizzle handles stringification for JSON types
-      source: 'gemini_transcription_only',
-      llmModelUsed: 'transcription:gemini-2.5-flash-preview-05-20',
+      trackId: trackId,
+      lyricsJson: generatedLyricsJson,
+      source: 'gemini_transcription_ffmpeg_mono', // Updated source
+      llmModelUsed: 'transcription:gemini-2.5-flash-preview-05-20', // Model name might need update if Gemini changes
       rawLlmOutput: JSON.stringify({ 
-        generatedLyrics: generatedLyricsJson // This is likely a text field, so stringify is correct here
+        generatedLyrics: generatedLyricsJson
       }),
-      // createdAt will be set by default, updatedAt needs to be handled by onConflictDoUpdate or manually
     };
-    console.log('[LyricsGeneration Debug] lyricsData for DB:', JSON.stringify(lyricsData, null, 2));
 
-    // 4. Insert or update lyrics in the database
-    // The `lyrics_track_idx` unique index on `trackId` allows `onConflictDoUpdate`
-    console.log('[LyricsGeneration Debug] Attempting db.insert(lyrics).values(lyricsData).onConflictDoUpdate...');
+    // 5. Insert or update lyrics in the database
     const savedLyrics = await db.insert(lyrics)
       .values(lyricsData)
       .onConflictDoUpdate({
-        target: lyrics.trackId, // Conflict target is the trackId column
+        target: lyrics.trackId,
         set: {
-          lyricsJson: generatedLyricsJson, // Assign the array directly here as well
+          lyricsJson: generatedLyricsJson,
           source: lyricsData.source,
           llmModelUsed: lyricsData.llmModelUsed,
           rawLlmOutput: lyricsData.rawLlmOutput,
-          updatedAt: sql`CURRENT_TIMESTAMP`, // Explicitly update timestamp
+          updatedAt: sql`CURRENT_TIMESTAMP`,
         },
       })
-      .returning(); // Return the inserted or updated record
+      .returning();
       
-    console.log('[LyricsGeneration Debug] savedLyrics result from DB:', JSON.stringify(savedLyrics, null, 2));
     if (!savedLyrics || savedLyrics.length === 0) {
       throw createError({
         statusCode: 500,
@@ -108,17 +145,39 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    console.log(`[LyricsGeneration] Successfully generated and saved lyrics for track ${trackId}.`);
     return savedLyrics[0];
 
   } catch (error: any) {
-    console.error('[LyricsGeneration Debug] Error in catch block:', error);
     console.error(`Error generating lyrics for track ${trackId}:`, error);
-    if (error.statusCode) {
-      throw error;
+    if (error.statusCode && error.statusMessage) { // Check if it's an H3Error from createError
+      throw error; // Re-throw H3 errors directly
     }
+    // For other types of errors, wrap them in a generic 500 error
     throw createError({
       statusCode: 500,
-      statusMessage: 'An internal server error occurred while generating lyrics.',
+      statusMessage: `An internal server error occurred while generating lyrics: ${error.message || 'Unknown error'}.`,
     });
+  } finally {
+    if (processedFilePath) {
+      try {
+        unlink(processedFilePath, (err) => {
+          if (err) {
+            console.error(`[LyricsGeneration] Error cleaning up temp file ${processedFilePath}:`, err);
+          }
+        });
+        console.log(`[LyricsGeneration] Cleaned up temp file: ${processedFilePath}`);
+      } catch (cleanupError) {
+        console.error(`[LyricsGeneration] Error cleaning up temp file ${processedFilePath}:`, cleanupError);
+      }
+    }
+    if (tempProcessedDir) {
+       try {
+         rm(tempProcessedDir, { recursive: true, force: true } as any);
+         console.log(`[LyricsGeneration] Cleaned up temp directory: ${tempProcessedDir}`);
+       } catch (cleanupDirError) {
+         console.error(`[LyricsGeneration] Error cleaning up temp directory ${tempProcessedDir}:`, cleanupDirError);
+       }
+    }
   }
 });
