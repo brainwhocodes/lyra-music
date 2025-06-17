@@ -428,7 +428,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 </script>
 
 <template>
-  <div class="px-4 py-8 overflow-y-auto w-full h-[calc(100vh)]">
+  <div class="px-4 py-8 overflow-y-auto w-full lg:h-[calc(90vh)] h-[calc(100vh-100px)]">
     <div class="container mx-auto">
       <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"
         @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />
@@ -454,14 +454,14 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 
         <!-- Album Info -->
         <div class="flex-1">
-          <h1 class="text-4xl font-bold mb-2">{{ album.title }}</h1>
+          <h1 class="text-4xl font-bold mb-2 text-center lg:text-left">{{ album.title }}</h1>
 
           <!-- Album Artists with Links -->
-          <div class="text-xl text-base-content/80 mb-2">
+          <div class="text-xl text-base-content/80 mb-2 text-center lg:text-left">
             <span v-if="formattedAlbumArtists.length === 0">Unknown Artist</span>
             <template v-else>
               <span v-for="(artist, index) in formattedAlbumArtists" :key="artist.artistId" class="mr-1">
-                <NuxtLink :to="artist.url" class="hover:underline" :class="{ 'font-semibold': artist.isPrimary }">
+                <NuxtLink :to="artist.url" :class="['hover:underline', { 'font-semibold': artist.isPrimary }]">
                   {{ artist.name }}
                 </NuxtLink>
                 <span v-if="artist.displayRole" class="text-sm text-base-content/60">{{ artist.displayRole }}</span>
@@ -471,7 +471,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
             </template>
           </div>
 
-          <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6">
+          <div class="flex items-center gap-4 text-sm text-base-content/60 mb-6 justify-center lg:justify-start">
             <div class="flex items-center">
               <Icon name="material-symbols:music-note" class="w-4 h-4 mr-1" />
               <span>{{ playerReadyTracks.length || 0 }} tracks</span>
@@ -482,10 +482,14 @@ const onAlbumUpdateError = (errorMessage: string): void => {
                 || 0),
                 0)) }}</span>
             </div>
+            <div class="flex items-center">
+              <Icon name="material-symbols:album" class="w-4 h-4 mr-1" />
+              <span>{{ album.year }}</span>
+            </div>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-3 items-center justify-center lg:justify-start">
             <button @click="playOrPauseCurrentAlbum" class="btn btn-xl btn-circle btn-primary">
               <Icon name="material-symbols:play-arrow" class="w-5 h-5"
                 v-if="!isCurrentAlbumLoaded || !playerStore.isPlaying" />

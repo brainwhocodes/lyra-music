@@ -24,6 +24,7 @@ export const usePlayerStore = defineStore('player', () => {
   const isShuffled = ref<boolean>(false);
   const originalQueue = ref<Track[]>([]); // To restore order when shuffle is turned off
   const repeatMode = ref<'none' | 'one' | 'all'>('none');
+  const scrobbledCurrentTrack = ref<boolean>(false);
 
   // New state for "true shuffle"
   const playedTrackIdsInShuffle = ref<Set<string>>(new Set());
@@ -131,6 +132,7 @@ export const usePlayerStore = defineStore('player', () => {
     isPlaying.value = false;
     currentTime.value = 0;
     duration.value = 0;
+    scrobbledCurrentTrack.value = false;
   };
 
   const _setupAudioElement = () => {
@@ -155,6 +157,7 @@ export const usePlayerStore = defineStore('player', () => {
     // Create new audio element
     audioElement.value = new Audio(source);
     audioElement.value.volume = volume.value;
+    scrobbledCurrentTrack.value = false; // Reset scrobble status for new track
 
     // Attach event listeners
     audioElement.value.addEventListener('play', _handlePlay);
@@ -277,6 +280,7 @@ export const usePlayerStore = defineStore('player', () => {
       playedTrackIdsInShuffle.value.add(track.trackId);
     }
 
+    scrobbledCurrentTrack.value = false; // Reset scrobble status for new track
     _setupAudioElement();
   };
 
@@ -589,6 +593,43 @@ export const usePlayerStore = defineStore('player', () => {
   // Ensure cleanup when store instance is effectively destroyed (though Pinia stores are generally singletons)
   // If used within a component, cleanup might happen in onUnmounted
   // For a global store, explicit cleanup might be needed on app unload if necessary.
+
+  // Watch for time updates to scrobble tracks
+  watch([currentTime, currentTrack, duration], async ([time, track, trackDuration]: [number, Track | null, number]) => {
+    if (!track || scrobbledCurrentTrack.value || !trackDuration) {
+      return;
+    }
+
+    // Scrobble if played for 30 seconds or 50% of duration
+    const scrobbleThresholdTime = 30; // seconds
+    const scrobbleThresholdPercent = 0.5;
+
+    if (time >= scrobbleThresholdTime || (trackDuration > 0 && time >= trackDuration * scrobbleThresholdPercent)) {
+      scrobbledCurrentTrack.value = true;
+      try {
+        // console.log(`Scrobbling track: ${track.trackId}`);
+        await $fetch('/api/plays', {
+          method: 'POST',
+          body: {
+            trackId: track.trackId,
+            playDurationMs: Math.floor(time * 1000), // Send current listened duration
+            source: 'web-player',
+          },
+        });
+      } catch (error) {
+        console.error('Failed to scrobble track:', error);
+        // Optionally reset scrobbledCurrentTrack.value = false to allow retry on next timeupdate,
+        // or implement a more robust retry mechanism.
+      }
+    }
+  });
+
+  // Watch for current track changes to reset scrobble status
+  watch(currentTrack, (newTrack: Track | null, oldTrack: Track | null) => {
+    if (newTrack?.trackId !== oldTrack?.trackId) {
+      scrobbledCurrentTrack.value = false;
+    }
+  });
 
   const updateAlbumDetailsInPlayer = (updatedAlbum: Pick<Album, 'albumId' | 'title' | 'coverPath'> & { artistName?: string }) => {
     if (!updatedAlbum || !updatedAlbum.albumId) {

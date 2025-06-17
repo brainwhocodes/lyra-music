@@ -320,66 +320,63 @@ export async function getOrCreateArtistMinimal({
  */
 export async function findOrCreateAlbum({
   albumTitle,
-  artistsArray, // Changed from artistIds and primaryArtistId
+  artistsArray,
   userId,
   year,
-  coverPath,
+  coverPath, // This is the cover path from the file's metadata, if any
   musicbrainzReleaseId,
 }: FindOrCreateAlbumParams): Promise<Album | null> {
   if (!albumTitle || !artistsArray || artistsArray.length === 0 || !userId) return null;
-  
+
   try {
-    // Quick check for album in cache first
     const primaryArtist = artistsArray.find(a => a.isPrimary);
-    if (!primaryArtist) return null;
-    
-    // First check cache by album title and primary artist ID
-    const cachedAlbums = Array.from(albumCache.values());
-    const existingAlbumByTitle = cachedAlbums.find(album => {
-      // Get the album's artists from cache
-      const albumArtists = albumArtistsCache.get(album.albumId);
-      
-      return album.title === albumTitle && 
-             albumArtists?.some(a => a.artistId === primaryArtist.artistId && a.isPrimary);
-    });
-    
-    if (existingAlbumByTitle) {
-      // Found in cache, return it directly
-      return existingAlbumByTitle;
+    if (!primaryArtist) {
+      // console.warn(`No primary artist found for album: ${albumTitle}. Skipping album creation/update.`);
+      return null;
     }
-    
-    // If not found by title, check by MusicBrainz ID if available
+
+    let albumRecord: Album | undefined | null = null;
+    let isNewAlbum: boolean = false;
+
+    // Priority 1: Check cache by MusicBrainz ID if provided
     if (musicbrainzReleaseId) {
-      // Check cache by MBID
-      const existingAlbumByMbid = cachedAlbums.find(album => 
-        album.musicbrainzReleaseId === musicbrainzReleaseId
-      );
-      
-      if (existingAlbumByMbid) {
-        return existingAlbumByMbid;
-      }
-      
-      // Then check database directly by MBID
+      const cachedAlbums = Array.from(albumCache.values());
+      albumRecord = cachedAlbums.find(album => album.musicbrainzReleaseId === musicbrainzReleaseId);
+      // if (albumRecord) {
+      //   console.log(`Album "${albumTitle}" found in cache by MBID: ${musicbrainzReleaseId}`);
+      // }
+    }
+
+    // Priority 2: Check database by MusicBrainz ID if provided and not found in cache
+    if (!albumRecord && musicbrainzReleaseId) {
       const albumsByMbid = await db
         .select()
         .from(albums)
         .where(eq(albums.musicbrainzReleaseId, musicbrainzReleaseId))
         .limit(1);
-      
       if (albumsByMbid.length > 0) {
-        const albumRecord = albumsByMbid[0];
-        
-        // Store in cache before returning
+        albumRecord = albumsByMbid[0];
         albumCache.set(albumRecord.albumId, albumRecord);
-        return albumRecord;
+        // console.log(`Album "${albumTitle}" found in DB by MBID: ${musicbrainzReleaseId}`);
       }
     }
-    
-    // If not found in cache or by MBID, check database by title and primary artist
-    let existingAlbumQuery;
-    
-    if (primaryArtist) {
-      existingAlbumQuery = db.select({
+
+    // Priority 3: Check cache by Title and Primary Artist ID if not found by MBID
+    if (!albumRecord) {
+      const cachedAlbums = Array.from(albumCache.values());
+      albumRecord = cachedAlbums.find(album => {
+        const albumArtistsFromCache = albumArtistsCache.get(album.albumId);
+        return album.title === albumTitle &&
+               albumArtistsFromCache?.some(a => a.artistId === primaryArtist.artistId && a.isPrimary);
+      });
+      // if (albumRecord) {
+      //   console.log(`Album "${albumTitle}" found in cache by Title & Primary Artist`);
+      // }
+    }
+
+    // Priority 4: Check database by Title and Primary Artist ID if not found by MBID or cache
+    if (!albumRecord) {
+      const existingAlbumResult = await db.select({
         albumId: albums.albumId,
         title: albums.title,
         year: albums.year,
@@ -394,58 +391,78 @@ export async function findOrCreateAlbum({
         .where(and(
           eq(albums.title, albumTitle),
           eq(albumArtists.artistId, primaryArtist.artistId),
-          eq(albumArtists.isPrimaryArtist, 1)
+          eq(albumArtists.isPrimaryArtist, 1) // Ensure primary artist match
         ))
         .limit(1);
-    } else {
-      // Fallback: if no primary artist specified, try by title only (less reliable)
-      existingAlbumQuery = db.select().from(albums).where(eq(albums.title, albumTitle)).limit(1);
-    }
-    
-    const existingAlbumResult = await existingAlbumQuery;
-    let albumRecord: Album;
 
-    if (existingAlbumResult.length > 0) {
-      const firstResultItem = existingAlbumResult[0];
-      // Check if the result item has a nested 'albums' property, which indicates a specific structure from a join query.
-      if (firstResultItem && typeof firstResultItem === 'object' && 'albums' in firstResultItem && firstResultItem.albums !== null && typeof firstResultItem.albums === 'object') {
-        // If so, the actual album data is within firstResultItem.albums
-        albumRecord = firstResultItem.albums as Album;
-      } else {
-        // Otherwise, the item itself should be the album data.
-        albumRecord = firstResultItem as Album;
+      if (existingAlbumResult.length > 0) {
+        albumRecord = existingAlbumResult[0] as Album;
+        albumCache.set(albumRecord.albumId, albumRecord);
+        // console.log(`Album "${albumTitle}" found in DB by Title & Primary Artist`);
       }
-      
-      // If album exists, ensure MBID is up-to-date if provided
+    }
+
+    // If album exists, conditionally update it
+    if (albumRecord) {
+      isNewAlbum = false;
+      const updates: Partial<Omit<Album, 'albumId' | 'userId' | 'createdAt'>> & { updatedAt?: any } = {};
+
+      if (year !== undefined && year !== null && albumRecord.year !== year) {
+        updates.year = year;
+      }
+      if (coverPath && albumRecord.coverPath !== coverPath) {
+         updates.coverPath = coverPath;
+      }
       if (musicbrainzReleaseId && albumRecord.musicbrainzReleaseId !== musicbrainzReleaseId) {
+        updates.musicbrainzReleaseId = musicbrainzReleaseId;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = sql`CURRENT_TIMESTAMP`;
         const updatedResult = await db.update(albums)
-          .set({ musicbrainzReleaseId: musicbrainzReleaseId, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .set(updates)
           .where(eq(albums.albumId, albumRecord.albumId))
           .returning();
-        if (updatedResult.length > 0) albumRecord = updatedResult[0];
+        if (updatedResult.length > 0) {
+          albumRecord = updatedResult[0];
+          albumCache.set(albumRecord.albumId, albumRecord);
+          // console.log(`Album "${albumTitle}" updated.`);
+        }
       }
     } else {
+      // Album does not exist, create it
+      isNewAlbum = true;
       const newAlbumId = uuidv7();
+      const newAlbumValues: typeof albums.$inferInsert = {
+        albumId: newAlbumId,
+        title: albumTitle,
+        userId: userId,
+      };
+      if (year !== undefined && year !== null) newAlbumValues.year = year;
+      if (coverPath) newAlbumValues.coverPath = coverPath;
+      if (musicbrainzReleaseId) newAlbumValues.musicbrainzReleaseId = musicbrainzReleaseId;
+
       const newAlbumResult = await db
         .insert(albums)
-        .values({
-          albumId: newAlbumId,
-          title: albumTitle,
-          year: year,
-          coverPath: coverPath,
-          musicbrainzReleaseId: musicbrainzReleaseId,
-          userId: userId,
-        })
+        .values(newAlbumValues)
         .returning();
 
       if (!newAlbumResult || newAlbumResult.length === 0) {
+        // console.error(`Failed to create new album: ${albumTitle}`);
         return null;
       }
       albumRecord = newAlbumResult[0];
+      albumCache.set(albumRecord.albumId, albumRecord);
+      // console.log(`Album "${albumTitle}" created with ID: ${albumRecord.albumId}`);
     }
 
-    // --- Attempt to find MusicBrainz Release ID if missing ---
-    if (!albumRecord.musicbrainzReleaseId && primaryArtist && albumTitle) {
+    if (!albumRecord) { // Should not happen if creation/finding was successful
+        // console.error(`Album record is null after creation/update attempt for: ${albumTitle}`);
+        return null;
+    }
+    
+    // --- Metadata Enrichment for New Albums or Missing Info ---
+    if (!albumRecord.musicbrainzReleaseId && primaryArtist?.artistId) {
       const primaryArtistRecordResult = await db
         .select({ name: artists.name })
         .from(artists)
@@ -454,90 +471,89 @@ export async function findOrCreateAlbum({
 
       if (primaryArtistRecordResult.length > 0 && primaryArtistRecordResult[0].name) {
         const primaryArtistName = primaryArtistRecordResult[0].name;
-        const newMusicbrainzReleaseId = await searchReleaseByTitleAndArtist(albumTitle, primaryArtistName);
-
-        if (newMusicbrainzReleaseId) {
+        // console.log(`Searching MBID for "${albumTitle}" by "${primaryArtistName}"`);
+        const newMbId = await searchReleaseByTitleAndArtist(albumTitle, primaryArtistName);
+        if (newMbId) {
           const updatedResult = await db
             .update(albums)
-            .set({ musicbrainzReleaseId: newMusicbrainzReleaseId, updatedAt: sql`CURRENT_TIMESTAMP` })
-            .where(eq(albums.albumId, albumRecord.albumId))
+            .set({ musicbrainzReleaseId: newMbId, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .where(eq(albums.albumId, (albumRecord as Album).albumId))
             .returning();
           if (updatedResult.length > 0) {
-            albumRecord = updatedResult[0]; // Ensure albumRecord is the most up-to-date version
+            albumRecord = updatedResult[0];
+            albumCache.set((albumRecord as Album).albumId, albumRecord as Album);
+            // console.log(`Found and set MBID for "${albumTitle}": ${newMbId}`);
           }
         }
       }
     }
-    // --- End of MusicBrainz Release ID search ---
 
-    // Now handle artist relationships
-    // First, get existing artist relationships
-    const existingArtistRelationships = await getAlbumArtists(albumRecord.albumId);
-    
-    // Compare existing relationships with the ones we want to create
+    // Artist Relationships: Always manage
+    const existingArtistRelationships = await getAlbumArtists((albumRecord as Album).albumId);
     const relationshipsNeedUpdate = !compareArtistRelationships(existingArtistRelationships, artistsArray);
-    
+
     if (relationshipsNeedUpdate) {
-      // Delete existing relationships
-      await db.delete(albumArtists)
-        .where(eq(albumArtists.albumId, albumRecord.albumId));
-      
-      // Create new relationships
+      // console.log(`Updating artist relationships for album: ${albumTitle}`);
+      await db.delete(albumArtists).where(eq(albumArtists.albumId, (albumRecord as Album).albumId));
       for (const artistInfo of artistsArray) {
         await db.insert(albumArtists).values({
-          albumId: albumRecord.albumId,
+          albumId: (albumRecord as Album).albumId,
           artistId: artistInfo.artistId,
           role: artistInfo.role || null,
-          isPrimaryArtist: artistInfo.isPrimary ? 1 : 0, // Database uses 1/0 instead of true/false
+          isPrimaryArtist: artistInfo.isPrimary ? 1 : 0,
         });
-        
-        // Link user to artist
-        await linkUserToArtist(userId, artistInfo.artistId, "");
+        await linkUserToArtist(userId, artistInfo.artistId, "artist from album processing");
       }
-      
-      // Update cache with normalized values
-      albumArtistsCache.set(albumRecord.albumId, artistsArray.map(info => ({
+      albumArtistsCache.set((albumRecord as Album).albumId, artistsArray.map(info => ({
         artistId: info.artistId,
         role: info.role || null,
-        isPrimary: info.isPrimary
+        isPrimary: info.isPrimary,
       })));
     }
-
-    // Logic for fetching/updating cover art
-    // Check if we need to fetch cover art from MusicBrainz
-    const shouldFetchFromMusicBrainz = albumRecord.musicbrainzReleaseId && !albumRecord.coverPath;
-
-    if (shouldFetchFromMusicBrainz && albumRecord.musicbrainzReleaseId) { // Ensure MBID is valid before fetching
-      const downloadedArtPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(albumRecord.musicbrainzReleaseId);
+    
+    // Cover Art: Fetch from MusicBrainz ONLY if (is new album OR existing album has no coverPath) AND has an MBID
+    if ((isNewAlbum || !(albumRecord as Album).coverPath) && (albumRecord as Album).musicbrainzReleaseId) {
+      // console.log(`Attempting to download cover art for ${albumTitle} (MBID: ${(albumRecord as Album).musicbrainzReleaseId})`);
+      const downloadedArtPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz((albumRecord as Album).musicbrainzReleaseId as string);
       if (downloadedArtPath) {
+        // console.log(`Downloaded cover art for ${albumTitle} to ${downloadedArtPath}`);
         const updatedResult = await db
           .update(albums)
           .set({ coverPath: downloadedArtPath, updatedAt: sql`CURRENT_TIMESTAMP` })
-          .where(eq(albums.albumId, albumRecord.albumId))
+          .where(eq(albums.albumId, (albumRecord as Album).albumId))
           .returning();
-        if (updatedResult.length > 0) albumRecord = updatedResult[0];
+        if (updatedResult.length > 0) {
+          albumRecord = updatedResult[0];
+          albumCache.set((albumRecord as Album).albumId, albumRecord as Album);
+        }
       }
-    } else if (coverPath && !albumRecord.coverPath) {
-      // If a local coverPath is provided and the album doesn't have one, update it
-      const updatedResult = await db
-        .update(albums)
-        .set({ coverPath: coverPath, updatedAt: sql`CURRENT_TIMESTAMP` })
-        .where(eq(albums.albumId, albumRecord.albumId))
-        .returning();
-      if (updatedResult.length > 0) albumRecord = updatedResult[0];
     }
 
-    // Store in cache before returning
-    albumCache.set(albumRecord.albumId, albumRecord);
-    return albumRecord;
+    // Final check: if a coverPath was provided from scanner and album still has no cover, apply it
+    if (coverPath && !(albumRecord as Album).coverPath) {
+        // console.log(`Applying local cover art ${coverPath} to album ${albumTitle}`);
+        const updatedResult = await db
+            .update(albums)
+            .set({ coverPath: coverPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .where(eq(albums.albumId, (albumRecord as Album).albumId))
+            .returning();
+        if (updatedResult.length > 0) {
+            albumRecord = updatedResult[0];
+            albumCache.set((albumRecord as Album).albumId, albumRecord as Album);
+        }
+    }
+    
+    albumCache.set((albumRecord as Album).albumId, albumRecord as Album);
+    return albumRecord as Album;
+
   } catch (error: any) {
-    // console.error(`  Database error with album ${albumTitle}: ${error.message}`);
+    // console.error(`  Error in findOrCreateAlbum for "${albumTitle}": ${error.message}`);
     return null;
   }
 }
 
 /**
- * Compares two arrays of artist relationships to determine if they are equivalent.
+ * Compares two arrays of album artist relationships to determine if they are equivalent.
  * @param existing The existing artist relationships.
  * @param incoming The incoming artist relationships.
  * @returns True if the relationships are equivalent, false otherwise.

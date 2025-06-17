@@ -6,7 +6,7 @@
         <p v-if="currentTrackArtistNames" class="artist">{{ currentTrackArtistNames }}</p>
       </div>
       <button @click="closeFullScreenLyrics" class="close-button">
-        <i class="fas fa-times"></i> <!-- Or your preferred close icon -->
+        <Icon name="material-symbols:close-rounded" class="w-7 h-7" />
       </button>
     </div>
 
@@ -42,12 +42,6 @@
           <span class="lyrics-text">{{ line.text }}</span>
         </div>
       </div>
-    </div>
-
-    <div class="controls">
-      <button @click="toggleAutoScroll" :class="{ 'active': autoScroll }">
-        Auto-Scroll {{ autoScroll ? 'On' : 'Off' }}
-      </button>
     </div>
   </div>
 </template>

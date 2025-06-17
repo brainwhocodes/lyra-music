@@ -55,7 +55,7 @@
                 'past': isPastLine(line),
                 'cursor-pointer': playerStore.currentTrack // Add pointer cursor if clickable
               }"
-              :ref="el => { if (isActiveLine(line)) activeLineRef = el }"
+              :ref="(el: HTMLElement | null) => { if (isActiveLine(line)) activeLineRef = el }"
               @click="seekToLyricTime(line)"
               title="Click to jump to this line"
             >
@@ -163,7 +163,7 @@ function isActiveLine(line: TimestampedLyric): boolean {
   
   const lineTime = parseTimeToSeconds(line.time);
   const currentTimeSeconds = currentTime.value;
-  const nextLineIndex = lyrics.value.findIndex(l => l.time === line.time) + 1;
+  const nextLineIndex = lyrics.value.findIndex((l: TimestampedLyric) => l.time === line.time) + 1;
   
   if (nextLineIndex < lyrics.value.length) {
     const nextLineTime = parseTimeToSeconds(lyrics.value[nextLineIndex].time);
@@ -179,7 +179,7 @@ function isPastLine(line: TimestampedLyric): boolean {
   
   const lineTime = parseTimeToSeconds(line.time);
   const currentTimeSeconds = currentTime.value;
-  const nextLineIndex = lyrics.value.findIndex(l => l.time === line.time) + 1;
+  const nextLineIndex = lyrics.value.findIndex((l: TimestampedLyric) => l.time === line.time) + 1;
   
   if (nextLineIndex < lyrics.value.length) {
     const nextLineTime = parseTimeToSeconds(lyrics.value[nextLineIndex].time);
@@ -276,7 +276,7 @@ watch(() => playerStore.isLyricsModalVisible, (isVisible: boolean) => {
 });
 
 // Watch for current track changes while modal is open
-watch(currentTrackId, (newTrackId) => {
+watch(currentTrackId, (newTrackId: string | null) => {
   if (newTrackId && playerStore.isLyricsModalVisible) {
     fetchLyrics();
   } else if (!newTrackId && playerStore.isLyricsModalVisible) {

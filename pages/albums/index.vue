@@ -3,6 +3,16 @@
     class="albums w-full h-full px-4 pt-4 pb-20 bg-base-200 overflow-y-auto">
     <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
 
+    <!-- Search Input (Desktop) -->
+    <div class="mb-6 hidden sm:block">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Search albums by title or artist..."
+        class="input input-bordered w-full max-w-xs sm:max-w-sm md:max-w-md"
+      />
+    </div>
+
     <div v-if="loading" class="text-center">
       <span class="loading loading-lg loading-spinner"></span>
     </div>
@@ -15,14 +25,14 @@
       <span>Error loading albums: {{ error }}</span>
     </div>
 
-    <div v-else-if="!albums || albums.length === 0" class="text-center text-gray-500">
-      No albums found{{ artistName ? ` for ${artistName}` : '' }}.
+    <div v-else-if="!filteredAlbums || filteredAlbums.length === 0" class="text-center text-gray-500">
+      No albums found{{ artistName ? ` for ${artistName}` : '' }}{{ searchQuery ? ' matching your search' : ''}}.
     </div>
 
     <!-- Album List/Grid -->
     <div v-else
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      <AlbumCard v-for="album_item in (albums || [])" :key="album_item.albumId" :album="album_item"
+      <AlbumCard v-for="album_item in filteredAlbums" :key="album_item.albumId" :album="album_item"
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
         :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
         @card-click="goToAlbum(album_item.albumId)" @add-to-playlist="openAddToPlaylistModal"
@@ -82,7 +92,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from '#imports';
+import { ref, onMounted, computed, watch, onUnmounted } from '#imports';
+import { storeToRefs } from 'pinia';
+import { useSearchStore } from '~/stores/search-store';
 import { useRoute, useRouter } from 'vue-router';
 import { usePlayerStore } from '~/stores/player';
 import type { Album, AlbumArtistDetail } from '~/types/album';
@@ -97,6 +109,8 @@ definePageMeta({
 });
 
 const playerStore = usePlayerStore();
+const searchStore = useSearchStore();
+const { searchQuery } = storeToRefs(searchStore);
 const { getCoverArtUrl } = useCoverArt();
 
 // --- State for Album Details and Playback ---
@@ -115,6 +129,7 @@ const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; 
 // --- State for Albums List Display ---
 const route = useRoute();
 const artistName = ref<string | null>(null);
+// searchQuery is now from searchStore
 
 // Computed property for API query parameters for fetching the albums list
 const apiQuery = computed(() => {
@@ -129,6 +144,22 @@ const { data: albums, pending: loading, error } = await useLazyFetch<Album[]>('/
   query: apiQuery,
   watch: [apiQuery], // Automatically re-fetch when apiQuery changes
   immediate: true // Fetch immediately on component setup
+});
+
+// Computed property to filter albums based on search query
+const filteredAlbums = computed(() => {
+  if (!albums.value) return [];
+  if (!searchQuery.value.trim()) {
+    return albums.value;
+  }
+  const lowerSearchQuery = searchQuery.value.toLowerCase();
+  return albums.value.filter((album: Album) => {
+    const titleMatch = album.title?.toLowerCase().includes(lowerSearchQuery);
+    const artistMatch = album.artists?.some((artist: AlbumArtistDetail) =>
+      artist.name?.toLowerCase().includes(lowerSearchQuery)
+    );
+    return titleMatch || artistMatch;
+  });
 });
 
 // Watch the fetched albums data to derive artistName
@@ -148,6 +179,16 @@ watch(albums, (newAlbums: Album[] | null) => {
         artistName.value = firstAlbum.artists[0].name;
       }
     }
+  }
+});
+
+onMounted(() => {
+  searchStore.setActiveSearchContext('albums');
+});
+
+onUnmounted(() => {
+  if (searchStore.activeSearchContext === 'albums') {
+    searchStore.clearSearch(); // Clears query and context
   }
 });
 

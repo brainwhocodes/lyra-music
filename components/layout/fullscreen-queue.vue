@@ -30,8 +30,8 @@ const getTrackKey = (track: Track, index: number): string => {
   >
     <!-- Header -->
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
-      <h2 class="text-xl font-semibold">Up Next</h2>
-      <button @click="closeQueueView" class="btn btn-ghost btn-sm btn-circle">
+      <h2 class="text-xl font-semibold pt-2">Up Next</h2>
+      <button @click="closeQueueView" class="btn btn-ghost btn-xl pt-2 btn-circle">
         <Icon name="material-symbols:close-rounded" class="w-7 h-7" />
       </button>
     </div>

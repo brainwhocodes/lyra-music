@@ -1,32 +1,32 @@
 <template>
-  <div v-if="playerStore.isFullScreenPlayerVisible && playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-8 sm:pt-4 select-none">
+  <div v-if="playerStore.isFullScreenPlayerVisible && playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-6 sm:pt-4 select-none">
     <FullScreenLyrics v-if="playerStore.isFullScreenLyricsVisible" />
     <!-- Top Bar -->
-    <div class="flex justify-between items-center mb-6">
-      <button @click="playerStore.toggleFullScreenPlayer()" class="p-2 -ml-2">
+    <div class="flex justify-between items-center mb-2">
+      <button @click="playerStore.toggleFullScreenPlayer()" class="p-2 -ml-2 -mt-8 text-xl">
         <Icon name="material-symbols:keyboard-arrow-down-rounded" class="w-8 h-8" />
       </button>
       <div class="text-center">
         <div class="text-xs uppercase text-neutral-400 tracking-wider">Playing</div>
-        <div class="text-base font-semibold truncate max-w-xs sm:max-w-sm md:max-w-md">{{ playerStore.currentTrack.albumTitle || 'Unknown Album' }}</div>
+        <div class="text-base font-semibold truncate w-75">{{ playerStore.currentTrack.albumTitle || 'Unknown Album' }}</div>
       </div>
-      <button class="p-2 -mr-2">
+      <button class="p-2 -mr-2 -mt-8 text-xl">
         <Icon name="material-symbols:more-vert" class="w-7 h-7" />
       </button>
     </div>
 
     <!-- Album Art -->
     <div class="flex items-center justify-center my-2 px-2 sm:px-8">
-      <img 
+      <img
           v-if="playerStore.currentTrack.coverPath" 
           :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)" 
           :alt="`${playerStore.currentTrack.title} cover`"
-          class="w-full max-w-md aspect-square rounded-lg shadow-xl object-cover"
+          class="w-full max-w-md aspect-square rounded-lg shadow-xl object-cover h-75"
         />
     </div>
 
     <!-- Track Info & Like Button -->
-    <div class="flex justify-between items-center my-6 px-1">
+    <div class="flex justify-between items-center my-2 px-1">
       <div>
         <h2 class="text-2xl font-bold truncate max-w-xs sm:max-w-sm md:max-w-md">{{ playerStore.currentTrack.title }}</h2>
         
@@ -52,7 +52,7 @@
       </button>
     </div>
     <!-- Playback Controls -->
-    <div class="flex justify-center items-center gap-x-6 mt-4 mb-8 px-2">
+    <div class="flex justify-center items-center gap-x-6 mt-4 mb-1 px-2">
       <button 
         class="btn btn-xl btn-ghost btn-circle"
         :class="{'text-accent': playerStore.isShuffled}"
@@ -106,7 +106,7 @@
     </div>
 
         <!-- Seek Bar -->
-    <div class="my-6 px-1">
+    <div class="my-2 px-1">
       <input 
         type="range" 
         min="0" 

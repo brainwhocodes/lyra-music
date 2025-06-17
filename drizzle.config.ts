@@ -8,7 +8,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default {
-  schema: './server/db/schema.ts', // Path to your schema file
+  schema: './server/db/schema/index.ts', // Path to your schema file
   out: './server/db/migrations', // Directory for migrations
   dialect: 'sqlite',
   dbCredentials: {

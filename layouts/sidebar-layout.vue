@@ -7,10 +7,29 @@
     <div v-if="!showFullScreenPlayer" class="relative flex flex-col h-full" :style="layoutStyle"> <!-- Changed to flex-col for mobile header -->
     <!-- Mobile Header with Hamburger -->
     <header v-if="clientReady && isMobileOrTablet" class="bg-base-100 p-2 shadow-md flex items-center z-30">
-      <button @click="toggleMobileSidebar" class="btn btn-ghost btn-square btn-sm">
-        <Icon name="material-symbols:menu-rounded" class="w-6 h-6" />
+      <button @click="toggleMobileSidebar" class="btn btn-ghost btn-square btn-sm flex-shrink-0">
+        <Icon name="material-symbols:menu-rounded" class="!w-[24px] !h-[24px]" />
       </button>
-      <h2 class="text-lg font-bold ml-2 text-primary">Lyra Music</h2>
+      <!-- Expanded Search Input -->
+      <div v-if="isMobileSearchVisible" class="flex-grow px-2">
+        <input
+          ref="mobileSearchInput"
+          type="text"
+          v-model="searchStore.searchQuery"
+          placeholder="Search albums..."
+          class="input input-sm input-bordered w-full"
+          @blur="isMobileSearchVisible = false"
+          @click.stop
+        />
+      </div>
+
+      <!-- Default Header Content -->
+      <div v-else class="flex-grow flex items-center">
+        <h2 class="text-lg font-bold ml-2 text-primary flex-grow">Lyra Music</h2>
+        <button v-if="searchStore.activeSearchContext === 'albums'" @click="showMobileSearch" class="btn btn-ghost btn-square btn-sm flex-shrink-0">
+          <Icon name="material-symbols:search-rounded" class="!w-[24px] !h-[24px]" />
+        </button>
+      </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden"> <!-- New div to wrap sidebar and main for horizontal layout -->
@@ -26,9 +45,9 @@
             // Desktop specific classes
             'w-64 relative': !isMobileOrTablet
           }
-        ].filter(Boolean)"
+        ]"
       >
-      <h2 class="text-xl font-bold mb-6 text-primary">Hopeium</h2>
+      <h2 class="text-xl font-bold mb-6 text-primary">Lyra Music</h2>
 
       <!-- Recommend Section -->
       <nav class="mb-auto">
@@ -37,6 +56,7 @@
             <li><NuxtLink to="/albums" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:album-outline" class="w-5 h-5" /> Albums</NuxtLink></li>
             <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
             <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
+            <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:mood-outline" class="w-5 h-5" /> Playlists</NuxtLink></li>
           </ul>
       </nav>
 
@@ -80,17 +100,30 @@
 import GlobalAudioPlayer from '~/components/player/global-audio-player.vue';
 import FullScreenPlayer from '~/components/player/full-screen-player.vue';
 import MiniPlayer from '~/components/player/mini-player.vue';
+import { useSearchStore } from '~/stores/search-store';
+import { useRoute } from 'vue-router';
 import QueueSidebar from '~/components/layout/queue-sidebar.vue';
 import { usePlayerStore } from '~/stores/player';
-import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import LyricsModal from '~/components/modals/lyrics-modal.vue';
 
 const playerStore = usePlayerStore();
+const searchStore = useSearchStore();
+const route = useRoute(); // Access route information
+// No need for storeToRefs for searchQuery here if directly using searchStore.searchQuery in template
 const clientReady = ref(false);
 
 const isMobileSidebarOpen = ref(false);
 const toggleMobileSidebar = (): void => {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
+};
+
+const isMobileSearchVisible = ref(false);
+const mobileSearchInput = ref<HTMLInputElement | null>(null);
+
+const showMobileSearch = async () => {
+  isMobileSearchVisible.value = true;
+  await nextTick();
+  mobileSearchInput.value?.focus();
 };
 
 
@@ -106,7 +139,7 @@ const layoutStyle = computed(() => {
 // We'll use onMounted to check auth status to avoid redirect loops during SSR
 // This prevents the layout from redirecting during the initial render
 onMounted(() => {
-  const route = useRoute();
+  // Use the 'route' variable already defined in the component's setup scope
   // Skip auth check if we're already on a public route
   if (route.path === '/login' || route.path === '/register') {
     return;
@@ -126,13 +159,23 @@ const updateScreenWidth = (): void => {
   }
 };
 
-onMounted(async () => { // This is line 126 in the provided snippet, now async
+onMounted(async () => {
+  console.log('[SidebarLayout] onMounted for clientReady: start');
+  try {
   if (typeof window !== 'undefined') {
+    console.log('[SidebarLayout] Adding resize listener and updating screen width');
     window.addEventListener('resize', updateScreenWidth);
     updateScreenWidth(); // Initialize on mount
+    console.log('[SidebarLayout] Screen width updated:', screenWidth.value);
   }
-  await nextTick(); // Wait for reactive updates to settle (e.g., isMobileOrTablet)
+  console.log('[SidebarLayout] Awaiting nextTick');
+  await nextTick();
+  console.log('[SidebarLayout] nextTick completed');
   clientReady.value = true;
+  console.log('[SidebarLayout] clientReady set to true');
+} catch (e) {
+  console.error('[SidebarLayout] Error in onMounted for clientReady:', e);
+}
 });
 
 onUnmounted(() => {

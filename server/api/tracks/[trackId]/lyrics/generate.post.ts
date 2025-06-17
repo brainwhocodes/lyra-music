@@ -173,7 +173,11 @@ export default defineEventHandler(async (event) => {
     }
     if (tempProcessedDir) {
        try {
-         rm(tempProcessedDir, { recursive: true, force: true } as any);
+         rm(tempProcessedDir, { recursive: true, force: true } as any, (err) => {
+           if (err) {
+             console.error(`[LyricsGeneration] Error cleaning up temp directory ${tempProcessedDir}:`, err);
+           }
+         });
          console.log(`[LyricsGeneration] Cleaned up temp directory: ${tempProcessedDir}`);
        } catch (cleanupDirError) {
          console.error(`[LyricsGeneration] Error cleaning up temp directory ${tempProcessedDir}:`, cleanupDirError);

@@ -2,14 +2,9 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
-import { useRuntimeConfig } from '#imports'; // Use Nuxt's runtime config
 import path from 'node:path'; // Added import
 
-// Get the database path from runtime configuration (e.g., defined in nuxt.config.ts or .env)
-const config = useRuntimeConfig();
-// Ensure DATABASE_URL is defined in your .env or nuxt.config.ts runtimeConfig
-// You might need to adjust 'databaseUrl' if you named it differently in your runtime config
-let sqlitePath = config.public?.databaseUrl || config.databaseUrl || process.env.DATABASE_URL;
+let sqlitePath = process.env.DATABASE_URL;
 
 if (!sqlitePath) {
   // Provide a default path or throw a more specific error

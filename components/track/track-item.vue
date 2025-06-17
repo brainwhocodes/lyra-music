@@ -6,7 +6,7 @@
     @click="onPlayTrack"
   >
     <td class="w-12 text-center text-sm color-primary-content">{{ trackNumber }}</td>
-    <td class="w-12 text-center">
+    <td class="w-12 text-center hidden xs:hidden sm:hidden md:hidden lg:table-cell">
       <Icon
         v-if="isCurrentTrack && isPlaying"
         name="material-symbols:pause-rounded"
@@ -30,7 +30,7 @@
         <div :class="['font-medium', isCurrentTrack ? 'text-primary' : '']">{{ track.title }}</div>
         
         <!-- Artist display section -->
-        <div class="text-sm text-base-content/70">
+        <div class="text-sm text-base-content/70 truncate w-30 overflow-hidden">
           <!-- If track has formatted artists from the composable -->
           <template v-if="formattedArtists.length > 0">
             <span v-for="(artist, index) in formattedArtists" :key="artist.artistId" class="mr-1">
