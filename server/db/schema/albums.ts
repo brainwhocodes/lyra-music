@@ -10,6 +10,8 @@ export const albums = sqliteTable('albums', {
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   year: integer('year'),
   coverPath: text('cover_path'),
+  processedStatus: integer('processed_status').default(-1).notNull(),
+  folderPath: text('folder_path'),
   musicbrainzReleaseId: text('musicbrainz_release_id'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),

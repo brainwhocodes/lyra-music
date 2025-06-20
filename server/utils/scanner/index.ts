@@ -53,6 +53,7 @@ interface ScanLibraryParams {
   libraryId: string;
   libraryPath: string;
   userId: string;
+  processOnlyUnprocessed?: boolean;
 }
 
 /**
@@ -93,6 +94,7 @@ async function processAudioFile(
 
   try {
     const { metadata, albumArtPath } = await extractMetadata(filePath);
+    const folderPath = dirname(filePath);
     const common = metadata.common || {};
 
     const trackTitle = common.title?.trim();
@@ -240,6 +242,7 @@ async function processAudioFile(
       year: trackYear,
       coverPath: albumArtPath,
       musicbrainzReleaseId: musicbrainzReleaseIdFromMeta,
+      folderPath,
     });
 
     // --- Determine skipMusicBrainzDetailsFetch ---
@@ -527,33 +530,43 @@ export async function scanLibrary({
   libraryId,
   libraryPath,
   userId,
+  processOnlyUnprocessed = false,
 }: ScanLibraryParams): Promise<ScanStats> {
-  console.log(`Starting scan for library ID: ${libraryId}, Path: ${libraryPath}, User ID: ${userId}`);
-  
-  // Reset any cached data from previous scans
-  await dbOperations.resetScanSession();
-  
-  // Initialize counters
+  console.log(`Starting scan for library: ${libraryPath}`);
+  await dbOperations.resetScanSession(); // Clear caches for new scan
+
   const stats: ScanStats = {
     scannedFiles: 0,
     addedTracks: 0,
     addedArtists: 0,
     addedAlbums: 0,
-    errors: 0
+    errors: 0,
   };
-  
-  // Track albums that need cover art for batch processing
-  const albumsNeedingCovers: { albumId: string; title: string; artistName: string }[] = [];
-  
+
   try {
     // Get initial counts from database to calculate additions
     const initialCounts = await getEntityCounts(userId);
-    
-    // Find all audio files in the library
-    const audioFiles = await fileUtils.findAudioFiles(libraryPath);
+    const albumsNeedingCovers: { albumId: string; title: string; artistName: string }[] = [];
+
+    let audioFiles: string[] = [];
+    if (processOnlyUnprocessed) {
+      console.log('Scanning for unprocessed albums only.');
+      const albumsToScan = await dbOperations.getAlbumsToProcess(userId, true);
+      console.log(`Found ${albumsToScan.length} unprocessed albums to scan.`);
+
+      const filePromises = albumsToScan
+        .filter(album => album.folderPath)
+        .map(album => fileUtils.findAudioFiles(album.folderPath!));
+
+      const filesByAlbum = await Promise.all(filePromises);
+      audioFiles = filesByAlbum.flat();
+    } else {
+      console.log('Performing a full library scan.');
+      audioFiles = await fileUtils.findAudioFiles(libraryPath);
+    }
     
     if (audioFiles.length === 0) {
-      console.log(`No audio files found in library ID: ${libraryId}, Path: ${libraryPath}`);
+      console.log(`No audio files found in library: ${libraryPath}`);
       return stats;
     }
     

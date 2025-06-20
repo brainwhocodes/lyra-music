@@ -1,4 +1,4 @@
-import { eq, and, sql, or } from 'drizzle-orm';
+import { eq, and, sql, or, inArray } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import {
@@ -14,6 +14,7 @@ import {
   type Track, // Added Track type
   artistUsers,
 } from '~/server/db/schema';
+import { AlbumProcessStatus } from '~/types/enums/album-process-status';
 import { searchReleaseByTitleAndArtist } from '~/server/utils/musicbrainz'; // searchArtistByName, getArtistWithImages, extractArtistImageUrls removed as artist images will now be fetched from Genius
 import { GeniusService, type GeniusArtist as GeniusApiArtistInterface } from '~/server/utils/genius-service';
 import sharp from 'sharp';
@@ -52,6 +53,7 @@ export interface FindOrCreateAlbumParams {
   year?: number | null;
   coverPath?: string | null;
   musicbrainzReleaseId?: string | null;
+  folderPath?: string | null;
 }
 
 export interface TrackFileMetadata {
@@ -325,6 +327,7 @@ export async function findOrCreateAlbum({
   year,
   coverPath, // This is the cover path from the file's metadata, if any
   musicbrainzReleaseId,
+  folderPath, // New parameter
 }: FindOrCreateAlbumParams): Promise<Album | null> {
   if (!albumTitle || !artistsArray || artistsArray.length === 0 || !userId) return null;
 
@@ -338,8 +341,21 @@ export async function findOrCreateAlbum({
     let albumRecord: Album | undefined | null = null;
     let isNewAlbum: boolean = false;
 
-    // Priority 1: Check cache by MusicBrainz ID if provided
-    if (musicbrainzReleaseId) {
+    // Priority 1: Check by folderPath if provided
+    if (folderPath) {
+      const albumsByFolder = await db
+        .select()
+        .from(albums)
+        .where(and(eq(albums.folderPath, folderPath), eq(albums.userId, userId)))
+        .limit(1);
+      if (albumsByFolder.length > 0) {
+        albumRecord = albumsByFolder[0];
+        albumCache.set(albumRecord.albumId, albumRecord);
+      }
+    }
+
+    // Priority 2: Check cache by MusicBrainz ID if provided
+    if (!albumRecord && musicbrainzReleaseId) {
       const cachedAlbums = Array.from(albumCache.values());
       albumRecord = cachedAlbums.find(album => album.musicbrainzReleaseId === musicbrainzReleaseId);
       // if (albumRecord) {
@@ -347,7 +363,7 @@ export async function findOrCreateAlbum({
       // }
     }
 
-    // Priority 2: Check database by MusicBrainz ID if provided and not found in cache
+    // Priority 3: Check database by MusicBrainz ID if provided and not found in cache
     if (!albumRecord && musicbrainzReleaseId) {
       const albumsByMbid = await db
         .select()
@@ -361,7 +377,7 @@ export async function findOrCreateAlbum({
       }
     }
 
-    // Priority 3: Check cache by Title and Primary Artist ID if not found by MBID
+    // Priority 4: Check cache by Title and Primary Artist ID if not found by other means
     if (!albumRecord) {
       const cachedAlbums = Array.from(albumCache.values());
       albumRecord = cachedAlbums.find(album => {
@@ -374,7 +390,7 @@ export async function findOrCreateAlbum({
       // }
     }
 
-    // Priority 4: Check database by Title and Primary Artist ID if not found by MBID or cache
+    // Priority 5: Check database by Title and Primary Artist ID if not found by other means
     if (!albumRecord) {
       const existingAlbumResult = await db.select({
         albumId: albums.albumId,
@@ -416,6 +432,9 @@ export async function findOrCreateAlbum({
       if (musicbrainzReleaseId && albumRecord.musicbrainzReleaseId !== musicbrainzReleaseId) {
         updates.musicbrainzReleaseId = musicbrainzReleaseId;
       }
+      if (folderPath && albumRecord.folderPath !== folderPath) {
+        updates.folderPath = folderPath;
+      }
 
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = sql`CURRENT_TIMESTAMP`;
@@ -437,6 +456,7 @@ export async function findOrCreateAlbum({
         albumId: newAlbumId,
         title: albumTitle,
         userId: userId,
+        folderPath: folderPath, // New field
       };
       if (year !== undefined && year !== null) newAlbumValues.year = year;
       if (coverPath) newAlbumValues.coverPath = coverPath;
@@ -977,10 +997,39 @@ export async function getTrackArtists(trackId: string): Promise<{ artistId: stri
   }
 }
 
+/**
+ * Gets albums to process based on their processing status.
+ * @param userId The ID of the user.
+ * @param processOnlyUnprocessed If true, only fetches albums that have not been processed or have failed.
+ * @returns An array of albums to be processed.
+ */
+export async function getAlbumsToProcess(userId: string, processOnlyUnprocessed: boolean): Promise<Album[]> {
+  if (processOnlyUnprocessed) {
+    // Process albums that are not yet processed or have failed previously.
+    return db
+      .select()
+      .from(albums)
+      .where(and(
+        eq(albums.userId, userId),
+        inArray(albums.processedStatus, [
+          AlbumProcessStatus.NOT_PROCESSED,
+          AlbumProcessStatus.FAILED,
+        ]),
+      ));
+  }
+
+  // Otherwise, fetch all albums for the user.
+  return db
+    .select()
+    .from(albums)
+    .where(eq(albums.userId, userId));
+}
+
 export const dbOperations = {
   findOrCreateArtist,
   getOrCreateArtistMinimal,
   findOrCreateAlbum,
+  getAlbumsToProcess,
   findOrCreateTrack,
   findOrCreateGenre,
   linkAlbumToGenre,

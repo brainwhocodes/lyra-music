@@ -9,6 +9,12 @@ export default defineNuxtConfig({
       enabled: true
     }
   },
+  // Define explicit paths for public assets
+  app: {
+    baseURL: '/',
+    buildAssetsDir: '/_nuxt/',
+    cdnURL: ''
+  },
   css: ['~/assets/app.css'],
   modules: [
     '@nuxt/content',
