@@ -1,60 +1,108 @@
-// server/api/genres/[genreId]/albums.get.ts
-import { defineEventHandler, createError, getRouterParam } from 'h3';
+// server/api/genres/[genreId]/index.get.ts
+import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { albums, artists, albumGenres, genres as genresTable } from '~/server/db/schema'; // Renamed genres to avoid conflict with a variable
-import { eq, sql } from 'drizzle-orm';
-import type { Album } from '~/types/album'; // Assuming Album type is in types/track.ts or similar
+import { albums, artists, albumGenres, genres as genresTable, albumArtists } from '~/server/db/schema';
+import { eq, inArray } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
-  const genreId = getRouterParam(event, 'genreId');
-  console.log(`[API /genres/${genreId}/albums] Received request for genreId: ${genreId}`);
+  const genreId = event.context.params?.genreId;
 
   if (!genreId) {
-    console.error(`[API /genres/[genreId]/albums] Error: Genre ID is required.`);
     throw createError({
       statusCode: 400,
-      message: 'Genre ID is required',
+      statusMessage: 'Genre ID is required',
     });
   }
 
   try {
-    // Fetch albums associated with the genreId
-    // Also fetch the artist's name for each album
-    const albumsData = await db
+    // 1. Fetch genre details
+    const genreDetailsResult = await db
       .select({
-        // Album fields
+        id: genresTable.genreId,
+        name: genresTable.name,
+      })
+      .from(genresTable)
+      .where(eq(genresTable.genreId, genreId))
+      .limit(1);
+
+    if (genreDetailsResult.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Genre not found',
+      });
+    }
+    const genreDetails = genreDetailsResult[0];
+
+    // 2. Fetch albums for the genre
+    const genreAlbums = await db
+      .select({
         albumId: albums.albumId,
         title: albums.title,
-        artistId: albums.artistId,
         year: albums.year,
         coverPath: albums.coverPath,
-        musicbrainzReleaseId: albums.musicbrainzReleaseId,
-        createdAt: albums.createdAt,
-        updatedAt: albums.updatedAt,
-        // Artist fields
-        artistName: sql<string>`coalesce(${artists.name}, 'Unknown Artist')`,
       })
       .from(albums)
       .innerJoin(albumGenres, eq(albums.albumId, albumGenres.albumId))
-      .leftJoin(artists, eq(albums.artistId, artists.artistId)) // Join to get artist name
       .where(eq(albumGenres.genreId, genreId))
-      .orderBy(albums.title) // Or artists.name, then albums.title
-      .all();
+      .orderBy(albums.title);
 
-    console.log(`[API /genres/${genreId}/albums] Raw albumsData from DB:`, JSON.stringify(albumsData, null, 2));
+    if (genreAlbums.length === 0) {
+      return {
+        genre: genreDetails,
+        albums: [],
+      };
+    }
 
-    // Map to the desired response structure, ensuring all Album properties are included
-    const albumsForGenre: Album[] = albumsData.map(data => ({
-      ...data,
-      tracks: [], // Add empty tracks array to satisfy the Album type
+    const albumIds = genreAlbums.map(a => a.albumId);
+
+    // 3. Fetch all artists for these albums
+    const artistsForAlbums = await db
+      .select({
+        albumId: albumArtists.albumId,
+        artistId: artists.artistId,
+        name: artists.name,
+        isPrimary: albumArtists.isPrimaryArtist,
+        role: albumArtists.role,
+      })
+      .from(albumArtists)
+      .innerJoin(artists, eq(albumArtists.artistId, artists.artistId))
+      .where(inArray(albumArtists.albumId, albumIds));
+
+    // 4. Group artists by album
+    const artistsByAlbumId = artistsForAlbums.reduce((acc, artist) => {
+      const albumId = artist.albumId;
+      if (!acc[albumId]) {
+        acc[albumId] = [];
+      }
+      acc[albumId].push({
+        id: artist.artistId,
+        name: artist.name,
+        isPrimary: !!artist.isPrimary,
+        role: artist.role,
+      });
+      return acc;
+    }, {} as Record<string, { id: string; name: string; isPrimary: boolean; role: string | null }[]>);
+
+    // 5. Combine albums with their artists
+    const albumsWithArtists = genreAlbums.map(album => ({
+      id: album.albumId,
+      title: album.title,
+      year: album.year,
+      coverPath: album.coverPath,
+      artists: artistsByAlbumId[album.albumId]?.sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0)) || [],
     }));
 
-    return albumsForGenre;
+    return {
+      genre: genreDetails,
+      albums: albumsWithArtists,
+    };
+
   } catch (error: any) {
-    console.error(`Error fetching albums for genre ID ${genreId}:`, error);
+    console.error(`Error fetching data for genre ${genreId}:`, error);
     throw createError({
       statusCode: 500,
-      message: 'Failed to fetch albums for the genre',
+      statusMessage: 'Failed to fetch data for the genre page',
+      message: error.message,
     });
   }
 });
