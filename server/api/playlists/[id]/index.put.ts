@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
       .update(playlists)
       .set({
         name: body.name.trim(),
-        updatedAt: sql`CURRENT_TIMESTAMP`,
+        updatedAt: new Date().toISOString(),
       })
       .where(
         and(

@@ -155,7 +155,7 @@ export async function findOrCreateArtist({
       if (needsMbidUpdate) {
         const updatedArtistWithMbid = await db.update(artists).set({
           musicbrainzArtistId: mbidToUse,
-          updatedAt: sql`CURRENT_TIMESTAMP`
+          updatedAt: new Date().toISOString()
         }).where(eq(artists.artistId, artistRecord.artistId)).returning();
         
         if (updatedArtistWithMbid.length > 0) {
@@ -244,7 +244,7 @@ export async function findOrCreateArtist({
           const dbImagePath = `/images/artists/${imageName}`;
           const updatedArtist = await db.update(artists).set({
             artistImage: dbImagePath,
-            updatedAt: sql`CURRENT_TIMESTAMP`
+            updatedAt: new Date().toISOString()
           }).where(eq(artists.artistId, artistRecord.artistId)).returning();
 
           if (updatedArtist.length > 0) {
@@ -303,7 +303,7 @@ export async function getOrCreateArtistMinimal({
       // If MBID was provided and differs from (or is missing on) the existing record, update it.
       if (musicbrainzArtistId && (!artist.musicbrainzArtistId || artist.musicbrainzArtistId !== musicbrainzArtistId)) {
         const updated = await db.update(artists)
-          .set({ musicbrainzArtistId: musicbrainzArtistId, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .set({ musicbrainzArtistId: musicbrainzArtistId, updatedAt: new Date().toISOString() })
           .where(eq(artists.artistId, artist.artistId))
           .returning();
         return updated.length > 0 ? updated[0] : artist;
@@ -504,7 +504,7 @@ export async function findOrCreateAlbum({
       }
 
       if (Object.keys(updates).length > 0) {
-        updates.updatedAt = sql`CURRENT_TIMESTAMP`;
+        updates.updatedAt = new Date().toISOString();
         const updatedResult = await db.update(albums)
           .set(updates)
           .where(eq(albums.albumId, albumRecord.albumId))
@@ -564,7 +564,7 @@ export async function findOrCreateAlbum({
         if (newMbId) {
           const updatedResult = await db
             .update(albums)
-            .set({ musicbrainzReleaseId: newMbId, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .set({ musicbrainzReleaseId: newMbId, updatedAt: new Date().toISOString() })
             .where(eq(albums.albumId, (albumRecord as Album).albumId))
             .returning();
           if (updatedResult.length > 0) {
@@ -607,7 +607,7 @@ export async function findOrCreateAlbum({
         // console.log(`Downloaded cover art for ${albumTitle} to ${downloadedArtPath}`);
         const updatedResult = await db
           .update(albums)
-          .set({ coverPath: downloadedArtPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .set({ coverPath: downloadedArtPath, updatedAt: new Date().toISOString() })
           .where(eq(albums.albumId, (albumRecord as Album).albumId))
           .returning();
         if (updatedResult.length > 0) {
@@ -622,7 +622,7 @@ export async function findOrCreateAlbum({
         // console.log(`Applying local cover art ${coverPath} to album ${albumTitle}`);
         const updatedResult = await db
             .update(albums)
-            .set({ coverPath: coverPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .set({ coverPath: coverPath, updatedAt: new Date().toISOString() })
             .where(eq(albums.albumId, (albumRecord as Album).albumId))
             .returning();
         if (updatedResult.length > 0) {
@@ -736,7 +736,7 @@ export async function findOrCreateTrack({
           .update(tracks)
           .set({
             ...trackData,
-            updatedAt: sql`CURRENT_TIMESTAMP`,
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(tracks.trackId, trackRecord.trackId))
           .returning();

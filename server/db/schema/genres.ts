@@ -6,8 +6,8 @@ import { v7 as uuidv7 } from 'uuid';
 export const genres = sqliteTable('genres', {
   genreId: text('genre_id').primaryKey().$defaultFn(() => uuidv7()),
   name: text('name').notNull().unique(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type Genre = InferSelectModel<typeof genres>;

@@ -11,8 +11,8 @@ export const lyrics = sqliteTable('lyrics', {
   source: text('source'),
   llmModelUsed: text('llm_model_used'),
   rawLlmOutput: text('raw_llm_output'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 }, (table) => {
   return {
     trackIdx: uniqueIndex('lyrics_track_idx').on(table.trackId),

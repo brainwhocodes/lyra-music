@@ -9,7 +9,7 @@ export const radioChannelTracks = sqliteTable('radio_channel_tracks', {
   radioTrackId: text('radio_track_id').primaryKey().$defaultFn(() => uuidv7()),
   channelId: text('channel_id').references(() => radioChannels.channelId, { onDelete: 'cascade' }).notNull(),
   trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
-  addedAt: text('added_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  addedAt: text('added_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type RadioChannelTrack = InferSelectModel<typeof radioChannelTracks>;

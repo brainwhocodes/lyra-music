@@ -15,7 +15,7 @@ export const albumArtists = sqliteTable('album_artists', {
     .references(() => artists.artistId, { onDelete: 'cascade' }),
   isPrimaryArtist: integer('is_primary_artist').default(0),
   role: text('role').default('performer'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type AlbumArtist = InferSelectModel<typeof albumArtists>;

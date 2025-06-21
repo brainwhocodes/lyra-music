@@ -8,8 +8,8 @@ export const playlists = sqliteTable('playlists', {
   playlistId: text('playlist_id').primaryKey().$defaultFn(() => uuidv7()),
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   name: text('name').notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type Playlist = InferSelectModel<typeof playlists>;

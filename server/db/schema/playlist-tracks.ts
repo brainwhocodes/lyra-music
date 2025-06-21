@@ -10,8 +10,8 @@ export const playlistTracks = sqliteTable('playlist_tracks', {
     playlistId: text('playlist_id').references(() => playlists.playlistId, { onDelete: 'cascade' }).notNull(),
     trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
     order: integer('order'),
-    addedAt: text('added_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-    updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    addedAt: text('added_at').$defaultFn(() => new Date().toISOString()).notNull(),
+    updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type PlaylistTrack = InferSelectModel<typeof playlistTracks>;

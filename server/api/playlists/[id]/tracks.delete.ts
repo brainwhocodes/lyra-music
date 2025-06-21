@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
         .update(playlistTracks)
         .set({
           order: i,
-          updatedAt: sql`CURRENT_TIMESTAMP`
+          updatedAt: new Date().toISOString()
         })
         .where(
           and(
@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
     // Update the playlist's updated_at timestamp
     await db
       .update(playlists)
-      .set({ updatedAt: sql`CURRENT_TIMESTAMP` })
+      .set({ updatedAt: new Date().toISOString() })
       .where(eq(playlists.playlistId, playlistId));
 
     // Get the updated playlist with tracks

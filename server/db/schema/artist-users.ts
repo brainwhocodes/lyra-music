@@ -13,7 +13,7 @@ export const artistUsers = sqliteTable('artist_users', {
   userId: text('user_id')
     .notNull()
     .references(() => users.userId, { onDelete: 'cascade' }),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type ArtistUser = InferSelectModel<typeof artistUsers>;

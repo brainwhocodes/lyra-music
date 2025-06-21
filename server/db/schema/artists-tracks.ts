@@ -11,8 +11,8 @@ export const artistsTracks = sqliteTable('artists_tracks', {
   trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
   role: text('role'), // e.g., "main", "featured", "remixer"
   isPrimaryArtist: integer('is_primary_artist').default(0).notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type ArtistsTracks = InferSelectModel<typeof artistsTracks>;

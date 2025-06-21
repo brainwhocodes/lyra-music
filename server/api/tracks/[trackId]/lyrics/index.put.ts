@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
       source: 'user_edited',
       llmModelUsed: null, // Clear LLM specific fields as lyrics are user-edited
       rawLlmOutput: null, // Clear LLM specific fields
-      updatedAt: sql`CURRENT_TIMESTAMP` as any,
+      updatedAt: new Date().toISOString() as any,
     };
 
     // Using onConflictDoUpdate because there's a unique index on trackId
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
           source: newLyricsData.source,
           llmModelUsed: newLyricsData.llmModelUsed,
           rawLlmOutput: newLyricsData.rawLlmOutput,
-          updatedAt: sql`CURRENT_TIMESTAMP` as any,
+          updatedAt: new Date().toISOString() as any,
         },
       })
       .returning();

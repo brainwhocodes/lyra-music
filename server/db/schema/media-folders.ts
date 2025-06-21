@@ -9,8 +9,8 @@ export const mediaFolders = sqliteTable('media_folders', {
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }).notNull(),
   path: text('path').notNull(),
   label: text('label'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type MediaFolder = InferSelectModel<typeof mediaFolders>;

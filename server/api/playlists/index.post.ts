@@ -52,8 +52,8 @@ export default defineEventHandler(async (event) => {
       playlistId: `${uuidv7()}`,
       userId: user.userId,
       name: body.name.trim(),
-      createdAt: sql`CURRENT_TIMESTAMP`,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     await db.insert(playlists).values(newPlaylist);

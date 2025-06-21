@@ -111,7 +111,6 @@ async function login() {
 
     // Handle successful login (e.g., store token, redirect)
     console.log('Login successful:', response)
-    useCookie('auth_token').value = response.token
     localStorage.setItem('auth_token', response.token)
     // Redirect to the libraries page upon successful login
     await navigateTo('/library');

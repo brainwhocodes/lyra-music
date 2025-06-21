@@ -771,7 +771,7 @@ export async function scanLibrary({
         await db.update(albums)
           .set({ 
             processedStatus: AlbumProcessStatus.IN_PROGRESS,
-            updatedAt: sql`CURRENT_TIMESTAMP`
+            updatedAt: new Date().toISOString()
           })
           .where(eq(albums.albumId, albumRecord.albumId));
           
@@ -813,7 +813,7 @@ export async function scanLibrary({
           await db.update(albums)
             .set({ 
               processedStatus: AlbumProcessStatus.COMPLETED,
-              updatedAt: sql`CURRENT_TIMESTAMP`
+              updatedAt: new Date().toISOString()
             })
             .where(eq(albums.albumId, albumRecord.albumId));
             
@@ -825,7 +825,7 @@ export async function scanLibrary({
           await db.update(albums)
             .set({ 
               processedStatus: AlbumProcessStatus.FAILED,
-              updatedAt: sql`CURRENT_TIMESTAMP`
+              updatedAt: new Date().toISOString()
             })
             .where(eq(albums.albumId, albumRecord.albumId));
         }
@@ -981,7 +981,7 @@ export async function pruneOrphanedAlbumArtPaths(): Promise<void> {
         // Update the album to remove the cover path
         await db
           .update(albums)
-          .set({ coverPath: null, updatedAt: sql`CURRENT_TIMESTAMP` })
+          .set({ coverPath: null, updatedAt: new Date().toISOString() })
           .where(eq(albums.albumId, album.albumId));
           
         prunedCount++;
@@ -1017,7 +1017,7 @@ async function getBatchedCovers(albumsNeedingCovers: { albumId: string; title: s
         
         if (coverPath) {
           await db.update(albums)
-            .set({ coverPath, updatedAt: sql`CURRENT_TIMESTAMP` })
+            .set({ coverPath, updatedAt: new Date().toISOString() })
             .where(eq(albums.albumId, album.albumId));
             
           return album.albumId;

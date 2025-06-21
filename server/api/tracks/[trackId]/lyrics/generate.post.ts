@@ -133,7 +133,7 @@ export default defineEventHandler(async (event) => {
           source: lyricsData.source,
           llmModelUsed: lyricsData.llmModelUsed,
           rawLlmOutput: lyricsData.rawLlmOutput,
-          updatedAt: sql`CURRENT_TIMESTAMP`,
+          updatedAt: new Date().toISOString(),
         },
       })
       .returning();

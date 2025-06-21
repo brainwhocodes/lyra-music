@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
   db.update(users)
     .set({
       loginAttempts: 0,
-      lastLoginAt: sql`CURRENT_TIMESTAMP`,
+      lastLoginAt: new Date().toISOString(),
     })
     .where(eq(users.userId, user.userId))
     .run()

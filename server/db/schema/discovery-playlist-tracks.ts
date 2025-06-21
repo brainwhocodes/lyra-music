@@ -10,7 +10,7 @@ export const discoveryPlaylistTracks = sqliteTable('discovery_playlist_tracks', 
   discoveryPlaylistId: text('discovery_playlist_id').references(() => discoveryPlaylists.discoveryPlaylistId, { onDelete: 'cascade' }).notNull(),
   trackId: text('track_id').references(() => tracks.trackId, { onDelete: 'cascade' }).notNull(),
   order: integer('order').notNull(), // Order of the track in the playlist
-  addedAt: text('added_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  addedAt: text('added_at').$defaultFn(() => new Date().toISOString()).notNull(),
   // Optional: reason for inclusion, e.g., 'similar_genre', 'new_release_from_artist'
   reason: text('reason'), 
   // Optional: score or relevance if applicable from the generation logic

@@ -8,8 +8,8 @@ export const artists = sqliteTable('artists', {
   artistImage: text('artist_image'),
   name: text('name').notNull(),
   musicbrainzArtistId: text('musicbrainz_artist_id'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type Artist = InferSelectModel<typeof artists>;

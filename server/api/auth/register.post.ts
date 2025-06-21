@@ -45,9 +45,9 @@ export default defineEventHandler(async (event) => {
       name,
       verified: 0,
       loginAttempts: 0,
-      lastLoginAt: sql`CURRENT_TIMESTAMP`,
-      createdAt: sql`CURRENT_TIMESTAMP`,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
+      lastLoginAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }).returning();
 
     // Generate JWT token

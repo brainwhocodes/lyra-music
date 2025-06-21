@@ -16,8 +16,8 @@ export const tracks = sqliteTable('tracks', {
   explicit: integer('explicit', { mode: 'boolean' }).default(false).notNull(),
   filePath: text('file_path').notNull().unique(), 
   musicbrainzTrackId: text('musicbrainz_track_id').unique(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type Track = InferSelectModel<typeof tracks>;

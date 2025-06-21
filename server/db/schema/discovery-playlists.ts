@@ -15,8 +15,8 @@ export const discoveryPlaylists = sqliteTable('discovery_playlists', {
   // Optional: parameters used for generation, stored as JSON
   generationParams: text('generation_params', { mode: 'json' }).$type<Record<string, any>>(),
   lastGeneratedAt: text('last_generated_at'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 }, (table) => {
   return {
     userTypeTitleIdx: uniqueIndex('dp_user_type_title_idx').on(table.userId, table.type, table.title),

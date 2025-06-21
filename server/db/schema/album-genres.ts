@@ -9,8 +9,8 @@ export const albumGenres = sqliteTable('album_genres', {
   albumGenreId: text('album_genre_id').primaryKey().$defaultFn(() => uuidv7()),
   albumId: text('album_id').references(() => albums.albumId, { onDelete: 'cascade' }).notNull(),
   genreId: text('genre_id').references(() => genres.genreId, { onDelete: 'cascade' }).notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type AlbumGenre = InferSelectModel<typeof albumGenres>;

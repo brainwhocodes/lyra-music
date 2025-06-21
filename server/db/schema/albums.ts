@@ -13,8 +13,8 @@ export const albums = sqliteTable('albums', {
   processedStatus: integer('processed_status').default(-1).notNull(),
   folderPath: text('folder_path'),
   musicbrainzReleaseId: text('musicbrainz_release_id'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type Album = InferSelectModel<typeof albums>;
