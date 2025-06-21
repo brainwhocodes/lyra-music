@@ -29,7 +29,7 @@
         <!-- No lyrics state -->
         <div v-else-if="!lyrics || lyrics.length === 0" class="flex-grow flex flex-col items-center justify-center p-6 text-center">
           <div class="text-gray-400 mb-4">
-            <Icon name="material-symbols:music-note-outline-rounded" class="w-10 h-10" />
+            <Icon name="ph:music-notes-duotone" class="w-10 h-10" />
           </div>
           <h3 class="text-xl font-semibold mb-2">No lyrics found</h3>
           <p class="text-gray-400 mb-4">This track doesn't have any lyrics yet.</p>

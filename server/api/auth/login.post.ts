@@ -5,25 +5,13 @@ import { users } from '~/server/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { verifyPassword, generateToken } from '~/server/utils/auth';
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(100)
-})
 
 export default defineEventHandler(async (event) => {
   // Validate input
   const body = await readBody(event)
-  const result = loginSchema.safeParse(body)
 
-  if (!result.success) {
-    throw createError({
-      statusCode: 400,
-      message: 'Invalid input'
-    })
-  }
-
-  const { email, password } = result.data
-
+  const { email, password } = body
+console.log(body)
   // Find user by email
   const user = db.select()
     .from(users)

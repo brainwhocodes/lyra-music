@@ -146,6 +146,8 @@ useSeoMeta({
   title: usePageTitle('Playlists')
 });
 
+
+
 // State
 const searchQuery = ref('');
 const editPlaylistName = ref('');

@@ -10,6 +10,8 @@ export * from './albums';
 export * from './album-artists';
 export * from './radio-channels';
 export * from './radio-channel-tracks';
+export * from './radio-channel-artists';
+export * from './radio-channel-genres';
 export * from './tracks';
 export * from './artists-tracks';
 export * from './playlists';
@@ -29,6 +31,8 @@ import { albums } from './albums';
 import { albumArtists } from './album-artists';
 import { radioChannels } from './radio-channels';
 import { radioChannelTracks } from './radio-channel-tracks';
+import { radioChannelArtists } from './radio-channel-artists';
+import { radioChannelGenres } from './radio-channel-genres';
 import { tracks } from './tracks';
 import { artistsTracks } from './artists-tracks';
 import { playlists } from './playlists';
@@ -46,7 +50,7 @@ export const artistRelations = relations(artists, ({ many }) => ({
   albumArtists: many(albumArtists),
   artistUsers: many(artistUsers),
   artistsTracks: many(artistsTracks),
-  radioChannelsAsSeed: many(radioChannels, { relationName: 'seedArtistForRadioChannels' }),
+  radioChannelArtists: many(radioChannelArtists),
   discoveryPlaylistsAsSeed: many(discoveryPlaylists, { relationName: 'seedArtistForDiscoveryPlaylists' }),
 }));
 
@@ -145,7 +149,7 @@ export const playlistTrackRelations = relations(playlistTracks, ({ one }) => ({
 
 export const genreRelations = relations(genres, ({ many }) => ({
     albumGenres: many(albumGenres),
-    radioChannelsAsSeed: many(radioChannels, { relationName: 'seedGenreForRadioChannels' }),
+    radioChannelGenres: many(radioChannelGenres),
 }));
 
 export const albumGenreRelations = relations(albumGenres, ({ one }) => ({
@@ -164,17 +168,9 @@ export const radioChannelRelations = relations(radioChannels, ({ one, many }) =>
         fields: [radioChannels.userId],
         references: [users.userId],
     }),
-    seedArtist: one(artists, {
-        fields: [radioChannels.seedArtistId],
-        references: [artists.artistId],
-        relationName: 'seedArtistForRadioChannels',
-    }),
-    seedGenre: one(genres, {
-        fields: [radioChannels.seedGenreId],
-        references: [genres.genreId],
-        relationName: 'seedGenreForRadioChannels',
-    }),
     radioChannelTracks: many(radioChannelTracks),
+    radioChannelArtists: many(radioChannelArtists),
+    radioChannelGenres: many(radioChannelGenres),
 }));
 
 export const radioChannelTrackRelations = relations(radioChannelTracks, ({ one }) => ({
@@ -186,6 +182,28 @@ export const radioChannelTrackRelations = relations(radioChannelTracks, ({ one }
         fields: [radioChannelTracks.trackId],
         references: [tracks.trackId],
     }),
+}));
+
+export const radioChannelArtistRelations = relations(radioChannelArtists, ({ one }) => ({
+  channel: one(radioChannels, {
+    fields: [radioChannelArtists.channelId],
+    references: [radioChannels.channelId],
+  }),
+  artist: one(artists, {
+    fields: [radioChannelArtists.artistId],
+    references: [artists.artistId],
+  }),
+}));
+
+export const radioChannelGenreRelations = relations(radioChannelGenres, ({ one }) => ({
+  channel: one(radioChannels, {
+    fields: [radioChannelGenres.channelId],
+    references: [radioChannels.channelId],
+  }),
+  genre: one(genres, {
+    fields: [radioChannelGenres.genreId],
+    references: [genres.genreId],
+  }),
 }));
 
 export const discoveryPlaylistRelations = relations(discoveryPlaylists, ({ one, many }) => ({

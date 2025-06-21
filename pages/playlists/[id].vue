@@ -152,6 +152,7 @@ import draggable from 'vuedraggable';
 
 definePageMeta({
   layout: 'sidebar-layout'
+  
 });
 
 

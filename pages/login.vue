@@ -104,9 +104,9 @@ async function login() {
   }
 
   try {
-    const response = await $fetch('/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
-      body: result.data // Use validated data
+      body: JSON.stringify(result.data) // Use validated data
     })
 
     // Handle successful login (e.g., store token, redirect)

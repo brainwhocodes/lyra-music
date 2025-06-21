@@ -18,23 +18,6 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
   // State: holds only the ID, primarily for internal use if needed
   const userId = ref<string | null>(null);
-  
-  // Initialize state from localStorage if available
-  const storedToken = localStorage.getItem('auth_token');
-  if (storedToken) {
-    try {
-      const fullUserData: FullUserData = JSON.parse(storedToken);
-      userId.value = fullUserData.id;
-      const { id, ...userWithoutId } = fullUserData;
-      user.value = userWithoutId; 
-    } catch (e) {
-      console.error('Failed to parse user data from localStorage:', e);
-      localStorage.removeItem('auth_token'); // Clear corrupted token
-      user.value = null;
-      userId.value = null;
-    }
-  }
-  
   // Watch for changes to user state and update localStorage with the full user data
   // This requires having the ID available, e.g., from the userId ref
   watch(user, (newUserState: User | null) => {
@@ -155,7 +138,8 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Sets minimal user data from token to avoid unnecessary redirects
    */
-  function setMinimalUserData(userData: any) {
+  function setMinimalUserData(userData: any, token: string) {
+    localStorage.setItem('auth_token', token);
     user.value = userData;
   }
 

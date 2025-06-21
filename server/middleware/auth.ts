@@ -67,10 +67,11 @@ export default defineEventHandler(async (event) => {
   
   // If still no user, throw unauthorized error
   if (!user) {
-    throw createError({
+    createError({
       statusCode: 401,
       message: 'Unauthorized: Authentication required'
     });
+    return;
   }
 
   // Add user to event context, mapping the enhanced user object properties

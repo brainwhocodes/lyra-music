@@ -2,6 +2,11 @@
 <script setup lang="ts">
 import type { Genre } from '~/types/genre';
 
+// Apply the sidebar layout
+definePageMeta({
+  layout: 'sidebar-layout',
+});
+
 // Fetch genres from the API endpoint /api/genres/index.get.ts
 const { data: genres, pending, error } = await useLazyFetch<Genre[]>('/api/genres');
 
@@ -34,12 +39,6 @@ const filteredGenres = computed(() => {
   );
 });
 
-
-
-
-definePageMeta({
-  layout: 'sidebar-layout'
-});
 
 </script>
 

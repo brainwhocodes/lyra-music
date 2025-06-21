@@ -62,6 +62,7 @@ useHead(() => ({
   title: usePageTitle('Artists'),
 }));
 
+
 // State
 const artists = ref<Artist[]>([]);
 const loading = ref(true);

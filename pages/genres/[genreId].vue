@@ -154,7 +154,8 @@ const handlePlayAlbumEvent = (album: Album): void => {
 };
 
 definePageMeta({
-  layout: 'sidebar-layout'
+  layout: 'sidebar-layout',
+  middleware: 'session'
 });
 
 </script>

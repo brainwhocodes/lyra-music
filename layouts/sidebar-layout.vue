@@ -57,14 +57,18 @@
             <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
             <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
             <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:mood-outline" class="w-5 h-5" /> Playlists</NuxtLink></li>
+                        <li><NuxtLink to="/radio" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="ph:radio-fill" class="w-5 h-5" /> Radio</NuxtLink></li>
           </ul>
       </nav>
 
       <!-- User/Settings Footer -->
        <div class="mt-auto border-t border-base-300 pt-4">
-        <!-- Placeholder for actual user/settings links -->
+        <!-- User/Settings links -->
+        <NuxtLink to="/settings/radio" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold">
+          <Icon name="ph:radio-button-bold" class="w-5 h-5" /> Radio Stations
+        </NuxtLink>
         <NuxtLink to="/settings" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold">
-          <Icon name="material-symbols:settings-outline" class="w-5 h-5" /> Settings
+          <Icon name="material-symbols:settings-outline" class="w-5 h-5" /> General Settings
         </NuxtLink>
        </div>
     </aside>
@@ -224,4 +228,6 @@ const showGlobalAudioPlayer = computed<boolean>(() => {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: oklch(var(--b1)); /* Adjust hover color */
 }
+
+
 </style>
