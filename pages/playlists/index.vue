@@ -39,7 +39,7 @@
     </div>
 
     <!-- Playlists Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
       <div v-for="playlist in filteredPlaylists" :key="playlist.playlistId"
         class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group"
         @click="navigateToPlaylist(playlist.playlistId)">

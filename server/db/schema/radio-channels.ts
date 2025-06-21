@@ -14,8 +14,8 @@ export const radioChannels = sqliteTable('radio_channels', {
   seedArtistId: text('seed_artist_id').references(() => artists.artistId, { onDelete: 'set null' }),
   seedGenreId: text('seed_genre_id').references(() => genres.genreId, { onDelete: 'set null' }),
   dynamic: integer('dynamic').default(1).notNull(), // 1 = auto-update, 0 = static
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export type RadioChannel = InferSelectModel<typeof radioChannels>;

@@ -175,7 +175,7 @@ definePageMeta({
     <div v-else-if="!albums || albums.length === 0" class="text-center">
       <p>No albums found for this genre.</p>
     </div>
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       <AlbumCard 
         v-for="albumItem in albums" 
         :key="albumItem.albumId" 

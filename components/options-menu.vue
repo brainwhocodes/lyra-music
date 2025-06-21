@@ -1,7 +1,7 @@
 <template>
   <div class="relative options-menu-container" @click.stop>
     <button
-      class="btn btn-ghost btn-sm p-1 focus:opacity-100"
+      class="btn btn-ghost btn-sm p-1 focus:opacity-100 bg-base-100"
       @click.stop="toggleMenu"
       aria-label="Open options menu"
       :aria-expanded="isMenuOpen.toString()"
@@ -11,7 +11,7 @@
 
     <div
       v-if="isMenuOpen"
-      class="fixed w-56 bg-base-200 rounded-lg shadow-lg z-[2000] py-1 border border-base-300 max-h-96 overflow-y-auto"
+      class="fixed w-56 bg-base-100 rounded-lg shadow-lg z-[2000] py-1 border border-base-300 max-h-96 overflow-y-auto"
       :style="menuPosition"
       role="menu"
       aria-orientation="vertical"

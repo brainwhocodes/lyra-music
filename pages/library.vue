@@ -143,10 +143,8 @@
 import { ref, computed, watch } from '#imports'
 import { usePlayerStore } from '~/stores/player';
 import { useTrackArtists } from '~/composables/useTrackArtists';
-import { useCoverArt } from '~/composables/use-cover-art';
 import type { Track } from '~/types/track'; // Update import path for Track type
 import AlbumCard from '~/components/album/album-card.vue'; 
-import { useRouter } from 'vue-router'; 
 import type { Album } from '~/types/album';
 import type { TrackArtistDetail } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
@@ -431,9 +429,7 @@ async function loadAlbum(albumId: string): Promise<Album | null> {
       apiResponse.tracks = apiResponse.tracks.map((track: Track) => {
         // Get primary artist name from track artists if available
         const artists = track.artists || [];
-        const primaryArtistName = artists.length > 0
-          ? artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name || artists[0].name
-          : 'Unknown Artist';
+        const primaryArtistName = artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name ?? artists[0]?.name ?? 'Unknown Artist';
           
         return {
           ...track,

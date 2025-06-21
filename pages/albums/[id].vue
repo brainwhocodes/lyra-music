@@ -428,7 +428,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 </script>
 
 <template>
-  <div class="px-4 py-8 overflow-y-auto w-full lg:h-[calc(90vh)] h-[calc(100vh-100px)]">
+  <div class="px-4 py-8 overflow-y-auto w-full lg:h-[calc(90vh)] h-[calc(100vh-100px)] bg-base-100">
     <div class="container mx-auto">
       <EditAlbumModal v-if="album" :album="album" :open="isEditAlbumModalOpen" @close="isEditAlbumModalOpen = false"
         @albumUpdated="onAlbumUpdated" @updateError="onAlbumUpdateError" />

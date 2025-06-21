@@ -288,7 +288,7 @@ const handlePlayAlbumEvent = (album: Album): void => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="w-full h-full px-4 py-8 bg-base-200 overflow-y-auto">
     <div v-if="pending" class="text-center">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
@@ -326,7 +326,7 @@ const handlePlayAlbumEvent = (album: Album): void => {
               <span v-if="isProcessingArtistAction" class="loading loading-spinner loading-xs mr-2"></span>
               Shuffle
             </button>
-            <button @click="addArtistTracksToQueue" class="btn btn-ghost" :disabled="isProcessingArtistAction || !artist?.albums?.length">
+            <button @click="addArtistTracksToQueue" class="btn btn-ghost bg-base-100" :disabled="isProcessingArtistAction || !artist?.albums?.length">
               <Icon v-if="!isProcessingArtistAction" name="material-symbols:playlist-add-rounded" class="w-5 h-5 mr-1" />
               <span v-if="isProcessingArtistAction" class="loading loading-spinner loading-xs mr-2"></span>
               Add to Queue
@@ -334,7 +334,7 @@ const handlePlayAlbumEvent = (album: Album): void => {
             <OptionsMenu
               :options="artistOptions"
               @select="handleArtistOption"
-              button-class="btn btn-ghost"
+              button-class="btn btn-ghost bg-base-100"
               :disabled="isProcessingArtistAction || !artist?.albums?.length || !artistOptions.length"
             >
               <Icon name="material-symbols:more-vert" class="w-5 h-5" />
