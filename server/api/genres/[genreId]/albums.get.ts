@@ -2,8 +2,9 @@
 import { defineEventHandler, createError, getRouterParam } from 'h3';
 import { db } from '~/server/db';
 import { albums, artists, albumGenres, genres as genresTable, albumArtists } from '~/server/db/schema';
-import { eq, sql } from 'drizzle-orm';
-import type { Album } from '~/types/album';
+import { eq, inArray } from 'drizzle-orm';
+import type { AlbumArtistDetail } from '~/types/album';
+import { useCoverArt } from '~/composables/use-cover-art';
 
 export default defineEventHandler(async (event) => {
   const genreIdParam = getRouterParam(event, 'genreId');
@@ -18,6 +19,27 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const { getCoverArtUrl } = useCoverArt();
+
+    // First, get all album IDs for this genre
+    const albumIdsResult = await db
+      .selectDistinct({
+        albumId: albums.albumId,
+      })
+      .from(albums)
+      .innerJoin(albumGenres, eq(albums.albumId, albumGenres.albumId))
+      .innerJoin(genresTable, eq(albumGenres.genreId, genresTable.genreId))
+      .where(eq(genresTable.genreId, genreIdParam))
+      .all();
+
+    if (!albumIdsResult || albumIdsResult.length === 0) { 
+      console.log(`[API /genres/${genreIdParam}/albums] No albums found for this genre.`);
+      return [];
+    }
+
+    const albumIds = albumIdsResult.map(result => result.albumId);
+
+    // Get album details
     const albumsData = await db
       .select({
         albumId: albums.albumId,
@@ -27,38 +49,48 @@ export default defineEventHandler(async (event) => {
         musicbrainzReleaseId: albums.musicbrainzReleaseId,
         createdAt: albums.createdAt,
         updatedAt: albums.updatedAt,
-        artistName: sql<string>`coalesce(${artists.name}, 'Unknown Artist')`,
-        artistId: artists.artistId,
       })
       .from(albums)
-      .innerJoin(albumGenres, eq(albums.albumId, albumGenres.albumId))
-      .innerJoin(genresTable, eq(albumGenres.genreId, genresTable.genreId))
-      .leftJoin(albumArtists, eq(albums.albumId, albumArtists.albumId))
-      .leftJoin(artists, eq(albumArtists.artistId, artists.artistId))
-      .where(eq(genresTable.genreId, genreIdParam))
+      .where(inArray(albums.albumId, albumIds))
       .orderBy(albums.title)
       .all();
 
-    console.log(`[API /genres/${genreIdParam}/albums] Raw albumsData from DB:`, JSON.stringify(albumsData, null, 2));
+    // Get all artist links for these albums
+    const allAlbumArtistLinks = await db
+      .select({
+        albumId: albumArtists.albumId,
+        artistId: artists.artistId,
+        name: artists.name,
+        role: albumArtists.role,
+        isPrimaryArtistDb: albumArtists.isPrimaryArtist,
+      })
+      .from(albumArtists)
+      .innerJoin(artists, eq(albumArtists.artistId, artists.artistId))
+      .where(inArray(albumArtists.albumId, albumIds))
+      .all();
 
-    if (!albumsData || albumsData.length === 0) { 
-        console.log(`[API /genres/${genreIdParam}/albums] No albums found for this genre.`);
-        return [];
+    // Create a map of album ID to its artists
+    const albumArtistsMap = new Map<string, AlbumArtistDetail[]>();
+    for (const link of allAlbumArtistLinks) {
+      const currentAlbumId = link.albumId!;
+      if (!albumArtistsMap.has(currentAlbumId)) {
+        albumArtistsMap.set(currentAlbumId, []);
+      }
+      albumArtistsMap.get(currentAlbumId)!.push({
+        artistId: link.artistId,
+        name: link.name,
+        role: link.role ?? undefined,
+        isPrimaryArtist: link.isPrimaryArtistDb === 1,
+      });
     }
-    
-    const albumsForGenre: Album[] = albumsData.map(data => ({
-      albumId: data.albumId,
-      title: data.title,
-      artistId: data.artistId,
-      artistName: data.artistName,
-      year: data.year,
-      coverPath: data.coverPath,
-      musicbrainzReleaseId: data.musicbrainzReleaseId,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
+
+    // Map the albums with their artists and format cover paths
+    const albumsForGenre = albumsData.map(album => ({
+      ...album,
+      coverPath: getCoverArtUrl(album.coverPath),
+      artists: albumArtistsMap.get(album.albumId!) || [],
     }));
 
-    console.log(`[API /genres/${genreIdParam}/albums] Mapped albumsForGenre:`, JSON.stringify(albumsForGenre, null, 2));
     return albumsForGenre;
 
   } catch (dbError) {

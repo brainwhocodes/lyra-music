@@ -289,7 +289,7 @@ const playAlbum = async (albumId: string): Promise<void> => {
   const trackToPlay = albumDataForPlayback.tracks[trackIndex];
 
   // If the exact same track is already current and playing, toggle pause. If paused, play.
-  if (playerStore.currentTrack?.trackId === trackToPlay.trackId) {
+  if (playerStore.currentTrack?.trackId === trackToPlay?.trackId) {
     playerStore.togglePlayPause();
     return;
   }

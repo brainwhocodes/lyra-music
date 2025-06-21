@@ -44,7 +44,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8 overflow-y-auto">
+  <div class="container mx-auto px-4 py-8 overflow-y-auto bg-base-200">
     <h1 class="text-3xl font-bold mb-6">Genres</h1>
 
     <!-- Search Bar -->
@@ -53,7 +53,7 @@ definePageMeta({
         type="text" 
         v-model="searchQuery" 
         placeholder="Search genres..." 
-        class="input input-bordered w-full max-w-md"
+        class="input input-bordered w-full max-w-md bg-C"
       />
     </div>
 

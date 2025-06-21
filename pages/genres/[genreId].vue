@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from '#imports';
+import { ref, useSeoMeta } from '#imports';
 import { useRoute, useRouter } from 'vue-router';
 import type { Album } from '~/types/album'; 
-import type { Track } from '~/types/track'; 
+import type { Track, TrackArtistDetail } from '~/types/track'; 
 import { usePlayerStore, type QueueContext } from '~/stores/player'; 
 import AlbumCard from '~/components/album/album-card.vue'; 
-import { resolveCoverArtUrl } from '~/utils/formatters'; 
+import { useCoverArt } from '~/composables/use-cover-art';
+import { useTrackArtists } from '~/composables/useTrackArtists';
 
 interface GenreBasicInfo {
   genreId: string;
   name: string;
-  albumCount?: number; 
+  albumCount?: number;
+  description?: string;
 }
 
 const route = useRoute();
@@ -22,11 +24,13 @@ const loadingAlbumIdForPlay = ref<string | null>(null);
 
 
 
+const { getCoverArtUrl } = useCoverArt();
+
 const { data: albums, pending, error } = await useLazyFetch<Album[]>(`/api/genres/${genreId}/albums`, {
   transform: (fetchedAlbums: Album[]) => {
     return fetchedAlbums.map(album => ({
       ...album,
-      coverPath: resolveCoverArtUrl(album.coverPath)
+      coverPath: album.coverPath // The API already applies getCoverArtUrl
     }));
   }
 });
@@ -37,22 +41,22 @@ if (allGenres.value && genreId) {
     const genre = allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId);
     if (genre) {
       useSeoMeta({
-        title: usePageTitle(`${genre.name} | Albums`)
+        title: `${genre.name} | Albums - Otogami Music`
       });
     }
   }
 watch(allGenres.value, (newGenres: GenreBasicInfo[] | null) => {
   if (newGenres) {
-    genreName.value = newGenres.find(g => g.genreId === genreId)?.name;
+    genreName.value = newGenres.find((g: GenreBasicInfo) => g.genreId === genreId)?.name;
     useSeoMeta({
-      title: usePageTitle(`${genreName.value} | Albums`)
+      title: `${genreName.value} | Albums - Otogami Music`
     });
     allGenres.value = newGenres;
   }
 });
 
 if (allGenres.value) {
-  genreName.value = allGenres.value.find(g => g.genreId === genreId)?.name;
+  genreName.value = allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId)?.name;
   useSeoMeta({
     title: usePageTitle(`${genreName.value} | Albums`)
   });
@@ -64,97 +68,102 @@ watch(albums.value, (newAlbums: Album[] | null) => {
   if (newAlbums) {
     pending.value = false;
     useSeoMeta({
-      title: usePageTitle(`${allGenres.value?.find(g => g.genreId === genreId)?.name} | Albums`)
+      title: `${allGenres.value?.find((g: GenreBasicInfo) => g.genreId === genreId)?.name} | Albums - Otogami Music`
     });
     albums.value = newAlbums;
   }
 });
 
-if (albums.value) {
-  useSeoMeta({
-    title: usePageTitle(`${currentGenre?.name} | Albums`)
-  });
-  albums.value = albums.value;
-}
+// Computed property to check if the player's current album context matches the given album ID
+const isAlbumContextLoaded = (albumId: string): boolean => {
+  return playerStore.queueContext?.type === 'album' && playerStore.queueContext?.id === albumId;
+};
 
+// This is defined later in the file
 
-
-definePageMeta({
-  layout: 'sidebar-layout'
-});
-
-const navigateToAlbumDetail = (albumId: string) => {
+// Navigation handler to go to album detail page
+const navigateToAlbumDetail = (albumId: string): void => {
   router.push(`/albums/${albumId}`);
 };
 
-// Helper computed to check if a specific album's context is loaded in the player
-const isAlbumContextLoaded = (albumIdToCheck: string): boolean => {
-  return playerStore.currentQueueContext.type === 'album' && 
-         playerStore.currentQueueContext.id === albumIdToCheck;
+// Function to get the genre name for display
+const getGenreName = (g: GenreBasicInfo | null): string => {
+  if (!g) return 'Unknown Genre';
+  return g.name || 'Unknown Genre';
 };
 
+// Function to get the genre description for display
+const getGenreDescription = (g: GenreBasicInfo | null): string => {
+  if (!g) return '';
+  return g.description || `Browse albums in the ${g.name} genre`;
+};
+
+// Play album function
 const playAlbum = async (albumIdToPlay: string): Promise<void> => {
-  console.log(`[GenrePage/${genreId}] playAlbum: Attempting to play/pause/load album ID: ${albumIdToPlay}`);
   if (!albumIdToPlay) {
-    console.warn(`[GenrePage/${genreId}] playAlbum: albumIdToPlay is null or undefined.`);
     return;
   }
 
   // Check if the context of the clicked album is already loaded in the player
   if (isAlbumContextLoaded(albumIdToPlay)) {
-    console.log(`[GenrePage/${genreId}] playAlbum: Album context for ${albumIdToPlay} is already loaded. Toggling play/pause.`);
     playerStore.togglePlayPause();
-    // No need to set loadingAlbumIdForPlay here, as we are not fetching.
     return; 
   }
   
   // If context is not for this album, or no album context, then load this album.
-  console.log(`[GenrePage/${genreId}] playAlbum: Album context for ${albumIdToPlay} not loaded. Fetching details.`);
   loadingAlbumIdForPlay.value = albumIdToPlay;
   try {
     const albumDetails = await $fetch<Album>(`/api/albums/${albumIdToPlay}`); 
-    console.log(`[GenrePage/${genreId}] playAlbum: API response for ${albumIdToPlay}:`, albumDetails);
-
+    
     if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
+      const { getFormattedTrackArtists } = useTrackArtists();
       const currentAlbumId = albumDetails.albumId;
-      const tracksToPlay = albumDetails.tracks.map((t: any): Track => ({
-        ...t, 
-        albumId: currentAlbumId, 
-        artistName: t.artistName ?? albumDetails.artistName ?? 'Unknown Artist',
-        albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-        coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath), 
-      }));
-
-      console.log(`[GenrePage/${genreId}] playAlbum: Tracks prepared for playerStore.loadQueue:`, JSON.stringify(tracksToPlay, null, 2));
+      
+      // Process tracks with proper artist handling
+      const tracksToPlay = albumDetails.tracks.map((t: any): Track => {
+        // Get primary artist name from track artists if available
+        const primaryArtistName = t.artists && t.artists.length > 0
+          ? t.artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name || t.artists[0].name
+          : 'Unknown Artist';
+          
+        return {
+          ...t, 
+          albumId: currentAlbumId,
+          artistName: primaryArtistName,
+          albumTitle: albumDetails.title || 'Unknown Album',
+          coverPath: t.coverPath || albumDetails.coverPath,
+          formattedArtists: getFormattedTrackArtists(t.artists || []),
+        };
+      });
 
       const context: QueueContext = { type: 'album', id: albumDetails.albumId, name: albumDetails.title };
       playerStore.loadQueue(tracksToPlay, context, true, 0);
-    } else {
-      console.warn(`[GenrePage/${genreId}] playAlbum: No tracks found for album ${albumIdToPlay}`);
     }
   } catch (err) {
-    console.error(`[GenrePage/${genreId}] playAlbum: Error playing album ${albumIdToPlay}:`, err);
+    console.error(`Error playing album ${albumIdToPlay}:`, err);
   } finally {
     loadingAlbumIdForPlay.value = null;
   }
 };
 
+// Handler for the play button click on an album card
 const handlePlayAlbumEvent = (album: Album): void => {
-  console.log(`[GenrePage/${genreId}] handlePlayAlbumEvent: Received play event for album:`, album);
   if (album && album.albumId) {
     playAlbum(album.albumId);
-  } else {
-    console.warn(`[GenrePage/${genreId}] handlePlayAlbumEvent: Invalid album data received.`);
   }
 };
+
+definePageMeta({
+  layout: 'sidebar-layout'
+});
 
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="w-full h-full px-4 py-8 overflow-y-auto bg-base-200">
     <div class="mb-6">
       <NuxtLink to="/genres" class="btn btn-ghost btn-sm mb-4">&larr; Back to Genres</NuxtLink>
-      <h1 class="text-3xl font-bold">{{ currentGenre?.name || 'Genre' }} Albums</h1>
+      <h1 class="text-3xl font-bold">{{ genreName || 'Genre' }} Albums</h1>
     </div>
 
     <div v-if="pending" class="text-center">
