@@ -715,13 +715,34 @@ export async function scanLibrary({
       console.log(`[${albumCounter}/${totalFolders}] Creating initial album record for folder: ${folderPath}`);
       
       try {
-        // Try to get album name from folder
-        const folderName = basename(folderPath);
+        // Try to get album name from the first audio file's metadata first
+        const firstFilePath = filesInFolder[0];
+        let albumTitle = 'Unknown Album';
+        let extractedMetadata = null;
+        
+        try {
+          // Try to extract metadata from the first file to get album title
+          const { metadata } = await extractMetadata(firstFilePath);
+          extractedMetadata = metadata;
+          if (metadata?.common?.album) {
+            albumTitle = metadata.common.album.trim();
+          }
+        } catch (metadataError) {
+          console.warn(`Could not extract metadata from ${firstFilePath}, falling back to folder name`);
+        }
+        
+        // If no album title from metadata, fall back to folder name
+        if (albumTitle === 'Unknown Album') {
+          const folderName = basename(folderPath);
+          if (folderName) {
+            albumTitle = folderName;
+          }
+        }
         
         // Create album record in PENDING status
         const newAlbum = await dbOperations.createInitialAlbumRecord({
           folderPath,
-          albumTitle: folderName || 'Unknown Album',
+          albumTitle,
           userId,
           processedStatus: AlbumProcessStatus.PENDING
         });

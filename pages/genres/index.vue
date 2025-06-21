@@ -44,7 +44,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8 overflow-y-auto bg-base-200">
+  <div class="w-full h-full px-4 py-8 overflow-y-auto bg-base-200">
     <h1 class="text-3xl font-bold mb-6">Genres</h1>
 
     <!-- Search Bar -->

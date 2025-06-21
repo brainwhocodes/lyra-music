@@ -18,7 +18,7 @@ export const usePlayerStore = defineStore('player', () => {
   const isPlaying = ref<boolean>(false);
   const currentTime = ref<number>(0); // In seconds
   const duration = ref<number>(0); // In seconds
-  const volume = ref<number>(0.8); // Default volume (0 to 1)
+  const volume = ref<number>(1); // Default volume (0 to 1)
   const audioElement = ref<HTMLAudioElement | null>(null);
   const isLoading = ref<boolean>(false); // To track if audio is loading
   const isShuffled = ref<boolean>(false);

@@ -55,7 +55,7 @@
       <!-- Playback Controls -->
       <div class="flex items-center gap-1">
         <button 
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           @click="playerStore.playPrevious"
           :disabled="!playerStore.canPlayPrevious || playerStore.isLoading"
           title="Click once to restart track, double-click to play previous track"
@@ -63,14 +63,14 @@
           <Icon name="material-symbols:skip-previous-rounded" class="w-6 h-6" />
         </button>
         <button 
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           :class="{'text-primary': playerStore.isShuffled}" 
           @click="playerStore.toggleShuffle"
           title="Toggle Shuffle"
         >
           <Icon name="material-symbols:shuffle-rounded" class="w-5 h-5" />
         </button>
-        <button class="btn btn-xl btn-circle btn-primary" @click="playerStore.togglePlayPause">
+        <button class="btn btn-lg btn-circle btn-primary" @click="playerStore.togglePlayPause">
           <Icon 
             v-if="playerStore.isLoading"
             name="svg-spinners:180-ring-with-bg"
@@ -88,7 +88,7 @@
           />
         </button>
         <button 
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           @click="() => playerStore.playNext()"
           :disabled="!playerStore.canPlayNext || playerStore.isLoading"
           title="Next Track"
@@ -96,7 +96,7 @@
           <Icon name="material-symbols:skip-next-rounded" class="w-6 h-6" />
         </button>
         <button 
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           :class="{'text-primary': playerStore.repeatMode !== 'none'}" 
           @click="playerStore.toggleRepeatMode"
           :title="`Repeat Mode: ${playerStore.repeatMode}`"
@@ -105,7 +105,7 @@
           <Icon v-else name="material-symbols:repeat-rounded" class="w-5 h-5" />
         </button>
         <button
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           :class="{'text-primary': playerStore.isQueueSidebarVisible}"
           @click="playerStore.toggleQueueSidebar"
           :title="playerStore.isQueueSidebarVisible ? 'Hide Queue' : 'Show Queue'"
@@ -113,7 +113,7 @@
           <Icon name="material-symbols:queue-music-rounded" class="w-5 h-5" />
         </button>
         <button
-          class="btn btn-ghost btn-xl btn-circle"
+          class="btn btn-ghost btn-lg btn-circle"
           :class="{'text-primary': playerStore.isLyricsModalVisible}"
           @click="playerStore.toggleLyricsModal()"
           title="Show Lyrics"
