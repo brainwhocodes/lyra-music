@@ -71,15 +71,7 @@
         <AlbumCard 
           v-for="album_item in albums" 
           :key="album_item.albumId" 
-          :album="{
-            albumId: album_item.albumId, 
-            title: album_item.title, 
-            artistName: album_item.artistName, 
-            coverPath: album_item.coverPath,
-            year: album_item.year,
-            artistId: album_item.artistId,
-            tracks: album_item.tracks
-          }"
+          :album="album_item"
           :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
           :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
           @card-click="navigateToAlbum(album_item.albumId)"
@@ -149,11 +141,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from '#imports'
-import { usePlayerStore } from '~/stores/player'; 
+import { usePlayerStore } from '~/stores/player';
+import { useTrackArtists } from '~/composables/useTrackArtists';
+import { useCoverArt } from '~/composables/use-cover-art';
 import type { Track } from '~/types/track'; // Update import path for Track type
 import AlbumCard from '~/components/album/album-card.vue'; 
 import { useRouter } from 'vue-router'; 
 import type { Album } from '~/types/album';
+import type { TrackArtistDetail } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 
 // Apply the sidebar layout
@@ -301,19 +296,30 @@ const playAlbum = async (albumId: string): Promise<void> => {
       return;
     }
 
+    // Get the track artists formatter
+    const { getFormattedTrackArtists } = useTrackArtists();
+    
     // Map the tracks from the album details to the format expected by the player
-    const tracksForQueue: Track[] = albumDetails.tracks.map((track: any) => ({
-      trackId: track.trackId,
-      title: track.title ?? 'Unknown Track',
-      artistName: track.artistName ?? albumDetails.artistName ?? 'Unknown Artist',
-      albumTitle: track.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-      filePath: track.filePath,
-      duration: track.duration ?? 0,
-      albumId: albumDetails.albumId,
-      trackNumber: track.trackNumber ?? null,
-      artistId: track.artistId ?? albumDetails.artistId ?? '',
-      coverPath: albumDetails.coverPath,
-    }));
+    const tracksForQueue: Track[] = albumDetails.tracks.map((track: any) => {
+      // Get primary artist name from track artists if available
+      const artists = track.artists || [];
+      const primaryArtistName = artists.length > 0
+        ? artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name || artists[0].name
+        : 'Unknown Artist';
+        
+      return {
+        trackId: track.trackId,
+        title: track.title ?? 'Unknown Track',
+        artistName: primaryArtistName,
+        albumTitle: track.albumTitle ?? albumDetails.title ?? 'Unknown Album',
+        filePath: track.filePath,
+        duration: track.duration ?? 0,
+        albumId: albumDetails.albumId,
+        trackNumber: track.trackNumber ?? null,
+        coverPath: track.coverPath || albumDetails.coverPath,
+        formattedArtists: getFormattedTrackArtists(artists),
+      };
+    });
 
     // New album data fetched, load it into the queue and play the first track.
     playerStore.loadQueue(tracksForQueue);
@@ -412,20 +418,32 @@ const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Prom
 
 // Helper function to load an album with its tracks (extracted from playAlbum logic)
 async function loadAlbum(albumId: string): Promise<Album | null> {
-  console.log(`[LibraryPage] loadAlbum: Fetching details for album ID: ${albumId}`);
   try {
     // Directly fetch from the API endpoint that returns a single album with tracks
     const apiResponse = await $fetch<Album>(`/api/albums/${albumId}`);
-    console.log(`[LibraryPage] loadAlbum: API response for ${albumId}:`, apiResponse);
-
-    // Ensure the response has tracks and they are mapped correctly if necessary
-    // The /api/albums/${albumId} endpoint should ideally return tracks in the correct player-ready format.
-    // If not, mapping similar to pages/albums/index.vue's fetchAlbumDetailsById would be needed here.
+    
+    // Process the album response
     if (apiResponse && apiResponse.tracks) {
-      // Assuming tracks are already in the correct format from this endpoint
-      return apiResponse; 
+      // Get the track artists formatter
+      const { getFormattedTrackArtists } = useTrackArtists();
+      
+      // Process tracks to ensure they have the correct artist information
+      apiResponse.tracks = apiResponse.tracks.map((track: Track) => {
+        // Get primary artist name from track artists if available
+        const artists = track.artists || [];
+        const primaryArtistName = artists.length > 0
+          ? artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name || artists[0].name
+          : 'Unknown Artist';
+          
+        return {
+          ...track,
+          artistName: primaryArtistName,
+          formattedArtists: getFormattedTrackArtists(artists),
+        };
+      });
+      
+      return apiResponse;
     }
-    console.warn(`[LibraryPage] loadAlbum: No tracks in API response for ${albumId}`);
     return null;
   } catch (error) {
     console.error(`[LibraryPage] loadAlbum: Error fetching album ${albumId}:`, error);
