@@ -1,8 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-// Define an interface for the structure of the JSON file
 interface MoodMappingData {
   predefinedMoods: readonly string[];
   genreToMoodMap: { [genre: string]: string[] };

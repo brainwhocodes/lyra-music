@@ -6,15 +6,14 @@ import { EXTERNAL_COVER_FILENAMES } from './types';
 import type { CoverArtArchiveResponse, CoverArtArchiveImage, MusicBrainzReleaseWithRelations } from '~/types/musicbrainz/musicbrainz';
 import { musicBrainzApiRequest } from '~/server/utils/musicbrainz';
 
-// Determine base path for public assets
+// Determine base path for runtime-uploaded assets
 const projectRoot = process.cwd(); // Assuming process.cwd() is the project root
 
-let publicDir;
-publicDir = join(projectRoot, 'public');
-
-
-const COVERS_DIR = join(publicDir, 'images', 'covers');
-const ARTIST_IMAGES_DIR = join(publicDir, 'images', 'artists');
+// We now store runtime generated files in a dedicated `uploads` directory that is
+// available both in dev & prod via Nitro `publicAssets` configuration.
+const uploadsDir = join(projectRoot, 'uploads');
+const COVERS_DIR = join(uploadsDir, 'images', 'covers');
+const ARTIST_IMAGES_DIR = join(uploadsDir, 'images', 'artists');
 
 /**
  * Ensures the covers directory exists.
@@ -68,7 +67,7 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
       }
     }
     
-    return `/images/artists/${imageFilename}`;
+    return `/uploads/images/artists/${imageFilename}`;
   } catch (error: any) {
     return null;
   }
@@ -79,8 +78,6 @@ export async function downloadArtistImage(imageUrl: string): Promise<string | nu
  */
 export async function saveArtToCache(
   imageData: Buffer,
-  imageFormat: string,
-  sourceDescription: string
 ): Promise<string | null> {
   try {
     await ensureCoversDirectory();
@@ -97,7 +94,7 @@ export async function saveArtToCache(
       await fileUtils.writeFile(coverFullPath, webpBuffer);
     }
     
-    return `/images/covers/${coverFilename}`;
+    return `/uploads/images/covers/${coverFilename}`;
   } catch (error: any) {
     // Handle specific sharp errors better
     if (error.message?.includes('Input buffer contains unsupported image format')) {
@@ -120,7 +117,7 @@ export async function processExternalAlbumArt(albumDir: string): Promise<string 
       try {
         const coverData = await fileUtils.readFile(potentialCoverPath);
         // We're using 'image/webp' as format as it's handled by saveArtToCache which now always outputs WebP
-        return await saveArtToCache(coverData, 'image/webp', `external file ${coverFilename}`);
+        return await saveArtToCache(coverData);
       } catch (error: any) {
         // Silent error - try next potential cover file
       }
@@ -142,7 +139,7 @@ export async function processEmbeddedAlbumArt(pictures: Array<{ format: string; 
   const pictureBuffer = Buffer.from(picture.data);
   
   // saveArtToCache will handle the WebP conversion
-  return await saveArtToCache(pictureBuffer, picture.format, 'embedded metadata');
+  return await saveArtToCache(pictureBuffer);
 }
 
 /**
@@ -242,7 +239,7 @@ export async function downloadAlbumArtFromMusicBrainz(musicbrainzReleaseId: stri
     
     // Use our saveArtToCache function which now converts all images to WebP
     // The format doesn't matter since we're converting to WebP regardless
-    return await saveArtToCache(imageBuffer, 'image/webp', `MusicBrainz release ${musicbrainzReleaseId}`);
+    return await saveArtToCache(imageBuffer);
 
   } catch (error: any) {
     return null;
@@ -287,6 +284,34 @@ export async function downloadArtistImageFromMusicBrainz(musicbrainzArtistId: st
   }
 }
 
+/**
+ * Searches MusicBrainz for an album by title and artist and downloads its cover art if found.
+ * Falls back gracefully and returns null when no cover can be retrieved.
+ * @param albumTitle The album title
+ * @param artistName The primary artist name
+ * @returns Absolute path (relative to project) to the downloaded cover WebP file, or null
+ */
+export async function searchAndDownloadAlbumArt(albumTitle: string, artistName: string): Promise<string | null> {
+  if (!albumTitle || !artistName) return null;
+
+  try {
+    // Defer import to avoid circular deps
+    const { searchReleaseByTitleAndArtist } = await import('~/server/utils/musicbrainz');
+
+    const releaseId = await searchReleaseByTitleAndArtist(albumTitle, artistName);
+    if (!releaseId) {
+      return null;
+    }
+
+    const coverPath = await downloadAlbumArtFromMusicBrainz(releaseId);
+    return coverPath;
+  } catch (error) {
+    // Non-fatal – just log & continue
+    console.error(`searchAndDownloadAlbumArt error for ${albumTitle} – ${artistName}:`, error);
+    return null;
+  }
+}
+
 export const albumArtUtils = {
   saveArtToCache,
   processExternalAlbumArt,
@@ -294,6 +319,7 @@ export const albumArtUtils = {
   downloadArtistImage,
   downloadAlbumArtFromMusicBrainz,
   downloadArtistImageFromMusicBrainz,
+  searchAndDownloadAlbumArt,
   ensureCoversDirectory,
   ensureArtistImagesDirectory,
   COVERS_DIR,

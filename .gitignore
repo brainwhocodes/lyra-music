@@ -138,6 +138,7 @@ coverage/
 # Ignore all files in image directories but keep the directories themselves
 public/images/covers/
 public/images/artists/*
+uploads/
 
 # Don't ignore .gitkeep files to keep empty directories in git
 !public/images/covers/.gitkeep

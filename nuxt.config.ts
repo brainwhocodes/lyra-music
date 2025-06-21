@@ -20,7 +20,7 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/fonts',
     '@nuxt/icon',
-    '@nuxt/image',
+   // '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
     '@pinia/nuxt', // Add Pinia module
@@ -36,6 +36,5 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()]
   },
-  sourcemap: process.env.NODE_ENV === 'development' ? true : false
-
+  sourcemap: process.env.NODE_ENV === 'development' ? true : false,
 })  

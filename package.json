@@ -15,6 +15,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@nuxt/kit": "npm:@nuxt/kit-nightly@latest",
     "@google/genai": "^1.4.0",
     "@nuxt/content": "3.5.1",
     "@nuxt/fonts": "0.11.2",

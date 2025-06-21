@@ -23,6 +23,9 @@ import { resolve, join } from 'node:path';
 import { useRuntimeConfig } from '#imports';
 import { albumArtUtils } from './album-art-utils';
 
+// Constants
+export const VARIOUS_ARTISTS_NAME = 'Various Artists';
+
 // In-memory cache for scan session
 const artistCache = new Map<string, Artist>();
 const albumCache = new Map<string, Album>();
@@ -47,6 +50,7 @@ interface GetOrCreateArtistMinimalParams {
 }
 
 export interface FindOrCreateAlbumParams {
+  isVariousArtistsCompilation?: boolean;
   albumTitle: string;
   artistsArray: AlbumArtistInfo[]; // Changed from artistIds and primaryArtistId
   userId: string;
@@ -109,6 +113,12 @@ export async function findOrCreateArtist({
   skipRemoteImageFetch = false,
 }: FindOrCreateArtistParams): Promise<Artist | null> {
   if (!artistName) return null;
+
+  // Special case for "Various Artists"
+  if (artistName === VARIOUS_ARTISTS_NAME) {
+    skipRemoteImageFetch = true; // Always skip image fetch for "Various Artists"
+    musicbrainzArtistId = undefined; // Never assign or look up MBID for "Various Artists"
+  }
 
   try {
     // Create a cache key based on artist name and MBID (if provided)
@@ -190,8 +200,8 @@ export async function findOrCreateArtist({
       // mbidToUse is already set from params or is null
     }
 
-    // Fetch artist image from Genius API if needed and not skipped
-    if (shouldFetchArtistImage && !skipRemoteImageFetch) {
+    // Fetch artist image from Genius API if needed and not skipped (and not "Various Artists")
+    if (shouldFetchArtistImage && !skipRemoteImageFetch && artistName !== VARIOUS_ARTISTS_NAME) {
       try {
         console.log(`  Fetching artist image for: ${artistName} using Genius API`);
         const config = useRuntimeConfig();
@@ -272,6 +282,11 @@ export async function getOrCreateArtistMinimal({
 }: GetOrCreateArtistMinimalParams): Promise<Artist | null> {
   if (!artistName) return null;
 
+  // Special case for "Various Artists"
+  if (artistName === VARIOUS_ARTISTS_NAME) {
+    musicbrainzArtistId = undefined; // Never assign or look up MBID for "Various Artists"
+  }
+
   try {
     let queryCondition = musicbrainzArtistId 
       ? or(eq(artists.name, artistName), eq(artists.musicbrainzArtistId, musicbrainzArtistId))
@@ -323,19 +338,66 @@ export async function getOrCreateArtistMinimal({
 export async function findOrCreateAlbum({
   albumTitle,
   artistsArray,
+  isVariousArtistsCompilation = false,
   userId,
   year,
   coverPath, // This is the cover path from the file's metadata, if any
   musicbrainzReleaseId,
   folderPath, // New parameter
 }: FindOrCreateAlbumParams): Promise<Album | null> {
-  if (!albumTitle || !artistsArray || artistsArray.length === 0 || !userId) return null;
+  // If it's a Various Artists compilation, artistsArray might be empty initially
+  if (!albumTitle || (!isVariousArtistsCompilation && (!artistsArray || artistsArray.length === 0)) || !userId) return null;
 
   try {
-    const primaryArtist = artistsArray.find(a => a.isPrimary);
-    if (!primaryArtist) {
-      // console.warn(`No primary artist found for album: ${albumTitle}. Skipping album creation/update.`);
-      return null;
+    let primaryArtistForLookup: AlbumArtistInfo | null = null;
+    
+    // Handle "Various Artists" compilation album
+    if (isVariousArtistsCompilation) {
+      // Find or create the "Various Artists" artist record
+      const variousArtistsRecord = await getOrCreateArtistMinimal({
+        artistName: VARIOUS_ARTISTS_NAME
+      });
+      
+      if (!variousArtistsRecord) {
+        return null; // Failed to get/create "Various Artists" record
+      }
+      
+      // Create a primary artist entry for "Various Artists"
+      primaryArtistForLookup = {
+        artistId: variousArtistsRecord.artistId,
+        isPrimary: true,
+        role: null
+      };
+      
+      // Add Various Artists to artistsArray if not already present
+      const hasVariousArtists = artistsArray?.some(a => a.artistId === variousArtistsRecord.artistId);
+      if (!hasVariousArtists) {
+        if (!artistsArray) {
+          artistsArray = [primaryArtistForLookup];
+        } else {
+          // Ensure no other artists are marked as primary
+          artistsArray = artistsArray.map(a => ({
+            ...a,
+            isPrimary: false
+          }));
+          // Add Various Artists as primary
+          artistsArray.push(primaryArtistForLookup);
+        }
+      } else {
+        // Update the existing Various Artists entry to be primary
+        artistsArray = artistsArray.map(a => ({
+          ...a,
+          isPrimary: a.artistId === variousArtistsRecord.artistId
+        }));
+      }
+    } else {
+      // Normal album processing (not Various Artists)
+      const primaryArtist = artistsArray.find(a => a.isPrimary);
+      if (!primaryArtist) {
+        // console.warn(`No primary artist found for album: ${albumTitle}. Skipping album creation/update.`);
+        return null;
+      }
+      primaryArtistForLookup = primaryArtist;
     }
 
     let albumRecord: Album | undefined | null = null;
@@ -383,7 +445,7 @@ export async function findOrCreateAlbum({
       albumRecord = cachedAlbums.find(album => {
         const albumArtistsFromCache = albumArtistsCache.get(album.albumId);
         return album.title === albumTitle &&
-               albumArtistsFromCache?.some(a => a.artistId === primaryArtist.artistId && a.isPrimary);
+               albumArtistsFromCache?.some(a => a.artistId === primaryArtistForLookup.artistId && a.isPrimary);
       });
       // if (albumRecord) {
       //   console.log(`Album "${albumTitle}" found in cache by Title & Primary Artist`);
@@ -406,7 +468,7 @@ export async function findOrCreateAlbum({
         .leftJoin(albumArtists, eq(albums.albumId, albumArtists.albumId))
         .where(and(
           eq(albums.title, albumTitle),
-          eq(albumArtists.artistId, primaryArtist.artistId),
+          eq(albumArtists.artistId, primaryArtistForLookup.artistId),
           eq(albumArtists.isPrimaryArtist, 1) // Ensure primary artist match
         ))
         .limit(1);
@@ -422,6 +484,11 @@ export async function findOrCreateAlbum({
     if (albumRecord) {
       isNewAlbum = false;
       const updates: Partial<Omit<Album, 'albumId' | 'userId' | 'createdAt'>> & { updatedAt?: any } = {};
+      
+      // Update processedStatus to COMPLETED if it's not already
+      if (albumRecord.processedStatus !== AlbumProcessStatus.COMPLETED) {
+        updates.processedStatus = AlbumProcessStatus.COMPLETED;
+      }
 
       if (year !== undefined && year !== null && albumRecord.year !== year) {
         updates.year = year;
@@ -457,6 +524,7 @@ export async function findOrCreateAlbum({
         title: albumTitle,
         userId: userId,
         folderPath: folderPath, // New field
+        processedStatus: AlbumProcessStatus.COMPLETED, // Set status to COMPLETED
       };
       if (year !== undefined && year !== null) newAlbumValues.year = year;
       if (coverPath) newAlbumValues.coverPath = coverPath;
@@ -482,11 +550,11 @@ export async function findOrCreateAlbum({
     }
     
     // --- Metadata Enrichment for New Albums or Missing Info ---
-    if (!albumRecord.musicbrainzReleaseId && primaryArtist?.artistId) {
+    if (!albumRecord.musicbrainzReleaseId && primaryArtistForLookup?.artistId) {
       const primaryArtistRecordResult = await db
         .select({ name: artists.name })
         .from(artists)
-        .where(eq(artists.artistId, primaryArtist.artistId))
+        .where(eq(artists.artistId, primaryArtistForLookup.artistId))
         .limit(1);
 
       if (primaryArtistRecordResult.length > 0 && primaryArtistRecordResult[0].name) {
@@ -1025,6 +1093,68 @@ export async function getAlbumsToProcess(userId: string, processOnlyUnprocessed:
     .where(eq(albums.userId, userId));
 }
 
+/**
+ * Creates an initial album record in the database with minimal information.
+ * @param params Parameters for initial album creation
+ * @returns Created album record or null on error
+ */
+export async function createInitialAlbumRecord({
+  folderPath,
+  albumTitle,
+  userId,
+  processedStatus = AlbumProcessStatus.PENDING
+}: {
+  folderPath: string;
+  albumTitle: string;
+  userId: string;
+  processedStatus?: AlbumProcessStatus;
+}): Promise<Album | null> {
+  try {
+    // Check if an album with this folder path already exists
+    const existingAlbumsByFolder = await db
+      .select()
+      .from(albums)
+      .where(and(eq(albums.folderPath, folderPath), eq(albums.userId, userId)))
+      .limit(1);
+    
+    // Return existing album if found
+    if (existingAlbumsByFolder.length > 0) {
+      return existingAlbumsByFolder[0];
+    }
+    
+    // Create a new album with minimal required information
+    const newAlbumId = uuidv7();
+    const newAlbumValues: typeof albums.$inferInsert = {
+      albumId: newAlbumId,
+      title: albumTitle,
+      userId: userId,
+      folderPath: folderPath,
+      processedStatus: processedStatus,  // Default is PENDING
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    const result = await db
+      .insert(albums)
+      .values(newAlbumValues)
+      .returning();
+      
+    if (!result || result.length === 0) {
+      return null;
+    }
+    
+    const newAlbum = result[0];
+    
+    // Add to cache
+    albumCache.set(newAlbum.albumId, newAlbum);
+    
+    return newAlbum;
+  } catch (error: any) {
+    console.error(`Error creating initial album record for ${albumTitle}: ${error.message}`);
+    return null;
+  }
+}
+
 export const dbOperations = {
   findOrCreateArtist,
   getOrCreateArtistMinimal,
@@ -1038,4 +1168,5 @@ export const dbOperations = {
   resetScanSession,
   getAlbumArtists,
   getTrackArtists,
+  createInitialAlbumRecord,
 };

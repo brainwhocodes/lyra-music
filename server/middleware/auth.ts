@@ -57,7 +57,6 @@ export default defineEventHandler(async (event) => {
             userId: userData.userId,
             name: userData.name || '',
             email: userData.email || '',
-            expiresAt: userData.expiresAt || ''
           };
         }
       } catch (e) {
