@@ -15,7 +15,6 @@ export const useCoverArt = () => {
     const placeholder = '/images/icons/default-album-art.webp'; // Default placeholder image
 
     if (!artPath) {
-      console.warn('[useCoverArt] artPath is null or undefined, returning placeholder.');
       return placeholder;
     }
 

@@ -1,6 +1,5 @@
-import { ref, computed, watch } from 'vue';
 import { defineStore } from 'pinia';
-import { useCookie, useFetch, navigateTo, useRouter } from '#imports';
+import { useFetch, navigateTo, useRouter } from '#imports';
 
 // Define the type for our user object in the store (without ID)
 interface User {
@@ -15,34 +14,28 @@ interface FullUserData extends User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const userCookie = useCookie('auth_token');
-  
   // State: holds user data without ID
   const user = ref<User | null>(null);
   // State: holds only the ID, primarily for internal use if needed
   const userId = ref<string | null>(null);
   
-  // Initialize state from cookie if available
-  if (userCookie.value) {
+  // Initialize state from localStorage if available
+  const storedToken = localStorage.getItem('auth_token');
+  if (storedToken) {
     try {
-      // Make sure we're parsing a string, not an object
-      const cookieValue = typeof userCookie.value === 'string' 
-        ? userCookie.value 
-        : JSON.stringify(userCookie.value);
-      
-      const fullUserData: FullUserData = JSON.parse(cookieValue);
+      const fullUserData: FullUserData = JSON.parse(storedToken);
       userId.value = fullUserData.id;
       const { id, ...userWithoutId } = fullUserData;
       user.value = userWithoutId; 
     } catch (e) {
-      console.error('Failed to parse user cookie:', e);
-      userCookie.value = null; // Clear corrupted cookie
+      console.error('Failed to parse user data from localStorage:', e);
+      localStorage.removeItem('auth_token'); // Clear corrupted token
       user.value = null;
       userId.value = null;
     }
   }
   
-  // Watch for changes to user state and update cookie with the full user data
+  // Watch for changes to user state and update localStorage with the full user data
   // This requires having the ID available, e.g., from the userId ref
   watch(user, (newUserState: User | null) => {
     if (newUserState && userId.value) {
@@ -51,13 +44,13 @@ export const useAuthStore = defineStore('auth', () => {
         ...newUserState
       };
       try {
-        userCookie.value = JSON.stringify(fullUserData);
+        localStorage.setItem('auth_token', JSON.stringify(fullUserData));
       } catch (e) {
-        console.error('Failed to stringify user data for cookie:', e);
+        console.error('Failed to stringify user data for localStorage:', e);
       }
     } else {
-      // If user logs out (newUserState is null), clear the cookie
-      userCookie.value = null;
+      // If user logs out (newUserState is null), clear the localStorage
+      localStorage.removeItem('auth_token');
       userId.value = null; // Also clear the stored ID
     }
   }, { deep: true });
@@ -68,11 +61,11 @@ export const useAuthStore = defineStore('auth', () => {
   // actions
   async function fetchUser() {
     const router = useRouter();
-    const token = useCookie('auth_token').value; // Get token from the cookie ref
+    const token = localStorage.getItem('auth_token'); // Get token from localStorage
 
     try {
-      // Check if cookie exists AND current path is not /login before redirecting
-      if (!userCookie.value && router.currentRoute.value?.path !== '/login') {
+      // Check if token exists AND current path is not /login before redirecting
+      if (!token && router.currentRoute.value?.path !== '/login') {
         if (router.currentRoute.value?.path == '/') {
           return;
         }
@@ -83,14 +76,14 @@ export const useAuthStore = defineStore('auth', () => {
       const { data: responseData, error } = await useFetch<FullUserData>('/api/auth/me', {
         retry: 1,  // Only retry once
         headers: token ? { Authorization: `Bearer ${token}` } : {}, // Add Auth header
-        onResponseError({ response: { status } }) {
+        onResponseError({ response: { status } }: any) {
           // Handle 401 errors specifically
           if (status === 401) {
             console.error('Session expired or invalid');
-            // Clear state and cookies on auth errors
+            // Clear state and localStorage on auth errors
             user.value = null;
             userId.value = null;
-            userCookie.value = null;
+            localStorage.removeItem('auth_token');
           }
         }
       });
@@ -99,7 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
         console.error('Error fetching user:', error.value || 'No data returned');
         user.value = null;
         userId.value = null;
-        userCookie.value = null; // Clear cookie on fetch error
+        localStorage.removeItem('auth_token'); // Clear token on fetch error
         return;
       }
 
@@ -113,13 +106,13 @@ export const useAuthStore = defineStore('auth', () => {
       const { id, ...userWithoutId } = fullUserData;
       user.value = userWithoutId;
       
-      // The watcher will automatically update the cookie with the fullUserData
+      // The watcher will automatically update localStorage with the fullUserData
       return fullUserData;
     } catch (error: any) {
       console.error('Error fetching user:', error);
       user.value = null;
       userId.value = null;
-      userCookie.value = null;
+      localStorage.removeItem('auth_token');
       if (router.currentRoute.value?.path !== '/login') {
         await navigateTo('/login');
       }
@@ -130,7 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Clear local state
     user.value = null;
     userId.value = null;
-    // Watcher will clear the user-data cookie
+    // Watcher will clear the auth_token from localStorage
 
     // Call the backend logout endpoint (important!)
     try {
@@ -156,7 +149,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clearState() {
     user.value = null;
     userId.value = null;
-    userCookie.value = null;
+    localStorage.removeItem('auth_token');
   }
 
   /**

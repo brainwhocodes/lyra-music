@@ -99,9 +99,10 @@ export const usePlayerStore = defineStore('player', () => {
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex--;
 
-      // And swap it with the current element.
-      [newArray[currentIndex], newArray[randomIndex]] = [
-        newArray[randomIndex], newArray[currentIndex]];
+      // And swap it with the current element
+      const temp = newArray[currentIndex]!;
+      newArray[currentIndex] = newArray[randomIndex]!;
+      newArray[randomIndex] = temp;
     }
 
     return newArray;

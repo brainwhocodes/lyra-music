@@ -31,7 +31,7 @@
 
     <!-- Album List/Grid -->
     <div v-else
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       <AlbumCard v-for="album_item in filteredAlbums" :key="album_item.albumId" :album="album_item"
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
         :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"

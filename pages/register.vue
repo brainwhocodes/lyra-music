@@ -181,7 +181,7 @@ async function register() {
 
     console.log('Registration successful:', response)
     successMessage.value = 'Registration successful! Redirecting to library...' 
-    
+    localStorage.setItem('auth_token', response.token)
     // Redirect to login page after a short delay
     setTimeout(() => {
       navigateTo('/library')
