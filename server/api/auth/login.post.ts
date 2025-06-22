@@ -60,6 +60,7 @@ console.log(body)
     sameSite: 'strict',
     maxAge: 60 * 60 * 24 * 7 // 7 days
   })
+  console.log(token)
 
   return {
     token,

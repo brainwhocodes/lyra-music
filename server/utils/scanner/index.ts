@@ -149,6 +149,39 @@ export async function processAudioFile(
     }
     console.log(`[processAudioFile] OK: Album record processed: ${albumRecord.title}`);
 
+    // Handle genres, preferring MusicBrainz data
+    let genresProcessed = false;
+    if (albumRecord.musicbrainzReleaseId) {
+      console.log(`[processAudioFile] Fetching MusicBrainz genres for album: ${albumRecord.title}`);
+      try {
+        const releaseInfo = await getReleaseInfoWithTags(albumRecord.musicbrainzReleaseId);
+        if (releaseInfo?.genres && releaseInfo.genres.length > 0) {
+          for (const genre of releaseInfo.genres) {
+            const genreId = await dbOperations.findOrCreateGenre(genre.name);
+            if (genreId) {
+              await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
+            }
+          }
+          console.log(`[processAudioFile] OK: MusicBrainz genres processed for album: ${albumRecord.title}`);
+          genresProcessed = true;
+        }
+      } catch (error: any) {
+        console.warn(`[processAudioFile] Failed to fetch MusicBrainz genres for ${albumRecord.title}: ${error.message}`);
+      }
+    }
+
+    // Fallback to local file metadata if MusicBrainz genres were not processed
+    if (!genresProcessed && common.genre && common.genre.length > 0) {
+      console.log(`[processAudioFile] Using local metadata for genres for album: ${albumRecord.title}`);
+      for (const genreName of common.genre) {
+        const genreId = await dbOperations.findOrCreateGenre(genreName);
+        if (genreId) {
+          await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
+        }
+      }
+      console.log(`[processAudioFile] OK: Local genres processed for album: ${albumRecord.title}`);
+    }
+
     const trackArtists = artistRecords.map(ar => ({ artistId: ar.artistId, isPrimary: ar.artistId === primaryArtist.artistId, role: ar.artistId === primaryArtist.artistId ? 'main' : 'artist' }));
 
     const trackRecord = await dbOperations.findOrCreateTrack({

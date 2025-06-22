@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
       }
     }
   }
-  
+  console.log('User:', user);
   // If still no user, throw unauthorized error
   if (!user) {
     createError({
