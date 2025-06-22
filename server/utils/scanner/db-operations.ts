@@ -1,4 +1,4 @@
-import { eq, and, sql, or, inArray } from 'drizzle-orm';
+import { eq, and, sql, or, ne } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import {
@@ -201,10 +201,11 @@ export async function findOrCreateArtist({
     }
 
     // Fetch artist image from Genius API if needed and not skipped (and not "Various Artists")
-    if (shouldFetchArtistImage && !skipRemoteImageFetch && artistName !== VARIOUS_ARTISTS_NAME) {
+    const config = useRuntimeConfig();
+    const isGeniusDisabled = config.scannerDisableGenius === 'true' || process.env.SCANNER_DISABLE_GENIUS === 'true';
+    if (shouldFetchArtistImage && !skipRemoteImageFetch && !isGeniusDisabled && artistName !== VARIOUS_ARTISTS_NAME) {
       try {
         console.log(`  Fetching artist image for: ${artistName} using Genius API`);
-        const config = useRuntimeConfig();
         const geniusService = new GeniusService(config.geniusApiClientId, config.geniusApiClientSecret);
 
         const searchResults = await geniusService.searchSongs(artistName);
@@ -249,13 +250,13 @@ export async function findOrCreateArtist({
 
           if (updatedArtist.length > 0) {
             artistRecord = updatedArtist[0];
-            console.log(`    Saved artist image from Genius: ${dbImagePath}`);
+            console.log(`Saved artist image from Genius: ${dbImagePath}`);
           }
         } else {
-          console.log(`    No suitable image found on Genius for artist: ${artistName}`);
+          console.log(`No suitable image found on Genius for artist: ${artistName}`);
         }
       } catch (error: any) {
-        console.error(`  Error fetching/processing artist image for ${artistName} from Genius:`, error.message || error);
+        console.error(`Error fetching/processing artist image for ${artistName} from Genius:`, error.message || error);
       }
     }
 
@@ -1079,10 +1080,7 @@ export async function getAlbumsToProcess(userId: string, processOnlyUnprocessed:
       .from(albums)
       .where(and(
         eq(albums.userId, userId),
-        inArray(albums.processedStatus, [
-          AlbumProcessStatus.NOT_PROCESSED,
-          AlbumProcessStatus.FAILED,
-        ]),
+        ne(albums.processedStatus, AlbumProcessStatus.COMPLETED),
       ));
   }
 
@@ -1094,63 +1092,52 @@ export async function getAlbumsToProcess(userId: string, processOnlyUnprocessed:
 }
 
 /**
- * Creates an initial album record in the database with minimal information.
+ * Finds or creates an initial album record in the database.
+ * If the album already exists, it resets its status to PENDING for reprocessing.
  * @param params Parameters for initial album creation
- * @returns Created album record or null on error
+ * @returns The found or created album record, or null on error
  */
 export async function createInitialAlbumRecord({
   folderPath,
   albumTitle,
   userId,
-  processedStatus = AlbumProcessStatus.PENDING
 }: {
   folderPath: string;
   albumTitle: string;
   userId: string;
-  processedStatus?: AlbumProcessStatus;
 }): Promise<Album | null> {
   try {
-    // Check if an album with this folder path already exists
-    const existingAlbumsByFolder = await db
-      .select()
-      .from(albums)
-      .where(and(eq(albums.folderPath, folderPath), eq(albums.userId, userId)))
-      .limit(1);
-    
-    // Return existing album if found
-    if (existingAlbumsByFolder.length > 0) {
-      return existingAlbumsByFolder[0];
+    // Check if an album with this folderPath already exists for the user
+    const existingAlbum = await db.query.albums.findFirst({
+      where: and(eq(albums.folderPath, folderPath), eq(albums.userId, userId)),
+    });
+
+    if (existingAlbum) {
+      // Album exists, reset its status to PENDING for reprocessing
+      const [updatedAlbum] = await db
+        .update(albums)
+        .set({ processedStatus: AlbumProcessStatus.PENDING, updatedAt: new Date().toISOString() })
+        .where(eq(albums.albumId, existingAlbum.albumId))
+        .returning();
+      return updatedAlbum || existingAlbum;
     }
-    
-    // Create a new album with minimal required information
+
+    // If not, create a new one
     const newAlbumId = uuidv7();
-    const newAlbumValues: typeof albums.$inferInsert = {
-      albumId: newAlbumId,
-      title: albumTitle,
-      userId: userId,
-      folderPath: folderPath,
-      processedStatus: processedStatus,  // Default is PENDING
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    const result = await db
+    const [newAlbum] = await db
       .insert(albums)
-      .values(newAlbumValues)
+      .values({
+        albumId: newAlbumId,
+        title: albumTitle,
+        userId,
+        folderPath,
+        processedStatus: AlbumProcessStatus.PENDING,
+      })
       .returning();
-      
-    if (!result || result.length === 0) {
-      return null;
-    }
-    
-    const newAlbum = result[0];
-    
-    // Add to cache
-    albumCache.set(newAlbum.albumId, newAlbum);
-    
-    return newAlbum;
+
+    return newAlbum || null;
   } catch (error: any) {
-    console.error(`Error creating initial album record for ${albumTitle}: ${error.message}`);
+    console.error(`Error in createInitialAlbumRecord for ${albumTitle}: ${error.message}`);
     return null;
   }
 }

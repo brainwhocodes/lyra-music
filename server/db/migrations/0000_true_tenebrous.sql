@@ -71,6 +71,8 @@ CREATE TABLE `radio_channels` (
 	`user_id` text,
 	`name` text NOT NULL,
 	`dynamic` integer DEFAULT 1 NOT NULL,
+	`logo_image_path` text,
+	`background_image_path` text,
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade

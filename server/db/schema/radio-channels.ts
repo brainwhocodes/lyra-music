@@ -9,6 +9,8 @@ export const radioChannels = sqliteTable('radio_channels', {
   userId: text('user_id').references(() => users.userId, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   dynamic: integer('dynamic').default(1).notNull(), // 1 = auto-update, 0 = static
+  logoImagePath: text('logo_image_path'),
+  backgroundImagePath: text('background_image_path'),
   createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });

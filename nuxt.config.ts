@@ -42,6 +42,7 @@ export default defineNuxtConfig({
     geniusApiClientId: process.env.GENIUS_API_CLIENT_ID,
     geniusApiClientSecret: process.env.GENIUS_API_CLIENT_SECRET,
     geminiApiKey: process.env.GEMINI_API_KEY,
+    scannerDisableGenius: process.env.SCANNER_DISABLE_GENIUS,
   },
   vite: {
     plugins: [tailwindcss()]

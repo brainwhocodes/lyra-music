@@ -1,7 +1,8 @@
+import * as fs from 'fs/promises';
 import * as mm from 'music-metadata';
 import { basename, dirname, extname, join } from 'path';
 import { db } from '~/server/db';
-import { Album, albums, tracks, artistUsers } from '~/server/db/schema';
+import { type Album, type Artist, albums, tracks, artistUsers } from '~/server/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import type { AlbumArtistInfo, TrackArtistInfo } from './db-operations';
 import { fileUtils } from '~/server/utils/scanner/file-utils';
@@ -87,437 +88,98 @@ async function extractMetadata(filePath: string): Promise<{
 /**
  * Processes a single audio file, extracting metadata and updating the database.
  */
-async function processAudioFile(
+export async function processAudioFile(
   filePath: string,
-  { libraryId, userId, isVariousArtistsCompilation = false }: { 
-    libraryId: string; 
+  { userId, isVariousArtistsCompilation, artistsProcessedForImages }: { 
     userId: string; 
     isVariousArtistsCompilation?: boolean;
+    artistsProcessedForImages: Set<string>;
   }
 ): Promise<{ albumId: string; title: string; primaryArtistName: string; needsCover: boolean } | null> {
-  // console.log(`Processing: ${filePath}`);
-  let skipMusicBrainzDetailsFetch = false;
-
+  console.log(`[processAudioFile] Starting: ${filePath}`);
   try {
     const { metadata, albumArtPath } = await extractMetadata(filePath);
-    const folderPath = dirname(filePath);
+    if (!metadata) {
+      console.error(`[processAudioFile] Failed to extract metadata for: ${filePath}`);
+      return null;
+    }
+    console.log(`[processAudioFile] OK: Metadata extracted for: ${filePath}`);
+
     const common = metadata.common || {};
-
     const trackTitle = common.title?.trim();
-    const rawTrackArtistName = common.artist?.trim();
-    const trackAlbumTitle = common.album?.trim();
-    const trackYear = common.year;
-    const trackExplicit = (metadata.common as any).parentaladvisory === true; // Determine explicit flag
-
-    let musicbrainzReleaseIdFromMeta: string | undefined;
-    const rawMbReleaseId = (common as any).musicbrainz_releaseid;
-    if (Array.isArray(rawMbReleaseId) && rawMbReleaseId.length > 0) {
-      musicbrainzReleaseIdFromMeta = String(rawMbReleaseId[0]);
-    } else if (typeof rawMbReleaseId === 'string') {
-      musicbrainzReleaseIdFromMeta = rawMbReleaseId;
-    }
-
     if (!trackTitle) {
-      // console.warn(`  Track title not found for ${filePath}. Skipping.`);
+      console.warn(`[processAudioFile] Skipping file due to missing track title: ${filePath}`);
       return null;
     }
 
-    // --- Initial Artist ID Gathering ---
     const allArtistNames = new Set<string>();
-    const primaryAlbumArtistNames = new Set<string>();
-    const primaryTrackArtistNames = new Set<string>();
-    
-    // Process track artist
-    if (rawTrackArtistName) {
-      const splitTrackArtists = splitArtistString(rawTrackArtistName);
-      splitTrackArtists.forEach(artist => {
-        allArtistNames.add(artist);
-        primaryTrackArtistNames.add(artist);
-      });
-    }
-    
-    // Process album artist
-    const albumArtistNameFromMeta = (common as any).albumartist?.trim();
-    if (albumArtistNameFromMeta) {
-      const splitAlbumArtists = splitArtistString(albumArtistNameFromMeta);
-      splitAlbumArtists.forEach(artist => {
-        allArtistNames.add(artist);
-        primaryAlbumArtistNames.add(artist);
-      });
-    }
-    
-    // Process additional artists array if present
-    ((common as any).artists || []).forEach((artist: string) => {
-      if (artist) {
-        splitArtistString(artist.trim()).forEach(splitArtist => {
-          allArtistNames.add(splitArtist);
-        });
-      }
+    splitArtistString(common.artist || '').forEach(name => allArtistNames.add(name));
+    splitArtistString((common as any).albumartist || '').forEach(name => allArtistNames.add(name));
+    if (allArtistNames.size === 0) allArtistNames.add('Unknown Artist');
+    console.log(`[processAudioFile] OK: Artists identified: ${[...allArtistNames].join(', ')}`);
+
+    const artistPromises = Array.from(allArtistNames).map(name => {
+      const shouldSkipFetch = artistsProcessedForImages.has(name);
+      if (!shouldSkipFetch) artistsProcessedForImages.add(name);
+      return dbOperations.findOrCreateArtist({ artistName: name, userId, skipRemoteImageFetch: shouldSkipFetch });
     });
-    
-    // Process featured artists if present
-    ((common as any).featuredartists || []).forEach((artist: string) => {
-      if (artist) {
-        splitArtistString(artist.trim()).forEach(splitArtist => {
-          allArtistNames.add(splitArtist);
-          // Not adding to primary artists since these are featured
-        });
-      }
-    });
-
-    if (allArtistNames.size === 0) {
-      allArtistNames.add('Unknown Artist');
-      primaryTrackArtistNames.add('Unknown Artist');
-      primaryAlbumArtistNames.add('Unknown Artist');
-    }
-    
-    // Determine effective primary artist name based on priority:
-    // 1. Primary track artist (from track.artist)
-    // 2. Primary album artist (from common.albumartist)
-    // 3. First artist in the set of all artists
-    // 4. Fallback to 'Unknown Artist' if all else fails
-    // Cast to string to handle potential undefined values from .values().next().value
-    const effectivePrimaryArtistName: string = 
-      (primaryTrackArtistNames.size > 0 ? primaryTrackArtistNames.values().next().value : 
-      primaryAlbumArtistNames.size > 0 ? primaryAlbumArtistNames.values().next().value : 
-      allArtistNames.size > 0 ? allArtistNames.values().next().value : 
-      'Unknown Artist') || 'Unknown Artist'; 
-
-    const artistRecordsMinimal: import('~/server/db/schema').Artist[] = [];
-    
-    // For primary artists, use findOrCreateArtist to fetch images
-    const primaryArtistNames = new Set<string>([...primaryAlbumArtistNames, ...primaryTrackArtistNames]);
-    
-    for (const name of allArtistNames) {
-      let artistRec;
-      
-      // Use findOrCreateArtist for primary artists to fetch images
-      if (primaryArtistNames.has(name)) {
-        artistRec = await dbOperations.findOrCreateArtist({
-          artistName: name,
-          userId: userId,
-          skipRemoteImageFetch: false // Explicitly set to fetch images
-        });
-      } else {
-        // Use minimal version for non-primary artists
-        artistRec = await dbOperations.getOrCreateArtistMinimal({ artistName: name });
-      }
-      
-      if (artistRec) artistRecordsMinimal.push(artistRec);
-    }
-
-    if (artistRecordsMinimal.length === 0) {
-      // console.warn(`  No artist records could be processed for ${filePath}. Skipping album/track linking.`);
-      return null; // Or handle track creation without album/artist if desired
-    }
-    
-    // Flag to track if we're dealing with existing records (optimization for rescans)
-    let allEntitiesExist = false;
-
-    // Prepare AlbumArtistInfo for findOrCreateAlbum
-    const albumArtistsInfo: AlbumArtistInfo[] = artistRecordsMinimal.map(artistRec => ({
-      artistId: artistRec.artistId,
-      isPrimary: primaryAlbumArtistNames.has(artistRec.name) || 
-                (primaryTrackArtistNames.has(artistRec.name) && primaryAlbumArtistNames.size === 0) || 
-                (artistRecordsMinimal.length === 1),
-      // Role determination: primary album artists get 'main', others get null
-      role: primaryAlbumArtistNames.has(artistRec.name) || 
-            (primaryTrackArtistNames.has(artistRec.name) && primaryAlbumArtistNames.size === 0) || 
-            (artistRecordsMinimal.length === 1) ? 'main' : null,
-    }));
-
-    // Ensure at least one primary artist if multiple artists exist and none were matched by name
-    if (albumArtistsInfo.length > 1 && !albumArtistsInfo.some(a => a.isPrimary)) {
-      const primaryDesignate = albumArtistsInfo.find(a => a.artistId === (artistRecordsMinimal.find(ar => ar.name === effectivePrimaryArtistName)?.artistId));
-      if (primaryDesignate) {
-        primaryDesignate.isPrimary = true;
-        primaryDesignate.role = 'main';
-      } else if (albumArtistsInfo.length > 0) {
-         // Fallback: if effectivePrimaryArtistName didn't match any in the list (e.g. was from a different tag set)
-         // or if there's only one artist, make it primary.
-        albumArtistsInfo[0].isPrimary = true;
-        albumArtistsInfo[0].role = 'main';
-      }
-    }
-
-    // --- Initial Album Record Fetch/Creation ---
-    let albumRecord = await dbOperations.findOrCreateAlbum({
-      albumTitle: trackAlbumTitle || 'Unknown Album',
-      artistsArray: albumArtistsInfo, // Use the new structure
-      isVariousArtistsCompilation, // Pass the flag for "Various Artists" compilation detection
-      userId,
-      year: trackYear,
-      coverPath: albumArtPath,
-      musicbrainzReleaseId: musicbrainzReleaseIdFromMeta,
-      folderPath,
-    });
-
-    // --- Determine skipMusicBrainzDetailsFetch ---
-    if (albumRecord) {
-      const hasGenres = await dbOperations.hasAlbumGenres(albumRecord.albumId);
-      
-      // Check if the album already existed and has complete data
-      if (albumRecord.musicbrainzReleaseId && albumRecord.year !== null && hasGenres) {
-        skipMusicBrainzDetailsFetch = true;
-        // console.log(`  Album '${albumRecord.title}' is complete. Skipping further MusicBrainz details fetch.`);
-        
-        // Check if all artists also have complete data (have MusicBrainz IDs)
-        const allArtistsComplete = artistRecordsMinimal.every(artist => 
-          artist.musicbrainzArtistId !== null && artist.musicbrainzArtistId !== undefined);
-          
-        if (allArtistsComplete) {
-          // All entities exist and have complete data - we can skip expensive operations
-          allEntitiesExist = true;
-          // console.log(`  All artists and album for track ${trackTitle} already exist with complete data. Skipping detailed processing.`);
-        }
-      }
-    }
-
-    // --- Full Artist Processing (Conditional Image Fetch) ---
-    const finalArtistRecords: import('~/server/db/schema').Artist[] = [];
-    
-    // If all entities exist with complete data, we can use the minimal artist records directly
-    // This avoids the expensive findOrCreateArtist calls which may trigger image fetching
-    if (allEntitiesExist) {
-      finalArtistRecords.push(...artistRecordsMinimal);
-    } else {
-      for (const minimalArtist of artistRecordsMinimal) {
-        const fullArtist = await dbOperations.findOrCreateArtist({
-          artistName: minimalArtist.name,
-          userId,
-          musicbrainzArtistId: minimalArtist.musicbrainzArtistId, // Pass MBID if available
-          skipRemoteImageFetch: skipMusicBrainzDetailsFetch,
-        });
-        if (fullArtist) finalArtistRecords.push(fullArtist);
-      }
-    }
-    // --- Track Artist Preparation ---
-    const trackSpecificArtistNames = new Set<string>();
-    
-    // Use already processed primary track artists
-    primaryTrackArtistNames.forEach(artist => trackSpecificArtistNames.add(artist));
-    
-    // Add primary album artists if there are no track artists
-    if (trackSpecificArtistNames.size === 0) {
-      primaryAlbumArtistNames.forEach(artist => trackSpecificArtistNames.add(artist));
-    }
-    
-    // Add all artists from common.artists that we've already split
-    (((common as any).artists || []) as string[]).forEach((artist: string) => {
-      if (artist) {
-        splitArtistString(artist.trim()).forEach(splitArtist => {
-          trackSpecificArtistNames.add(splitArtist);
-        });
-      }
-    });
-
-    // Add featured artists if available
-    (((common as any).featuredartists || []) as string[]).forEach((artist: string) => {
-      if (artist) {
-        splitArtistString(artist.trim()).forEach(splitArtist => {
-          trackSpecificArtistNames.add(splitArtist);
-        });
-      }
-    });
-
-    // If no specific track artists found, fall back to the effective primary artist for the file
-    if (trackSpecificArtistNames.size === 0 && effectivePrimaryArtistName) {
-      trackSpecificArtistNames.add(effectivePrimaryArtistName);
-    }
-    
-    // If still nothing, use "Unknown Artist"
-    if (trackSpecificArtistNames.size === 0) {
-        trackSpecificArtistNames.add('Unknown Artist');
-    }
-
-    // --- Prepare Track Metadata (with potential MusicBrainz fallback for track/disk numbers) ---
-    let trackNumberForDb: number | null = common.track?.no ?? null;
-    let diskNumberForDb: number | null = common.disk?.no ?? null;
-    let durationForDb: number | null = metadata.format?.duration ? Math.round(metadata.format.duration) : null;
-    const musicbrainzRecordingIdFromMeta: string | undefined = (common as any).musicbrainz_recordingid || (common as any).MUSICBRAINZ_TRACKID; // music-metadata uses 'musicbrainz_recordingid', some tags might have 'MUSICBRAINZ_TRACKID'
-
-    if (albumRecord?.musicbrainzReleaseId && (!trackNumberForDb || trackNumberForDb === 0)) {
-      const releaseTracklist = await getReleaseTracklist(albumRecord.musicbrainzReleaseId);
-      if (releaseTracklist && releaseTracklist.length > 0) {
-        let matchedMbTrack = null;
-        // Try matching by Recording ID first (most reliable)
-        if (musicbrainzRecordingIdFromMeta) {
-          matchedMbTrack = releaseTracklist.find(mbTrack => mbTrack.recordingId === musicbrainzRecordingIdFromMeta);
-        }
-        // Fallback: Try matching by title (less reliable)
-        if (!matchedMbTrack && trackTitle) {
-          matchedMbTrack = releaseTracklist.find(mbTrack => 
-            mbTrack.title.toLowerCase() === trackTitle.toLowerCase() ||
-            (mbTrack.title.length > 5 && trackTitle.toLowerCase().includes(mbTrack.title.toLowerCase().substring(0,5))) // Basic substring match for robustness
-          );
-        }
-
-        if (matchedMbTrack) {
-          trackNumberForDb = matchedMbTrack.trackNumber;
-          diskNumberForDb = matchedMbTrack.diskNumber;
-          if (!durationForDb && matchedMbTrack.length) {
-            durationForDb = Math.round(matchedMbTrack.length / 1000); // MB length is in ms
-          }
-        } else {
-        }
-      } else {
-      }
-    }
-
-    const trackArtistsForDb: TrackArtistInfo[] = [];
-    for (const artistName of trackSpecificArtistNames) {
-      const artistRecord = finalArtistRecords.find(ar => ar.name === artistName);
-      if (artistRecord) {
-        // Determine primary status for the track artist
-        let isPrimaryTrackArtist = false;
-        if (rawTrackArtistName && rawTrackArtistName === artistName) {
-          isPrimaryTrackArtist = true;
-        } else if (!rawTrackArtistName && trackSpecificArtistNames.size === 1) {
-          isPrimaryTrackArtist = true; // Only one artist for the track, make them primary
-        }
-
-        trackArtistsForDb.push({
-          artistId: artistRecord.artistId,
-          isPrimary: isPrimaryTrackArtist,
-          role: isPrimaryTrackArtist ? 'main' : 'artist', // Simplified role assignment
-        });
-      }
-    }
-
-    // Ensure at least one primary artist if multiple exist and primary wasn't clearly identified
-    if (trackArtistsForDb.length > 0 && !trackArtistsForDb.some(a => a.isPrimary)) {
-      // If rawTrackArtistName was present and matched an artist, that one should already be primary.
-      // This handles cases where rawTrackArtistName wasn't set or didn't match any in the list.
-      trackArtistsForDb[0].isPrimary = true;
-      trackArtistsForDb[0].role = 'main'; 
-    } else if (trackArtistsForDb.length === 1 && trackArtistsForDb[0]) {
-        // If only one artist, ensure it's primary and role is main
-        trackArtistsForDb[0].isPrimary = true;
-        trackArtistsForDb[0].role = 'main';
-    }
-
-    // --- Conditional Album Cover Fetch (if no MBID initially and no local cover) ---
-    if (!allEntitiesExist && !skipMusicBrainzDetailsFetch && albumRecord && !albumRecord.coverPath && !albumRecord.musicbrainzReleaseId) {
-      console.log(`  Album '${albumRecord.title}' lacks MBID and cover. Attempting to find MBID for cover art.`);
-      try {
-        let mbReleaseIdForCover: string | null = null;
-
-        if (trackAlbumTitle && trackAlbumTitle !== 'Unknown Album' && effectivePrimaryArtistName) {
-          const searchResultMbId = await searchReleaseByTitleAndArtist(trackAlbumTitle, effectivePrimaryArtistName);
-          if (searchResultMbId) {
-            mbReleaseIdForCover = searchResultMbId;
-            const updatedAlbumWithMbIdResult = await db.update(albums)
-              .set({ musicbrainzReleaseId: mbReleaseIdForCover, updatedAt: new Date().toISOString() })
-              .where(eq(albums.albumId, albumRecord.albumId))
-              .returning();
-            if (updatedAlbumWithMbIdResult.length > 0) {
-              albumRecord = updatedAlbumWithMbIdResult[0]; // Update local albumRecord instance
-              console.log(`  Found and updated album '${albumRecord.title}' with MBID: ${mbReleaseIdForCover} for cover search.`);
-            }
-          } else {
-            console.log(`  Could not find MBID for album '${trackAlbumTitle}' by '${effectivePrimaryArtistName}' for cover search.`);
-          }
-        } else {
-          console.log(` Skipping MBID search for cover art for '${albumRecord.title}' due to missing/generic album title or missing primary artist name.`);
-        }
-
-        if (mbReleaseIdForCover) {
-          console.log(`  Fetching MB cover art for '${albumRecord.title}' (MBID: ${mbReleaseIdForCover})`);
-          const mbCoverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(mbReleaseIdForCover);
-          if (mbCoverPath) {
-            const updatedAlbumResult = await db.update(albums)
-              .set({ coverPath: mbCoverPath, updatedAt: new Date().toISOString() })
-              .where(eq(albums.albumId, albumRecord.albumId)).returning();
-            if (updatedAlbumResult.length > 0) {
-              albumRecord = updatedAlbumResult[0]; // Update local albumRecord instance
-              console.log(`  Successfully fetched and updated cover for '${albumRecord.title}'.`);
-            }
-          }
-        }
-      } catch (coverFetchError: any) {
-        console.error(`  Error during conditional cover fetch for album '${albumRecord.title}': ${coverFetchError.message}`);
-      }
-    }
-
-    // --- Conditional MusicBrainz Genre Fetching ---
-    if (!allEntitiesExist && albumRecord?.albumId) {
-      let mbReleaseIdToUseForGenres: string | undefined = albumRecord.musicbrainzReleaseId || musicbrainzReleaseIdFromMeta;
-
-      if (!mbReleaseIdToUseForGenres && trackAlbumTitle && !skipMusicBrainzDetailsFetch) {
-        // console.log(`  Searching MBID for album: ${trackAlbumTitle} by ${effectivePrimaryArtistName}`);
-        const searchResultMbId = await searchReleaseByTitleAndArtist(trackAlbumTitle, effectivePrimaryArtistName);
-        if (searchResultMbId) {
-          mbReleaseIdToUseForGenres = searchResultMbId;
-          if (albumRecord && !albumRecord.musicbrainzReleaseId) {
-            const updatedAlbumResult = await db.update(albums)
-              .set({ musicbrainzReleaseId: searchResultMbId, updatedAt: new Date().toISOString() })
-              .where(eq(albums.albumId, albumRecord.albumId)).returning();
-            if (updatedAlbumResult.length > 0) albumRecord = updatedAlbumResult[0];
-            // console.log(`  Found and updated album ${albumRecord.title} with MBID: ${searchResultMbId}`);
-          }
-        }
-      }
-
-      if (mbReleaseIdToUseForGenres && !skipMusicBrainzDetailsFetch) {
-        try {
-          // console.log(`  Fetching genres for album ${albumRecord.title} (MBID: ${mbReleaseIdToUseForGenres})`);
-          const releaseInfo = await getReleaseInfoWithTags(mbReleaseIdToUseForGenres);
-          if (releaseInfo?.genres?.length) {
-            for (const genre of releaseInfo.genres) {
-              const genreId = await dbOperations.findOrCreateGenre(genre.name);
-              if (genreId && albumRecord?.albumId) {
-                await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
-              }
-            }
-            // console.log(`  Processed ${releaseInfo.genres.length} genres for ${albumRecord.title}.`);
-          }
-        } catch (genreError: any) {
-          // console.error(`  Error fetching genres for ${albumRecord.title}: ${genreError.message}`);
-        }
-      } // Closes 'if (mbReleaseIdToUseForGenres && !skipMusicBrainzDetailsFetch)'
-    } // Closes 'if (albumRecord?.albumId)' for genre fetching
-
-    // --- Track Creation ---
-    if (trackTitle && albumRecord?.albumId && trackArtistsForDb.length > 0) {
-      const trackMetadataForDb: TrackFileMetadata = {
-        trackNumber: trackNumberForDb,
-        diskNumber: diskNumberForDb,
-        duration: durationForDb,
-        year: trackYear ?? common.year ?? albumRecord?.year ?? null,
-        genre: common.genre?.join(', ') || null,
-        explicit: trackExplicit,
-      };
-
-      const trackRecord = await dbOperations.findOrCreateTrack({
-        title: trackTitle || 'Unknown Title', // Ensure title is never undefined
-        filePath: filePath || '', // Ensure filePath is never undefined
-        albumId: albumRecord!.albumId, // Added non-null assertion
-        artists: trackArtistsForDb,
-        musicbrainzTrackId: musicbrainzRecordingIdFromMeta || (common as any).musicbrainz_trackid,
-        metadata: trackMetadataForDb,
-      });
-
-      if (trackRecord) {
-        // console.log(`  Processed track: ${trackTitle} (ID: ${trackRecord.trackId})`);
-      }
-    } else if (trackTitle) {
-      // console.warn(`  Album record not found, or no artists identified for track ${trackTitle}. Track not fully linked.`);
-    }
-
-    // Return album info for batch cover processing
-    if (!albumRecord) {
+    const artistRecords = (await Promise.all(artistPromises)).filter((rec): rec is Artist => !!rec);
+    if (artistRecords.length === 0) {
+      console.error(`[processAudioFile] Failed to find or create any artist records for: ${filePath}`);
       return null;
     }
-    
+    console.log(`[processAudioFile] OK: Artist records processed: ${artistRecords.map(a => a.name).join(', ')}`);
+
+    const primaryArtist = artistRecords[0]!;
+    const albumArtists = artistRecords.map(ar => ({ artistId: ar.artistId, isPrimary: ar.artistId === primaryArtist.artistId, role: ar.artistId === primaryArtist.artistId ? 'main' : 'artist' }));
+
+    const albumRecord = await dbOperations.findOrCreateAlbum({
+      albumTitle: common.album || 'Unknown Album',
+      artistsArray: albumArtists,
+      userId,
+      year: common.year,
+      coverPath: albumArtPath,
+      musicbrainzReleaseId: (common as any).musicbrainz_releasegroupid,
+      folderPath: dirname(filePath),
+    });
+
+    if (!albumRecord) {
+      console.error(`[processAudioFile] Failed to find or create album for: ${filePath}`);
+      return null;
+    }
+    console.log(`[processAudioFile] OK: Album record processed: ${albumRecord.title}`);
+
+    const trackArtists = artistRecords.map(ar => ({ artistId: ar.artistId, isPrimary: ar.artistId === primaryArtist.artistId, role: ar.artistId === primaryArtist.artistId ? 'main' : 'artist' }));
+
+    const trackRecord = await dbOperations.findOrCreateTrack({
+      title: trackTitle,
+      filePath,
+      albumId: albumRecord.albumId,
+      artists: trackArtists,
+      musicbrainzTrackId: (common as any).musicbrainz_recordingid,
+      metadata: {
+        duration: metadata.format?.duration ? Math.round(metadata.format.duration) : null,
+        trackNumber: common.track?.no ?? null,
+        diskNumber: common.disk?.no ?? null,
+        year: common.year,
+        explicit: (common as any).parentaladvisory === true,
+      },
+    });
+
+    if (!trackRecord) {
+      console.error(`[processAudioFile] Failed to find or create track for: ${filePath}`);
+      return null;
+    }
+    console.log(`[processAudioFile] OK: Track record processed: ${trackRecord.title}`);
+
     return {
       albumId: albumRecord.albumId,
       title: albumRecord.title,
-      primaryArtistName: effectivePrimaryArtistName || 'Unknown Artist', // Provide fallback for undefined
+      primaryArtistName: primaryArtist.name,
       needsCover: !albumRecord.coverPath && !albumRecord.musicbrainzReleaseId,
     };
-  } catch (error: any) { // Catch for the main try block of processAudioFile
-    console.error(`[SCANNER] Failed to process audio file ${filePath}: ${error.message}. Skipping this file.`, error.stack);
-    // Here, you might want to update scan statistics if you have a global stats object
+  } catch (error: any) {
+    console.error(`[processAudioFile] CRITICAL ERROR for ${filePath}: ${error.message}`, error.stack);
     return null;
   }
 } // Closing brace for processAudioFile async function
@@ -527,8 +189,106 @@ interface ScanStats {
   addedTracks: number;
   addedArtists: number;
   addedAlbums: number;
+  completedAlbums: number;
+  failedAlbums: number;
   errors: number;
 }
+
+/**
+ * Scans a specific media library directory, extracts metadata, and updates the database.
+ * This implements a two-phase approach:
+ * 1. First phase: Create initial album records for each folder in PENDING status
+ * 2. Second phase: Process audio files in each album, updating metadata and status
+ * @returns Statistics about the scan operation
+ */
+export async function scanLibrary({
+  libraryId,
+  libraryPath,
+  userId,
+  processOnlyUnprocessed = false,
+}: ScanLibraryParams): Promise<ScanStats> {
+  console.log(`\n--- Starting scan for library: ${libraryId} ---`);
+  await dbOperations.resetScanSession();
+  const stats: ScanStats = { scannedFiles: 0, addedTracks: 0, addedArtists: 0, addedAlbums: 0, completedAlbums: 0, failedAlbums: 0, errors: 0 };
+
+  try {
+    const allFiles = await fs.readdir(libraryPath, { recursive: true });
+    const audioFiles = allFiles.map(file => join(libraryPath, file.toString())).filter(file => {
+      const ext = extname(file).toLowerCase();
+      return ['.mp3', '.flac', '.m4a', '.aac', '.ogg', '.wav'].includes(ext);
+    });
+    stats.scannedFiles = audioFiles.length;
+    console.log(`Found ${stats.scannedFiles} audio files.`);
+
+    const filesByFolder: Record<string, string[]> = {};
+    audioFiles.forEach(filePath => {
+      const folder = dirname(filePath);
+      if (!filesByFolder[folder]) filesByFolder[folder] = [];
+      filesByFolder[folder].push(filePath);
+    });
+    console.log(`Found ${Object.keys(filesByFolder).length} potential album folders.`);
+
+    console.log('\n--- PHASE 1: Creating initial album records ---');
+    const albumCreationPromises = Object.keys(filesByFolder).map(async (folderPath) => {
+      const filesInFolder = filesByFolder[folderPath]!;
+      const firstFilePath = filesInFolder[0]!;
+      let albumTitle = 'Unknown Album';
+      try {
+        const { metadata } = await extractMetadata(firstFilePath);
+        albumTitle = metadata?.common?.album?.trim() || basename(folderPath);
+      } catch { albumTitle = basename(folderPath); }
+      return dbOperations.createInitialAlbumRecord({ folderPath, albumTitle, userId });
+    });
+    const createdAlbums = (await Promise.all(albumCreationPromises)).filter((album): album is Album => !!album);
+    console.log(`PHASE 1 Complete: ${createdAlbums.length} albums identified.`);
+
+    console.log('\n--- PHASE 2: Processing files for each album ---');
+    const artistsProcessedForImages = new Set<string>();
+    const albumsNeedingCovers: { albumId: string; title: string; artistName: string }[] = [];
+
+    for (const albumRecord of createdAlbums) {
+      console.log(`\nProcessing Album: ${albumRecord.title} (${albumRecord.albumId})`);
+      const filesInFolder = filesByFolder[albumRecord.folderPath!]!;
+      const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId);
+
+      const fileProcessingPromises = filesInFolder.map(filePath =>
+        processAudioFile(filePath, { userId, isVariousArtistsCompilation, artistsProcessedForImages })
+      );
+      const fileProcessingResults = await Promise.allSettled(fileProcessingPromises);
+
+      const successfulTracks = fileProcessingResults.filter(r => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<{ albumId: string; title: string; primaryArtistName: string; needsCover: boolean }>[];
+      stats.addedTracks += successfulTracks.length;
+      successfulTracks.forEach(r => {
+        if (r.value.needsCover) {
+          albumsNeedingCovers.push({
+            albumId: r.value.albumId,
+            title: r.value.title,
+            artistName: r.value.primaryArtistName,
+          });
+        }
+      });
+
+      const finalStatus = successfulTracks.length === filesInFolder.length ? AlbumProcessStatus.IN_PROGRESS : AlbumProcessStatus.FAILED;
+      if (finalStatus === AlbumProcessStatus.IN_PROGRESS) stats.completedAlbums++; else stats.failedAlbums++;
+      await db.update(albums).set({ processedStatus: finalStatus, updatedAt: new Date().toISOString() }).where(eq(albums.albumId, albumRecord.albumId));
+      console.log(`Album ${albumRecord.title} finished processing. Status: ${finalStatus}. Tracks added: ${successfulTracks.length}/${filesInFolder.length}`);
+    }
+
+    if (albumsNeedingCovers.length > 0) {
+      console.log(`\n--- PHASE 3: Processing ${albumsNeedingCovers.length} album covers ---`);
+      await batchProcessAlbumCovers(albumsNeedingCovers);
+    }
+
+    console.log(`\n--- Scan Complete ---`);
+    console.log(`Summary: ${stats.addedTracks} tracks, ${stats.completedAlbums} completed albums, ${stats.failedAlbums} failed albums.`);
+    return stats;
+  } catch (error: any) {
+    console.error(`[SCANNER] CRITICAL ERROR during scan: ${error.message}`, error.stack);
+    stats.errors++;
+    return stats;
+  }
+}
+
 /**
  * Determines if an album folder should be treated as a Various Artists compilation
  * An album is considered a Various Artists compilation when:
@@ -553,53 +313,51 @@ async function detectVariousArtistsAlbum(audioFilesInFolder: string[], userId: s
   const primaryArtistCounts: Record<string, { count: number; name: string }> = {};
   let albumTitle: string | undefined;
 
-  // First pass: collect primary artist information
-  for (const filePath of audioFilesInFolder) {
+  // First pass: collect primary artist information in parallel
+  const fileProcessingPromises = audioFilesInFolder.map(async (filePath) => {
     try {
       const { metadata } = await extractMetadata(filePath);
       const common = metadata.common || {};
       
-      // Extract album title if not already done
-      if (!albumTitle && common.album) {
-        albumTitle = common.album.trim();
-      }
+      const localAlbumTitle = common.album?.trim();
 
-      // Get primary artist(s) for this track
       const primaryTrackArtists = new Set<string>();
-      
-      // From track artist
       if (common.artist) {
         splitArtistString(common.artist).forEach(artist => primaryTrackArtists.add(artist));
       }
-      
-      // From album artist if track artist is not available
       if (primaryTrackArtists.size === 0 && (common as any).albumartist) {
         splitArtistString((common as any).albumartist).forEach(artist => primaryTrackArtists.add(artist));
       }
-      
-      // Default to unknown if needed
       if (primaryTrackArtists.size === 0) {
         primaryTrackArtists.add('Unknown Artist');
       }
-      
-      // Count each primary artist for this track
-      for (const artistName of primaryTrackArtists) {
-        // Get or create artist record to get its ID
-        const artistRecord = await dbOperations.getOrCreateArtistMinimal({ 
-          artistName 
-        });
-        
-        if (artistRecord) {
-          const artistId = artistRecord.artistId;
-          if (!primaryArtistCounts[artistId]) {
-            primaryArtistCounts[artistId] = { count: 0, name: artistName };
-          }
-          primaryArtistCounts[artistId].count++;
-        }
-      }
+
+      const artistRecords = await Promise.all(
+        Array.from(primaryTrackArtists).map(artistName => dbOperations.getOrCreateArtistMinimal({ artistName }))
+      );
+
+      return {
+        albumTitle: localAlbumTitle,
+        artists: artistRecords.filter((rec): rec is Artist => !!rec),
+      };
     } catch (error) {
-      // Skip files that can't be processed
       console.error(`Error analyzing file ${filePath} for artist distribution: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  });
+
+  const processedFiles = (await Promise.all(fileProcessingPromises)).filter((res): res is NonNullable<typeof res> => !!res);
+
+  for (const { albumTitle: localAlbumTitle, artists } of processedFiles) {
+    if (!albumTitle && localAlbumTitle) {
+      albumTitle = localAlbumTitle;
+    }
+    for (const artistRecord of artists) {
+      const { artistId, name } = artistRecord;
+      if (!primaryArtistCounts[artistId]) {
+        primaryArtistCounts[artistId] = { count: 0, name };
+      }
+      primaryArtistCounts[artistId].count++;
     }
   }
 
@@ -620,217 +378,7 @@ async function detectVariousArtistsAlbum(audioFilesInFolder: string[], userId: s
 }
 
 /**
- * Scans a specific media library directory, extracts metadata, and updates the database.
- * This implements a two-phase approach:
- * 1. First phase: Create initial album records for each folder in PENDING status
- * 2. Second phase: Process audio files in each album, updating metadata and status
- * @returns Statistics about the scan operation
- */
-export async function scanLibrary({
-  libraryId,
-  libraryPath,
-  userId,
-  processOnlyUnprocessed = false,
-}: ScanLibraryParams): Promise<ScanStats> {
-  console.log(`Starting scan for library: ${libraryPath}`);
-  await dbOperations.resetScanSession(); // Clear caches for new scan
-
-  const stats: ScanStats = {
-    scannedFiles: 0,
-    addedTracks: 0,
-    addedArtists: 0,
-    addedAlbums: 0,
-    errors: 0,
-  };
-
-  try {
-    // Get initial counts from database to calculate additions
-    const initialCounts = await getEntityCounts(userId);
-    const albumsNeedingCovers: { albumId: string; title: string; artistName: string }[] = [];
-
-    let audioFiles: string[] = [];
-    if (processOnlyUnprocessed) {
-      console.log('Scanning for unprocessed albums only.');
-      const albumsToScan = await dbOperations.getAlbumsToProcess(userId, true);
-      console.log(`Found ${albumsToScan.length} unprocessed albums to scan.`);
-
-      const filePromises = albumsToScan
-        .filter(album => album.folderPath)
-        .map(album => fileUtils.findAudioFiles(album.folderPath!));
-
-      const filesByAlbum = await Promise.all(filePromises);
-      audioFiles = filesByAlbum.flat();
-    } else {
-      console.log('Performing a full library scan.');
-      audioFiles = await fileUtils.findAudioFiles(libraryPath);
-    }
-    
-    if (audioFiles.length === 0) {
-      console.log(`No audio files found in library: ${libraryPath}`);
-      return stats;
-    }
-    
-    console.log(`Found ${audioFiles.length} audio files. Starting metadata processing...`);
-    stats.scannedFiles = audioFiles.length;
-    
-    // PHASE 1: Group files by folder and create initial album records
-    console.log('PHASE 1: Creating initial album records for folders...');
-    
-    // Group files by folder (which typically represents an album)
-    const filesByFolder: Record<string, string[]> = {};
-    audioFiles.forEach(filePath => {
-      const folder = dirname(filePath);
-      if (!filesByFolder[folder]) {
-        filesByFolder[folder] = [];
-      }
-      filesByFolder[folder].push(filePath);
     });
-    
-    const folderPaths = Object.keys(filesByFolder);
-    console.log(`Found ${folderPaths.length} potential album folders to process.`);
-    
-    // Create initial album records with PENDING status
-    let createdAlbums: Album[] = [];
-    let albumCounter = 0;
-    const totalFolders = folderPaths.length;
-    
-    for (const folderPath of folderPaths) {
-      // Skip folders that already have a COMPLETED album for this user
-      const completedAlbum = await db
-        .select({ albumId: albums.albumId })
-        .from(albums)
-        .where(and(
-          eq(albums.folderPath, folderPath),
-          eq(albums.userId, userId),
-          eq(albums.processedStatus, AlbumProcessStatus.COMPLETED)
-        ))
-        .limit(1);
-      if (completedAlbum.length > 0) {
-        continue; // nothing to do, already processed
-      }
-      const filesInFolder = filesByFolder[folderPath];
-      if (filesInFolder.length === 0) continue;
-      
-      albumCounter++;
-      console.log(`[${albumCounter}/${totalFolders}] Creating initial album record for folder: ${folderPath}`);
-      
-      try {
-        // Try to get album name from the first audio file's metadata first
-        const firstFilePath = filesInFolder[0];
-        let albumTitle = 'Unknown Album';
-        let extractedMetadata = null;
-        
-        try {
-          // Try to extract metadata from the first file to get album title
-          const { metadata } = await extractMetadata(firstFilePath);
-          extractedMetadata = metadata;
-          if (metadata?.common?.album) {
-            albumTitle = metadata.common.album.trim();
-          }
-        } catch (metadataError) {
-          console.warn(`Could not extract metadata from ${firstFilePath}, falling back to folder name`);
-        }
-        
-        // If no album title from metadata, fall back to folder name
-        if (albumTitle === 'Unknown Album') {
-          const folderName = basename(folderPath);
-          if (folderName) {
-            albumTitle = folderName;
-          }
-        }
-        
-        // Create album record in PENDING status
-        const newAlbum = await dbOperations.createInitialAlbumRecord({
-          folderPath,
-          albumTitle,
-          userId,
-          processedStatus: AlbumProcessStatus.PENDING
-        });
-        
-        if (newAlbum) {
-          createdAlbums.push(newAlbum);
-        }
-      } catch (error: any) {
-        console.error(`Error creating initial album record for folder ${folderPath}:`, error.message);
-        stats.errors++;
-      }
-    }
-    
-    console.log(`PHASE 1 complete: Created/identified ${createdAlbums.length} album records`);
-    
-    // PHASE 2: Process audio files for each album folder
-    console.log('PHASE 2: Processing audio files and updating albums...');
-    
-    // Process each folder as a potential album
-    for (const folderPath of folderPaths) {
-      const filesInFolder = filesByFolder[folderPath];
-      const albumRecord = createdAlbums.find(album => album.folderPath === folderPath);
-      
-      if (albumRecord) {
-        // Update album to IN_PROGRESS
-        await db.update(albums)
-          .set({ 
-            processedStatus: AlbumProcessStatus.IN_PROGRESS,
-            updatedAt: new Date().toISOString()
-          })
-          .where(eq(albums.albumId, albumRecord.albumId));
-          
-        console.log(`Processing album: ${albumRecord.title} (Folder: ${folderPath})`);
-        
-        try {
-          // Check if this folder should be treated as a "Various Artists" compilation
-          const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId);
-          
-          if (isVariousArtistsCompilation) {
-            console.log(`Detected Various Artists compilation in folder: ${folderPath}`);
-          }
-          
-          // Process each file in the folder with the compilation flag
-          for (const filePath of filesInFolder) {
-            try {
-              // Pass the isVariousArtistsCompilation flag to processAudioFile
-              const albumInfo = await processAudioFile(filePath, { 
-                libraryId, 
-                userId, 
-                isVariousArtistsCompilation
-              });
-              
-              // If the album needs a cover and has enough info to search, add to batch processing list
-              if (albumInfo && albumInfo.needsCover && albumInfo.title && albumInfo.primaryArtistName) {
-                albumsNeedingCovers.push({
-                  albumId: albumInfo.albumId,
-                  title: albumInfo.title,
-                  artistName: albumInfo.primaryArtistName
-                });
-              }
-            } catch (error: any) {
-              console.error(`Error processing file ${filePath}: ${error.message}`);
-              stats.errors++;
-            }
-          }
-          
-          // Mark album as COMPLETED
-          await db.update(albums)
-            .set({ 
-              processedStatus: AlbumProcessStatus.COMPLETED,
-              updatedAt: new Date().toISOString()
-            })
-            .where(eq(albums.albumId, albumRecord.albumId));
-            
-        } catch (error: any) {
-          console.error(`Error processing album folder ${folderPath}: ${error.message}`);
-          stats.errors++;
-          
-          // Mark album as FAILED
-          await db.update(albums)
-            .set({ 
-              processedStatus: AlbumProcessStatus.FAILED,
-              updatedAt: new Date().toISOString()
-            })
-            .where(eq(albums.albumId, albumRecord.albumId));
-        }
-      }
-    }
     
     // Batch process album covers after all files are processed
     if (albumsNeedingCovers.length > 0) {
@@ -868,20 +416,15 @@ async function batchProcessAlbumCovers(albumsToProcess: { albumId: string; title
   
   for (let i = 0; i < albumsToProcess.length; i += batchSize) {
     const batch = albumsToProcess.slice(i, i + batchSize);
-    
-    // Process each album in the current batch
+
     const promises = batch.map(async (album) => {
       try {
-        // Search for MusicBrainz release ID
         const mbReleaseId = await searchReleaseByTitleAndArtist(album.title, album.artistName);
-        
         if (mbReleaseId) {
-          // Update album with MusicBrainz release ID
           await db.update(albums)
             .set({ musicbrainzReleaseId: mbReleaseId, updatedAt: new Date().toISOString() })
             .where(eq(albums.albumId, album.albumId));
           
-          // Fetch and save cover art
           const coverPath = await albumArtUtils.downloadAlbumArtFromMusicBrainz(mbReleaseId);
           
           if (coverPath) {
@@ -891,19 +434,23 @@ async function batchProcessAlbumCovers(albumsToProcess: { albumId: string; title
           }
         }
       } catch (error) {
-        // Log error but continue with other albums
-        console.error(`Error processing cover for album ${album.title}: ${error}`);
+        console.error(`Error processing cover for album ${album?.title}:`, error);
+      } finally {
+        // Mark the album as completed since the processing attempt (success or fail) is done.
+        await db.update(albums)
+          .set({ processedStatus: AlbumProcessStatus.COMPLETED, updatedAt: new Date().toISOString() })
+          .where(eq(albums.albumId, album.albumId));
       }
     });
-    
-    // Wait for current batch to complete before moving to next batch
+
+    // We use Promise.all here because errors are caught within the map function.
     await Promise.all(promises);
-    
-    // Add a small delay between batches to respect API rate limits
+
+    // Wait for 1 second before processing the next batch to respect rate limits
     if (i + batchSize < albumsToProcess.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
-  }
+  }  
 }
 
 /**
@@ -1092,7 +639,6 @@ async function createInitialAlbumRecords(
         folderPath,
         albumTitle: folderName || 'Unknown Album',
         userId,
-        processedStatus: AlbumProcessStatus.PENDING
       });
       
       if (newAlbum) {

@@ -66,11 +66,25 @@ export interface GeniusSongResponse {
 const GENIUS_API_BASE_URL = 'https://api.genius.com';
 const GENIUS_TOKEN_URL = 'https://api.genius.com/oauth/token';
 
+type RequestQueueItem<T> = {
+  endpoint: string;
+  params?: Record<string, string | number | string[]>;
+  resolve: (value: T) => void;
+  reject: (reason?: any) => void;
+};
+
 export class GeniusService {
   private readonly clientId: string;
   private readonly clientSecret: string;
   private accessToken: string | null = null;
   private tokenExpiryTime: number | null = null;
+
+  // --- Rate Limiting ---
+  private requestQueue: RequestQueueItem<any>[] = [];
+  private isProcessingQueue = false;
+  private readonly requestTimestamps: number[] = [];
+  private readonly rateLimitCount = 50; // Max requests
+  private readonly rateLimitWindow = 60 * 1_000; // Per 1 minute (in ms)
 
   constructor(clientId: string, clientSecret: string, initialAccessToken?: string) {
     this.clientId = clientId;
@@ -96,7 +110,6 @@ export class GeniusService {
           grant_type: 'client_credentials',
           client_id: this.clientId,
           client_secret: this.clientSecret,
-          // redirect_uri: 'YOUR_APP_REDIRECT_URI' // May be required by some OAuth providers
         }).toString(),
       });
 
@@ -104,7 +117,7 @@ export class GeniusService {
       if (response.expires_in) {
         this.tokenExpiryTime = Date.now() + (response.expires_in - 300) * 1000; // Refresh 5 mins before expiry
       } else {
-        this.tokenExpiryTime = null; 
+        this.tokenExpiryTime = null;
       }
       console.info('Successfully obtained Genius API access token.');
     } catch (error: any) {
@@ -118,40 +131,78 @@ export class GeniusService {
     }
   }
 
-  private async _request<T>(endpoint: string, params?: Record<string, string | number | string[]>): Promise<T> {
-    await this.ensureValidToken();
-    if (!this.accessToken) {
-      throw new Error('Genius API access token is not available.');
-    }
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue) return;
+    this.isProcessingQueue = true;
 
-    const url = new URL(`${GENIUS_API_BASE_URL}${endpoint}`);
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          value.forEach(v => url.searchParams.append(`${key}[]`, String(v)));
-        } else {
-          url.searchParams.append(key, String(value));
+    while (this.requestQueue.length > 0) {
+      const item = this.requestQueue.shift();
+      if (!item) continue;
+
+      try {
+        // --- Wait for rate limit window ---
+        const now = Date.now();
+        // Remove timestamps older than the window
+        while (this.requestTimestamps.length > 0 && this.requestTimestamps[0] < now - this.rateLimitWindow) {
+          this.requestTimestamps.shift();
         }
-      });
+
+        if (this.requestTimestamps.length >= this.rateLimitCount) {
+          const oldestRequestTime = this.requestTimestamps[0];
+          const waitTime = this.rateLimitWindow - (now - oldestRequestTime);
+          if (waitTime > 0) {
+            // console.log(`Genius rate limit reached. Waiting for ${waitTime}ms`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+        }
+        // --------------------------------
+
+        await this.ensureValidToken();
+        if (!this.accessToken) {
+          throw new Error('Genius API access token is not available.');
+        }
+
+        const url = new URL(`${GENIUS_API_BASE_URL}${item.endpoint}`);
+        if (item.params) {
+          Object.entries(item.params).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              value.forEach(v => url.searchParams.append(`${key}[]`, String(v)));
+            } else {
+              url.searchParams.append(key, String(value));
+            }
+          });
+        }
+
+        const data = await $fetch(url.toString(), {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        this.requestTimestamps.push(Date.now());
+        item.resolve(data);
+
+      } catch (error: any) {
+        const errorMessage = error.data?.meta?.message || error.data?.error_description || error.data?.error || error.message || 'Unknown error';
+        console.error(`Error fetching from Genius API endpoint ${item.endpoint}:`, errorMessage, error.data);
+        const geniusError = error.data as GeniusApiError;
+        if (geniusError?.meta?.message) {
+          item.reject(new Error(`Genius API Error: ${geniusError.meta.message} (Status: ${geniusError.meta.status})`));
+        } else {
+          item.reject(new Error(`Failed to fetch from Genius API endpoint ${item.endpoint}: ${errorMessage}`));
+        }
+      }
     }
 
-    try {
-      const data = await $fetch<T>(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          'Accept': 'application/json',
-        },
-      });
-      return data;
-    } catch (error: any) {
-      const errorMessage = error.data?.meta?.message || error.data?.error_description || error.data?.error || error.message || 'Unknown error';
-      console.error(`Error fetching from Genius API endpoint ${endpoint}:`, errorMessage, error.data);
-      const geniusError = error.data as GeniusApiError;
-      if (geniusError?.meta?.message) {
-        throw new Error(`Genius API Error: ${geniusError.meta.message} (Status: ${geniusError.meta.status})`);
-      }
-      throw new Error(`Failed to fetch from Genius API endpoint ${endpoint}: ${errorMessage}`);
-    }
+    this.isProcessingQueue = false;
+  }
+
+  private _request<T>(endpoint: string, params?: Record<string, string | number | string[]>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.requestQueue.push({ endpoint, params, resolve, reject });
+      this.processQueue();
+    });
   }
 
   public async searchSongs(query: string): Promise<GeniusSearchResponse> {

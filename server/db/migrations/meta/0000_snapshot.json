@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bf6abb4f-bbfb-4c97-8777-39d12bfdc2f2",
+  "id": "e3c38e86-42d3-4cb2-a036-f9fe1c00ceac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "users": {
@@ -497,6 +497,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": 1
+        },
+        "logo_image_path": {
+          "name": "logo_image_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "background_image_path": {
+          "name": "background_image_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",

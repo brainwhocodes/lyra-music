@@ -146,12 +146,14 @@ function close() {
   playerStore.hideLyricsModal();
 }
 
-function formatTime(timeStr: string): string {
+function formatTime(timeStr: string | undefined): string {
   // Format MM:SS or MM:SS.mmm to MM:SS
+  if (!timeStr) return '00:00';
   return timeStr.split('.')[0];
 }
 
-function parseTimeToSeconds(timeStr: string): number {
+function parseTimeToSeconds(timeStr: string | undefined): number {
+  if (!timeStr) return 0;
   const parts = timeStr.split(':');
   const minutes = parseInt(parts[0], 10);
   const seconds = parseFloat(parts[1]);
