@@ -4,7 +4,7 @@ import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
 import type { MessageType } from '~/types/message-type';
 import { usePlayerStore } from '~/stores/player';
-import type { NotificationMessage } from '~/types/notification-message';
+import { useNotification } from '~/composables/useNotification';
 import type { QueueContext } from '~/stores/player';
 import { resolveCoverArtUrl } from '~/utils/formatters';
 
@@ -26,7 +26,7 @@ const albumId = computed(() => route.params.id as string);
 const selectedTrackForPlaylist = ref<Track | null>(null);
 const isAddToPlaylistModalOpen = ref(false);
 const openMenuForTrackId = ref<string | null>(null);
-const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
+const { showNotification } = useNotification();
 const isAddAlbumToPlaylistModalOpen = ref(false);
 // Template ref for OptionsMenu
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
@@ -40,14 +40,6 @@ const selectedTrackForEdit = ref<Track | null>(null);
 const isEditLyricsModalOpen = ref(false);
 const selectedTrackForLyrics = ref<Track | null>(null);
 
-// Simple notification system
-const showNotification = (message: string, type: MessageType = 'info') => {
-  notification.value = { message, type, visible: true };
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    notification.value.visible = false;
-  }, 3000);
-};
 
 // Apply the sidebar layout
 definePageMeta({
@@ -571,17 +563,5 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       </div>
     </div>
 
-    <!-- Global Notification -->
-    <div v-if="notification.visible" class="toast toast-top toast-center min-w-max">
-      <div class="flex items-center">
-        <Icon :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' :
-          notification.type === 'error' ? 'material-symbols:error-outline' :
-            'material-symbols:info-outline'" class="w-6 h-6 mr-2" />
-        <span>{{ notification.message }}</span>
-        <button @click="notification.visible = false" class="ml-2 p-1">
-          <Icon name="material-symbols:close" class="w-4 h-4" />
-        </button>
-      </div>
-    </div>
   </div>
 </template>

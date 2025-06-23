@@ -7,6 +7,7 @@
     <!-- Main Page Content -->
     <main class="pb-20"> <!-- Add padding-bottom to prevent content overlap with fixed player -->
       <slot />
+      <LazyLayoutToastContainer />
     </main>
 
   </div>
