@@ -148,6 +148,7 @@ import AlbumCard from '~/components/album/album-card.vue';
 import type { Album } from '~/types/album';
 import type { TrackArtistDetail } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
+import { usePlaylists } from '~/composables/usePlaylists';
 
 // Apply the sidebar layout
 definePageMeta({
@@ -162,7 +163,7 @@ const albumIdLoading = ref<string | null>(null);
 // State for Album Operations
 const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
-const playlists = ref<Playlist[]>([]);
+const { playlists, fetchPlaylists } = usePlaylists();
 const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
 
 // Search State
@@ -345,18 +346,6 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
     notification.value.visible = false;
   }, 3000);
 };
-
-// Fetch user's playlists
-async function fetchPlaylists(): Promise<void> {
-  try {
-    const data = await $fetch<Playlist[]>('/api/playlists');
-    playlists.value = data;
-  } catch (e: unknown) {
-    console.error('Error fetching playlists:', e);
-    showNotification('Could not load your playlists.', 'error');
-    playlists.value = []; // Ensure it's an empty array on error
-  }
-}
 
 // Open the Add to Playlist modal
 const openAddToPlaylistModal = (album: Album): void => {

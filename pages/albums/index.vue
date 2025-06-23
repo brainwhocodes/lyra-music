@@ -102,6 +102,7 @@ import AlbumCard from '~/components/album/album-card.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import type { Track, TrackArtistDetail } from '~/types/track';
 import { useCoverArt } from '~/composables/use-cover-art';
+import { usePlaylists } from '~/composables/usePlaylists';
 
 // Apply the sidebar layout
 definePageMeta({
@@ -123,7 +124,7 @@ const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
 const selectedAlbumForEdit = ref<Album | null>(null);
 const isEditAlbumModalOpen = ref<boolean>(false);
-const playlists = ref<any[]>([]);
+const { playlists, fetchPlaylists } = usePlaylists();
 const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
 
 // --- State for Albums List Display ---
@@ -326,17 +327,7 @@ const showNotification = (message: string, type: 'success' | 'error' | 'info' = 
   }, 3000);
 };
 
-// Fetch user's playlists
-async function fetchPlaylists(): Promise<void> {
-  try {
-    const data = await $fetch<any[]>('/api/playlists');
-    playlists.value = data;
-  } catch (e: unknown) {
-    // console.error('Error fetching playlists:', e);
-    showNotification('Could not load your playlists.', 'error');
-    playlists.value = []; // Ensure it's an empty array on error
-  }
-}
+// Fetch user's playlists provided by usePlaylists composable
 
 // Open the Add to Playlist modal
 const openAddToPlaylistModal = (album: Album): void => {
