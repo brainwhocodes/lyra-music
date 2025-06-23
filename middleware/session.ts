@@ -20,35 +20,30 @@ export default defineNuxtRouteMiddleware(async (to, event) => {
     return;
   }
 
-  const authCookie = useCookie('auth_token');
+  const authCookie = useCookie<string | null>('auth_token');
   const authStore = useAuthStore();
   try {
         
     const user = await $fetch('/api/auth/me', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${authCookie}`
+        Authorization: `Bearer ${authCookie.value ?? ''}`
       }
     })
 
-    authStore.setMinimalUserData(user, authCookie);
-    console.log(user)
-    if ((user as any).status === 'success') {
-      return;
-    } else {
-      authStore.clearState();
+    authStore.setMinimalUserData(user, authCookie.value ?? '')
+    return
+    
+  } catch (error: any) {
+    console.error('Failed to verify auth token:', error);
+    authStore.clearState();
+    if (error?.response?.status === 401 || error?.statusCode === 401) {
       return navigateTo({
         path: '/login',
         query: { invalid: 'true' }
       });
     }
-    
-  } catch (error) {
-    console.error('Failed to verify auth token:', error);
-    authStore.clearState();
-    return navigateTo({
-      path: '/login',
-      query: { invalid: 'true' }
-    });
+    throw error;
   }
 });
+
