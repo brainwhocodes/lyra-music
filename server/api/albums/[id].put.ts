@@ -8,20 +8,8 @@ import { useCoverArt } from '~/composables/use-cover-art';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 import { eq, and } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
+import { splitArtistString } from '~/server/utils/artist-utils';
 
-// Utility function to split artist strings (copied from scanner utils, ideally shared)
-function splitArtistString(artistString: string): string[] {
-  if (!artistString || typeof artistString !== 'string') return [];
-  const trimmedArtist = artistString.trim();
-  if (!trimmedArtist) return [];
-  const separators = [', ', '; ', ' feat. ', ' featuring ', ' ft. ', ' with ', ' & ', ' and ', ' x '];
-  for (const separator of separators) {
-    if (trimmedArtist.includes(separator)) {
-      return trimmedArtist.split(separator).map(part => part.trim()).filter(part => part.length > 0);
-    }
-  }
-  return [trimmedArtist];
-}
 
 // Define the expected request body type
 // Request body will be FormData, so we'll parse fields individually
