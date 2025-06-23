@@ -78,7 +78,8 @@
       :class="['flex-1', { 'pr-[calc(var(--spacing)*96)]': clientReady && playerStore.isQueueSidebarVisible && !isMobileOrTablet, 'pb-32': showGlobalAudioPlayer } ]" 
       @click="isMobileOrTablet && isMobileSidebarOpen ? toggleMobileSidebar() : null" 
     >
-      <slot /> <!-- Page content will be injected here -->
+      <slot />
+    <LazyLayoutToastContainer /> <!-- Page content will be injected here -->
     </main>
 
     <!-- Queue Sidebar -->

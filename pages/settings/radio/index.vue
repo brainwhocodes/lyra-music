@@ -45,7 +45,8 @@
                     </div>
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <button @click="openEditModal(station)" class="btn btn-ghost btn-sm">Edit</button>
+                    <NuxtLink :to="`/settings/radio/${station.channelId}`" class="btn btn-ghost btn-sm">Settings</NuxtLink>
+                    <button @click="openEditModal(station)" class="btn btn-ghost btn-sm">Edit Seeds</button>
                     <button @click="openDeleteModal(station)" class="btn btn-ghost btn-sm text-error">Delete</button>
                   </td>
                 </tr>
