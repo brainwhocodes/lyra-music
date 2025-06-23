@@ -2,6 +2,7 @@
 import type { Album } from '~/types/album';
 import type { Track } from '~/types/track';
 import type { Playlist } from '~/types/playlist';
+import { usePlaylists } from '~/composables/usePlaylists';
 import type { MessageType } from '~/types/message-type';
 import { usePlayerStore } from '~/stores/player';
 import type { NotificationMessage } from '~/types/notification-message';
@@ -72,27 +73,7 @@ if (album.value) {
   });
 }
 
-const { data: playlists } = await useLazyFetch<Playlist[]>('/api/playlists');
-
-watch(playlists, (newPlaylists: Playlist[] | null) => {
-  if (newPlaylists) {
-  }
-});
-
-if (playlists.value) {
-}
-
-// Fetch user's playlists
-async function fetchPlaylists(): Promise<void> {
-  try {
-    const data = await $fetch<Playlist[]>('/api/playlists');
-    playlists.value = data;
-  } catch (e: unknown) {
-    console.error('Error fetching playlists:', e);
-    showNotification('Could not load your playlists.', 'error');
-    playlists.value = []; // Ensure it's an empty array on error
-  }
-}
+const { playlists, fetchPlaylists } = usePlaylists();
 
 
 // Function to open the "Add to Playlist" modal

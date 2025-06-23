@@ -7,7 +7,8 @@ import type { Album } from '~/types/album';
 import { useCoverArt } from '~/composables/use-cover-art';
 import { useRouter } from 'vue-router';
 import OptionsMenu from '~/components/options-menu.vue'; 
-import type { Playlist } from '~/types/playlist'; 
+import type { Playlist } from '~/types/playlist';
+import { usePlaylists } from '~/composables/usePlaylists';
 
 definePageMeta({
   layout: 'sidebar-layout'
@@ -23,7 +24,7 @@ const loadingAlbumIdForPlay = ref<string | null>(null); // For individual album 
 const { getCoverArtUrl } = useCoverArt();
 
 // State for "Add Artist to Playlist" functionality
-const playlists = ref<Playlist[]>([]);
+const { playlists, fetchPlaylists } = usePlaylists();
 const isAddArtistToPlaylistModalOpen = ref(false);
 interface ArtistAlbum {
   id: string;
@@ -89,18 +90,8 @@ const mappedAlbums = computed((): Album[] => {
   }));
 });
 
-async function fetchPlaylists(): Promise<void> {
-  try {
-    const data = await $fetch<Playlist[]>('/api/playlists');
-    playlists.value = data;
-  } catch (e: unknown) {
-    console.error('Error fetching playlists:', e);
-    playlists.value = [];
-  }
-}
-
 onMounted(() => {
-  fetchPlaylists(); 
+  fetchPlaylists();
 });
 
 async function getAllArtistTracks(): Promise<Track[]> {
