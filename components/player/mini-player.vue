@@ -71,14 +71,9 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import { resolveCoverArtUrl } from '~/utils/formatters';
 
 const playerStore = usePlayerStore();
-
-// Assuming resolveCoverArtUrl is globally available or will be made so.
-// If not, it needs to be imported or defined here.
-// For TypeScript to not complain, we can declare it if we are sure it will be available globally.
-// Otherwise, a more robust solution is to import it from its definition source.
-declare function resolveCoverArtUrl(path: string | undefined): string;
 </script>
 
 <style scoped>
