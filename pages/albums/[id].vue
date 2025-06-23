@@ -6,7 +6,7 @@ import type { MessageType } from '~/types/message-type';
 import { usePlayerStore } from '~/stores/player';
 import type { NotificationMessage } from '~/types/notification-message';
 import type { QueueContext } from '~/stores/player';
-import { resolveCoverArtUrl } from '~/utils/formatters';
+import { useCoverArt } from '~/composables/use-cover-art';
 
 import TrackItem from '~/components/track/track-item.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
@@ -21,6 +21,7 @@ const { formatTrackWithArtists, getTrackArtistNameString, getFormattedTrackArtis
 const route = useRoute();
 const playerStore = usePlayerStore();
 const albumId = computed(() => route.params.id as string);
+const { getCoverArtUrl } = useCoverArt();
 
 // State for "Add to Playlist" functionality
 const selectedTrackForPlaylist = ref<Track | null>(null);
@@ -448,7 +449,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       <div v-else-if="album" class="flex flex-col md:flex-row gap-8 items-center">
         <!-- Album Cover -->
         <div class="md:w-1/3">
-          <img :src="resolveCoverArtUrl(album.coverPath)" :alt="`${album.title} cover`"
+          <img :src="getCoverArtUrl(album.coverPath)" :alt="`${album.title} cover`"
             class="w-full aspect-square rounded-lg shadow-xl object-cover" />
         </div>
 
@@ -518,7 +519,7 @@ const onAlbumUpdateError = (errorMessage: string): void => {
                 ...track,
                 artistName: getDisplayArtistNameForTrack(track.artists), // Use hoisted helper
                 albumTitle: album.title,
-                coverPath: resolveCoverArtUrl(track.coverPath || album.coverPath), // Use resolveCoverArtUrl here too
+                coverPath: getCoverArtUrl(track.coverPath || album.coverPath),
                 formattedArtists: getFormattedTrackArtists(track.artists) // Pass formatted artists for detailed display
               }" :track-number="index + 1" :playlists="playlists || []" @play-track="playTrack(index)"
                 @track-options="handleTrackOptions" />

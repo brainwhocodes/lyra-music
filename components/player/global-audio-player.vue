@@ -7,9 +7,9 @@
     <div class="flex items-center gap-3 min-w-0 flex-1">
       <!-- Album Cover -->
       <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-base-200">
-        <img 
-          v-if="playerStore.currentTrack.coverPath" 
-          :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)" 
+        <img
+          v-if="playerStore.currentTrack.coverPath"
+          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
           :alt="`${playerStore.currentTrack.title} cover`"
           class="w-full h-full object-cover"
         />
@@ -175,9 +175,11 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import { useCoverArt } from '~/composables/use-cover-art';
 // import { useModalStore } from '~/stores/modal'; // Removed modalStore
 
 const playerStore = usePlayerStore();
+const { getCoverArtUrl } = useCoverArt();
 // const modalStore = useModalStore(); // Removed modalStore
 
 // Handle seek bar input during drag

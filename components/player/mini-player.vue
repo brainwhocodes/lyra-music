@@ -8,7 +8,7 @@
       <div class="flex-shrink-0 w-12 h-12 rounded overflow-hidden bg-base-100" @click="playerStore.toggleFullScreenPlayer()">
         <img
           v-if="playerStore.currentTrack.coverPath"
-          :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)"
+          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
           :alt="`${playerStore.currentTrack.title} cover`"
           class="w-full h-full object-cover"
         />
@@ -71,14 +71,10 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import { useCoverArt } from '~/composables/use-cover-art';
 
 const playerStore = usePlayerStore();
-
-// Assuming resolveCoverArtUrl is globally available or will be made so.
-// If not, it needs to be imported or defined here.
-// For TypeScript to not complain, we can declare it if we are sure it will be available globally.
-// Otherwise, a more robust solution is to import it from its definition source.
-declare function resolveCoverArtUrl(path: string | undefined): string;
+const { getCoverArtUrl } = useCoverArt();
 </script>
 
 <style scoped>

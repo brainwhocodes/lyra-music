@@ -34,30 +34,3 @@ export const formatTrackDuration = (duration: number | undefined | null): string
 };
 
 // Add other formatting utilities as needed
-
-/**
- * Resolves the URL for cover art.
- * @param coverPath - The path to the cover art, may include /public or use backslashes.
- * @returns A web-accessible URL for the cover art or a default image path.
- */
-export function resolveCoverArtUrl(coverPath?: string | null): string {
-  const defaultCover = '/images/icons/default-album-art.webp'; // Ensure this exists in public/images/covers
-
-  if (!coverPath) {
-    return defaultCover;
-  }
-
-  let path = coverPath.replace(/\\/g, '/'); // Normalize backslashes to forward slashes
-
-  // Remove leading '/public/' if present, as Nuxt serves public assets from the root
-  if (path.startsWith('/public/')) {
-    path = path.substring('/public'.length);
-  }
-  
-  // Ensure it starts with a slash if it's not an absolute URL already
-  if (!path.startsWith('/') && !path.startsWith('http')) {
-    path = `/${path}`;
-  }
-
-  return path;
-}

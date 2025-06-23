@@ -4,7 +4,7 @@ import { usePlayerStore, type QueueContext } from '~/stores/player';
 import type { Track } from '~/types/track'; 
 import AlbumCard from '~/components/album/album-card.vue';
 import type { Album } from '~/types/album';
-import { resolveCoverArtUrl } from '~/utils/formatters';
+import { useCoverArt } from '~/composables/use-cover-art';
 import { useRouter } from 'vue-router';
 import OptionsMenu from '~/components/options-menu.vue'; 
 import type { Playlist } from '~/types/playlist'; 
@@ -17,8 +17,10 @@ const route = useRoute();
 const playerStore = usePlayerStore();
 const artistId = computed(() => route.params.id as string);
 const router = useRouter();
-const isProcessingArtistAction = ref(false); 
+const isProcessingArtistAction = ref(false);
 const loadingAlbumIdForPlay = ref<string | null>(null); // For individual album card loading state
+
+const { getCoverArtUrl } = useCoverArt();
 
 // State for "Add Artist to Playlist" functionality
 const playlists = ref<Playlist[]>([]);
@@ -74,7 +76,7 @@ const mappedAlbums = computed((): Album[] => {
     albumId: artistAlbum.id,
     title: artistAlbum.title,
     year: artistAlbum.year,
-    coverPath: resolveCoverArtUrl(artistAlbum.cover_path),
+    coverPath: getCoverArtUrl(artistAlbum.cover_path),
     artists: artistAlbum.albumArtistId && artistAlbum.albumArtistName 
                ? [{ 
                    artistId: artistAlbum.albumArtistId, 
@@ -133,7 +135,7 @@ async function getAllArtistTracks(): Promise<Track[]> {
             artistName: primaryArtistName,
             artistId: primaryArtistId,
             albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-            coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+            coverPath: getCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
             musicbrainzTrackId: t.musicbrainzTrackId,
           };
         });
@@ -259,7 +261,7 @@ const playAlbum = async (albumIdToPlay: string): Promise<void> => {
             artistName: primaryArtistName,
             artistId: primaryArtistId,
             albumTitle: t.albumTitle ?? albumDetails.title ?? 'Unknown Album',
-            coverPath: resolveCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
+            coverPath: getCoverArtUrl(t.coverPath ?? albumDetails.coverPath),
             musicbrainzTrackId: t.musicbrainzTrackId, // Assuming t.musicbrainzTrackId exists from API
           };
         });
