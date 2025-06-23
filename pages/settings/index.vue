@@ -354,16 +354,16 @@ const handleFolderSelect = (event: Event): void => {
     // Extract the directory path by removing the filename from the path
     // Note: Due to browser security, this will be a relative path or partial path
     // The user may need to manually edit it to get the full path
-    let path = file.webkitRelativePath || file.name;
+    let path = file?.webkitRelativePath || file?.name;
     
     // If we have a relative path with directories, extract the directory part
-    if (path.includes('/')) {
+    if (path?.includes('/')) {
       // Remove the filename, keep only the directory path
       path = path.substring(0, path.lastIndexOf('/'));
     }
     
     // If we have a Windows-style path
-    if (path.includes('\\')) {
+    if (path?.includes('\\')) {
       path = path.substring(0, path.lastIndexOf('\\'));
     }
     

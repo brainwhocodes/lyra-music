@@ -6,18 +6,18 @@ import { radioChannels } from '~/server/db/schema/radio-channels';
 import { db } from '~/server/db';
 
 export default defineEventHandler(async (event): Promise<any> => {
-  const channelId = getRouterParam(event, 'channelId');
-  if (!channelId) {
+  const id = getRouterParam(event, 'id');
+  if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Channel ID is required' });
   }
 
   // Verify user session and ownership
-  const session = await requireUserSession(event);
-  const userId = session.user.id;
+  const session = await getUserFromEvent(event);
+  const userId = session?.userId;
 
   // Verify station exists and belongs to user
   const station = await db.query.radioChannels.findFirst({
-    where: eq(radioChannels.channelId, channelId),
+    where: eq(radioChannels.channelId, id),
   });
 
   if (!station) {
@@ -27,29 +27,29 @@ export default defineEventHandler(async (event): Promise<any> => {
   if (station.userId !== userId) {
     throw createError({ statusCode: 403, statusMessage: 'You do not have permission to modify this radio station' });
   }
-
+  
   // Read request body
-  const { logoImageFile, logoImageExtension, backgroundImageFile, backgroundImageExtension } = await readBody(event);
+  const { logoImageBase64, logoImageExtension, backgroundImageBase64, backgroundImageExtension } = await readBody(event);
   
   // Process and save images
   const updateData: Partial<typeof station> = {};
   
-  if (logoImageFile && logoImageExtension) {
-    const uploadsDir = path.join(process.cwd(), 'public', 'images', 'radio', 'logos');
+  if (logoImageBase64 && logoImageExtension) {
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'radio', 'logos');
     await mkdir(uploadsDir, { recursive: true });
     const uniqueFilename = `${uuidv7()}${logoImageExtension}`;
     const filePath = path.join(uploadsDir, uniqueFilename);
-    await writeFile(filePath, Buffer.from(logoImageFile));
-    updateData.logoImagePath = `/images/radio/logos/${uniqueFilename}`;
+    await writeFile(filePath, Buffer.from(logoImageBase64, 'base64'));
+    updateData.logoImagePath = `/uploads/radio/logos/${uniqueFilename}`;
   }
   
-  if (backgroundImageFile && backgroundImageExtension) {
-    const uploadsDir = path.join(process.cwd(), 'public', 'images', 'radio', 'backgrounds');
+  if (backgroundImageBase64 && backgroundImageExtension) {
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'radio', 'backgrounds');
     await mkdir(uploadsDir, { recursive: true });
     const uniqueFilename = `${uuidv7()}${backgroundImageExtension}`;
     const filePath = path.join(uploadsDir, uniqueFilename);
-    await writeFile(filePath, Buffer.from(backgroundImageFile));
-    updateData.backgroundImagePath = `/images/radio/backgrounds/${uniqueFilename}`;
+    await writeFile(filePath, Buffer.from(backgroundImageBase64, 'base64'));
+    updateData.backgroundImagePath = `/uploads/radio/backgrounds/${uniqueFilename}`;
   }
   
   // Update database if we have changes
@@ -57,12 +57,12 @@ export default defineEventHandler(async (event): Promise<any> => {
     updateData.updatedAt = new Date().toISOString();
     await db.update(radioChannels)
       .set(updateData)
-      .where(eq(radioChannels.channelId, channelId));
+      .where(eq(radioChannels.channelId, id));
   }
   
   // Return updated station data
   const updatedStation = await db.query.radioChannels.findFirst({
-    where: eq(radioChannels.channelId, channelId),
+    where: eq(radioChannels.channelId, id),
   });
   
   return updatedStation;

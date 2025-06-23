@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed } from '#imports';
 
 interface Props {
   channelId: string;
@@ -110,37 +110,61 @@ function removeBackground(): void {
   if (backgroundFileInput.value) backgroundFileInput.value.value = '';
 }
 
+// Helper function to get file extension safely
+const getExtension = (filename: string): string => {
+  const parts = filename.split('.');
+  if (parts.length > 1) {
+    return `.${parts.pop()}`;
+  }
+  return '';
+};
+
+// Helper function to convert File to Base64
+const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => {
+    if (typeof reader.result === 'string') {
+      const base64String = reader.result.split(',')[1];
+      if (base64String) {
+        resolve(base64String);
+      } else {
+        reject(new Error('Could not extract Base64 string from Data URL.'));
+      }
+    } else {
+      reject(new Error('Failed to read file as Base64 string.'));
+    }
+  };
+  reader.onerror = error => reject(error);
+});
+
 async function saveImages(): Promise<void> {
   if (!hasChanges.value) return;
   
   isSaving.value = true;
   
   try {
-    // Process logo file if exists
-    let logoImageFile: ArrayBuffer | undefined;
-    let logoImageExtension: string | undefined;
+    const payload: { 
+      logoImageBase64?: string; 
+      logoImageExtension?: string; 
+      backgroundImageBase64?: string; 
+      backgroundImageExtension?: string; 
+    } = {};
+
     if (logoFile.value) {
-      logoImageFile = await logoFile.value.arrayBuffer();
-      logoImageExtension = `.${logoFile.value.name.split('.').pop()}`;
+      payload.logoImageBase64 = await toBase64(logoFile.value);
+      payload.logoImageExtension = getExtension(logoFile.value.name);
     }
     
-    // Process background file if exists
-    let backgroundImageFile: ArrayBuffer | undefined;
-    let backgroundImageExtension: string | undefined;
     if (backgroundFile.value) {
-      backgroundImageFile = await backgroundFile.value.arrayBuffer();
-      backgroundImageExtension = `.${backgroundFile.value.name.split('.').pop()}`;
+      payload.backgroundImageBase64 = await toBase64(backgroundFile.value);
+      payload.backgroundImageExtension = getExtension(backgroundFile.value.name);
     }
     
     // Send to API
     const response = await $fetch(`/api/radio-stations/${props.channelId}/images`, {
       method: 'PUT',
-      body: {
-        logoImageFile,
-        logoImageExtension,
-        backgroundImageFile,
-        backgroundImageExtension
-      }
+      body: payload
     });
     
     // Emit updated event with new paths
@@ -154,8 +178,8 @@ async function saveImages(): Promise<void> {
     backgroundFile.value = null;
     
     // Update previews with new paths
-    logoPreview.value = response.logoImagePath;
-    backgroundPreview.value = response.backgroundImagePath;
+    logoPreview.value = response.logoImagePath ?? null;
+    backgroundPreview.value = response.backgroundImagePath ?? null;
     
   } catch (error) {
     console.error('Error saving images:', error);

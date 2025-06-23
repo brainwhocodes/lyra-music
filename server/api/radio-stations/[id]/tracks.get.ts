@@ -8,8 +8,10 @@ import { albumGenres } from '~/server/db/schema/album-genres';
 import { tracks } from '~/server/db/schema/tracks';
 import { sql, inArray, or, eq } from 'drizzle-orm';
 import type { Track, TrackArtistDetail } from '~/types/track';
+import { shuffle } from '~/server/utils/array';
 
-const BATCH_SIZE = 50;
+const SEED_BATCH_SIZE = 200; // Fetch a larger pool of tracks for randomness
+const FINAL_BATCH_SIZE = 50; // The final number of tracks to return
 
 function reorderToAvoidConsecutiveArtists(tracks: Track[]): Track[] {
   const result = [...tracks];
@@ -82,17 +84,23 @@ export default defineEventHandler(async (event) => {
       }
 
       if (queryConditions.length > 0) {
-        const dynamicTracks = await db.query.tracks.findMany({
+        let dynamicTracks = await db.query.tracks.findMany({
           where: or(...queryConditions),
           orderBy: sql`RANDOM()`,
-          limit: BATCH_SIZE,
+          limit: SEED_BATCH_SIZE,
           with: {
             album: true,
             artistsTracks: { with: { artist: true } },
           },
         });
 
-        fetchedTracks = dynamicTracks.map((track): Track => ({
+        // Shuffle the array to mix artists and genres together properly
+        dynamicTracks = shuffle(dynamicTracks);
+
+        // Take the final batch size after shuffling
+        const finalTracks = dynamicTracks.slice(0, FINAL_BATCH_SIZE);
+
+        fetchedTracks = finalTracks.map((track): Track => ({
           ...track,
           albumTitle: track.album?.title,
           coverPath: track.album?.coverPath,

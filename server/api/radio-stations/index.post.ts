@@ -15,6 +15,8 @@ const CreateRadioStationSchema = z.object({
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
 
+  const user = await getUserFromEvent(event);
+
   const validation = CreateRadioStationSchema.safeParse(body);
   if (!validation.success) {
     throw createError({
@@ -32,7 +34,7 @@ export default defineEventHandler(async (event) => {
 
       const [createdStation] = await tx
         .insert(radioChannels)
-        .values({ channelId, name })
+        .values({ channelId, name, userId: user?.userId })
         .returning();
 
       if (artistIds && artistIds.length > 0) {
