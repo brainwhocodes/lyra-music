@@ -82,10 +82,17 @@ const isEditing = computed(() => !!props.station);
 
 async function fetchLookups() {
   try {
-    [allArtists.value, allGenres.value] = await Promise.all([
-      $fetch<Artist[]>('/api/artists'),
+    const [artistsResponse, genresResponse] = await Promise.all([
+      $fetch('/api/artists'),
       $fetch<Genre[]>('/api/genres'),
     ]);
+    // Map artist results to the server schema shape the component expects
+    allArtists.value = (artistsResponse as any[]).map(a => ({
+      artistId: a.artistId,
+      name: (a.name ?? a.artistName) as string,
+      artistImage: a.artistImage ?? null,
+    })) as Artist[];
+    allGenres.value = genresResponse;
   } catch (error) {
     console.error('Failed to fetch artists or genres', error);
   }
