@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
 import type { Track } from '~/types/track';
+import { useCoverArt } from '~/composables/use-cover-art';
+import { truncateString, formatDuration } from '~/utils/formatters';
 
 const playerStore = usePlayerStore();
 
@@ -24,26 +26,7 @@ const handleClearQueue = (): void => {
   playerStore.clearQueue();
 };
 
-// Helper function for resolving cover art (ensure it's defined or imported if used elsewhere)
-const resolveCoverArtUrl = (coverPath: string | null): string => {
-  if (!coverPath) return '/img/album-placeholder.png'; // Default placeholder
-  return coverPath.startsWith('http') || coverPath.startsWith('/') ? coverPath : `/${coverPath}`;
-};
-
-// Helper function for truncating strings (ensure it's defined or imported if used elsewhere)
-const truncateString = (str: string | undefined | null, maxLength: number): string => {
-  if (!str) return '';
-  if (str.length <= maxLength) return str;
-  return str.substring(0, maxLength) + '...';
-};
-
-// Helper function for formatting duration (ensure it's defined or imported if used elsewhere)
-const formatDuration = (seconds: number | null | undefined): string => {
-  if (seconds === null || seconds === undefined) return '0:00';
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-};
+const { getCoverArtUrl } = useCoverArt();
 </script>
 
 <template>
@@ -73,8 +56,8 @@ const formatDuration = (seconds: number | null | undefined): string => {
         <div class="w-8 text-center text-xs text-base-content/70 mr-2">{{ index + 1 }}</div>
         <!-- Cover Art Image -->
         <div class="w-10 h-10 mr-3 flex-shrink-0" v-if="track.coverPath">
-          <img 
-            :src="resolveCoverArtUrl(track.coverPath)" 
+          <img
+            :src="getCoverArtUrl(track.coverPath)"
             alt="Cover for {{ track.albumTitle ?? track.title }}" 
             class="w-full h-full object-cover rounded" 
           />

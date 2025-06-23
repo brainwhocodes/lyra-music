@@ -18,8 +18,8 @@
     <!-- Album Art -->
     <div class="flex items-center justify-center my-2 px-2 sm:px-8">
       <img
-          v-if="playerStore.currentTrack.coverPath" 
-          :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)" 
+          v-if="playerStore.currentTrack.coverPath"
+          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
           :alt="`${playerStore.currentTrack.title} cover`"
           class="w-full max-w-md aspect-square rounded-lg shadow-xl object-cover h-75"
         />
@@ -156,10 +156,12 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
+import { useCoverArt } from '~/composables/use-cover-art';
 import FullscreenQueue from '~/components/layout/fullscreen-queue.vue';
 import FullScreenLyrics from '~/components/player/fullscreen-lyrics.vue';
 
 const playerStore = usePlayerStore();
+const { getCoverArtUrl } = useCoverArt();
 
 const formatTime = (seconds: number): string => {
   if (isNaN(seconds) || seconds === Infinity || seconds < 0) {

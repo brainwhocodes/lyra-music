@@ -8,7 +8,7 @@
       <div class="flex-shrink-0 w-12 h-12 rounded overflow-hidden bg-base-100" @click="playerStore.toggleFullScreenPlayer()">
         <img
           v-if="playerStore.currentTrack.coverPath"
-          :src="resolveCoverArtUrl(playerStore.currentTrack.coverPath)"
+          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
           :alt="`${playerStore.currentTrack.title} cover`"
           class="w-full h-full object-cover"
         />
@@ -71,9 +71,10 @@
 
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
-import { resolveCoverArtUrl } from '~/utils/formatters';
+import { useCoverArt } from '~/composables/use-cover-art';
 
 const playerStore = usePlayerStore();
+const { getCoverArtUrl } = useCoverArt();
 </script>
 
 <style scoped>

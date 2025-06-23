@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { usePlayerStore } from '~/stores/player';
 import type { Track } from '~/types/track'; // Ensure this path is correct for your global Track type
-import { resolveCoverArtUrl, formatDuration } from '~/utils/formatters'; // Ensure formatDuration is exported from here
+import { useCoverArt } from '~/composables/use-cover-art';
+import { formatDuration } from '~/utils/formatters';
 
 const playerStore = usePlayerStore();
+
+const { getCoverArtUrl } = useCoverArt();
 
 const queue = computed(() => playerStore.queue);
 const currentTrack = computed(() => playerStore.currentTrack);
@@ -50,7 +53,7 @@ const getTrackKey = (track: Track, index: number): string => {
           }"
         >
           <img
-            :src="resolveCoverArtUrl(track.coverPath, 'thumbnail')"
+            :src="getCoverArtUrl(track.coverPath)"
             alt="Track cover"
             class="w-11 h-11 rounded object-cover flex-shrink-0"
             :class="{ 'ring-2 ring-primary ring-offset-2 ring-offset-base-300': track.trackId === currentTrack?.trackId && playerStore.currentQueueIndex === index }"
