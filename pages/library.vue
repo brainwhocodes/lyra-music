@@ -145,7 +145,7 @@ const albumIdLoading = ref<string | null>(null);
 // State for Album Operations
 const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
-const playlists = ref<Playlist[]>([]);
+const { playlists, fetchPlaylists } = usePlaylists();
 const { showNotification } = useNotification();
 
 // Search State

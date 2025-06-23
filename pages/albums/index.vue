@@ -110,7 +110,7 @@ const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
 const selectedAlbumForEdit = ref<Album | null>(null);
 const isEditAlbumModalOpen = ref<boolean>(false);
-const playlists = ref<any[]>([]);
+const { playlists, fetchPlaylists } = usePlaylists();
 
 // --- State for Albums List Display ---
 const route = useRoute();
