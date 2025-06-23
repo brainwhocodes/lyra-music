@@ -130,11 +130,6 @@
       @update-error="handleEditModalUpdateError"
     />
 
-    <!-- Notification -->
-    <div v-if="notification.visible"
-      :class="['toast', notification.type === 'error' ? 'toast-error' : 'toast-success']">
-      {{ notification.message }}
-    </div>
   </div>
 </template>
 
@@ -144,7 +139,7 @@ import { usePlayerStore } from '~/stores/player';
 import TrackItem from '~/components/track/track-item.vue';
 import type { Playlist, PlaylistTrack } from '~/types/playlist';
 import type { Track } from '~/types/track';
-import type { NotificationMessage } from '~/types/notification-message';
+import { useNotification } from '~/composables/useNotification';
 import RemoveFromPlaylistModal from '~/components/modals/remove-from-playlist-modal.vue';
 import AddToPlaylistModal from '~/components/modals/add-to-playlist-modal.vue'; // Added
 import EditTrackModal from '~/components/modals/edit-track-modal.vue';
@@ -176,12 +171,7 @@ const trackForAddToPlaylistModal = ref<Track | null>(null); // Added
 // State for EditTrackModal
 const isEditTrackModalOpen = ref(false);
 const selectedTrackForEdit = ref<Track | null>(null);
-const notification = ref<NotificationMessage>({ message: '', type: 'info', visible: false });
-
-function showNotification(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
-  notification.value = { message, type, visible: true };
-  setTimeout(() => (notification.value.visible = false), 2500);
-}
+const { showNotification } = useNotification();
 
 /**
  * Fetch playlist details from API

@@ -73,26 +73,11 @@
   <EditAlbumModal v-if="selectedAlbumForEdit" :album="selectedAlbumForEdit" :open="isEditAlbumModalOpen"
     @close="closeEditAlbumModal" @albumUpdated="handleAlbumUpdated" @updateError="handleUpdateError" />
 
-  <!-- Simple Notification Component -->
-  <div v-if="notification.visible" class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md" :class="{
-    'bg-success text-success-content': notification.type === 'success',
-    'bg-error text-error-content': notification.type === 'error',
-    'bg-info text-info-content': notification.type === 'info'
-  }">
-    <div class="flex items-center">
-      <Icon :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' :
-        notification.type === 'error' ? 'material-symbols:error-outline' :
-          'material-symbols:info-outline'" class="w-6 h-6 mr-2" />
-      <span>{{ notification.message }}</span>
-      <button @click="notification.visible = false" class="ml-2 p-1">
-        <Icon name="material-symbols:close" class="w-4 h-4" />
-      </button>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, onUnmounted } from '#imports';
+import { useNotification } from '~/composables/useNotification';
 import { storeToRefs } from 'pinia';
 import { useSearchStore } from '~/stores/search-store';
 import { useRoute, useRouter } from 'vue-router';
@@ -113,6 +98,7 @@ const playerStore = usePlayerStore();
 const searchStore = useSearchStore();
 const { searchQuery } = storeToRefs(searchStore);
 const { getCoverArtUrl } = useCoverArt();
+const { showNotification } = useNotification();
 
 // --- State for Album Details and Playback ---
 const currentAlbum = ref<Album | null>(null);
@@ -124,8 +110,7 @@ const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
 const selectedAlbumForEdit = ref<Album | null>(null);
 const isEditAlbumModalOpen = ref<boolean>(false);
-const { playlists, fetchPlaylists } = usePlaylists();
-const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
+const playlists = ref<any[]>([]);
 
 // --- State for Albums List Display ---
 const route = useRoute();
@@ -318,14 +303,6 @@ const goToAlbum = (albumId: string): void => {
   navigateTo(`/albums/${albumId}`);
 };
 
-// Simple notification system
-const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info'): void => {
-  notification.value = { message, type, visible: true };
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    notification.value.visible = false;
-  }, 3000);
-};
 
 // Fetch user's playlists provided by usePlaylists composable
 

@@ -115,25 +115,6 @@
   </div>
   
   <!-- Simple Notification Component -->
-  <div v-if="notification.visible" 
-       class="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md"
-       :class="{
-         'bg-success text-success-content': notification.type === 'success',
-         'bg-error text-error-content': notification.type === 'error',
-         'bg-info text-info-content': notification.type === 'info'
-       }">
-    <div class="flex items-center">
-      <Icon 
-        :name="notification.type === 'success' ? 'material-symbols:check-circle-outline' : 
-              notification.type === 'error' ? 'material-symbols:error-outline' : 
-              'material-symbols:info-outline'" 
-        class="w-6 h-6 mr-2" />
-      <span>{{ notification.message }}</span>
-      <button @click="notification.visible = false" class="ml-2 p-1">
-        <Icon name="material-symbols:close" class="w-4 h-4" />
-      </button>
-    </div>
-  </div>
 
    <!-- Global Audio Player Placeholder - To be implemented in layout -->
    <!-- <AudioPlayer /> -->
@@ -141,6 +122,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from '#imports'
+import { useNotification } from '~/composables/useNotification'
 import { usePlayerStore } from '~/stores/player';
 import { useTrackArtists } from '~/composables/useTrackArtists';
 import type { Track } from '~/types/track'; // Update import path for Track type
@@ -163,8 +145,8 @@ const albumIdLoading = ref<string | null>(null);
 // State for Album Operations
 const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
-const { playlists, fetchPlaylists } = usePlaylists();
-const notification = ref<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({ message: '', type: 'info', visible: false });
+const playlists = ref<Playlist[]>([]);
+const { showNotification } = useNotification();
 
 // Search State
 const searchQuery = ref('');
@@ -338,14 +320,6 @@ const navigateToAlbum = (albumId: string): void => {
   navigateTo(`/albums/${albumId}`);
 };
 
-// Simple notification system
-const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info'): void => {
-  notification.value = { message, type, visible: true };
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    notification.value.visible = false;
-  }, 3000);
-};
 
 // Open the Add to Playlist modal
 const openAddToPlaylistModal = (album: Album): void => {
