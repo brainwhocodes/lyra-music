@@ -17,4 +17,8 @@ export interface Album {
     // artistName: string;      // Removed for multi-artist support
     artists: AlbumArtistDetail[]; // New field for multiple artists
     tracks?: Track[];
+    genre?: {
+        id: string;
+        name: string;
+    };
 }

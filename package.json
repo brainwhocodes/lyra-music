@@ -31,7 +31,6 @@
     "better-sqlite3": "^11.9.1",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
-    "gut-punch": "^0.1.7",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.6.1",
     "mime-types": "^3.0.1",

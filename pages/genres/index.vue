@@ -67,7 +67,7 @@ const filteredGenres = computed(() => {
     <div v-else-if="filteredGenres.length === 0" class="text-center">
       <p>No genres found.</p>
     </div>
-    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
       <NuxtLink
         v-for="genre in filteredGenres"
         :key="genre.genreId"

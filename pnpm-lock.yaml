@@ -56,9 +56,6 @@ importers:
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@types/better-sqlite3@7.6.13)(better-sqlite3@11.9.1)(bun-types@1.2.16)
-      gut-punch:
-        specifier: ^0.1.7
-        version: 0.1.7
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -3206,10 +3203,6 @@ packages:
   gtoken@7.1.0:
     resolution: {integrity: sha512-pCcEwRi+TKpMlxAQObHDQ56KawURgyAf6jtIY046fJ5tIv3zDe/LEIubckAO8fj6JnAxLdmWkUfNyulQ2iKdEw==}
     engines: {node: '>=14.0.0'}
-
-  gut-punch@0.1.7:
-    resolution: {integrity: sha512-WuQWiERpqKH5phs5ZogclAaUpanoKHxrql+iE1OeZPyzzdOQktf629Qx0pNE9BqVm8VRKW6HziiUnB9TYUrznw==}
-    engines: {bun: '>=1.0.0', node: '>=18.0.0'}
 
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
@@ -9339,10 +9332,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  gut-punch@0.1.7:
-    dependencies:
-      yaml: 2.8.0
 
   gzip-size@7.0.0:
     dependencies:

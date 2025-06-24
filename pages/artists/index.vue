@@ -18,7 +18,7 @@
     </div>
 
     <!-- Artist Grid View -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
        <NuxtLink 
          v-for="artist in artists" 
          :key="artist.artistId" 

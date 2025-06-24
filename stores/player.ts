@@ -2,10 +2,11 @@
 import { defineStore } from 'pinia';
 import type { Track } from '~/types/track'; // Import consolidated Track type
 import type { Album } from '~/types/album'; // Import Album type
+import type { PodcastEpisode } from '~/types/podcast'; // Import PodcastEpisode type
 import { useTrackArtists } from '~/composables/useTrackArtists';
 
 export interface QueueContext {
-  type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | null;
+  type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | 'podcast' | null;
   id: string | null;
   name?: string; // Optional name for the context (e.g., album title, playlist name)
 }
@@ -74,7 +75,15 @@ export const usePlayerStore = defineStore('player', () => {
 
   // Computed property for the audio source URL
   const audioSource = computed<string | null>(() => {
-    return currentTrack.value ? `/api/tracks/${currentTrack.value.trackId}/play` : null;
+    if (!currentTrack.value) return null;
+    
+    // If the track has a direct audioUrl (podcast episodes), use that
+    if (currentTrack.value.audioUrl) {
+      return currentTrack.value.audioUrl;
+    }
+    
+    // Otherwise use the API endpoint for regular tracks
+    return `/api/tracks/${currentTrack.value.trackId}/play`;
   });
 
   function _resetState(): void {
@@ -265,12 +274,20 @@ export const usePlayerStore = defineStore('player', () => {
     // Does not automatically start playback or change current track if one is playing.
   };
 
+  /**
+   * Play a single track
+   * @param track The track to play
+   */
   const playTrack = (track: Track) => {
     _cleanupAudioElement();
     // When a single track is played, it typically forms a new, temporary queue.
     queue.value = [track];
     currentQueueIndex.value = 0;
-    currentQueueContext.value = { type: 'track', id: track.trackId, name: track.title };
+    currentQueueContext.value = { 
+      type: 'track', 
+      id: track.trackId, 
+      name: track.title || track.name || 'Unknown Track' // Ensure we have a title
+    };
 
     // Clear shuffle history as the context has changed significantly.
     playedTrackIdsInShuffle.value.clear();
@@ -284,35 +301,97 @@ export const usePlayerStore = defineStore('player', () => {
     scrobbledCurrentTrack.value = false; // Reset scrobble status for new track
     _setupAudioElement();
   };
+  
+  /**
+   * Play a podcast episode
+   * @param episode The podcast episode to play
+   * @param podcastTitle The title of the podcast
+   * @param podcastId The ID of the podcast
+   */
+  const playPodcastEpisode = (episode: PodcastEpisode, podcastTitle: string, podcastId: string): void => {
+    if (!episode.audioUrl) {
+      console.error('Cannot play podcast episode: No audio URL provided');
+      return;
+    }
+    
+    // Create a track-compatible object from the podcast episode
+    const track: Track = {
+      trackId: `podcast-${podcastId}-${episode.episodeId}`,
+      title: episode.title,
+      name: episode.title, // Ensure name is set for compatibility
+      artistName: podcastTitle,
+      albumTitle: podcastTitle,
+      duration: episode.duration || 0,
+      artworkUrl: episode.imageUrl || null,
+      audioUrl: episode.audioUrl,
+      explicit: episode.explicit || false
+    };
+    
+    _cleanupAudioElement();
+    queue.value = [track];
+    currentQueueIndex.value = 0;
+    currentQueueContext.value = { 
+      type: 'podcast', 
+      id: `podcast-${podcastId}`, 
+      name: podcastTitle || 'Podcast'
+    };
+    
+    playedTrackIdsInShuffle.value.clear();
+    scrobbledCurrentTrack.value = false;
+    _setupAudioElement();
+  };
 
+  /**
+   * Load a queue of tracks and optionally start playback
+   * @param tracks The tracks to load into the queue
+   * @param context Optional context information
+   * @param startPlaying Whether to start playback immediately
+   * @param startIndex The index to start playback from
+   */
   const loadQueue = (tracks: Track[], context?: QueueContext, startPlaying: boolean = true, startIndex: number = 0) => {
     _cleanupAudioElement(); 
 
     originalQueue.value = []; 
     playedTrackIdsInShuffle.value.clear(); 
 
-    const { formatTrackWithArtists, getTrackArtistNameString } = useTrackArtists();
+    // Process tracks differently based on context type
+    let processedTracks: Track[];
+    
+    if (context?.type === 'podcast') {
+      // For podcasts, ensure titles and other fields are properly set
+      processedTracks = tracks.map(track => ({
+        ...track,
+        // Ensure title is set (use name as fallback)
+        title: track.title || track.name || 'Unknown Episode',
+        // Ensure name is set (use title as fallback)
+        name: track.name || track.title || 'Unknown Episode'
+      }));
+    } else {
+      // For music tracks, use the artist formatting logic
+      const { formatTrackWithArtists, getTrackArtistNameString } = useTrackArtists();
+      
+      processedTracks = tracks.map(track => {
+        // Generate formattedArtists from track.artists
+        const trackWithFormattedArtists = formatTrackWithArtists(track);
+        
+        // Generate artistName string from the formatted artists
+        const artistNameString = getTrackArtistNameString(trackWithFormattedArtists);
+        
+        return {
+          ...trackWithFormattedArtists,
+          artistName: artistNameString,
+          // Ensure both title and name are set
+          title: trackWithFormattedArtists.title || trackWithFormattedArtists.name || 'Unknown Track',
+          name: trackWithFormattedArtists.name || trackWithFormattedArtists.title || 'Unknown Track'
+        };
+      });
+    }
 
-    const fullyProcessedTracks = tracks.map(track => {
-      // Step 1: Generate formattedArtists from track.artists
-      // The formatTrackWithArtists function is now idempotent, so if track.formattedArtists is already populated (it shouldn't be here),
-      // it would use it. Otherwise, it generates from track.artists.
-      const trackWithFormattedArtists = formatTrackWithArtists(track);
-
-      // Step 2: Generate artistName string from the (newly) formatted artists
-      const artistNameString = getTrackArtistNameString(trackWithFormattedArtists);
-
-      return {
-        ...trackWithFormattedArtists,
-        artistName: artistNameString,
-      };
-    });
-
-    queue.value = fullyProcessedTracks;
+    queue.value = processedTracks;
     currentQueueContext.value = context || { type: null, id: null, name: undefined };
 
-    if (tracks.length > 0) {
-      currentQueueIndex.value = Math.max(0, Math.min(startIndex, tracks.length - 1));
+    if (processedTracks.length > 0) {
+      currentQueueIndex.value = Math.max(0, Math.min(startIndex, processedTracks.length - 1));
       if (startPlaying) {
         _setupAudioElement();
         if (isShuffled.value && currentTrack.value) {
@@ -668,7 +747,7 @@ export const usePlayerStore = defineStore('player', () => {
     // State
     queue,
     currentQueueIndex,
-    currentTrack,
+    currentQueueContext,
     isPlaying,
     currentTime,
     duration,
@@ -676,22 +755,22 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading,
     isShuffled,
     repeatMode,
-    currentQueueContext,
     isQueueSidebarVisible,
     isFullScreenQueueVisible,
     isFullScreenPlayerVisible,
     isFullScreenLyricsVisible,
     isLyricsModalVisible,
     isUserSeeking,
-    wasPlayingBeforeSeek,
 
-    // Getters (Computed)
-    audioSource,
+    // Computed
+    currentTrack,
     canPlayNext,
     canPlayPrevious,
+    audioSource,
 
     // Actions
     playTrack,
+    playPodcastEpisode, // New method for podcast episodes
     loadQueue,
     playFromQueue,
     togglePlayPause,
@@ -702,11 +781,11 @@ export const usePlayerStore = defineStore('player', () => {
     toggleShuffle,
     toggleRepeatMode,
     showQueueSidebar,
+    hideQueueSidebar,
+    toggleQueueSidebar,
     showFullScreenQueue,
     hideFullScreenQueue,
     toggleFullScreenQueue,
-    hideQueueSidebar,
-    toggleQueueSidebar,
     toggleFullScreenPlayer,
     showFullScreenLyrics,
     hideFullScreenLyrics,
@@ -717,10 +796,8 @@ export const usePlayerStore = defineStore('player', () => {
     startSeeking,
     updateSeekPosition,
     endSeeking,
+    clearQueue,
     addAlbumToQueue,
-    updateAlbumDetailsInPlayer, 
-    clearQueue
-
-    // Internal methods exposed for potential direct use or testing (consider if really needed)
+    updateAlbumDetailsInPlayer
   };
 });
