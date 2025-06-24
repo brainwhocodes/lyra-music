@@ -57,7 +57,8 @@
             <li><NuxtLink to="/artists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:artist-outline" class="w-5 h-5" /> Artists</NuxtLink></li>
             <li><NuxtLink to="/genres" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:label-outline" class="w-5 h-5" /> Genres</NuxtLink></li>
             <li><NuxtLink to="/playlists" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:mood-outline" class="w-5 h-5" /> Playlists</NuxtLink></li>
-                        <li><NuxtLink to="/radio" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="ph:radio-fill" class="w-5 h-5" /> Radio</NuxtLink></li>
+            <li><NuxtLink to="/discovery" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="material-symbols:lightbulb-outline" class="w-5 h-5" /> Discover</NuxtLink></li>
+            <li><NuxtLink to="/radio" class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-300 mb-1" active-class="!bg-base-300 font-semibold"><Icon name="ph:radio-fill" class="w-5 h-5" /> Radio</NuxtLink></li>
           </ul>
       </nav>
 
