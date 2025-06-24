@@ -1,0 +1,6 @@
+{
+  "default": "/images/icons/default-album-art.webp",
+  "rock": "/images/genres/rock-art.webp",
+  "jazz": "/images/genres/jazz-art.webp",
+  "pop": "/images/genres/pop-art.webp"
+}

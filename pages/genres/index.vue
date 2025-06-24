@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 import type { Genre } from '~/types/genre';
+import { useGenreImage } from '~/composables/useGenreImage';
 
 // Apply the sidebar layout
 definePageMeta({
@@ -9,6 +10,7 @@ definePageMeta({
 
 // Fetch genres from the API endpoint /api/genres/index.get.ts
 const { data: genres, pending, error } = await useLazyFetch<Genre[]>('/api/genres');
+const { getGenreImageUrl } = useGenreImage();
 
 watch(genres.value, (newGenres: Genre[] | null) => {
   if (newGenres) {
@@ -66,12 +68,19 @@ const filteredGenres = computed(() => {
       <p>No genres found.</p>
     </div>
     <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <NuxtLink 
-        v-for="genre in filteredGenres" 
-        :key="genre.genreId" 
+      <NuxtLink
+        v-for="genre in filteredGenres"
+        :key="genre.genreId"
         :to="`/genres/${genre.genreId}`"
         class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300"
       >
+        <figure class="aspect-square overflow-hidden">
+          <img
+            :src="getGenreImageUrl(genre.name)"
+            :alt="`${genre.name} artwork`"
+            class="w-full h-full object-cover"
+          />
+        </figure>
         <div class="card-body">
           <h2 class="card-title truncate">{{ genre.name }}</h2>
           <p class="text-sm text-base-content/70">{{ genre.albumCount }} album{{ genre.albumCount !== 1 ? 's' : '' }}</p>
