@@ -7,10 +7,9 @@ console.log(`[${DateTime.now().toISO()}] Initializing cron scheduler...`);
 // Create an instance of the job
 const updateNewDiscoveriesJob = new UpdateNewDiscoveriesJob();
 
-// Schedule the job to run every minute
+// Schedule the job to run at the start of every hour
 // Cron format: second (optional) minute hour day-of-month month day-of-week
-// '0 3 * * 0' means: at minute 0 of hour 3 on day-of-week 0 (Sunday)
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
   const startTime = DateTime.now();
   console.log(`[${startTime.toISO()}] Cron job '${updateNewDiscoveriesJob.name}' triggered by schedule.`);
   
@@ -27,11 +26,12 @@ cron.schedule('* * * * *', async () => {
         console.error(error.stack);
     }
   }
+
 }, {
   timezone: "America/New_York" // Optional: specify your timezone, e.g., "America/New_York"
 });
 
-console.log(`[${DateTime.now().toISO()}] Cron scheduler initialized. Job '${updateNewDiscoveriesJob.name}' is scheduled to run every Sunday at 3:00 AM.`);
+console.log(`[${DateTime.now().toISO()}] Cron scheduler initialized. Job '${updateNewDiscoveriesJob.name}' is scheduled to run at the start of every hour.`);
 console.log('Scheduler is running. Press Ctrl+C to exit.');
 
 // Keep the process alive (optional, depending on how you run it)

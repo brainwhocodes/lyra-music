@@ -11,7 +11,8 @@ export class UpdateNewDiscoveriesJob implements Job {
   public readonly name: string = 'UpdateNewDiscoveriesJob';
   public readonly maxRetries: number = 3;
   public readonly reschedule: boolean = true;
-  public readonly rescheduleIn: number = 60_000 * 60 * 24 * 7; // Reschedule in 7 days
+  // Run every hour
+  public readonly rescheduleIn: number = 60_000 * 60; // Reschedule in 1 hour
 
   public async run(params?: Record<string, unknown>): Promise<JobResult> {
     const jobStartTime = DateTime.now();
