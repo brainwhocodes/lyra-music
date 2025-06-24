@@ -1113,7 +1113,12 @@ export async function createInitialAlbumRecord({
     });
 
     if (existingAlbum) {
-      // Album exists, reset its status to PENDING for reprocessing
+      // If the album has already been fully processed, skip it
+      if (existingAlbum.processedStatus === AlbumProcessStatus.COMPLETED) {
+        return null;
+      }
+
+      // Album exists but isn't completed, reset its status for reprocessing
       const [updatedAlbum] = await db
         .update(albums)
         .set({ processedStatus: AlbumProcessStatus.PENDING, updatedAt: new Date().toISOString() })
