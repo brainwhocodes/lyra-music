@@ -11,6 +11,27 @@ import type { Track, TrackArtistDetail } from '~/types/track';
 
 const BATCH_SIZE = 50;
 
+function reorderToAvoidConsecutiveArtists(tracks: Track[]): Track[] {
+  const result = [...tracks];
+  for (let i = 1; i < result.length; i++) {
+    const prevArtistId = result[i - 1]?.artists?.[0]?.artistId;
+    const currArtistId = result[i]?.artists?.[0]?.artistId;
+    if (prevArtistId && currArtistId && prevArtistId === currArtistId) {
+      let swapIndex = i + 1;
+      while (
+        swapIndex < result.length &&
+        result[swapIndex]?.artists?.[0]?.artistId === prevArtistId
+      ) {
+        swapIndex++;
+      }
+      if (swapIndex < result.length) {
+        [result[i], result[swapIndex]] = [result[swapIndex], result[i]];
+      }
+    }
+  }
+  return result;
+}
+
 export default defineEventHandler(async (event) => {
   const channelId = getRouterParam(event, 'id');
 
@@ -89,7 +110,7 @@ export default defineEventHandler(async (event) => {
       // This would fetch from the `radio_channel_tracks` table
     }
 
-    return fetchedTracks;
+    return reorderToAvoidConsecutiveArtists(fetchedTracks);
   } catch (error: any) {
     console.error(`Error fetching tracks for radio station ${channelId}:`, error);
     throw createError({ statusCode: 500, statusMessage: 'Failed to fetch tracks for station' });
