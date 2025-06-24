@@ -7,6 +7,7 @@ import { usePlayerStore, type QueueContext } from '~/stores/player';
 import AlbumCard from '~/components/album/album-card.vue'; 
 import { useCoverArt } from '~/composables/use-cover-art';
 import { useTrackArtists } from '~/composables/useTrackArtists';
+import { useGenreImage } from '~/composables/useGenreImage';
 
 interface GenreBasicInfo {
   genreId: string;
@@ -21,6 +22,8 @@ const playerStore = usePlayerStore();
 const genreId = route.params.genreId as string;
 const genreName = ref<string | null>(null);
 const loadingAlbumIdForPlay = ref<string | null>(null);
+
+const { getGenreImageUrl } = useGenreImage();
 
 
 
@@ -164,7 +167,14 @@ definePageMeta({
   <div class="w-full h-full px-4 py-8 overflow-y-auto bg-base-200">
     <div class="mb-6">
       <NuxtLink to="/genres" class="btn btn-ghost btn-sm mb-4">&larr; Back to Genres</NuxtLink>
-      <h1 class="text-3xl font-bold">{{ genreName || 'Genre' }} Albums</h1>
+      <div class="flex items-center gap-4">
+        <img
+          :src="getGenreImageUrl(genreName || '')"
+          :alt="`${genreName} artwork`"
+          class="w-20 h-20 object-cover rounded"
+        />
+        <h1 class="text-3xl font-bold">{{ genreName || 'Genre' }} Albums</h1>
+      </div>
     </div>
 
     <div v-if="pending" class="text-center">
