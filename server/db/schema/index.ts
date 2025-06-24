@@ -22,6 +22,8 @@ export * from './album-genres';
 export * from './lyrics';
 export * from './discovery-playlists';
 export * from './discovery-playlist-tracks';
+export * from './podcasts';
+export * from './podcast-subscriptions';
 
 // Import table objects specifically for defining relations
 import { users } from './users';
@@ -43,6 +45,8 @@ import { albumGenres } from './album-genres';
 import { lyrics } from './lyrics';
 import { discoveryPlaylists } from './discovery-playlists';
 import { discoveryPlaylistTracks } from './discovery-playlist-tracks';
+import { podcasts } from './podcasts';
+import { podcastSubscriptions } from './podcast-subscriptions';
 
 // === Relations ===
 
@@ -115,6 +119,7 @@ export const userRelations = relations(users, ({ many }) => ({
   mediaFolders: many(mediaFolders),
   radioChannels: many(radioChannels),
   discoveryPlaylists: many(discoveryPlaylists),
+  podcastSubscriptions: many(podcastSubscriptions),
 }));
 
 export const artistUserRelations = relations(artistUsers, ({ one }) => ({
@@ -227,6 +232,21 @@ export const discoveryPlaylistTrackRelations = relations(discoveryPlaylistTracks
   track: one(tracks, {
     fields: [discoveryPlaylistTracks.trackId],
     references: [tracks.trackId],
+  }),
+}));
+
+export const podcastRelations = relations(podcasts, ({ many }) => ({
+  podcastSubscriptions: many(podcastSubscriptions),
+}));
+
+export const podcastSubscriptionRelations = relations(podcastSubscriptions, ({ one }) => ({
+  podcast: one(podcasts, {
+    fields: [podcastSubscriptions.podcastId],
+    references: [podcasts.podcastId],
+  }),
+  user: one(users, {
+    fields: [podcastSubscriptions.userId],
+    references: [users.userId],
   }),
 }));
 
