@@ -4,9 +4,8 @@ import { tracks } from '~/server/db/schema'
 import { eq } from 'drizzle-orm'
 import { createReadStream, stat } from 'node:fs'
 import { promisify } from 'node:util'
-import path from 'node:path'
 import type { H3Event } from 'h3'
-import { sendStream } from 'h3';
+import { sendStream, setResponseHeader, setResponseStatus, getRequestHeader, createError } from 'h3';
 import { getMimeType } from '~/server/utils/formatters';
 
 const statAsync = promisify(stat);
@@ -19,7 +18,7 @@ const paramsSchema = z.object({
 
 /**
  * @description Streams the audio data for a given trackId.
- *              TODO: Add handling for Range requests for seeking.
+ *              Supports HTTP Range requests for seeking within the track.
  */
 export default defineEventHandler(async (event: H3Event) => {
     // Authentication check (optional - depends if streaming needs auth)
@@ -87,13 +86,66 @@ export default defineEventHandler(async (event: H3Event) => {
         // 3. Determine Content-Type
         const mimeType = getMimeType(filePath);
 
-        // 4. Set headers
+        // 4. Handle optional Range header for seeking support
+        const rangeHeader = getRequestHeader(event, 'range');
+        let start = 0;
+        let end = fileStats.size - 1;
+
+        if (rangeHeader) {
+            const match = /bytes=(\d*)-(\d*)/.exec(rangeHeader);
+            if (!match) {
+                throw createError({
+                    statusCode: 416,
+                    statusMessage: 'Range Not Satisfiable'
+                });
+            }
+            const startStr = match[1];
+            const endStr = match[2];
+
+            if (startStr === '' && endStr === '') {
+                throw createError({
+                    statusCode: 416,
+                    statusMessage: 'Range Not Satisfiable'
+                });
+            }
+
+            if (startStr) {
+                start = parseInt(startStr, 10);
+                if (isNaN(start) || start >= fileStats.size) {
+                    throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' });
+                }
+            }
+
+            if (endStr) {
+                end = parseInt(endStr, 10);
+                if (isNaN(end) || end >= fileStats.size) {
+                    end = fileStats.size - 1;
+                }
+            }
+
+            if (!startStr && endStr) {
+                const suffixLength = parseInt(endStr, 10);
+                start = fileStats.size - suffixLength;
+                end = fileStats.size - 1;
+                if (start < 0) start = 0;
+            }
+
+            if (start > end) {
+                throw createError({ statusCode: 416, statusMessage: 'Range Not Satisfiable' });
+            }
+
+            setResponseStatus(event, 206);
+            setResponseHeader(event, 'Content-Range', `bytes ${start}-${end}/${fileStats.size}`);
+            setResponseHeader(event, 'Content-Length', end - start + 1);
+        } else {
+            setResponseHeader(event, 'Content-Length', fileStats.size);
+        }
+
         setResponseHeader(event, 'Content-Type', mimeType);
-        setResponseHeader(event, 'Content-Length', fileStats.size);
-        setResponseHeader(event, 'Accept-Ranges', 'bytes'); // Indicate range requests are supported (though not fully handled yet)
+        setResponseHeader(event, 'Accept-Ranges', 'bytes');
 
         // 5. Create and return stream
-        const stream = createReadStream(filePath);
+        const stream = createReadStream(filePath, { start, end });
         return sendStream(event, stream);
 
     } catch (error: any) {
