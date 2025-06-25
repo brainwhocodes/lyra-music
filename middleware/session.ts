@@ -20,18 +20,36 @@ export default defineNuxtRouteMiddleware(async (to, event) => {
     return;
   }
 
-  const authCookie = useCookie<string | null>('auth_token');
   const authStore = useAuthStore();
   try {
-        
+    const headers: Record<string, string> = {}
+    let token: string | null = null
+
+    if (process.server) {
+      const reqHeaders = useRequestHeaders(['cookie'])
+      if (reqHeaders.cookie) {
+        headers.cookie = reqHeaders.cookie
+        const match = reqHeaders.cookie
+          .split(';')
+          .find(c => c.trim().startsWith('auth_token='))
+        if (match) {
+          token = decodeURIComponent(match.split('=')[1])
+        }
+      }
+    } else {
+      token = localStorage.getItem('auth_token')
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
     const user = await $fetch('/api/auth/me', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${authCookie.value ?? ''}`
-      }
+      headers,
     })
 
-    authStore.setMinimalUserData(user, authCookie.value ?? '')
+    authStore.setMinimalUserData(user, token ?? '')
     return
     
   } catch (error: any) {
