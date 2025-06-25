@@ -1,6 +1,6 @@
 {
   "default": "/images/icons/default-genre-art.webp",
-  "rock": "/images/icons/default-genre-art.webp",
+  "rock": "/images/genres/rock-genre-art.webp",
   "jazz": "/images/icons/default-genre-art.webp",
   "pop": "/images/icons/default-genre-art.webp",
   "electronic": "/images/icons/default-genre-art.webp"
