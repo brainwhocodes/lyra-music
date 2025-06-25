@@ -22,6 +22,10 @@ interface ScanLibraryParams {
   processOnlyUnprocessed?: boolean;
 }
 
+function isSingleFolder(audioFiles: string[]): boolean {
+  return audioFiles.length === 1;
+}
+
 /**
  * Extracts metadata from an audio file.
  */
@@ -245,7 +249,8 @@ export async function scanLibrary({
     for (const albumRecord of createdAlbums) {
       console.log(`\nProcessing Album: ${albumRecord.title} (${albumRecord.albumId})`);
       const filesInFolder = filesByFolder[albumRecord.folderPath!]!;
-      const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId);
+      const isSingle = isSingleFolder(filesInFolder);
+      const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId, isSingle);
 
       const fileProcessingPromises = filesInFolder.map(filePath =>
         processAudioFile(filePath, { userId, isVariousArtistsCompilation, artistsProcessedForImages })
@@ -294,13 +299,23 @@ export async function scanLibrary({
  * @param userId The user ID (for processing files)
  * @returns Object containing the various artists determination and optional various artists ID
  */
-async function detectVariousArtistsAlbum(audioFilesInFolder: string[], userId: string): Promise<{
+async function detectVariousArtistsAlbum(audioFilesInFolder: string[], userId: string, isSingle: boolean = false): Promise<{
   isVariousArtistsCompilation: boolean;
   primaryArtistCounts: Record<string, { count: number; name: string }>;
   albumTitle?: string;
 }> {
   if (audioFilesInFolder.length === 0) {
     return { isVariousArtistsCompilation: false, primaryArtistCounts: {} };
+  }
+
+  if (isSingle) {
+    try {
+      const { metadata } = await extractMetadata(audioFilesInFolder[0]!);
+      const singleAlbumTitle = metadata.common.album?.trim();
+      return { isVariousArtistsCompilation: false, primaryArtistCounts: {}, albumTitle: singleAlbumTitle };
+    } catch {
+      return { isVariousArtistsCompilation: false, primaryArtistCounts: {} };
+    }
   }
 
   // Maximum number of tracks by the same artist before we no longer consider it a compilation
@@ -658,6 +673,8 @@ const scanner = {
   getBatchedCovers,
   identifyAlbumFolders,
   createInitialAlbumRecords,
+  detectVariousArtistsAlbum,
+  isSingleFolder,
 };
 
 // Export as default for backward compatibility
@@ -671,4 +688,4 @@ export * from './file-utils';
 export * from './album-art-utils';
 export * from './db-operations';
 
-export { batchProcessAlbumCovers };
+export { batchProcessAlbumCovers, detectVariousArtistsAlbum, isSingleFolder };
