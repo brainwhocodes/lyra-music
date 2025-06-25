@@ -222,3 +222,23 @@ CREATE TABLE `discovery_playlist_tracks` (
 	FOREIGN KEY (`discovery_playlist_id`) REFERENCES `discovery_playlists`(`discovery_playlist_id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`track_id`) REFERENCES `tracks`(`track_id`) ON UPDATE no action ON DELETE cascade
 );
+--> statement-breakpoint
+CREATE TABLE `podcasts` (
+	`podcast_id` text PRIMARY KEY NOT NULL,
+	`feed_url` text NOT NULL,
+	`title` text NOT NULL,
+	`description` text,
+	`image_url` text,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `podcasts_feed_url_unique` ON `podcasts` (`feed_url`);--> statement-breakpoint
+CREATE TABLE `podcast_subscriptions` (
+	`subscription_id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`podcast_id` text NOT NULL,
+	`created_at` text NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`podcast_id`) REFERENCES `podcasts`(`podcast_id`) ON UPDATE no action ON DELETE cascade
+);
