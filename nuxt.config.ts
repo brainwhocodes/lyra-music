@@ -30,7 +30,6 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/fonts',
     '@nuxt/icon',
-   // '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
     '@pinia/nuxt', // Add Pinia module
