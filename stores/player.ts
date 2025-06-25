@@ -189,8 +189,16 @@ export const usePlayerStore = defineStore('player', () => {
       if (audioElement.value) {
         console.error('Audio Element State: readyState=', audioElement.value.readyState, 'networkState=', audioElement.value.networkState, 'error=', audioElement.value.error);
       }
-      isPlaying.value = false; 
-      isLoading.value = false;
+      // Some browsers reject play() with AbortError if the source changes very quickly.
+      // In that case, attempt to play the current element again after a brief delay.
+      if (error.name === 'AbortError' && audioElement.value) {
+        setTimeout(() => {
+          audioElement.value?.play().catch(_handleError);
+        }, 100);
+      } else {
+        isPlaying.value = false;
+        isLoading.value = false;
+      }
       // TODO: Consider setting a user-visible error message in the store or emitting an event
       // For example: playbackError.value = 'Playback was blocked. Please tap play again.';
     });
