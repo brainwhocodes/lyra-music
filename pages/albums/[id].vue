@@ -14,6 +14,7 @@ import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
 import OptionsMenu from '~/components/options-menu.vue';
 import EditTrackModal from '~/components/modals/edit-track-modal.vue';
 import EditLyricsModal from '~/components/modals/edit-lyrics-modal.vue'; // Import the new modal
+import ConfirmDeleteModal from '~/components/modals/confirm-delete-modal.vue';
 import { useTrackArtists, } from '~/composables/useTrackArtists';
 
 // Use the track artists composable for formatting track artists
@@ -33,6 +34,7 @@ const isAddAlbumToPlaylistModalOpen = ref(false);
 // Template ref for OptionsMenu
 const albumOptionsMenuRef = ref<InstanceType<typeof OptionsMenu> | null>(null);
 const isEditAlbumModalOpen = ref(false);
+const isDeleteAlbumModalOpen = ref(false);
 
 // State for EditTrackModal
 const isEditTrackModalOpen = ref(false);
@@ -282,6 +284,7 @@ const albumOptions = computed(() => [
   { id: 'add-to-queue', label: 'Add to Queue', icon: 'mdi:playlist-plus' },
   { id: 'add-album-to-playlist', label: 'Add Album to Playlist', icon: 'mdi:playlist-music' },
   { id: 'edit-album', label: 'Edit Album', icon: 'mdi:pencil' },
+  { id: 'delete-album', label: 'Delete Album', icon: 'mdi:delete' },
   // Add more options as needed
 ]);
 
@@ -296,6 +299,9 @@ const handleAlbumOption = (optionId: string): void => {
       break;
     case 'edit-album':
       openEditAlbumModal();
+      break;
+    case 'delete-album':
+      openDeleteAlbumModal();
       break;
     default:
       console.warn('Unknown album option:', optionId);
@@ -395,8 +401,30 @@ const onAlbumUpdateError = (errorMessage: string): void => {
 
 
   showNotification(errorMessage || 'Failed to update album.', 'error');
-  // Modal likely closes itself or provides its own error state, 
+  // Modal likely closes itself or provides its own error state,
   // but if needed: isEditAlbumModalOpen.value = false;
+};
+
+const openDeleteAlbumModal = (): void => {
+  isDeleteAlbumModalOpen.value = true;
+};
+
+const closeDeleteAlbumModal = (): void => {
+  isDeleteAlbumModalOpen.value = false;
+};
+
+const confirmDeleteAlbum = async (): Promise<void> => {
+  if (!album.value) return;
+  try {
+    await $fetch(`/api/albums/${album.value.albumId}`, { method: 'DELETE' });
+    showNotification('Album deleted successfully.', 'success');
+    navigateTo('/albums');
+  } catch (err) {
+    console.error('Failed to delete album:', err);
+    showNotification('Failed to delete album.', 'error');
+  } finally {
+    closeDeleteAlbumModal();
+  }
 };
 
 </script>
@@ -412,6 +440,13 @@ const onAlbumUpdateError = (errorMessage: string): void => {
       <EditLyricsModal v-if="selectedTrackForLyrics" :track="selectedTrackForLyrics" :open="isEditLyricsModalOpen"
         @close="handleEditLyricsModalClose" @lyricsUpdated="handleLyricsSuccessfullyUpdated"
         @updateError="handleEditLyricsModalUpdateError" />
+
+      <ConfirmDeleteModal
+        :open="isDeleteAlbumModalOpen"
+        title="Delete Album"
+        message="Are you sure you want to delete this album? This action cannot be undone."
+        @close="closeDeleteAlbumModal"
+        @confirm="confirmDeleteAlbum" />
       <div v-if="pending" class="text-center">
         <span class="loading loading-spinner loading-lg"></span>
       </div>

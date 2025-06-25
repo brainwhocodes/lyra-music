@@ -38,6 +38,13 @@
               <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
               Edit Album
             </button>
+            <button
+              class="px-4 py-2 text-left hover:bg-base-300 flex items-center text-error"
+              @click.stop="$emit('deleteAlbum', album)"
+            >
+              <Icon name="material-symbols:delete-outline-rounded" class="w-5 h-5 mr-2" />
+              Delete Album
+            </button>
           </template>
         </OptionsMenu>
       </div>
@@ -96,7 +103,7 @@ const allArtistNames = computed(() => {
   return props.album.artists.map((artist: AlbumArtistDetail) => artist.name).join(', ');
 });
 
-const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum', 'play']);
+const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum', 'deleteAlbum', 'play']);
 
 
 

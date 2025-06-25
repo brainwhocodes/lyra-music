@@ -36,7 +36,7 @@
         :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
         :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
         @card-click="goToAlbum(album_item.albumId)" @add-to-playlist="openAddToPlaylistModal"
-        @edit-album="handleEditAlbum" @play="handleAlbumCardPlayEvent(album_item)" />
+        @edit-album="handleEditAlbum" @delete-album="openDeleteAlbumModal" @play="handleAlbumCardPlayEvent(album_item)" />
     </div>
 
   </div>
@@ -69,9 +69,17 @@
     <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
   </div>
 
-  <!-- Edit Album Modal -->
-  <EditAlbumModal v-if="selectedAlbumForEdit" :album="selectedAlbumForEdit" :open="isEditAlbumModalOpen"
-    @close="closeEditAlbumModal" @albumUpdated="handleAlbumUpdated" @updateError="handleUpdateError" />
+
+<!-- Edit Album Modal -->
+<EditAlbumModal v-if="selectedAlbumForEdit" :album="selectedAlbumForEdit" :open="isEditAlbumModalOpen"
+  @close="closeEditAlbumModal" @albumUpdated="handleAlbumUpdated" @updateError="handleUpdateError" />
+
+<ConfirmDeleteModal
+  :open="isDeleteAlbumModalOpen"
+  title="Delete Album"
+  message="Are you sure you want to delete this album? This action cannot be undone."
+  @close="closeDeleteAlbumModal"
+  @confirm="confirmDeleteAlbum" />
 
 </template>
 
@@ -85,6 +93,7 @@ import { usePlayerStore } from '~/stores/player';
 import type { Album, AlbumArtistDetail } from '~/types/album';
 import AlbumCard from '~/components/album/album-card.vue';
 import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
+import ConfirmDeleteModal from '~/components/modals/confirm-delete-modal.vue';
 import type { Track, TrackArtistDetail } from '~/types/track';
 import { useCoverArt } from '~/composables/use-cover-art';
 import { usePlaylists } from '~/composables/usePlaylists';
@@ -110,6 +119,8 @@ const selectedAlbumForPlaylist = ref<Album | null>(null);
 const isAddToPlaylistModalOpen = ref<boolean>(false);
 const selectedAlbumForEdit = ref<Album | null>(null);
 const isEditAlbumModalOpen = ref<boolean>(false);
+const selectedAlbumForDelete = ref<Album | null>(null);
+const isDeleteAlbumModalOpen = ref<boolean>(false);
 const { playlists, fetchPlaylists } = usePlaylists();
 
 // --- State for Albums List Display ---
@@ -388,6 +399,34 @@ const handleAlbumUpdated = (updatedAlbum: Album): void => {
 // Handle album update error
 const handleUpdateError = (errorMessage: string): void => {
   showNotification(errorMessage || 'Failed to update album.', 'error');
+};
+
+// --- Delete Album ---
+const openDeleteAlbumModal = (album: Album): void => {
+  selectedAlbumForDelete.value = album;
+  isDeleteAlbumModalOpen.value = true;
+};
+
+const closeDeleteAlbumModal = (): void => {
+  isDeleteAlbumModalOpen.value = false;
+  selectedAlbumForDelete.value = null;
+};
+
+const confirmDeleteAlbum = async (): Promise<void> => {
+  if (!selectedAlbumForDelete.value) return;
+
+  try {
+    await $fetch(`/api/albums/${selectedAlbumForDelete.value.albumId}`, { method: 'DELETE' });
+    if (albums.value) {
+      albums.value = albums.value.filter(a => a.albumId !== selectedAlbumForDelete.value!.albumId);
+    }
+    showNotification('Album deleted successfully.', 'success');
+  } catch (err) {
+    console.error('Failed to delete album:', err);
+    showNotification('Failed to delete album.', 'error');
+  } finally {
+    closeDeleteAlbumModal();
+  }
 };
 
 </script>
