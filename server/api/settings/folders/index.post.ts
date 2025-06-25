@@ -5,6 +5,9 @@ import { mediaFolders, users } from '~/server/db/schema';
 import { getUserFromEvent } from '~/server/utils/auth';
 import { v7 as uuidv7 } from 'uuid';
 import { eq, and } from 'drizzle-orm';
+import fs from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import nodePath from 'node:path';
 
 // Input schema validation
 const mediaFolderSchema = z.object({
@@ -31,7 +34,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const { path, label } = body.data;
+  const { path: folderPath, label } = body.data;
 
   // Check if this user already has this path
   try {
@@ -39,7 +42,7 @@ export default defineEventHandler(async (event) => {
       .from(mediaFolders)
       .where(and(
         eq(mediaFolders.userId, user.userId),
-        eq(mediaFolders.path, path)
+        eq(mediaFolders.path, folderPath)
       ))
       .limit(1);
 
@@ -58,8 +61,43 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // TODO: Add server-side validation to check if the path is a valid and accessible directory.
-  // This is crucial for security and functionality but depends on the deployment environment.
+  // Validate that the provided path exists and is an accessible directory
+  const normalizedPath = nodePath.normalize(folderPath);
+  if (!nodePath.isAbsolute(normalizedPath)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Path must be absolute.',
+    });
+  }
+
+  try {
+    const stats = await fs.stat(normalizedPath);
+    if (!stats.isDirectory()) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Provided path is not a directory.',
+      });
+    }
+    await fs.access(normalizedPath, fsConstants.R_OK);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Directory does not exist.',
+      });
+    }
+    if (error.code === 'EACCES' || error.code === 'EPERM') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Directory cannot be accessed.',
+      });
+    }
+    console.error('Error validating folder path:', error);
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Internal Server Error: Could not validate folder path.',
+    });
+  }
 
   try {
     const [newMediaFolder] = await db
@@ -67,7 +105,7 @@ export default defineEventHandler(async (event) => {
       .values({
         mediaFolderId: uuidv7(),
         userId: user.userId,
-        path: path,
+        path: folderPath,
         label: label,
       })
       .returning();
@@ -79,7 +117,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    console.log(`Media folder added by user ${user.userId}: ${path} (Label: ${label || 'N/A'})`);
+    console.log(`Media folder added by user ${user.userId}: ${folderPath} (Label: ${label || 'N/A'})`);
     setResponseStatus(event, 201); // 201 Created
     return newMediaFolder;
 
