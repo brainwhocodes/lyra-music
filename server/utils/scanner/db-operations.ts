@@ -584,15 +584,25 @@ export async function findOrCreateAlbum({
     if (relationshipsNeedUpdate) {
       // console.log(`Updating artist relationships for album: ${albumTitle}`);
       await db.delete(albumArtists).where(eq(albumArtists.albumId, (albumRecord as Album).albumId));
-      for (const artistInfo of artistsArray) {
-        await db.insert(albumArtists).values({
-          albumId: (albumRecord as Album).albumId,
-          artistId: artistInfo.artistId,
-          role: artistInfo.role || null,
-          isPrimaryArtist: artistInfo.isPrimary ? 1 : 0,
-        });
-        await linkUserToArtist(userId, artistInfo.artistId, "artist from album processing");
-      }
+
+      // Insert album-artist links concurrently
+      const linkPromises = artistsArray.map(async (artistInfo) => {
+        try {
+          await db.insert(albumArtists).values({
+            albumId: (albumRecord as Album).albumId,
+            artistId: artistInfo.artistId,
+            role: artistInfo.role || null,
+            isPrimaryArtist: artistInfo.isPrimary ? 1 : 0,
+          });
+
+          await linkUserToArtist(userId, artistInfo.artistId, 'artist from album processing');
+        } catch (linkError: any) {
+          console.error(`Error linking artist ${artistInfo.artistId} to album ${(albumRecord as Album).albumId}: ${linkError.message}`);
+        }
+      });
+
+      await Promise.all(linkPromises);
+
       albumArtistsCache.set((albumRecord as Album).albumId, artistsArray.map(info => ({
         artistId: info.artistId,
         role: info.role || null,
@@ -778,9 +788,9 @@ export async function findOrCreateTrack({
         // Delete existing relationships
         await db.delete(artistsTracks)
           .where(eq(artistsTracks.trackId, trackRecord.trackId));
-        
-        // Create new relationships
-        for (const artistInfo of trackArtists) {
+
+        // Create new relationships concurrently
+        const linkPromises = trackArtists.map(async (artistInfo) => {
           try {
             await db.insert(artistsTracks).values({
               trackId: trackRecord.trackId,
@@ -791,7 +801,9 @@ export async function findOrCreateTrack({
           } catch (linkError: any) {
             console.error(`Error linking artist ${artistInfo.artistId} to track ${trackRecord.trackId}: ${linkError.message}`);
           }
-        }
+        });
+
+        await Promise.all(linkPromises);
       }
 
       // Handle genre (linking to album, as tracks don't directly link to genres in this schema)
