@@ -96,21 +96,22 @@ export default defineEventHandler(async (event: H3Event) => {
         throw createError({ statusCode: 400, statusMessage: 'Artist name cannot be empty.' });
       }
 
-      const processedArtistLinks: Array<Omit<typeof albumArtists.$inferInsert, 'albumId' | 'albumArtistId'>> = [];
-      for (const [index, name] of parsedArtistNames.entries()) {
-        let artistRecord = await tx.query.artists.findFirst({ where: eq(artists.name, name) });
-        if (!artistRecord) {
-          [artistRecord] = await tx.insert(artists).values({ name }).returning();
-        }
-        if (!artistRecord) {
-          throw createError({ statusCode: 500, statusMessage: `Failed to process artist ${name}` });
-        }
-        processedArtistLinks.push({
-          artistId: artistRecord.artistId,
-          role: 'performer',
-          isPrimaryArtist: index === 0 ? 1 : 0,
-        });
-      }
+      const processedArtistLinks = await Promise.all(
+        parsedArtistNames.map(async (name, index) => {
+          let artistRecord = await tx.query.artists.findFirst({ where: eq(artists.name, name) });
+          if (!artistRecord) {
+            [artistRecord] = await tx.insert(artists).values({ name }).returning();
+          }
+          if (!artistRecord) {
+            throw createError({ statusCode: 500, statusMessage: `Failed to process artist ${name}` });
+          }
+          return {
+            artistId: artistRecord.artistId,
+            role: 'performer',
+            isPrimaryArtist: index === 0 ? 1 : 0,
+          } as Omit<typeof albumArtists.$inferInsert, 'albumId' | 'albumArtistId'>;
+        })
+      );
 
       await tx.delete(albumArtists).where(eq(albumArtists.albumId, albumId));
       if (processedArtistLinks.length > 0) {

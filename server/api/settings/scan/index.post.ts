@@ -1,8 +1,9 @@
 // server/api/settings/scan/index.post.ts
 import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { mediaFolders } from '~/server/db/schema'; 
-import { scanLibrary } from '~/server/utils/scanner'; 
+import { mediaFolders } from '~/server/db/schema';
+import { scanLibrary } from '~/server/utils/scanner';
+import { batchMap } from '~/utils/concurrency';
 import { desc, eq, and } from 'drizzle-orm'; 
 import { getUserFromEvent } from '~/server/utils/auth'; 
 
@@ -42,34 +43,41 @@ export default defineEventHandler(async (event) => {
     let totalAddedAlbums = 0;
     let totalErrors = 0;
 
-    // Sequentially scan each folder to avoid overwhelming the system
-    // and to ensure logs are easier to follow per library.
-    for (const folder of foldersToScan) {
+    // Scan folders concurrently in small batches to reduce overall time
+    const scanResults = await batchMap(foldersToScan, 2, async (folder) => {
       if (!folder.mediaFolderId) {
         console.warn(`Folder with path ${folder.path} is missing an ID. Skipping.`);
-        totalErrors++;
-        continue;
+        return { stats: null, error: true };
       }
+
       console.log(`Scanning folder: ${folder.path} (ID: ${folder.mediaFolderId}) for user ${user.userId}`);
+
       try {
-        // Call the scanLibrary function with a single object parameter
         const scanStats = await scanLibrary({
           libraryId: folder.mediaFolderId,
           libraryPath: folder.path,
-          userId: user.userId
+          userId: user.userId,
         });
-        
-        // Update totals
-        totalScanned++;
-        totalAddedTracks += scanStats.addedTracks;
-        totalAddedArtists += scanStats.addedArtists;
-        totalAddedAlbums += scanStats.addedAlbums;
-        totalErrors += scanStats.errors;
-        
+
         console.log(`Successfully scanned folder: ${folder.path}`);
+        return { stats: scanStats, error: false };
       } catch (error: any) {
         console.error(`Error scanning folder ${folder.path}: ${error.message}`);
+        return { stats: null, error: true };
+      }
+    });
+
+    for (const result of scanResults) {
+      if (result.error) {
         totalErrors++;
+        continue;
+      }
+      if (result.stats) {
+        totalScanned++;
+        totalAddedTracks += result.stats.addedTracks;
+        totalAddedArtists += result.stats.addedArtists;
+        totalAddedAlbums += result.stats.addedAlbums;
+        totalErrors += result.stats.errors;
       }
     }
 

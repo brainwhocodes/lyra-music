@@ -72,21 +72,20 @@ export default defineEventHandler(async (event) => {
       .where(eq(playlistTracks.playlistId, playlistId))
       .orderBy(playlistTracks.order);
     
-    // Then update each track with a new sequential order
-    for (let i = 0; i < remainingTracks.length; i++) {
-      await db
-        .update(playlistTracks)
-        .set({
-          order: i,
-          updatedAt: new Date().toISOString()
-        })
-        .where(
-          and(
-            eq(playlistTracks.playlistId, playlistId),
-            eq(playlistTracks.playlistTrackId, remainingTracks[i].playlistTrackId)
+    // Then update each track with a new sequential order concurrently
+    await Promise.all(
+      remainingTracks.map((track, i) =>
+        db
+          .update(playlistTracks)
+          .set({ order: i, updatedAt: new Date().toISOString() })
+          .where(
+            and(
+              eq(playlistTracks.playlistId, playlistId),
+              eq(playlistTracks.playlistTrackId, track.playlistTrackId)
+            )
           )
-        );
-    }
+      )
+    );
 
     // Update the playlist's updated_at timestamp
     await db
