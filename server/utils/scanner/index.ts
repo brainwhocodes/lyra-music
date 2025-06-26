@@ -1,6 +1,5 @@
-import * as fs from 'fs/promises';
 import * as mm from 'music-metadata';
-import { basename, dirname, extname, join } from 'path';
+import { basename, dirname } from 'path';
 import { db } from '~/server/db';
 import { type Album, type Artist, albums, tracks, artistUsers } from '~/server/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
@@ -212,11 +211,7 @@ export async function scanLibrary({
   const stats: ScanStats = { scannedFiles: 0, addedTracks: 0, addedArtists: 0, addedAlbums: 0, completedAlbums: 0, failedAlbums: 0, errors: 0 };
 
   try {
-    const allFiles = await fs.readdir(libraryPath, { recursive: true });
-    const audioFiles = allFiles.map(file => join(libraryPath, file.toString())).filter(file => {
-      const ext = extname(file).toLowerCase();
-      return ['.mp3', '.flac', '.m4a', '.aac', '.ogg', '.wav'].includes(ext);
-    });
+    const audioFiles = await fileUtils.findAudioFiles(libraryPath);
     stats.scannedFiles = audioFiles.length;
     console.log(`Found ${stats.scannedFiles} audio files.`);
 
