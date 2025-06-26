@@ -61,11 +61,11 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <EditRadioStationModal 
+    <EditRadioStationModal
       :open="isEditModalOpen"
       :station="selectedStation"
       @close="closeEditModal"
-      @station-updated="refreshStations"
+      @station-updated="handleStationUpdated"
     />
     
     <!-- Delete Confirmation Modal -->
@@ -85,6 +85,7 @@ import type { Artist } from '~/server/db/schema/artists';
 import type { Genre } from '~/server/db/schema/genres';
 import EditRadioStationModal from '~/components/modals/edit-radio-station-modal.vue';
 import ConfirmDeleteModal from '~/components/modals/confirm-delete-modal.vue';
+import { useToast } from '~/composables/useToast';
 
 // Define the detailed type for a station, matching the API response
 interface Station extends RadioChannel {
@@ -100,6 +101,7 @@ const stations = ref<Station[]>([]);
 const isEditModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const selectedStation = ref<Station | null>(null);
+const toast = useToast();
 
 async function fetchStations() {
   try {
@@ -133,6 +135,14 @@ function openDeleteModal(station: Station) {
 function closeDeleteModal() {
   isDeleteModalOpen.value = false;
   selectedStation.value = null;
+}
+
+async function handleStationUpdated(updatedStation: Station) {
+  await refreshStations();
+  const message = selectedStation.value
+    ? `Updated station "${updatedStation.name}"`
+    : `Created station "${updatedStation.name}"`;
+  toast.add({ message, type: 'success' });
 }
 
 async function deleteStation() {

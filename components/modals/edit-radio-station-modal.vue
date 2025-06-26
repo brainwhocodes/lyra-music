@@ -118,7 +118,7 @@ async function submitForm() {
     const url = isEditing.value ? `/api/radio-stations/${props.station!.channelId}` : '/api/radio-stations';
     const method = isEditing.value ? 'PUT' : 'POST';
 
-    await $fetch(url, {
+    const newStation = await $fetch(url, {
       method,
       body: {
         name: formData.value.name,
@@ -127,7 +127,7 @@ async function submitForm() {
       },
     });
 
-    emit('station-updated');
+    emit('station-updated', newStation);
     closeModal();
   } catch (error) {
     console.error('Failed to save radio station:', error);
