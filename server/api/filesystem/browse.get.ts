@@ -42,17 +42,19 @@ const getWindowsDrives = async (): Promise<string[]> => {
     potentialDrives = commonDriveLetters.map(letter => `${letter}:`);
   }
 
-  const accessibleDrives: string[] = [];
-  for (const driveLetter of potentialDrives) {
-    const drivePath = driveLetter + '\\'; // e.g., C:\\
-    try {
-      await fs.readdir(drivePath); // Attempt to read the root of the drive
-      accessibleDrives.push(driveLetter); // If successful, drive is accessible
-    } catch (e) {
-      // console.debug(`Drive ${drivePath} is not accessible or ready:`, e.message);
-    }
-  }
-  return accessibleDrives;
+  const results = await Promise.all(
+    potentialDrives.map(async (driveLetter) => {
+      const drivePath = driveLetter + '\\'; // e.g., C:\\
+      try {
+        await fs.readdir(drivePath); // Attempt to read the root of the drive
+        return driveLetter;
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  return results.filter((d): d is string => Boolean(d));
 };
 
 

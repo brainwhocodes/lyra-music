@@ -14,26 +14,27 @@ export function isSupportedAudioFile(filePath: string): boolean {
  * Recursively scans a directory for supported audio files.
  */
 export async function findAudioFiles(dirPath: string): Promise<string[]> {
-  let audioFiles: string[] = [];
-
   try {
     const entries = await readdir(dirPath, { withFileTypes: true });
 
-    for (const entry of entries) {
-      const fullPath = path.join(dirPath, entry.name);
+    const results = await Promise.all(
+      entries.map(async (entry) => {
+        const fullPath = path.join(dirPath, entry.name);
+        if (entry.isDirectory()) {
+          return findAudioFiles(fullPath);
+        }
+        if (entry.isFile() && isSupportedAudioFile(fullPath)) {
+          return [fullPath];
+        }
+        return [] as string[];
+      })
+    );
 
-      if (entry.isDirectory()) {
-        // Recursively scan subdirectories
-        audioFiles = [...audioFiles, ...(await findAudioFiles(fullPath))];
-      } else if (entry.isFile() && isSupportedAudioFile(fullPath)) {
-        audioFiles.push(fullPath);
-      }
-    }
+    return results.flat();
   } catch (error: any) {
     console.error(`Error reading directory ${dirPath}: ${error.message}`);
+    return [];
   }
-
-  return audioFiles;
 }
 
 export const fileUtils = {
