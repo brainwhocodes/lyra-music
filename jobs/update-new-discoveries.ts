@@ -1,6 +1,7 @@
 import { db, schema } from '../server/db'; // Import Drizzle db instance and schema
 import { gte } from 'drizzle-orm';
 import { updateUserNewDiscoveriesPlaylist, type PlaylistUpdateResult } from '../server/services/playlist-manager/new-discoveries-manager';
+import { batchMap } from '~/utils/concurrency';
 import { DateTime } from 'luxon';
 import 'dotenv/config';
 import type { Job, JobResult } from 'gut-punch'; // Assuming GutPunch types are still relevant for the interface
@@ -47,32 +48,36 @@ export class UpdateNewDiscoveriesJob implements Job {
       activeUsersFound = activeUsers.length;
       console.log(`Found ${activeUsersFound} active users (last login within 30 days).`);
 
-      for (const user of activeUsers) {
-        activeUsersProcessed++;
-        // Ensure user.userId is not null or undefined before logging or using it.
+      const userResults = await batchMap(activeUsers, 3, async (user, idx) => {
         const currentUserId = user.userId;
         const currentUserName = user.name || 'Unknown User';
+        activeUsersProcessed++;
         console.log(`[${activeUsersProcessed}/${activeUsersFound}] Processing user: ${currentUserName} (ID: ${currentUserId})`);
-        
+
         if (!currentUserId) {
-            console.error(`Skipping user due to missing ID. Index: ${activeUsersProcessed -1}`);
-            playlistsFailed++;
-            continue;
+          console.error(`Skipping user due to missing ID. Index: ${idx}`);
+          return { success: false };
         }
 
-        // Pass the Drizzle db instance directly
         const result: PlaylistUpdateResult = await updateUserNewDiscoveriesPlaylist(db, currentUserId);
-        
-        if (result.success) {
+        return { success: result.success, result, userId: currentUserId };
+      });
+
+      for (const res of userResults) {
+        if (!res.success) {
+          playlistsFailed++;
+          continue;
+        }
+        const { result, userId } = res;
+        if (result?.success) {
           if (result.discoveryPlaylistId && result.trackCount && result.trackCount > 0) {
-              console.log(`Successfully updated playlist ${result.discoveryPlaylistId} with ${result.trackCount} tracks for user ${currentUserId}.`);
-              playlistsUpdated++;
+            console.log(`Successfully updated playlist ${result.discoveryPlaylistId} with ${result.trackCount} tracks for user ${userId}.`);
           } else {
-              console.log(`Playlist generated for user ${currentUserId}, but no new tracks were found or added. Message: ${result.message}`);
-              playlistsUpdated++; 
+            console.log(`Playlist generated for user ${userId}, but no new tracks were found or added. Message: ${result.message}`);
           }
+          playlistsUpdated++;
         } else {
-          console.error(`Failed to update playlist for user ${currentUserId}. Error: ${result.message} - ${result.error || ''}`);
+          console.error(`Failed to update playlist for user ${userId}. Error: ${result?.message} - ${result?.error || ''}`);
           playlistsFailed++;
         }
       }

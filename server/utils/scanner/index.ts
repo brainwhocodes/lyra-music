@@ -524,23 +524,26 @@ export async function pruneOrphanedAlbumArtPaths(): Promise<void> {
     console.log(`Checking ${albumsWithArt.length} albums with cover paths in the database.`);
     let prunedCount = 0;
 
-    // Check each album's cover path
-    for (const album of albumsWithArt) {
-      if (!album.coverPath) continue;
-      
-      const filename = basename(album.coverPath);
-      
-      if (!existingCoverFiles.has(filename)) {
-        console.log(`  Found orphaned cover path for album "${album.title}" (ID: ${album.albumId}): ${album.coverPath}`);
-        
-        // Update the album to remove the cover path
-        await db
-          .update(albums)
-          .set({ coverPath: null, updatedAt: new Date().toISOString() })
-          .where(eq(albums.albumId, album.albumId));
-          
-        prunedCount++;
-      }
+    // Check each album's cover path concurrently in batches
+    const batchSize = 10;
+    for (let i = 0; i < albumsWithArt.length; i += batchSize) {
+      const batch = albumsWithArt.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map(async (album) => {
+          if (!album.coverPath) return 0;
+          const filename = basename(album.coverPath);
+          if (!existingCoverFiles.has(filename)) {
+            console.log(`  Found orphaned cover path for album "${album.title}" (ID: ${album.albumId}): ${album.coverPath}`);
+            await db
+              .update(albums)
+              .set({ coverPath: null, updatedAt: new Date().toISOString() })
+              .where(eq(albums.albumId, album.albumId));
+            return 1;
+          }
+          return 0;
+        })
+      );
+      prunedCount += results.reduce((a, b) => a + b, 0);
     }
 
     console.log(`Pruned ${prunedCount} orphaned album art paths.`);
@@ -632,28 +635,31 @@ async function createInitialAlbumRecords(
   let counter = 0;
   const totalFolders = folderMap.size;
   
-  for (const [folderPath, audioFiles] of folderMap.entries()) {
-    counter++;
-    console.log(`[${counter}/${totalFolders}] Creating initial album record for folder: ${folderPath}`);
-    
-    try {
-      if (audioFiles.length === 0) continue;
-      
-      // Try to get album name from folder
-      const folderName = basename(folderPath);
-      
-      // Create album record in PENDING status
-      const newAlbum = await dbOperations.createInitialAlbumRecord({
-        folderPath,
-        albumTitle: folderName || 'Unknown Album',
-        userId,
-      });
-      
-      if (newAlbum) {
-        createdAlbums.push(newAlbum);
-      }
-    } catch (error) {
-      console.error(`Error creating initial album record for folder ${folderPath}:`, error);
+  const entries = Array.from(folderMap.entries());
+  const batchSize = 5;
+  for (let i = 0; i < entries.length; i += batchSize) {
+    const batch = entries.slice(i, i + batchSize);
+    const results = await Promise.all(
+      batch.map(async ([folderPath, audioFiles], idx) => {
+        counter++;
+        console.log(`[${counter}/${totalFolders}] Creating initial album record for folder: ${folderPath}`);
+
+        try {
+          if (audioFiles.length === 0) return null;
+          const folderName = basename(folderPath);
+          return await dbOperations.createInitialAlbumRecord({
+            folderPath,
+            albumTitle: folderName || 'Unknown Album',
+            userId,
+          });
+        } catch (error) {
+          console.error(`Error creating initial album record for folder ${folderPath}:`, error);
+          return null;
+        }
+      })
+    );
+    for (const newAlbum of results) {
+      if (newAlbum) createdAlbums.push(newAlbum);
     }
   }
   

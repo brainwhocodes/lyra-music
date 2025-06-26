@@ -93,21 +93,23 @@ export default defineEventHandler(async (event) => {
   if (body.artistName !== undefined) {
     const names = splitArtistString(body.artistName)
     if (names.length > 0) {
-      const artistLinks: { artistId: string; role: string | null; isPrimaryArtist: number }[] = []
-      for (const [idx, name] of names.entries()) {
-        const artist = await dbOperations.findOrCreateArtist({
-          artistName: name,
-          userId: user.userId,
-          skipRemoteImageFetch: true
-        })
-        if (artist) {
-          artistLinks.push({
-            artistId: artist.artistId,
-            role: idx === 0 ? 'main' : null,
-            isPrimaryArtist: idx === 0 ? 1 : 0
+      const artistLinks = (
+        await Promise.all(
+          names.map(async (name, idx) => {
+            const artist = await dbOperations.findOrCreateArtist({
+              artistName: name,
+              userId: user.userId,
+              skipRemoteImageFetch: true,
+            })
+            if (!artist) return null
+            return {
+              artistId: artist.artistId,
+              role: idx === 0 ? 'main' : null,
+              isPrimaryArtist: idx === 0 ? 1 : 0,
+            }
           })
-        }
-      }
+        )
+      ).filter((link): link is { artistId: string; role: string | null; isPrimaryArtist: number } => !!link)
       await db.delete(artistsTracks).where(eq(artistsTracks.trackId, trackId))
       if (artistLinks.length > 0) {
         await db.insert(artistsTracks).values(
