@@ -123,12 +123,13 @@ export async function processAudioFile(
       try {
         const releaseInfo = await getReleaseInfoWithTags(albumRecord.musicbrainzReleaseId);
         if (releaseInfo?.genres && releaseInfo.genres.length > 0) {
-          for (const genre of releaseInfo.genres) {
+          const genrePromises = releaseInfo.genres.map(async (genre) => {
             const genreId = await dbOperations.findOrCreateGenre(genre.name);
             if (genreId) {
               await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
             }
-          }
+          });
+          await Promise.all(genrePromises);
           console.log(`[processAudioFile] OK: MusicBrainz genres processed for album: ${albumRecord.title}`);
           genresProcessed = true;
         }
@@ -140,12 +141,13 @@ export async function processAudioFile(
     // Fallback to local file metadata if MusicBrainz genres were not processed
     if (!genresProcessed && common.genre && common.genre.length > 0) {
       console.log(`[processAudioFile] Using local metadata for genres for album: ${albumRecord.title}`);
-      for (const genreName of common.genre) {
+      const genrePromises = common.genre.map(async (genreName) => {
         const genreId = await dbOperations.findOrCreateGenre(genreName);
         if (genreId) {
           await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
         }
-      }
+      });
+      await Promise.all(genrePromises);
       console.log(`[processAudioFile] OK: Local genres processed for album: ${albumRecord.title}`);
     }
 
