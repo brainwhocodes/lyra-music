@@ -1,7 +1,8 @@
 import { defineEventHandler, createError } from 'h3';
 import { db } from '~/server/db';
-import { artists, artistUsers } from '~/server/db/schema';
-import { asc, eq } from 'drizzle-orm';
+import { artists, artistUsers, albumArtists, albums, artistsTracks, tracks } from '~/server/db/schema';
+import { asc, eq, and, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/sqlite-core';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 export default defineEventHandler(async (event) => {
@@ -15,16 +16,31 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const trackAlbums = alias(albums, 'trackAlbums');
+
     const results = await db
       .select({
         artistId: artists.artistId,
         artistName: artists.name,
         artistImage: artists.artistImage,
+        albumCount: sql<number>`COUNT(DISTINCT ${albums.albumId})`,
+        trackCount: sql<number>`COUNT(DISTINCT ${tracks.trackId})`,
       })
       .from(artists)
       .innerJoin(artistUsers, eq(artists.artistId, artistUsers.artistId))
-      .where(eq(artistUsers.userId, user.userId)) // user is guaranteed to be non-null here due to the check above
-      .groupBy(artists.artistId, artists.name, artists.artistImage) // Ensure distinct artists if a user could have multiple entries for the same artist (though schema implies userArtistId is PK)
+      .leftJoin(albumArtists, eq(artists.artistId, albumArtists.artistId))
+      .leftJoin(
+        albums,
+        and(eq(albumArtists.albumId, albums.albumId), eq(albums.userId, user.userId))
+      )
+      .leftJoin(artistsTracks, eq(artists.artistId, artistsTracks.artistId))
+      .leftJoin(tracks, eq(artistsTracks.trackId, tracks.trackId))
+      .leftJoin(
+        trackAlbums,
+        and(eq(tracks.albumId, trackAlbums.albumId), eq(trackAlbums.userId, user.userId))
+      )
+      .where(eq(artistUsers.userId, user.userId))
+      .groupBy(artists.artistId, artists.name, artists.artistImage)
       .orderBy(asc(artists.name))
       .all();
 

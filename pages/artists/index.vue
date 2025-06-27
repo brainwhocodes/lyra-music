@@ -32,11 +32,14 @@
              class="w-full h-full object-cover"
            />
          </figure>
-         <div class="card-body items-center text-center">
-           <h2 class="card-title">{{ artist.artistName }}</h2>
-           <!-- TODO: Add album/track counts if added to API -->
-         </div>
-       </NuxtLink>
+        <div class="card-body items-center text-center">
+          <h2 class="card-title">{{ artist.artistName }}</h2>
+          <p class="text-sm text-base-content/70">
+            {{ artist.albumCount }} album{{ artist.albumCount === 1 ? '' : 's' }},
+            {{ artist.trackCount }} track{{ artist.trackCount === 1 ? '' : 's' }}
+          </p>
+        </div>
+      </NuxtLink>
     </div>
   
 
@@ -54,9 +57,8 @@ interface Artist {
   artistId: string;
   artistName: string;
   artistImage: string | null;
-  // Add counts later if implemented
-  // albumCount?: number;
-  // trackCount?: number;
+  albumCount: number;
+  trackCount: number;
 }
 useHead(() => ({
   title: usePageTitle('Artists'),
