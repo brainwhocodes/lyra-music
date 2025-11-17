@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { H3Event, parseCookies } from 'h3';
+import { H3Event, parseCookies, getHeader, setCookie } from 'h3';
 import { scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { User } from '~/types/user';
 

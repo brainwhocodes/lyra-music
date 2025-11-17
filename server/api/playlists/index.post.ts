@@ -1,30 +1,35 @@
-import { defineEventHandler, readBody } from 'h3';
+import { defineEventHandler, readBody, createError } from 'h3';
 import { db } from '~/server/db';
 import { playlists } from '~/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { getUserFromEvent } from '~/server/utils/auth';
 import { sql } from 'drizzle-orm';
+import { z } from 'zod';
 
-interface CreatePlaylistBody {
-  name: string;
-}
+const createPlaylistSchema = z.object({
+  name: z.string().trim().min(1, 'Playlist name is required'),
+});
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event);
-  const body = await readBody<CreatePlaylistBody>(event);
+  const rawBody = await readBody(event);
+  const parsedBody = createPlaylistSchema.safeParse(rawBody);
+
+  if (!parsedBody.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid playlist payload.',
+      data: parsedBody.error.flatten(),
+    });
+  }
+
+  const body = parsedBody.data;
 
   if (!user) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized',
-    });
-  }
-
-  if (!body.name?.trim()) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Playlist name is required',
     });
   }
 

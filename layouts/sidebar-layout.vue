@@ -151,9 +151,7 @@ onMounted(() => {
   if (route.path === '/login' || route.path === '/register') {
     return;
   }
-  
-  const authCookie = useCookie<string | null>('auth_token');
-  // const authStore = useAuthStore(); // Ensure this is defined and imported if used
+  // No client-side cookie access; session is validated server-side via middleware
 });
 
 // Screen width detection

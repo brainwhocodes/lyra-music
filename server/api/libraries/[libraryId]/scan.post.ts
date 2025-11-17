@@ -55,17 +55,22 @@ export default defineEventHandler(async (event: H3Event) => {
     // We don't await this, so the request returns immediately.
     // Error handling within scanLibrary should log issues.
     scanLibrary({
-      libraryId: String(library.mediaFolderId),
+      libraryId: String(libraryId),
       libraryPath: library.path,
-      userId: user.userId
+      userId: user.userId,
+      processOnlyUnprocessed: true,
     })
-      .then(() => {
-        console.log(`Background scan completed for library ${library.mediaFolderId}`);
-      })
-      .catch((error) => {
-        // Log any unexpected errors from the async scan function itself
-        console.error(`Error during background scan execution for library ${library.mediaFolderId}:`, error);
-      });
+    .then((stats) => {
+      console.log(`Enhanced scan completed for library ${libraryId}:`, stats);
+      console.log(`- Files processed: ${stats.addedTracks}/${stats.scannedFiles}`);
+      console.log(`- Albums added: ${stats.addedAlbums}`);
+      console.log(`- Artists added: ${stats.addedArtists}`);
+      console.log(`- Skipped files: ${stats.skippedFiles}`);
+      console.log(`- Errors: ${stats.errors}`);
+    })
+    .catch((error) => {
+      console.error(`Enhanced scan failed for library ${libraryId}:`, error);
+    });
 
     console.log(`Scan initiated for library ${library.mediaFolderId} by user ${user.userId}`);
     

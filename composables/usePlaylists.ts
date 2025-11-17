@@ -1,4 +1,4 @@
-import { ref, useCookie } from '#imports';
+import { ref } from '#imports';
 import type { Playlist } from '~/types/playlist';
 
 /**

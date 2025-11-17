@@ -1,28 +1,38 @@
 import { defineEventHandler, readBody, createError, setCookie } from 'h3';
+import { z } from 'zod';
 import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import { users } from '~/server/db/schema';
 import { hashPassword, generateToken } from '~/server/utils/auth';
 import { eq, sql } from 'drizzle-orm';
 
+const registerSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters long.'),
+  name: z.string().trim().min(1, 'Name is required.'),
+  accessCode: z.string().trim().min(1, 'Access code is required.'),
+});
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   try {
-    // Get request body
-    const { email, password, name, accessCode } = await readBody(event);
+    // Validate request body
+    const rawBody = await readBody(event);
+    const parsedBody = registerSchema.safeParse(rawBody);
+    if (!parsedBody.success) {
+      throw createError({
+        statusCode: 400,
+        message: 'Invalid registration payload.',
+        data: parsedBody.error.flatten(),
+      });
+    }
+
+    const { email, password, name, accessCode } = parsedBody.data;
 
     if (accessCode !== config.secretAccessCode && process.env.NODE_ENV !== 'development') {
       throw createError({
         statusCode: 401,
         message: 'Invalid access code'
-      });
-    }
-
-    // Validate input
-    if (!email || !password || !name || !accessCode) {
-      throw createError({
-        statusCode: 400,
-        message: 'Email, password, and name are required'
       });
     }
 

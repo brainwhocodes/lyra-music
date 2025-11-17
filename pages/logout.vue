@@ -5,12 +5,13 @@
   </div>
 </template>
 
-<script setup>
-const authStore = useAuthStore();
+<script setup lang="ts">
+import { onMounted, navigateTo } from '#imports'
+import { useUser } from '~/composables/use-user'
 
-// Use the auth store logout method which handles everything properly
-await authStore.logout();
-onMounted(() => {
-  navigateTo('/login');
-});
+const { logout } = useUser()
+onMounted(async () => {
+  await logout()
+  await navigateTo('/login')
+})
 </script>

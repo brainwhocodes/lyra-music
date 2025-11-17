@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import 'dotenv/config';
 import type { Job, JobResult } from 'gut-punch'; // Assuming GutPunch types are still relevant for the interface
 import { JobRunStatus } from 'gut-punch'; // Assuming GutPunch types are still relevant for the interface
+import { logger } from '~/server/utils/logger';
 
 export class UpdateNewDiscoveriesJob implements Job {
   public static readonly runInProcess: boolean = false;
@@ -17,7 +18,7 @@ export class UpdateNewDiscoveriesJob implements Job {
 
   public async run(params?: Record<string, unknown>): Promise<JobResult> {
     const jobStartTime = DateTime.now();
-    console.log(`[${jobStartTime.toISO()}] Starting job: ${this.name}...`);
+    logger.info(`[${jobStartTime.toISO()}] Starting job: ${this.name}...`);
 
     // Drizzle db instance is imported, no need for manual connection setup or DATABASE_URL check here
     // as db instance should be pre-configured.
@@ -31,7 +32,7 @@ export class UpdateNewDiscoveriesJob implements Job {
       const thirtyDaysAgo = DateTime.now().minus({ days: 30 }).toISO();
       if (!thirtyDaysAgo) {
         const errorMessage = 'Failed to calculate thirtyDaysAgo timestamp.';
-        console.error(errorMessage);
+        logger.error(errorMessage);
         return { status: JobRunStatus.Failed, output: { message: errorMessage } };
       }
 
@@ -46,16 +47,16 @@ export class UpdateNewDiscoveriesJob implements Job {
       .where(gte(schema.users.lastLoginAt, thirtyDaysAgo));
       
       activeUsersFound = activeUsers.length;
-      console.log(`Found ${activeUsersFound} active users (last login within 30 days).`);
+      logger.info(`Found ${activeUsersFound} active users (last login within 30 days).`);
 
       const userResults = await batchMap(activeUsers, 3, async (user, idx) => {
         const currentUserId = user.userId;
         const currentUserName = user.name || 'Unknown User';
         activeUsersProcessed++;
-        console.log(`[${activeUsersProcessed}/${activeUsersFound}] Processing user: ${currentUserName} (ID: ${currentUserId})`);
+        logger.info(`[${activeUsersProcessed}/${activeUsersFound}] Processing user: ${currentUserName} (ID: ${currentUserId})`);
 
         if (!currentUserId) {
-          console.error(`Skipping user due to missing ID. Index: ${idx}`);
+          logger.error(`Skipping user due to missing ID. Index: ${idx}`);
           return { success: false };
         }
 
@@ -71,13 +72,13 @@ export class UpdateNewDiscoveriesJob implements Job {
         const { result, userId } = res;
         if (result?.success) {
           if (result.discoveryPlaylistId && result.trackCount && result.trackCount > 0) {
-            console.log(`Successfully updated playlist ${result.discoveryPlaylistId} with ${result.trackCount} tracks for user ${userId}.`);
+            logger.info(`Successfully updated playlist ${result.discoveryPlaylistId} with ${result.trackCount} tracks for user ${userId}.`);
           } else {
-            console.log(`Playlist generated for user ${userId}, but no new tracks were found or added. Message: ${result.message}`);
+            logger.info(`Playlist generated for user ${userId}, but no new tracks were found or added. Message: ${result.message}`);
           }
           playlistsUpdated++;
         } else {
-          console.error(`Failed to update playlist for user ${userId}. Error: ${result?.message} - ${result?.error || ''}`);
+          logger.error(`Failed to update playlist for user ${userId}. Error: ${result?.message} - ${result?.error || ''}`);
           playlistsFailed++;
         }
       }
@@ -85,7 +86,7 @@ export class UpdateNewDiscoveriesJob implements Job {
       const jobEndTime = DateTime.now();
       const duration = jobEndTime.diff(jobStartTime, ['seconds', 'milliseconds']).toObject(); 
       const summaryMessage = `Job ${this.name} finished in ${duration.seconds ?? 0}.${String(duration.milliseconds || 0).padStart(3,'0')}s. Summary: Active users found: ${activeUsersFound}, Processed: ${activeUsersProcessed}, Playlists updated/generated: ${playlistsUpdated}, Failures: ${playlistsFailed}.`;
-      console.log(`[${jobEndTime.toISO()}] ${summaryMessage}`);
+      logger.info(`[${jobEndTime.toISO()}] ${summaryMessage}`);
       
       // No need to manually close db connection with Drizzle's shared instance
 

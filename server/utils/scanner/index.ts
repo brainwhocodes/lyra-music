@@ -13,6 +13,19 @@ import { getReleaseInfoWithTags, searchReleaseByTitleAndArtist, getReleaseTrackl
 import { AlbumProcessStatus } from '~/types/enums/album-process-status';
 import { splitArtistString } from '~/server/utils/artist-utils';
 
+// Import new performance optimization modules
+import type { ScanProgress, ScanStats as ScanStatsType, FileMetadata, EnrichmentTask } from './scan-types';
+import { 
+  getFileMetadata, 
+  getChangedFiles, 
+  filterChangedFiles, 
+  isSupportedAudioFile,
+  calculateOptimalBatchSize,
+  validateDirectoryPath
+} from './file-system-utils';
+import { ProgressTracker, createScanSession, completeScanSession } from './progress-tracker';
+import { BatchProcessor, createBatchProcessor } from './batch-processor';
+import { BackgroundProcessor, getBackgroundProcessor } from './background-processor';
 
 interface ScanLibraryParams {
   libraryId: string;
@@ -122,7 +135,7 @@ export async function processAudioFile(
       try {
         const releaseInfo = await getReleaseInfoWithTags(albumRecord.musicbrainzReleaseId);
         if (releaseInfo?.genres && releaseInfo.genres.length > 0) {
-          const genrePromises = releaseInfo.genres.map(async (genre) => {
+          const genrePromises = releaseInfo.genres.map(async (genre: { name: string }) => {
             const genreId = await dbOperations.findOrCreateGenre(genre.name);
             if (genreId) {
               await dbOperations.linkAlbumToGenre(albumRecord.albumId, genreId);
@@ -185,21 +198,20 @@ export async function processAudioFile(
   }
 } // Closing brace for processAudioFile async function
 
-interface ScanStats {
+interface LocalScanStats {
   scannedFiles: number;
   addedTracks: number;
   addedArtists: number;
   addedAlbums: number;
   completedAlbums: number;
   failedAlbums: number;
+  skippedFiles: number;
   errors: number;
 }
 
 /**
- * Scans a specific media library directory, extracts metadata, and updates the database.
- * This implements a two-phase approach:
- * 1. First phase: Create initial album records for each folder in PENDING status
- * 2. Second phase: Process audio files in each album, updating metadata and status
+ * Enhanced library scanner with performance optimizations and background processing.
+ * Uses the existing proven scanner logic with added optimizations.
  * @returns Statistics about the scan operation
  */
 export async function scanLibrary({
@@ -207,18 +219,55 @@ export async function scanLibrary({
   libraryPath,
   userId,
   processOnlyUnprocessed = false,
-}: ScanLibraryParams): Promise<ScanStats> {
-  console.log(`\n--- Starting scan for library: ${libraryId} ---`);
+}: ScanLibraryParams): Promise<ScanStatsType> {
+  console.log(`\n--- Starting ENHANCED scan for library: ${libraryId} ---`);
   await dbOperations.resetScanSession();
-  const stats: ScanStats = { scannedFiles: 0, addedTracks: 0, addedArtists: 0, addedAlbums: 0, completedAlbums: 0, failedAlbums: 0, errors: 0 };
+  
+  // Initialize background processor for enrichment tasks
+  const backgroundProcessor = getBackgroundProcessor();
+  
+  const stats: LocalScanStats = {
+    scannedFiles: 0,
+    addedTracks: 0,
+    addedArtists: 0,
+    addedAlbums: 0,
+    completedAlbums: 0,
+    failedAlbums: 0,
+    skippedFiles: 0,
+    errors: 0
+  };
 
   try {
     const audioFiles = await fileUtils.findAudioFiles(libraryPath);
     stats.scannedFiles = audioFiles.length;
     console.log(`Found ${stats.scannedFiles} audio files.`);
 
+    // File system optimization: skip unchanged files if requested
+    let filesToProcess = audioFiles;
+    if (processOnlyUnprocessed) {
+      console.log('Filtering unchanged files...');
+
+      // Gather detailed metadata for each audio file
+      const metadataPromises = audioFiles.map(fp => getFileMetadata(fp));
+      const fileMetadataList = (await Promise.all(metadataPromises))
+        .filter((fm): fm is FileMetadata => fm !== null);
+
+      // Mark which files have changed since the last scan
+      const changedMetadata = await getChangedFiles(fileMetadataList, userId);
+      const changedFiles = filterChangedFiles(changedMetadata);
+
+      filesToProcess = changedFiles.map(fm => fm.filePath);
+      stats.skippedFiles = stats.scannedFiles - filesToProcess.length;
+      console.log(`Processing ${filesToProcess.length} files (${stats.skippedFiles} skipped as unchanged)`);
+    }
+
+    if (filesToProcess.length === 0) {
+      console.log('No files to process. Scan complete.');
+      return stats;
+    }
+
     const filesByFolder: Record<string, string[]> = {};
-    audioFiles.forEach(filePath => {
+    filesToProcess.forEach(filePath => {
       const folder = dirname(filePath);
       if (!filesByFolder[folder]) filesByFolder[folder] = [];
       filesByFolder[folder].push(filePath);
@@ -242,34 +291,88 @@ export async function scanLibrary({
     console.log('\n--- PHASE 2: Processing files for each album ---');
     const artistsProcessedForImages = new Set<string>();
     const albumsNeedingCovers: { albumId: string; title: string; artistName: string }[] = [];
+    const enrichmentTasks: EnrichmentTask[] = [];
 
-    for (const albumRecord of createdAlbums) {
-      console.log(`\nProcessing Album: ${albumRecord.title} (${albumRecord.albumId})`);
-      const filesInFolder = filesByFolder[albumRecord.folderPath!]!;
-      const isSingle = isSingleFolder(filesInFolder);
-      const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId, isSingle);
+    // Process albums in parallel batches for better performance
+    const batchSize = calculateOptimalBatchSize(createdAlbums.length, 4);
+    const albumBatches = [];
+    for (let i = 0; i < createdAlbums.length; i += batchSize) {
+      albumBatches.push(createdAlbums.slice(i, i + batchSize));
+    }
 
-      const fileProcessingPromises = filesInFolder.map(filePath =>
-        processAudioFile(filePath, { userId, isVariousArtistsCompilation, artistsProcessedForImages })
-      );
-      const fileProcessingResults = await Promise.allSettled(fileProcessingPromises);
+    for (const albumBatch of albumBatches) {
+      const batchPromises = albumBatch.map(async (albumRecord) => {
+        console.log(`Processing Album: ${albumRecord.title} (${albumRecord.albumId})`);
+        const filesInFolder = filesByFolder[albumRecord.folderPath!]!;
+        const isSingle = isSingleFolder(filesInFolder);
+        const { isVariousArtistsCompilation } = await detectVariousArtistsAlbum(filesInFolder, userId, isSingle);
 
-      const successfulTracks = fileProcessingResults.filter(r => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<{ albumId: string; title: string; primaryArtistName: string; needsCover: boolean }>[];
-      stats.addedTracks += successfulTracks.length;
-      successfulTracks.forEach(r => {
-        if (r.value.needsCover) {
-          albumsNeedingCovers.push({
-            albumId: r.value.albumId,
-            title: r.value.title,
-            artistName: r.value.primaryArtistName,
+        const fileProcessingPromises = filesInFolder.map(filePath =>
+          processAudioFile(filePath, { userId, isVariousArtistsCompilation, artistsProcessedForImages })
+        );
+        const fileProcessingResults = await Promise.allSettled(fileProcessingPromises);
+
+        const successfulTracks = fileProcessingResults.filter(r => r.status === 'fulfilled' && r.value) as PromiseFulfilledResult<{ albumId: string; title: string; primaryArtistName: string; needsCover: boolean }>[];
+        
+        successfulTracks.forEach(r => {
+          if (r.value.needsCover) {
+            albumsNeedingCovers.push({
+              albumId: r.value.albumId,
+              title: r.value.title,
+              artistName: r.value.primaryArtistName,
+            });
+          }
+        });
+
+        // Queue background enrichment tasks for this album
+        if (successfulTracks.length > 0) {
+          const firstTrack = successfulTracks[0].value;
+          
+          // Queue MusicBrainz enrichment
+          enrichmentTasks.push({
+            type: 'musicbrainz-data',
+            albumId: firstTrack.albumId,
+            albumTitle: firstTrack.title,
+            artistName: firstTrack.primaryArtistName,
+            priority: 2
           });
+          
+          // Queue artist image tasks
+          if (!artistsProcessedForImages.has(firstTrack.primaryArtistName)) {
+            enrichmentTasks.push({
+              type: 'artist-images',
+              artistId: '', // Will be resolved in background processor
+              artistName: firstTrack.primaryArtistName,
+              priority: 1
+            });
+            artistsProcessedForImages.add(firstTrack.primaryArtistName);
+          }
         }
+
+        const finalStatus = successfulTracks.length === filesInFolder.length ? AlbumProcessStatus.IN_PROGRESS : AlbumProcessStatus.FAILED;
+        await db.update(albums).set({ processedStatus: finalStatus, updatedAt: new Date().toISOString() }).where(eq(albums.albumId, albumRecord.albumId));
+        
+        return {
+          album: albumRecord,
+          successfulTracks: successfulTracks.length,
+          totalFiles: filesInFolder.length,
+          status: finalStatus
+        };
       });
 
-      const finalStatus = successfulTracks.length === filesInFolder.length ? AlbumProcessStatus.IN_PROGRESS : AlbumProcessStatus.FAILED;
-      if (finalStatus === AlbumProcessStatus.IN_PROGRESS) stats.completedAlbums++; else stats.failedAlbums++;
-      await db.update(albums).set({ processedStatus: finalStatus, updatedAt: new Date().toISOString() }).where(eq(albums.albumId, albumRecord.albumId));
-      console.log(`Album ${albumRecord.title} finished processing. Status: ${finalStatus}. Tracks added: ${successfulTracks.length}/${filesInFolder.length}`);
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Update stats from batch results
+      for (const result of batchResults) {
+        stats.addedTracks += result.successfulTracks;
+        if (result.status === AlbumProcessStatus.IN_PROGRESS) {
+          stats.completedAlbums++;
+        } else {
+          stats.failedAlbums++;
+        }
+      }
+      
+      console.log(`Batch complete: ${batchResults.length} albums processed`);
     }
 
     if (albumsNeedingCovers.length > 0) {
@@ -277,11 +380,21 @@ export async function scanLibrary({
       await batchProcessAlbumCovers(albumsNeedingCovers);
     }
 
-    console.log(`\n--- Scan Complete ---`);
-    console.log(`Summary: ${stats.addedTracks} tracks, ${stats.completedAlbums} completed albums, ${stats.failedAlbums} failed albums.`);
+    // Queue background enrichment tasks
+    if (enrichmentTasks.length > 0) {
+      console.log(`\n--- PHASE 4: Queuing ${enrichmentTasks.length} background enrichment tasks ---`);
+      backgroundProcessor.addTasks(enrichmentTasks);
+    }
+
+    console.log(`\n--- ENHANCED SCAN COMPLETE ---`);
+    console.log(`Files processed: ${stats.addedTracks}/${stats.scannedFiles} (${stats.skippedFiles} skipped)`);
+    console.log(`Albums: ${stats.completedAlbums} completed, ${stats.failedAlbums} failed`);
+    console.log(`Background tasks queued: ${enrichmentTasks.length}`);
+    
     return stats;
+    
   } catch (error: any) {
-    console.error(`[SCANNER] CRITICAL ERROR during scan: ${error.message}`, error.stack);
+    console.error(`[ENHANCED SCANNER] CRITICAL ERROR: ${error.message}`, error.stack);
     stats.errors++;
     return stats;
   }
@@ -543,7 +656,7 @@ export async function pruneOrphanedAlbumArtPaths(): Promise<void> {
           return 0;
         })
       );
-      prunedCount += results.reduce((a, b) => a + b, 0);
+      prunedCount += results.reduce((a: number, b: number) => a + b, 0);
     }
 
     console.log(`Pruned ${prunedCount} orphaned album art paths.`);

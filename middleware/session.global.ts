@@ -1,4 +1,4 @@
-import { useAuthStore } from '~/stores/auth';
+import { useUser } from '~/composables/use-user';
 
 /**
  * Session middleware that checks if the user is authenticated via server session
@@ -11,11 +11,11 @@ export default defineNuxtRouteMiddleware(async (to, event) => {
     return;
   }
 
-  const authStore = useAuthStore();
+  const { fetchUser } = useUser();
   
   // Try to fetch user data from server session (cookie-based)
   try {
-    const user = await authStore.fetchUser();
+    const user = await fetchUser();
     
     if (!user) {
       return navigateTo({

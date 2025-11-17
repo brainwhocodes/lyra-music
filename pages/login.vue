@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
+import { useUser } from '~/composables/use-user'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -83,7 +84,6 @@ const state = reactive<LoginSchema>({
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 const validationErrors = ref<ValidationError>({})
-const router = useRouter()
 
 async function login() {
   loading.value = true
@@ -110,9 +110,9 @@ async function login() {
     })
 
     // Handle successful login - cookie is already set by server
-    // Fetch user data to populate the auth store
-    const authStore = useAuthStore();
-    await authStore.fetchUser();
+    // Fetch user data to populate the user composable state
+    const { fetchUser } = useUser();
+    await fetchUser();
     
     // Redirect to the libraries page upon successful login
     await navigateTo('/library');

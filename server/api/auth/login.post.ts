@@ -5,12 +5,25 @@ import { users } from '~/server/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { verifyPassword, generateToken } from '~/server/utils/auth';
 
+const loginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters long.')
+})
 
 export default defineEventHandler(async (event) => {
   // Validate input
-  const body = await readBody(event)
+  const rawBody = await readBody(event)
+  const parsedBody = loginSchema.safeParse(rawBody)
 
-  const { email, password } = body
+  if (!parsedBody.success) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid login payload.',
+      data: parsedBody.error.flatten()
+    })
+  }
+
+  const { email, password } = parsedBody.data
   // Find user by email
   const user = db.select()
     .from(users)

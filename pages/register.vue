@@ -112,6 +112,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
+import { useUser } from '~/composables/use-user'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -182,9 +183,9 @@ async function register() {
     successMessage.value = 'Registration successful! Redirecting to library...'
     
     // Handle successful registration - cookie is already set by server
-    // Fetch user data to populate the auth store
-    const authStore = useAuthStore();
-    await authStore.fetchUser();
+    // Fetch user data to populate the user composable state
+    const { fetchUser } = useUser();
+    await fetchUser();
     
     // Redirect to library page after a short delay
     setTimeout(() => {
