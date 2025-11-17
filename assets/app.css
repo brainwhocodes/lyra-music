@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@plugin "daisyui" {
+    themes: light --default, corporate --prefersdark;
+    root: ":root";
+    include: ;
+    exclude: ;
+    prefix: ;
+    logs: true;
+}
+
+
+/* This is a bug with modal open state for daisyui so we override it
+ it is probably caused by having a sidebar open when the modal is opened
+*/
+html.modal-open {
+  scrollbar-gutter: initial; /* Override for modal open state */
+}
+
+

@@ -1,0 +1,70 @@
+name: Build and Tag Release Branch
+
+on:
+  push:
+    branches:
+      - 'release-v*' # Triggers on push to branches like release-v0.1.0, release-v1.2.3
+
+permissions:
+  contents: write # Required to push tags
+
+jobs:
+  build_and_tag:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # This automatically checks out the 'release-v*' branch that triggered the workflow
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Adjust if needed
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10 # Matches your packageManager field (pnpm@10.6.3)
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          # Ensure package.json exists
+          if [ ! -f package.json ]; then
+            echo "package.json not found!"
+            exit 1
+          fi
+          PACKAGE_VERSION=$(jq -r .version package.json)
+          if [ -z "$PACKAGE_VERSION" ] || [ "$PACKAGE_VERSION" == "null" ]; then
+            echo "Version not found or is null in package.json!"
+            exit 1
+          fi
+          echo "version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+          echo "Version from package.json is ${PACKAGE_VERSION}"
+
+      - name: Create Git tag
+        run: |
+          TAG_NAME="v${{ steps.get_version.outputs.version }}"
+          echo "Creating Git tag ${TAG_NAME}"
+          git tag -a "${TAG_NAME}" -m "Release ${TAG_NAME}"
+
+      - name: Push Git tag
+        run: |
+          TAG_NAME="v${{ steps.get_version.outputs.version }}"
+          echo "Pushing Git tag ${TAG_NAME}"
+          git push origin "${TAG_NAME}"
