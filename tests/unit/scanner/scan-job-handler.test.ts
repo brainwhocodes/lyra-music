@@ -97,4 +97,29 @@ describe('runScanDirectoryJob ingestion flow', () => {
       await rm(base, { recursive: true, force: true });
     }
   });
+
+  it('fails when scan root cannot be opened', async () => {
+    const { runScanDirectoryJob } = await import('~/server/services/scanner/scan');
+    const base = await mkdtemp(join(tmpdir(), 'scan-job-root-open-fail-'));
+    const rootFile = join(base, 'not-a-directory.mp3');
+
+    try {
+      await writeFile(rootFile, '1');
+
+      await expect(runScanDirectoryJob('job-3', {
+        scanId: 'scan-3',
+        libraryId: 'lib-1',
+        userId: 'user-1',
+        rootPath: rootFile,
+        allowedRoots: [rootFile],
+        processOnlyUnprocessed: true,
+        options: {},
+      }, async () => false)).rejects.toMatchObject({ code: 'ENOTDIR' });
+
+      expect(runLibraryIngestionMock).not.toHaveBeenCalled();
+    } finally {
+      await rm(base, { recursive: true, force: true });
+    }
+  });
+
 });

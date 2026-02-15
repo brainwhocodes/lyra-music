@@ -53,6 +53,10 @@ export async function* walkDirectory(rootPath: string, options: WalkRuntimeOptio
     try {
       dir = await opendir(current.dir);
     } catch (error) {
+      if (current.depth === 0) {
+        throw error;
+      }
+
       await reportError(current.dir, error, options.onError);
       continue;
     }

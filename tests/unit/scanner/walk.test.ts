@@ -25,6 +25,28 @@ describe('walkDirectory', () => {
     }
   });
 
+  it('throws when opening the root directory fails', async () => {
+    vi.resetModules();
+    vi.doMock('node:fs/promises', () => ({
+      opendir: vi.fn(async () => {
+        const error = new Error('not a directory');
+        (error as Error & { code?: string }).code = 'ENOTDIR';
+        throw error;
+      }),
+      stat: vi.fn(),
+    }));
+
+    const { walkDirectory: mockedWalkDirectory } = await import('~/server/services/scanner/walk');
+
+    await expect(async () => {
+      for await (const _entry of mockedWalkDirectory('/root')) {
+        // no-op
+      }
+    }).rejects.toMatchObject({ code: 'ENOTDIR' });
+
+    vi.doUnmock('node:fs/promises');
+  });
+
   it('continues when stat fails for a file', async () => {
     vi.resetModules();
     vi.doMock('node:fs/promises', () => ({
