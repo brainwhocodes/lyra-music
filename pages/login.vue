@@ -63,6 +63,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import { useUser } from '~/composables/use-user'
+import { sanitizeRedirectPath } from '~/utils/redirect'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -81,6 +82,7 @@ const state = reactive<LoginSchema>({
   password: ''
 })
 
+const route = useRoute()
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 const validationErrors = ref<ValidationError>({})
@@ -104,7 +106,7 @@ async function login() {
   }
 
   try {
-    const response = await $fetch('/api/auth/login', {
+    await $fetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(result.data) // Use validated data
     })
@@ -114,8 +116,8 @@ async function login() {
     const { fetchUser } = useUser();
     await fetchUser();
     
-    // Redirect to the libraries page upon successful login
-    await navigateTo('/library');
+    const redirectTarget = sanitizeRedirectPath(route.query.redirect as string | undefined)
+    await navigateTo(redirectTarget);
   } catch (error: any) {
     if (error.data && error.data.message) {
       errorMessage.value = error.data.message

@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import { H3Event, parseCookies, getHeader, setCookie } from 'h3';
 import { scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { User } from '~/types/user';
+import { AUTH_COOKIE_NAME, getExpiredAuthCookieOptions } from '~/server/utils/auth-cookie';
+import { deriveSessionUserFromToken } from '~/server/utils/auth-session';
 
 // Define an interface for the options used by crypto.scrypt
 interface ScryptOptions {
@@ -168,45 +170,16 @@ export const verifyToken = (token: string): User | null => {
 // Get user from request
 export const getUserFromEvent = async (event: H3Event): Promise<{ userId: string; name: string; email: string } | null> => {
   const authHeader = getHeader(event, 'Authorization');
-  const bearerToken = authHeader && authHeader.startsWith('Bearer ') 
-    ? authHeader.substring(7) 
+  const bearerToken = authHeader && authHeader.startsWith('Bearer ')
+    ? authHeader.substring(7)
     : null;
- 
-  const cookieToken = parseCookies(event)['auth_token'];
-  
-  if (!bearerToken && !cookieToken) {
-    return null;
-  }
-  
-  const token = bearerToken || cookieToken;
-  if (!token) {
-    return null;
-  }
-  
-  const user = verifyToken(token);
-  if (!user) {
-    return null;
-  }
-  
-  // Additional expiration check (JWT library should handle this, but double-check)
-  if (user.exp && Date.now() / 1000 > user.exp) {
-    return null;
-  }
-  
-  return {
-    userId: user.userId,
-    name: user.name,
-    email: user.email,
-  };
+
+  const cookieToken = parseCookies(event)[AUTH_COOKIE_NAME];
+  return deriveSessionUserFromToken(bearerToken || cookieToken, verifyToken);
 };
 
 export const clearToken = (event: H3Event) => {
-  setCookie(event, 'auth_token', '', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 0
-  });
+  setCookie(event, AUTH_COOKIE_NAME, '', getExpiredAuthCookieOptions(event));
 };
 
 // Get cookie from request

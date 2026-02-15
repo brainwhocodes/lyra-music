@@ -39,7 +39,7 @@
 
           <!-- Controls -->
           <div class="flex justify-center items-center gap-6 my-8">
-            <button @click="togglePlay" class="btn btn-primary btn-circle btn-lg w-24 h-24">
+            <button @click="togglePlay" class="btn btn-primary btn-circle btn-lg w-24 h-24" :disabled="tracksPending">
               <Icon :name="isPlaying ? 'ph:pause-fill' : 'ph:play-fill'" class="w-12 h-12" />
             </button>
             <button @click="playNextTrack" class="btn btn-ghost btn-circle btn-lg transition-transform hover:scale-110">
@@ -90,6 +90,7 @@ import type { RadioChannel } from '~/server/db/schema/radio-channels';
 import type { Artist } from '~/server/db/schema/artists';
 import type { Genre } from '~/server/db/schema/genres';
 import type { Track } from '~/types/track';
+import { resolveFetchPolicyOptions } from '~/composables/use-fetch-policy';
 
 // Define a more detailed type for the station data returned by the API
 interface StationDetail extends RadioChannel {
@@ -104,17 +105,20 @@ const channelId = route.params.id as string;
 
 // Fetch station details and tracklist in parallel
 const { data: station, pending, error } = await useLazyFetch<StationDetail>(`/api/radio-stations/${channelId}`);
-const { data: tracks, refresh: refreshTracks } = await useLazyFetch<Track[]>(`/api/radio-stations/${channelId}/tracks`);
+const { data: tracks, pending: tracksPending, execute: loadTracks } = await useLazyFetch<Track[]>(`/api/radio-stations/${channelId}/tracks`, {
+  ...resolveFetchPolicyOptions('user-triggered'),
+  default: () => [],
+});
 
-// Get current user for ownership check
-const { data: user } = await useLazyFetch('/api/auth/me', {
+const { data: user, execute: loadUser } = await useLazyFetch<{ userId: string; name: string; email: string }>('/api/auth/me', {
   method: 'POST',
+  ...resolveFetchPolicyOptions('lazy-ok'),
 });
 
 // Determine if the current user is the station owner
 const isStationOwner = computed((): boolean => {
-  if (!user.value?.user?.id || !station.value?.userId) return false;
-  return user.value.user.id === station.value.userId;
+  if (!user.value?.userId || !station.value?.userId) return false;
+  return user.value.userId === station.value.userId;
 });
 
 // Watch for the station data to become available to set the page title
@@ -152,16 +156,16 @@ function playNextTrack() {
     playerStore.playNext();
   } else {
     // If another station is playing or nothing is, just refresh tracks without auto-starting
-    refreshTracks();
+    loadTracks();
     // Don't automatically start playback - user must click play
   }
 }
 
 async function startPlayback(autoPlay: boolean = true) {
   // If tracks aren't loaded or the list is empty, fetch them.
-  // refreshTracks will not re-fetch if data is already fresh or a fetch is in flight.
+  // loadTracks will not re-fetch if data is already fresh or a fetch is in flight.
   if (!tracks.value || tracks.value.length === 0) {
-    await refreshTracks();
+    await loadTracks();
   }
 
   if (tracks.value && tracks.value.length > 0) {
@@ -184,6 +188,10 @@ watch(tracks, (newTracks: Track[] | null) => {
     // Update queue without starting playback
     startPlayback(false);
   }
+});
+
+onMounted(async () => {
+  await loadUser();
 });
 
 onUnmounted(() => {

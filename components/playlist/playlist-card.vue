@@ -24,7 +24,7 @@
     <div class="card-body p-4">
       <h2 class="card-title text-base truncate">{{ playlist.name }}</h2>
       <p class="text-sm text-base-content/70">
-        {{ formatTrackCount(playlist.trackCount) }}
+        {{ formatPlaylistTrackCount(playlist.trackCount) }}
       </p>
       <div class="card-actions justify-end mt-2">
         <div class="dropdown dropdown-end">
@@ -55,8 +55,5 @@ defineEmits<{
   (e: 'delete', id: string): void;
 }>();
 
-const formatTrackCount = (count: number): string => {
-  if (count === undefined) return '0 tracks';
-  return count === 1 ? '1 track' : `${count} tracks`;
-};
+import { formatPlaylistTrackCount } from '~/components/playlist/playlist-card.utils';
 </script>
