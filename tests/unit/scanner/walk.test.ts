@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -23,5 +23,48 @@ describe('walkDirectory', () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
+  });
+
+  it('continues when stat fails for a file', async () => {
+    vi.resetModules();
+    vi.doMock('node:fs/promises', () => ({
+      opendir: vi.fn(async () => ({
+        async *[Symbol.asyncIterator]() {
+          yield {
+            name: 'a.mp3',
+            isDirectory: () => false,
+            isFile: () => true,
+          };
+          yield {
+            name: 'b.mp3',
+            isDirectory: () => false,
+            isFile: () => true,
+          };
+        },
+      })),
+      stat: vi.fn(async (target: string) => {
+        if (target.endsWith('/b.mp3')) {
+          const error = new Error('missing');
+          (error as Error & { code?: string }).code = 'ENOENT';
+          throw error;
+        }
+        return { size: 1, mtimeMs: 1000 };
+      }),
+    }));
+
+    const { walkDirectory: mockedWalkDirectory } = await import('~/server/services/scanner/walk');
+    const errors: Array<{ code: string; path: string }> = [];
+    const found: string[] = [];
+
+    for await (const entry of mockedWalkDirectory('/root', {
+      onError: (error) => errors.push(error),
+    })) {
+      found.push(entry.path);
+    }
+
+    expect(found).toEqual(['/root/a.mp3']);
+    expect(errors).toEqual([{ code: 'ENOENT', path: '/root/b.mp3' }]);
+
+    vi.doUnmock('node:fs/promises');
   });
 });

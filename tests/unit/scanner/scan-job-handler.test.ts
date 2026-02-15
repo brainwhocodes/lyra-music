@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -70,6 +70,31 @@ describe('runScanDirectoryJob ingestion flow', () => {
       expect((result as any).ingestionStats.addedTracks).toBe(1);
     } finally {
       await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects sibling paths that only match by prefix', async () => {
+    const { runScanDirectoryJob } = await import('~/server/services/scanner/scan');
+    const base = await mkdtemp(join(tmpdir(), 'scan-job-prefix-'));
+    const allowed = join(base, 'library');
+    const sibling = join(base, 'library-copy');
+
+    try {
+      await mkdir(allowed);
+      await mkdir(sibling);
+      await writeFile(join(sibling, 'one.mp3'), '1');
+
+      await expect(runScanDirectoryJob('job-2', {
+        scanId: 'scan-2',
+        libraryId: 'lib-1',
+        userId: 'user-1',
+        rootPath: sibling,
+        allowedRoots: [allowed],
+        processOnlyUnprocessed: true,
+        options: {},
+      }, async () => false)).rejects.toThrow('outside allowed roots');
+    } finally {
+      await rm(base, { recursive: true, force: true });
     }
   });
 });

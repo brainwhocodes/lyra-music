@@ -1,22 +1,31 @@
-# Baseline: Directory Scanning + Ingestion Flow
+# Baseline: Nuxt/Nitro scan pipeline refactor
 
-## Entrypoints
-- `server/api/libraries/[libraryId]/scan.post.ts` (fire-and-forget call to scanner from request handler).
-- `server/api/settings/scan/index.post.ts` (multi-folder scan directly awaited in request handler).
-- `server/utils/scanner/index.ts` (`scanLibrary` does traversal, metadata extraction, remote enrichment, and DB writes in one path).
-- `server/utils/scanner/file-utils.ts` (`findAudioFiles` recursively reads directories and returns full array).
-- `server/utils/scanner/progress-tracker.ts` (in-memory session tracking only).
+## Critical flows
 
-## Current call graph (short)
-1. HTTP scan route validates auth + folder.
-2. Route calls `scanLibrary(...)`.
-3. Scanner reads all file paths (`findAudioFiles`) into memory.
-4. Scanner parses metadata/enrichment per file and performs DB writes via `db-operations`.
-5. Route either blocks until completion (`settings/scan`) or returns while same process continues (`libraries/:id/scan`).
+1. **Auth boundary**
+   - API routes mostly authenticate with `getUserFromEvent` before scan orchestration (`/api/scan/start`, `/api/scan/status`, `/api/scan/cancel`, `/api/libraries/:libraryId/scan`, `/api/settings/scan`).
+2. **Scan enqueue + execution**
+   - Handlers call `enqueueScanForLibrary`, which verifies library ownership, creates a `scan_runs` row, and enqueues `scan.directory` jobs.
+   - Worker leases jobs and runs `runScanDirectoryJob`.
+   - Scan job traverses filesystem (`walkDirectory`), batches discovered file metadata into `scan_files`, then runs legacy ingestion (`runLibraryIngestion` adapter into `server/utils/scanner`).
+3. **Scan status + cancellation**
+   - `/api/scan/status` joins `scan_runs` + `job_queue` and returns job progress.
+   - `/api/scan/cancel` sets `cancel_requested` and runtime checks poll this flag.
 
-## Top 5 root-cause risks
-1. **Heavy work on request thread**: scan work is initiated from API handlers and in one route directly awaited.
-2. **Unbounded memory growth**: traversal accumulates full audio path list before processing.
-3. **No durable queue/progress**: progress state is in-memory and lost on restart; no persisted cancellation state.
-4. **Duplicate/fragmented scan orchestration**: multiple routes trigger scans with inconsistent behavior and retry/backpressure semantics.
-5. **Resource spikes**: metadata extraction + DB writes happen in large loops without strict global job concurrency/backpressure controls.
+## Hotspots (bugs/flakiness/perf)
+
+1. **Path sandbox check was prefix-based**
+   - `scan.ts` used `startsWith("${root}/")` semantics, which can incorrectly allow sibling paths with shared prefixes (e.g., `/library-copy` for allowed `/library`).
+2. **Traversal brittle on permission/transient FS errors**
+   - `walkDirectory` failed entire scans on `opendir`/`stat` errors rather than skipping bad nodes and continuing.
+3. **Inconsistent scan observability for partial FS errors**
+   - `scan_runs.errors`/`last_error` were not updated with traversal-level failures unless the whole job failed.
+4. **Architecture drift risk**
+   - API handlers are mostly thin, but scan path validation logic lived inline in runtime service and was not reusable/tested in isolation.
+
+## Prioritized checklist
+
+1. **Fix path containment root-cause bug with regression tests.**
+2. **Make directory walk resilient to per-path failures; keep request/job bounded and continue processing.**
+3. **Persist traversal error counts consistently in `scan_runs` progress/final state.**
+4. **Extract shared path-safety logic into service helper and add unit tests.**
