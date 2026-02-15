@@ -10,9 +10,34 @@ export interface WalkEntry {
   extension: string | null;
 }
 
+export interface WalkError {
+  code: string;
+  path: string;
+}
+
+export type WalkRuntimeOptions = WalkOptions & {
+  onError?: (error: WalkError) => void | Promise<void>;
+};
+
 const AUDIO_EXTENSIONS = new Set(['.mp3', '.flac', '.m4a', '.wav', '.ogg', '.opus', '.aac', '.alac']);
 
-export async function* walkDirectory(rootPath: string, options: WalkOptions = {}): AsyncGenerator<WalkEntry> {
+function toWalkError(path: string, error: unknown): WalkError {
+  const code = typeof error === 'object' && error && 'code' in error && typeof (error as any).code === 'string'
+    ? (error as any).code
+    : 'UNKNOWN';
+
+  return { code, path };
+}
+
+async function reportError(path: string, error: unknown, onError?: WalkRuntimeOptions['onError']) {
+  if (!onError) {
+    return;
+  }
+
+  await onError(toWalkError(path, error));
+}
+
+export async function* walkDirectory(rootPath: string, options: WalkRuntimeOptions = {}): AsyncGenerator<WalkEntry> {
   const ignoreDirectories = new Set(options.ignoreDirectories ?? []);
   const ignoreExtensions = new Set((options.ignoreExtensions ?? []).map((e) => e.toLowerCase()));
   const maxDepth = Math.min(options.maxDepth ?? limits.maxScanDepth, limits.maxScanDepth);
@@ -23,7 +48,18 @@ export async function* walkDirectory(rootPath: string, options: WalkOptions = {}
 
   while (stack.length > 0) {
     const current = stack.pop()!;
-    const dir = await opendir(current.dir);
+    let dir;
+
+    try {
+      dir = await opendir(current.dir);
+    } catch (error) {
+      if (current.depth === 0) {
+        throw error;
+      }
+
+      await reportError(current.dir, error, options.onError);
+      continue;
+    }
 
     for await (const entry of dir) {
       if (ignoreDirectories.has(entry.name)) {
@@ -48,7 +84,14 @@ export async function* walkDirectory(rootPath: string, options: WalkOptions = {}
         continue;
       }
 
-      const info = await stat(entryPath);
+      let info;
+      try {
+        info = await stat(entryPath);
+      } catch (error) {
+        await reportError(entryPath, error, options.onError);
+        continue;
+      }
+
       emitted += 1;
       yield {
         path: entryPath,
