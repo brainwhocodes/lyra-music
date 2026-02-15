@@ -28,7 +28,7 @@ vi.mock('~/server/services/scanner/persist', () => ({
   },
 }));
 
-const scanLibraryMock = vi.fn().mockResolvedValue({
+const runLibraryIngestionMock = vi.fn().mockResolvedValue({
   scannedFiles: 1,
   addedTracks: 1,
   addedArtists: 1,
@@ -37,8 +37,8 @@ const scanLibraryMock = vi.fn().mockResolvedValue({
   errors: 0,
 });
 
-vi.mock('~/server/utils/scanner', () => ({
-  scanLibrary: scanLibraryMock,
+vi.mock('~/server/services/scanner/ingestion', () => ({
+  runLibraryIngestion: runLibraryIngestionMock,
 }));
 
 describe('runScanDirectoryJob ingestion flow', () => {
@@ -61,7 +61,7 @@ describe('runScanDirectoryJob ingestion flow', () => {
         options: {},
       }, async () => false);
 
-      expect(scanLibraryMock).toHaveBeenCalledWith({
+      expect(runLibraryIngestionMock).toHaveBeenCalledWith({
         libraryId: 'lib-1',
         libraryPath: root,
         userId: 'user-1',

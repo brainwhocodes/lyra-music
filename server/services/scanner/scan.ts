@@ -7,6 +7,7 @@ import { markJobProgress } from '~/server/jobs/queue';
 import type { ScanDirectoryJobPayload } from '~/server/jobs/types';
 import { walkDirectory } from './walk';
 import { ScanBatchWriter } from './persist';
+import { runLibraryIngestion } from './ingestion';
 
 function isInsideAllowedRoot(candidate: string, allowedRoots: string[]): boolean {
   return allowedRoots.some((root) => candidate === root || candidate.startsWith(`${root}/`));
@@ -64,8 +65,7 @@ export async function runScanDirectoryJob(jobId: string, payload: ScanDirectoryJ
     return { cancelled: true, discovered, ...writer.stats };
   }
 
-  const { scanLibrary } = await import('~/server/utils/scanner');
-  const ingestionStats = await scanLibrary({
+  const ingestionStats = await runLibraryIngestion({
     libraryId: payload.libraryId,
     libraryPath: rootPath,
     userId: payload.userId,

@@ -11,8 +11,8 @@ import { eq } from 'drizzle-orm';
 import { tmpdir } from 'node:os';
 import { readFileSync } from 'node:fs';
 
-vi.mock('~/server/utils/scanner', () => ({
-  scanLibrary: vi.fn().mockResolvedValue({
+vi.mock('~/server/services/scanner/ingestion', () => ({
+  runLibraryIngestion: vi.fn().mockResolvedValue({
     scannedFiles: 2,
     addedTracks: 2,
     addedArtists: 1,
