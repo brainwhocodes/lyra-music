@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 export const scanDirectoryJobPayloadSchema = z.object({
   scanId: z.string().min(1),
+  libraryId: z.string().min(1),
   userId: z.string().min(1),
   rootPath: z.string().min(1),
   allowedRoots: z.array(z.string().min(1)).min(1),
+  processOnlyUnprocessed: z.boolean().default(false),
   options: z.object({
     maxDepth: z.number().int().positive().optional(),
     maxFiles: z.number().int().positive().optional(),

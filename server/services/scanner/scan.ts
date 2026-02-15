@@ -1,5 +1,4 @@
 import { realpath } from 'node:fs/promises';
-import { dirname } from 'node:path';
 import { and, eq } from 'drizzle-orm';
 import { db } from '~/server/db';
 import { jobQueue, scanRuns } from '~/server/db/schema';
@@ -57,6 +56,22 @@ export async function runScanDirectoryJob(jobId: string, payload: ScanDirectoryJ
   }
 
   await writer.flush();
+
+  if (await isCancelled()) {
+    await db.update(scanRuns)
+      .set({ state: 'cancelled', cancelledAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+      .where(eq(scanRuns.scanId, payload.scanId));
+    return { cancelled: true, discovered, ...writer.stats };
+  }
+
+  const { scanLibrary } = await import('~/server/utils/scanner');
+  const ingestionStats = await scanLibrary({
+    libraryId: payload.libraryId,
+    libraryPath: rootPath,
+    userId: payload.userId,
+    processOnlyUnprocessed: payload.processOnlyUnprocessed,
+  });
+
   const finishedAt = new Date().toISOString();
   await db.update(scanRuns).set({
     state: 'succeeded',
@@ -67,7 +82,7 @@ export async function runScanDirectoryJob(jobId: string, payload: ScanDirectoryJ
     updatedAt: finishedAt,
   }).where(eq(scanRuns.scanId, payload.scanId));
 
-  const result = { discovered, ...writer.stats };
+  const result = { discovered, ...writer.stats, ingestionStats };
   await markJobProgress(jobId, result);
   return result;
 }

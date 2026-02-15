@@ -21,9 +21,11 @@ export async function enqueueScanForLibrary(input: z.infer<typeof startScanSchem
     type: 'scan.directory',
     payload: {
       scanId,
+      libraryId: library.mediaFolderId,
       userId,
       rootPath: library.path,
       allowedRoots: [library.path],
+      processOnlyUnprocessed: input.processOnlyUnprocessed,
       options: input.options,
     },
   });

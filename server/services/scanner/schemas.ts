@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const startScanSchema = z.object({
   libraryId: z.string().min(1),
+  processOnlyUnprocessed: z.boolean().default(false),
   options: z.object({
     maxDepth: z.number().int().positive().optional(),
     maxFiles: z.number().int().positive().optional(),

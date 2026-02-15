@@ -18,7 +18,11 @@ export default defineEventHandler(async (event) => {
     .orderBy(desc(mediaFolders.createdAt));
 
   const queued = await batchMap(folders, 3, async (folder) => {
-    return enqueueScanForLibrary({ libraryId: folder.mediaFolderId, options: {} }, user.userId);
+    return enqueueScanForLibrary({
+      libraryId: folder.mediaFolderId,
+      processOnlyUnprocessed: false,
+      options: {},
+    }, user.userId);
   });
 
   setResponseStatus(event, 202);

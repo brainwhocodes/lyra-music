@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import Database from 'better-sqlite3';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +10,17 @@ import { jobQueue, scanFiles, scanRuns } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { tmpdir } from 'node:os';
 import { readFileSync } from 'node:fs';
+
+vi.mock('~/server/utils/scanner', () => ({
+  scanLibrary: vi.fn().mockResolvedValue({
+    scannedFiles: 2,
+    addedTracks: 2,
+    addedArtists: 1,
+    addedAlbums: 1,
+    skippedFiles: 0,
+    errors: 0,
+  }),
+}));
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const testDbPath = join(root, 'server', 'tests', 'integration', 'scanner', 'test-db.sqlite');
@@ -49,7 +60,7 @@ describe('queue + worker scan integration', () => {
       const scanId = 'scan-int-1';
       const queued = await enqueueJob({
         type: 'scan.directory',
-        payload: { scanId, userId: 'u1', rootPath: fixtureDir, allowedRoots: [fixtureDir], options: {} },
+        payload: { scanId, libraryId: 'lib-1', userId: 'u1', rootPath: fixtureDir, allowedRoots: [fixtureDir], processOnlyUnprocessed: false, options: {} },
       });
       expect(queued.queued).toBe(true);
 
@@ -75,7 +86,7 @@ describe('queue + worker scan integration', () => {
       const scanId = 'scan-int-cancel';
       const queued = await enqueueJob({
         type: 'scan.directory',
-        payload: { scanId, userId: 'u1', rootPath: fixtureDir, allowedRoots: [fixtureDir], options: {} },
+        payload: { scanId, libraryId: 'lib-1', userId: 'u1', rootPath: fixtureDir, allowedRoots: [fixtureDir], processOnlyUnprocessed: false, options: {} },
       });
       await db.insert(scanRuns).values({ scanId, jobId: queued.jobId!, userId: 'u1', rootPath: fixtureDir, state: 'queued' });
       await requestJobCancel(queued.jobId!);
