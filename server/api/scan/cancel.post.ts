@@ -4,6 +4,7 @@ import { getUserFromEvent } from '~/server/utils/auth';
 import { db } from '~/server/db';
 import { scanRuns } from '~/server/db/schema';
 import { requestJobCancel } from '~/server/jobs/queue';
+import { buildCancelResponse } from '~/server/services/scanner/cancel-response';
 
 const cancelSchema = z.object({ scanId: z.string().min(1) });
 
@@ -27,6 +28,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Scan not found' });
   }
 
-  await requestJobCancel(scan.jobId);
-  return { scanId: body.data.scanId, cancelled: true };
+  const cancelRequest = await requestJobCancel(scan.jobId);
+  return buildCancelResponse(body.data.scanId, cancelRequest);
 });
