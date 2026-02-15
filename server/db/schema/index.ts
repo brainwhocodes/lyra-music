@@ -24,6 +24,7 @@ export * from './discovery-playlists';
 export * from './discovery-playlist-tracks';
 export * from './podcasts';
 export * from './podcast-subscriptions';
+export * from './job-queue';
 
 // Import table objects specifically for defining relations
 import { users } from './users';
@@ -47,6 +48,7 @@ import { discoveryPlaylists } from './discovery-playlists';
 import { discoveryPlaylistTracks } from './discovery-playlist-tracks';
 import { podcasts } from './podcasts';
 import { podcastSubscriptions } from './podcast-subscriptions';
+import { jobQueue, scanRuns, scanFiles } from './job-queue';
 
 // === Relations ===
 
@@ -247,6 +249,21 @@ export const podcastSubscriptionRelations = relations(podcastSubscriptions, ({ o
   user: one(users, {
     fields: [podcastSubscriptions.userId],
     references: [users.userId],
+  }),
+}));
+
+export const scanRunRelations = relations(scanRuns, ({ one, many }) => ({
+  job: one(jobQueue, {
+    fields: [scanRuns.jobId],
+    references: [jobQueue.jobId],
+  }),
+  files: many(scanFiles),
+}));
+
+export const scanFileRelations = relations(scanFiles, ({ one }) => ({
+  scan: one(scanRuns, {
+    fields: [scanFiles.scanId],
+    references: [scanRuns.scanId],
   }),
 }));
 
