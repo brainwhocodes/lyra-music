@@ -4,7 +4,8 @@ import { v7 as uuidv7 } from 'uuid';
 import { db } from '~/server/db';
 import { users } from '~/server/db/schema';
 import { hashPassword, generateToken } from '~/server/utils/auth';
-import { eq, sql } from 'drizzle-orm';
+import { AUTH_COOKIE_MAX_AGE_SECONDS, AUTH_COOKIE_NAME, getAuthCookieOptions } from '~/server/utils/auth-cookie';
+import { eq } from 'drizzle-orm';
 
 const registerSchema = z.object({
   email: z.string().trim().email(),
@@ -62,17 +63,11 @@ export default defineEventHandler(async (event) => {
 
     // Generate JWT token
     const token = generateToken({ userId: user.userId, name, email });
-    setCookie(event, 'auth_token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    })
+    setCookie(event, AUTH_COOKIE_NAME, token, getAuthCookieOptions(event))
   
     // Return user data (without password)
     return {
-      token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000).toISOString(), // 7 days
+      expiresAt: new Date(Date.now() + AUTH_COOKIE_MAX_AGE_SECONDS * 1000).toISOString(),
     };
   } catch (error: any) {
     throw createError({

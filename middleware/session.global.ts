@@ -1,4 +1,5 @@
 import { useUser } from '~/composables/use-user';
+import { sanitizeRedirectPath } from '~/utils/redirect';
 
 /**
  * Session middleware that checks if the user is authenticated via server session
@@ -20,7 +21,7 @@ export default defineNuxtRouteMiddleware(async (to, event) => {
     if (!user) {
       return navigateTo({
         path: '/login',
-        query: { invalid: 'true' }
+        query: { invalid: 'true', redirect: sanitizeRedirectPath(to.fullPath) }
       });
     }
     
@@ -29,7 +30,7 @@ export default defineNuxtRouteMiddleware(async (to, event) => {
     if (error?.response?.status === 401 || error?.statusCode === 401) {
       return navigateTo({
         path: '/login',
-        query: { invalid: 'true' }
+        query: { invalid: 'true', redirect: sanitizeRedirectPath(to.fullPath) }
       });
     }
     // For other errors, still redirect to login for safety

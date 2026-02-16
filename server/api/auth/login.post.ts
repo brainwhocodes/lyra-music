@@ -2,8 +2,9 @@ import { z } from 'zod'
 import { createError, readBody, defineEventHandler, setCookie } from 'h3'
 import { db } from '~/server/db'
 import { users } from '~/server/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { verifyPassword, generateToken } from '~/server/utils/auth';
+import { AUTH_COOKIE_MAX_AGE_SECONDS, AUTH_COOKIE_NAME, getAuthCookieOptions } from '~/server/utils/auth-cookie';
 
 const loginSchema = z.object({
   email: z.string().trim().email(),
@@ -45,9 +46,9 @@ export default defineEventHandler(async (event) => {
     .run()
 
   // Verify password using the utility function
-  const isPasswordValid = await verifyPassword(password, user.passwordHash);
+  const verification = await verifyPassword(password, user.passwordHash);
 
-  if (!isPasswordValid) {
+  if (!verification.success) {
     throw createError({
       statusCode: 401,
       message: 'Invalid email or password'
@@ -66,15 +67,9 @@ export default defineEventHandler(async (event) => {
   const token = generateToken({ userId: user.userId, name: user.name, email: user.email });
 
   // Set cookie
-  setCookie(event, 'auth_token', token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7 // 7 days
-  })
+  setCookie(event, AUTH_COOKIE_NAME, token, getAuthCookieOptions(event))
 
   return {
-    token,
-    expiresAt: new Date(Date.now() + 60 * 60 * 24 * 7 * 1000).toISOString(), // 7 days
+    expiresAt: new Date(Date.now() + AUTH_COOKIE_MAX_AGE_SECONDS * 1000).toISOString(),
   }
 })
