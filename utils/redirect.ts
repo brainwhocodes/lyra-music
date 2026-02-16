@@ -15,8 +15,10 @@ export const sanitizeRedirectPath = (rawRedirect: string | null | undefined): st
     return SAFE_REDIRECT_PATH
   }
 
-  return ALLOWED_REDIRECT_PREFIXES.some((prefix) => rawRedirect === prefix || rawRedirect.startsWith(`${prefix}/`))
-    ? rawRedirect
+  const parsed = new URL(rawRedirect, 'http://localhost')
+  const sanitizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`
+
+  return ALLOWED_REDIRECT_PREFIXES.some((prefix) => parsed.pathname === prefix || parsed.pathname.startsWith(`${prefix}/`))
+    ? sanitizedPath
     : SAFE_REDIRECT_PATH
 }
-

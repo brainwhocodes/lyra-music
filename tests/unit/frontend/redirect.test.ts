@@ -7,6 +7,12 @@ describe('sanitizeRedirectPath', () => {
     expect(sanitizeRedirectPath('/playlists/abc')).toBe('/playlists/abc')
   })
 
+  it('preserves query strings and hashes for whitelisted routes', () => {
+    expect(sanitizeRedirectPath('/tracks?albumId=abc')).toBe('/tracks?albumId=abc')
+    expect(sanitizeRedirectPath('/tracks?albumId=abc#queue')).toBe('/tracks?albumId=abc#queue')
+    expect(sanitizeRedirectPath('/playlists/abc?view=compact')).toBe('/playlists/abc?view=compact')
+  })
+
   it('rejects absolute and protocol-relative redirects', () => {
     expect(sanitizeRedirectPath('https://evil.com')).toBe('/library')
     expect(sanitizeRedirectPath('//evil.com/pwn')).toBe('/library')
