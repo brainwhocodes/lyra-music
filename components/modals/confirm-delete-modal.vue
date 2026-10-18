@@ -1,23 +1,32 @@
 <template>
-  <div :class="['modal', { 'modal-open': open }]" role="dialog">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ title }}</h3>
-      <p class="py-4">{{ message }}</p>
-      <div class="modal-action">
-        <button class="btn" @click="$emit('close')">Cancel</button>
-        <button class="btn btn-error" @click="$emit('confirm')">Delete</button>
-      </div>
+  <UtilityDialog
+    :open="open"
+    :title="title"
+    @update:open="
+      (value) => {
+        if (!value) emit('close');
+      }
+    "
+  >
+    <p class="py-4">{{ message }}</p>
+    <div class="modal-action">
+      <button type="button" class="btn" autofocus @click="emit('close')">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-error" @click="emit('confirm')">
+        Delete
+      </button>
     </div>
-    <div class="modal-backdrop" @click="$emit('close')"></div>
-  </div>
+  </UtilityDialog>
 </template>
 
 <script setup lang="ts">
-  defineProps<{ 
-    open: boolean;
-    title: string;
-    message: string;
-  }>();
+import UtilityDialog from "~/components/utility/dialog.vue";
+defineProps<{
+  open: boolean;
+  title: string;
+  message: string;
+}>();
 
-  defineEmits(['close', 'confirm']);
+const emit = defineEmits<{ close: []; confirm: [] }>();
 </script>

@@ -1,0 +1,10 @@
+# Tested on Windows x64 / Python 3.12. CPU float32; no API key required.
+sentence-transformers==6.1.0
+transformers==5.20.1
+torch==2.14.1
+# The multimodal processor imports Pillow even when only the text encoder is loaded.
+pillow==13.0.0
+torchvision==0.29.1
+huggingface-hub==1.33.0
+numpy==2.5.4
+safetensors==0.8.0

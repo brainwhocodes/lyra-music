@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
-import { H3Event, parseCookies, getHeader, setCookie } from 'h3';
-import { scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
-import { User } from '~/types/user';
+import jwt from "jsonwebtoken";
+import { H3Event, parseCookies, getHeader, setCookie, createError } from "h3";
+import { scrypt, randomBytes, timingSafeEqual } from "node:crypto";
+import { User } from "~/types/user";
 
 // Define an interface for the options used by crypto.scrypt
 interface ScryptOptions {
@@ -12,7 +12,12 @@ interface ScryptOptions {
 }
 
 // Helper function to wrap crypto.scrypt in a promise
-function scryptPromise(password: Buffer, salt: Buffer, keylen: number, options?: ScryptOptions): Promise<Buffer> {
+function scryptPromise(
+  password: Buffer,
+  salt: Buffer,
+  keylen: number,
+  options?: ScryptOptions,
+): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     // Pass options or an empty object if options is undefined
     scrypt(password, salt, keylen, options ?? {}, (err, derivedKey) => {
@@ -34,7 +39,7 @@ const SCRYPT_SALT_BYTES = 16;
 const SCRYPT_MAXMEM = 32 * 1024 * 1024 * 2;
 
 // PHC string identifier
-const SCRYPT_ID = '$scrypt$';
+const SCRYPT_ID = "$scrypt$";
 const SCRYPT_PARAMS = `ln=${Math.log2(SCRYPT_N)},r=${SCRYPT_R},p=${SCRYPT_P}`;
 
 /**
@@ -53,9 +58,14 @@ async function hashPasswordScrypt(password: string): Promise<string> {
     maxmem: SCRYPT_MAXMEM,
   };
 
-  const passwordBuffer = Buffer.from(password, 'utf8'); // Convert password to Buffer
-  const hash = await scryptPromise(passwordBuffer, salt, SCRYPT_KEYLEN, scryptOptions); // Use buffer
-  return `${SCRYPT_ID}${SCRYPT_PARAMS}$${salt.toString('base64')}$${hash.toString('base64')}`;
+  const passwordBuffer = Buffer.from(password, "utf8"); // Convert password to Buffer
+  const hash = await scryptPromise(
+    passwordBuffer,
+    salt,
+    SCRYPT_KEYLEN,
+    scryptOptions,
+  ); // Use buffer
+  return `${SCRYPT_ID}${SCRYPT_PARAMS}$${salt.toString("base64")}$${hash.toString("base64")}`;
 }
 
 /**
@@ -64,16 +74,26 @@ async function hashPasswordScrypt(password: string): Promise<string> {
  * @param storedHash The stored hash string (including parameters and salt).
  * @returns A promise resolving to true if the password matches, false otherwise.
  */
-async function verifyPasswordScrypt(password: string, storedHash: string): Promise<boolean> {
+async function verifyPasswordScrypt(
+  password: string,
+  storedHash: string,
+): Promise<boolean> {
   try {
-    const parts = storedHash.split('$');
-    if (parts.length !== 5 || parts[1] !== 'scrypt' || !parts[2].startsWith('ln=')) {
+    const parts = storedHash.split("$");
+    if (
+      parts.length !== 5 ||
+      parts[1] !== "scrypt" ||
+      !parts[2].startsWith("ln=")
+    ) {
       return false;
     }
-    const salt = Buffer.from(parts[3], 'base64');
-    const storedHashBytes = Buffer.from(parts[4], 'base64');
+    const salt = Buffer.from(parts[3], "base64");
+    const storedHashBytes = Buffer.from(parts[4], "base64");
 
-    if (salt.length !== SCRYPT_SALT_BYTES || storedHashBytes.length !== SCRYPT_KEYLEN) {
+    if (
+      salt.length !== SCRYPT_SALT_BYTES ||
+      storedHashBytes.length !== SCRYPT_KEYLEN
+    ) {
       return false;
     }
 
@@ -85,8 +105,13 @@ async function verifyPasswordScrypt(password: string, storedHash: string): Promi
       maxmem: SCRYPT_MAXMEM,
     };
 
-    const passwordBuffer = Buffer.from(password, 'utf8'); // Convert password to Buffer
-    const derivedHash = await scryptPromise(passwordBuffer, salt, storedHashBytes.length, scryptOptions); // Use buffer
+    const passwordBuffer = Buffer.from(password, "utf8"); // Convert password to Buffer
+    const derivedHash = await scryptPromise(
+      passwordBuffer,
+      salt,
+      storedHashBytes.length,
+      scryptOptions,
+    ); // Use buffer
 
     if (derivedHash.length !== storedHashBytes.length) {
       return false;
@@ -94,17 +119,21 @@ async function verifyPasswordScrypt(password: string, storedHash: string): Promi
 
     return timingSafeEqual(derivedHash, storedHashBytes);
   } catch (error) {
-    console.error('Error verifying scrypt password:', error);
+    console.error("Error verifying scrypt password:", error);
     return false;
   }
 }
 
 // Helper function to parse PHC parameters from a string
-function parsePhcParams(paramsStr: string): { ln: number; r: number; p: number } {
-  const params = paramsStr.split(',');
-  const ln = parseInt(params[0].split('=')[1], 10);
-  const r = parseInt(params[1].split('=')[1], 10);
-  const p = parseInt(params[2].split('=')[1], 10);
+function parsePhcParams(paramsStr: string): {
+  ln: number;
+  r: number;
+  p: number;
+} {
+  const params = paramsStr.split(",");
+  const ln = parseInt(params[0].split("=")[1], 10);
+  const r = parseInt(params[1].split("=")[1], 10);
+  const p = parseInt(params[2].split("=")[1], 10);
   return { ln, r, p };
 }
 
@@ -121,7 +150,7 @@ export async function hashPassword(password: string): Promise<string> {
 
 interface VerificationResult {
   success: boolean;
-  method: 'scrypt' | 'bcrypt' | null;
+  method: "scrypt" | "bcrypt" | null;
 }
 
 /**
@@ -131,34 +160,78 @@ interface VerificationResult {
  * @param hash The stored hash string (can be bcryptjs or scrypt format).
  * @returns A promise resolving to an object indicating success and the method used.
  */
-export async function verifyPassword(password: string, hash: string): Promise<VerificationResult> {
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<VerificationResult> {
   if (hash.startsWith(SCRYPT_ID)) {
     const isScryptValid = await verifyPasswordScrypt(password, hash);
-    return { success: isScryptValid, method: isScryptValid ? 'scrypt' : null };
+    return { success: isScryptValid, method: isScryptValid ? "scrypt" : null };
   } else {
     // If it's not scrypt, immediately fail verification.
     // Users with old bcrypt hashes will need to reset their password.
-    console.warn(`Attempted login with non-scrypt hash for user (hash starts with: ${hash.substring(0, 10)}...). Failing verification.`);
+    console.warn(
+      `Attempted login with non-scrypt hash for user (hash starts with: ${hash.substring(0, 10)}...). Failing verification.`,
+    );
     return { success: false, method: null };
   }
 }
 
-// Generate JWT token
-export const generateToken = ({ userId, email, name }: { userId: string, email: string, name: string }): string => {
-  const config = useRuntimeConfig();
-  return jwt.sign(
-    { userId, email, name },
-    config.jwtSecret,
-    { expiresIn: '7d' }
-  );
+function configuredJwtSecret(): string {
+  const secret: unknown = useRuntimeConfig().jwtSecret;
+  if (
+    typeof secret !== "string" ||
+    secret.trim().length < 32 ||
+    /development[\s_-]*secret|replace[\s_-]*(?:with|me)|change[\s_-]*me|example[\s_-]*secret|your[\s_-]*(?:jwt[\s_-]*)?secret/i.test(
+      secret,
+    )
+  ) {
+    throw createError({
+      statusCode: 500,
+      statusMessage:
+        "Authentication is not configured. Set NUXT_JWT_SECRET to a random value of at least 32 characters.",
+    });
+  }
+  return secret;
+}
+
+/** Check before registration writes an account that cannot receive a session. */
+export function requireAuthConfiguration(): void {
+  configuredJwtSecret();
+}
+
+// Generate JWT token. Refuse predictable placeholders and missing configuration.
+export const generateToken = ({
+  userId,
+  email,
+  name,
+}: {
+  userId: string;
+  email: string;
+  name: string;
+}): string => {
+  return jwt.sign({ userId, email, name }, configuredJwtSecret(), {
+    expiresIn: "7d",
+    algorithm: "HS256",
+  });
 };
 
 // Verify JWT token
 export const verifyToken = (token: string): User | null => {
-  const config = useRuntimeConfig();
   try {
-    const decoded = jwt.verify(token, config.jwtSecret, { complete: true });
+    const decoded = jwt.verify(token, configuredJwtSecret(), {
+      complete: true,
+      algorithms: ["HS256"],
+    });
     const user = decoded.payload;
+    if (
+      typeof user === "string" ||
+      typeof user.userId !== "string" ||
+      !user.userId ||
+      typeof user.email !== "string" ||
+      typeof user.name !== "string"
+    )
+      return null;
     return user as User;
   } catch (error) {
     return null;
@@ -166,33 +239,36 @@ export const verifyToken = (token: string): User | null => {
 };
 
 // Get user from request
-export const getUserFromEvent = async (event: H3Event): Promise<{ userId: string; name: string; email: string } | null> => {
-  const authHeader = getHeader(event, 'Authorization');
-  const bearerToken = authHeader && authHeader.startsWith('Bearer ') 
-    ? authHeader.substring(7) 
-    : null;
- 
-  const cookieToken = parseCookies(event)['auth_token'];
-  
+export const getUserFromEvent = async (
+  event: H3Event,
+): Promise<{ userId: string; name: string; email: string } | null> => {
+  const authHeader = getHeader(event, "Authorization");
+  const bearerToken =
+    authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.substring(7)
+      : null;
+
+  const cookieToken = parseCookies(event)["auth_token"];
+
   if (!bearerToken && !cookieToken) {
     return null;
   }
-  
+
   const token = bearerToken || cookieToken;
   if (!token) {
     return null;
   }
-  
+
   const user = verifyToken(token);
   if (!user) {
     return null;
   }
-  
+
   // Additional expiration check (JWT library should handle this, but double-check)
   if (user.exp && Date.now() / 1000 > user.exp) {
     return null;
   }
-  
+
   return {
     userId: user.userId,
     name: user.name,
@@ -201,22 +277,25 @@ export const getUserFromEvent = async (event: H3Event): Promise<{ userId: string
 };
 
 export const clearToken = (event: H3Event) => {
-  setCookie(event, 'auth_token', '', {
+  setCookie(event, "auth_token", "", {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
-    maxAge: 0
+    sameSite: "strict",
+    maxAge: 0,
   });
 };
 
 // Get cookie from request
-export const getCookieFromEvent = (event: H3Event, name: string): string | null => {
+export const getCookieFromEvent = (
+  event: H3Event,
+  name: string,
+): string | null => {
   const cookies = parseCookies(event);
   return cookies[name] || null;
 };
 
 // Check if user is authenticated
-export const isAuthenticated = (event: H3Event): boolean => {
-  const user = getUserFromEvent(event);
+export const isAuthenticated = async (event: H3Event): Promise<boolean> => {
+  const user = await getUserFromEvent(event);
   return !!user;
 };

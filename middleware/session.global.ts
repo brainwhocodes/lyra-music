@@ -6,7 +6,7 @@ import { useUser } from '~/composables/use-user';
  */
 export default defineNuxtRouteMiddleware(async (to, event) => {
   // Skip check for public routes
-  const publicRoutes: readonly string[] = ['/login', '/register', '/forgot-password', '/reset-password'];
+  const publicRoutes: readonly string[] = ['/', '/features', '/self-host', '/login', '/register'];
   if (publicRoutes.includes(to.path)) {
     return;
   }

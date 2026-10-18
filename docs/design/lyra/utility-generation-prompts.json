@@ -1,0 +1,97 @@
+{
+  "createdAt": "2026-10-18T09:00:17.850Z",
+  "references": [
+    "docs/design/lyra/brand-board.png",
+    "docs/design/lyra/library-mockup.png"
+  ],
+  "pages": [
+    {
+      "id": "playlists",
+      "routes": [
+        "/playlists"
+      ],
+      "content": "Playlists index. Sidebar. Large heading Playlists, paragraph Make a place for every mood, Create Playlist copper action right. Card Local Listening with neutral recordplaceholder,2tracks,Play,Open playlist,moreactions. Generous whitespace and useful empty message for no otherlists. No invented artwork.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Playlists index. Sidebar. Large heading Playlists, paragraph Make a place for every mood, Create Playlist copper action right. Card Local Listening with neutral recordplaceholder,2tracks,Play,Open playlist,moreactions. Generous whitespace and useful empty message for no otherlists. No invented artwork."
+    },
+    {
+      "id": "playlist-detail",
+      "routes": [
+        "/playlists/[id]"
+      ],
+      "content": "Playlist detail Local Listening. Sidebar, backPlaylists, large editorial title withsmall Rename button and Delete playlist. Play all and Add to queue. Ruled tracklist The Distant Sun and Signal to Noise withduration, play, removebuttons. Fine rules, warm paper and copper primary action.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Playlist detail Local Listening. Sidebar, backPlaylists, large editorial title withsmall Rename button and Delete playlist. Play all and Add to queue. Ruled tracklist The Distant Sun and Signal to Noise withduration, play, removebuttons. Fine rules, warm paper and copper primary action."
+    },
+    {
+      "id": "discovery",
+      "routes": [
+        "/discovery"
+      ],
+      "content": "Discovery playlists index. Sidebar, heading Discover, explanatory Local discovery playlists assembled from your library. One bordered type-led card Local Discoveries,2tracks,Open and Play actions. Link 'Try semantic exploration' to Explore. No madeup recommendations or imagery, no empty decorative cards.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Discovery playlists index. Sidebar, heading Discover, explanatory Local discovery playlists assembled from your library. One bordered type-led card Local Discoveries,2tracks,Open and Play actions. Link 'Try semantic exploration' to Explore. No madeup recommendations or imagery, no empty decorative cards."
+    },
+    {
+      "id": "discovery-detail",
+      "routes": [
+        "/discovery/[id]"
+      ],
+      "content": "Discovery playlist detail Local Discoveries. Sidebar, backDiscover, large heading, subtitle A listening path through your collection. Play all, Save as playlist actions. Ruled list The Distant Sun and Signal to Noise and small durations. Simple readable exactcollectioncontent, no invented imagery.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Discovery playlist detail Local Discoveries. Sidebar, backDiscover, large heading, subtitle A listening path through your collection. Play all, Save as playlist actions. Ruled list The Distant Sun and Signal to Noise and small durations. Simple readable exactcollectioncontent, no invented imagery."
+    },
+    {
+      "id": "podcasts",
+      "routes": [
+        "/podcasts"
+      ],
+      "content": "Podcasts collection. Sidebar, heading Podcasts, supporting Follow a feed and settle into a conversation. Form labelled RSS feed URL with Subscribe button. One show Original Test Podcast with neutral initial artwork placeholder and1episode, open link. Meaningful empty area. No actual remote photos.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Podcasts collection. Sidebar, heading Podcasts, supporting Follow a feed and settle into a conversation. Form labelled RSS feed URL with Subscribe button. One show Original Test Podcast with neutral initial artwork placeholder and1episode, open link. Meaningful empty area. No actual remote photos."
+    },
+    {
+      "id": "podcast-detail",
+      "routes": [
+        "/podcasts/[id]"
+      ],
+      "content": "Podcast detail Original Test Podcast. Sidebar, breadcrumb Podcasts, neutral square initial artwork and heading, Update feed and Unsubscribe buttons. Show description A local test of the listening experience. Episode list Original audio test / October2026 /0:12 with Play episode buttons and description. Clean editorial detail composition.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Podcast detail Original Test Podcast. Sidebar, breadcrumb Podcasts, neutral square initial artwork and heading, Update feed and Unsubscribe buttons. Show description A local test of the listening experience. Episode list Original audio test / October2026 /0:12 with Play episode buttons and description. Clean editorial detail composition."
+    },
+    {
+      "id": "radio",
+      "routes": [
+        "/radio"
+      ],
+      "content": "Radio directory. Sidebar, heading Radio and A little company, whenever you need it. Search stations input, genre filter. One Local Test Radio card neutral monogramart,Ambient,Play station andOpen. Link Manage stations. No fake externalstations or imagery.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Radio directory. Sidebar, heading Radio and A little company, whenever you need it. Search stations input, genre filter. One Local Test Radio card neutral monogramart,Ambient,Play station andOpen. Link Manage stations. No fake externalstations or imagery. Functional correction from inspected source: radio means dynamic queues from the local music library using artist and genre seeds, not internet streams. Describe 'Fresh paths through your collection'."
+    },
+    {
+      "id": "radio-detail",
+      "routes": [
+        "/radio/[id]"
+      ],
+      "content": "Radio station detail Local Test Radio. Sidebar, Radio breadcrumb, neutral monogram square, large title, description A local stream for testing playback, genre Ambient, primary Play station action. Secondary Edit station owner control. Stream detail in simple ruled panel. No invented photos.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Radio station detail Local Test Radio. Sidebar, Radio breadcrumb, neutral monogram square, large title, description A local stream for testing playback, genre Ambient, primary Play station action. Secondary Edit station owner control. Stream detail in simple ruled panel. No invented photos. Functional correction: show seed artists and genres, Play station generates a library queue. No stream URL, stream description, or external stream panel."
+    },
+    {
+      "id": "settings",
+      "routes": [
+        "/settings"
+      ],
+      "content": "Settings page withsidebar. Large Settings heading, subtitle Make Lyra feel at home. Media library folders section table Path / Actions with example C:\\Music and Remove. Labelled Folder path input, Browse and Add folder aligned, Scan all folders action. Below local intelligence explanatory status panel and Open Explore link. No placeholders promising future features.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Settings page withsidebar. Large Settings heading, subtitle Make Lyra feel at home. Media library folders section table Path / Actions with example C:\\Music and Remove. Labelled Folder path input, Browse and Add folder aligned, Scan all folders action. Below local intelligence explanatory status panel and Open Explore link. No placeholders promising future features."
+    },
+    {
+      "id": "radio-settings",
+      "routes": [
+        "/settings/radio"
+      ],
+      "content": "Radio station settings withsidebar. Heading Your radio stations, Add station copperbutton, back Settings link. Table Local Test Radio / Ambient / Edit / Delete. Add station form below withName,Stream URL,Description,Genre,Save station fields; clear admin utility layout andfieldlabels.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Radio station settings withsidebar. Heading Your radio stations, Add station copperbutton, back Settings link. Table Local Test Radio / Ambient / Edit / Delete. Add station form below withName,Stream URL,Description,Genre,Save station fields; clear admin utility layout andfieldlabels. Functional correction: Add station opens form with Station name, Seed artists and Seed genres selectors, Save station. Never show Stream URL or Description fields; these do not exist."
+    },
+    {
+      "id": "radio-edit",
+      "routes": [
+        "/settings/radio/[id]"
+      ],
+      "content": "Edit radio station form withsidebar. Back Your radio stations; heading Edit station. Field labels Station name (Local Test Radio), Stream URL, Description, Website, Genre, Image upload. Save changes copperbutton and Cancel. Calm boundedwidthform, no unnecessaryimage.",
+      "prompt": "Create ONE distinct page-specific high-fidelity Lyra application desktop UI mockup at readable 1440x1000 landscape scale. Attachments: first is the inspected HTML brand board controlling exact warm paper #f4efe5, ink #262522, copper #a34127, Bodoni Moda serif headings, Public Sans 16px body/controls; second is selected library layout controlling the 216px sidebar and quiet editorial rhythm. This is a proposed UI reference, with demonstration text only, not a claim of real user data. Preserve the actual lyra glyph, square neutral placeholders, flat surfaces and fine rules. No new artwork, no gradients, no eyebrows, no emoji, no tiny text, no range sliders, no drag-only controls. Distinct composition appropriate to the specified page. All actions legible and mouse/keyboard usable, 44px controls. Do not reproduce other page sections or make a collage. PAGE: Edit radio station form withsidebar. Back Your radio stations; heading Edit station. Field labels Station name (Local Test Radio), Stream URL, Description, Website, Genre, Image upload. Save changes copperbutton and Cancel. Calm boundedwidthform, no unnecessaryimage. Functional correction: this route edits name and uploads logo/background images, with link to edit artist/genre seeds. No Stream URL, Website, Description fields."
+    }
+  ]
+}

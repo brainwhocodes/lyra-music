@@ -4,9 +4,10 @@ import type { Track } from '~/types/track'; // Import consolidated Track type
 import type { Album } from '~/types/album'; // Import Album type
 import type { PodcastEpisode } from '~/types/podcast'; // Import PodcastEpisode type
 import { useTrackArtists } from '~/composables/useTrackArtists';
+import { libraryPlaybackSource } from '~/utils/audio/playback-source';
 
 export interface QueueContext {
-  type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | 'podcast' | null;
+  type: 'album' | 'playlist' | 'artist' | 'track' | 'all_tracks' | 'podcast' | 'radio' | null;
   id: string | null;
   name?: string; // Optional name for the context (e.g., album title, playlist name)
 }
@@ -20,7 +21,10 @@ export const usePlayerStore = defineStore('player', () => {
   const currentTime = ref<number>(0); // In seconds
   const duration = ref<number>(0); // In seconds
   const volume = ref<number>(1); // Default volume (0 to 1)
+  const lastNonZeroVolume = ref<number>(1);
   const audioElement = ref<HTMLAudioElement | null>(null);
+  const mediaRevision = ref(0);
+  const playbackRevision = computed(() => mediaRevision.value);
   const isLoading = ref<boolean>(false); // To track if audio is loading
   const isShuffled = ref<boolean>(false);
   const originalQueue = ref<Track[]>([]); // To restore order when shuffle is turned off
@@ -119,7 +123,30 @@ export const usePlayerStore = defineStore('player', () => {
 
   // --- Internal Functions --- 
 
+  let playRequestId = 0;
+
+  // Every play entry point shares ownership checks. A rejected promise from a
+  // paused/replaced element (or an older request on the same element) must not
+  // tear down or restart the user's current playback.
+  const _playAudioElement = (element: HTMLAudioElement | null = audioElement.value) => {
+    if (!element || element !== audioElement.value) return;
+    const requestId = ++playRequestId;
+    void element.play().catch((error: unknown) => {
+      if (audioElement.value !== element || requestId !== playRequestId) return;
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+        isPlaying.value = !element.paused;
+        isLoading.value = false;
+        return;
+      }
+      _handleError(error, element);
+    });
+  };
+
   const _cleanupAudioElement = () => {
+    // Invalidates gestures captured against the previous media, even on a
+    // reload of the same track. Pause and volume changes preserve ownership.
+    mediaRevision.value++;
+    playRequestId++;
     if (audioElement.value) {
       audioElement.value.pause();
       audioElement.value.removeEventListener('play', _handlePlay);
@@ -165,7 +192,11 @@ export const usePlayerStore = defineStore('player', () => {
     }
 
     // Create new audio element
-    audioElement.value = new Audio(source);
+    const element = new Audio('');
+    element.src = !track.audioUrl && typeof element.canPlayType === 'function'
+      ? libraryPlaybackSource(track.trackId, mime => element.canPlayType(mime))
+      : source;
+    audioElement.value = element;
     audioElement.value.volume = volume.value;
     scrobbledCurrentTrack.value = false; // Reset scrobble status for new track
 
@@ -179,35 +210,13 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.addEventListener('waiting', _handleWaiting); // Loading started
     audioElement.value.addEventListener('playing', _handlePlaying); // Loading finished
     
-    // Attempt to play
-    audioElement.value.play().then(() => {
-      // Playback started successfully or was allowed
-      // The 'play' event listener (_handlePlay) should set isPlaying.value = true
-    }).catch((error: any) => {
-      console.error('Error attempting to play audio in _setupAudioElement:', error.name, error.message, error);
-      // Log additional info if available
-      if (audioElement.value) {
-        console.error('Audio Element State: readyState=', audioElement.value.readyState, 'networkState=', audioElement.value.networkState, 'error=', audioElement.value.error);
-      }
-      // Some browsers reject play() with AbortError if the source changes very quickly.
-      // In that case, attempt to play the current element again after a brief delay.
-      if (error.name === 'AbortError' && audioElement.value) {
-        setTimeout(() => {
-          audioElement.value?.play().catch(_handleError);
-        }, 100);
-      } else {
-        isPlaying.value = false;
-        isLoading.value = false;
-      }
-      // TODO: Consider setting a user-visible error message in the store or emitting an event
-      // For example: playbackError.value = 'Playback was blocked. Please tap play again.';
-    });
+    _playAudioElement(element);
   };
 
   // --- Event Handlers --- 
 
   const _handlePlay = () => { isPlaying.value = true; };
-  const _handlePause = () => { isPlaying.value = false; };
+  const _handlePause = () => { isPlaying.value = false; isLoading.value = false; };
   const _handleEnded = () => { 
     isPlaying.value = false; 
     // currentTime.value = 0; // Reset time - seek(0) in 'one' or new track setup handles this
@@ -215,7 +224,7 @@ export const usePlayerStore = defineStore('player', () => {
     switch (repeatMode.value) {
       case 'one':
         seek(0); 
-        audioElement.value?.play().catch(_handleError); 
+        _playAudioElement();
         break;
       case 'all':
         playNext(true); // Pass flag indicating it's an auto-advancement from 'repeat all'
@@ -238,10 +247,14 @@ export const usePlayerStore = defineStore('player', () => {
       duration.value = audioElement.value.duration;
     }
   };
-  const _handleError = (e: Event | string) => {
+  const _handleError = (error: unknown, requestedElement?: HTMLAudioElement) => {
+    const element = requestedElement ?? (error instanceof Event ? error.currentTarget as HTMLAudioElement | null : audioElement.value);
+    if (!element || element !== audioElement.value) return;
+    // The native error event can arrive before play() rejects. Report it here
+    // before cleanup invalidates that promise, preserving real decoder failures.
+    const message = element.error?.message || (error instanceof Error ? error.message : String(error));
+    console.error('Audio playback failed:', message, element.error ?? error);
     _cleanupAudioElement();
-    // Show error to user?
-    // Optionally try to advance to next track on error?
   };
   const _handleWaiting = () => { isLoading.value = true; };
   const _handlePlaying = () => { isLoading.value = false; };
@@ -431,7 +444,7 @@ export const usePlayerStore = defineStore('player', () => {
        return;
     }
     if (audioElement.value.paused) {
-      audioElement.value.play().catch(_handleError);
+      _playAudioElement();
     } else {
       audioElement.value.pause();
     }
@@ -479,7 +492,7 @@ export const usePlayerStore = defineStore('player', () => {
       // Restart current track
       if (audioElement.value && currentTrack.value) {
         seek(0);
-        if (!isPlaying.value) audioElement.value.play().catch(_handleError);
+        if (!isPlaying.value) _playAudioElement();
       }
       return;
     }
@@ -500,11 +513,18 @@ export const usePlayerStore = defineStore('player', () => {
   };
 
   const setVolume = (level: number) => {
+    if (!Number.isFinite(level)) return;
     const newVolume = Math.max(0, Math.min(1, level));
+    if (newVolume > 0) lastNonZeroVolume.value = newVolume;
     volume.value = newVolume;
     if (audioElement.value) {
       audioElement.value.volume = newVolume;
     }
+  };
+
+  // Both player surfaces share mute restoration, including after a track change.
+  const toggleMute = (): void => {
+    setVolume(volume.value > 0 ? 0 : lastNonZeroVolume.value);
   };
 
   const toggleShuffle = () => {
@@ -654,9 +674,7 @@ export const usePlayerStore = defineStore('player', () => {
     audioElement.value.currentTime = currentTime.value;
 
     if (wasPlayingBeforeSeek.value) {
-      audioElement.value.play().catch((error: any) => {
-        _handleError(error);
-      });
+      _playAudioElement();
     } // Closing the if block
   }; // Closing the endSeeking function
 
@@ -672,6 +690,11 @@ export const usePlayerStore = defineStore('player', () => {
     isLoading.value = false;
     isShuffled.value = false;
     playedTrackIdsInShuffle.value.clear();
+    isQueueSidebarVisible.value = false;
+    isFullScreenQueueVisible.value = false;
+    isFullScreenPlayerVisible.value = false;
+    isFullScreenLyricsVisible.value = false;
+    isLyricsModalVisible.value = false;
     // Do not reset volume or repeatMode as those are user preferences not tied to a specific queue
   };
 
@@ -681,7 +704,9 @@ export const usePlayerStore = defineStore('player', () => {
 
   // Watch for time updates to scrobble tracks
   watch([currentTime, currentTrack, duration], async ([time, track, trackDuration]: [number, Track | null, number]) => {
-    if (!track || scrobbledCurrentTrack.value || !trackDuration) {
+    // Direct audio sources (including podcast episodes) are not library tracks;
+    // /api/plays requires an existing local track ID.
+    if (!track || track.audioUrl || scrobbledCurrentTrack.value || !trackDuration) {
       return;
     }
 
@@ -757,6 +782,7 @@ export const usePlayerStore = defineStore('player', () => {
     currentTime,
     duration,
     volume,
+    lastNonZeroVolume,
     isLoading,
     isShuffled,
     repeatMode,
@@ -769,6 +795,7 @@ export const usePlayerStore = defineStore('player', () => {
 
     // Computed
     currentTrack,
+    playbackRevision,
     canPlayNext,
     canPlayPrevious,
     audioSource,
@@ -783,6 +810,7 @@ export const usePlayerStore = defineStore('player', () => {
     playPrevious,
     seek,
     setVolume,
+    toggleMute,
     toggleShuffle,
     toggleRepeatMode,
     showQueueSidebar,

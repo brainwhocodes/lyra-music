@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lyra Radio — Own your frequency</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--radio-ink); color: var(--radio-bone); font: 400 18px/1.4 var(--radio-body); }
+    h1, h2, h3, p, figure { margin: 0; }
+    img { display: block; max-width: 100%; }
+    .board { width: 1440px; padding: 28px; margin-inline: auto; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; padding: 0 0 22px; border-bottom: 2px solid var(--radio-bone); margin-bottom: 18px; }
+    .lockup { display: inline-flex; gap: 12px; align-items: center; }
+    .lockup img { width: 48px; height: 48px; object-fit: contain; }
+    .lockup-name { font: 800 38px/.9 var(--radio-heading); letter-spacing: -.025em; }
+    .lockup-name span { display: block; font: 600 14px/1.1 var(--radio-body); letter-spacing: .23em; margin-top: 5px; }
+    .edition { font-size: 14px; text-transform: uppercase; text-align: right; letter-spacing: .08em; }
+    .edition strong { color: var(--radio-acid); font-weight: 600; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 586px 432px 496px; gap: 18px; }
+    .panel { min-width: 0; position: relative; overflow: hidden; }
+    .panel-label { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 1.3; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+    .panel-label .number { font-variant-numeric: tabular-nums; font-weight: 400; }
+    .manifesto { padding: 30px; background: var(--radio-bone); color: var(--radio-ink); display: flex; flex-direction: column; }
+    .wordmark { width: 345px; height: 144px; object-fit: contain; margin: 17px 0 4px -6px; }
+    .manifesto h1 { font: 800 126px/.86 var(--radio-heading); letter-spacing: -.025em; text-transform: uppercase; margin-top: 12px; }
+    .manifesto h1 span { display: block; }
+    .manifesto h1 .frequency { font-size: 118px; }
+    .manifesto-bottom { display: flex; justify-content: space-between; align-items: end; border-top: 3px solid var(--radio-ink); padding-top: 18px; margin-top: auto; }
+    .manifesto-bottom p { font-size: 18px; line-height: 1.4; max-width: 365px; }
+    .direction-arrow { font: 700 64px/.8 var(--radio-body); }
+    .art { background: var(--radio-acid); }
+    .art > img { width: 100%; height: 100%; object-fit: cover; object-position: 75% 50%; }
+    .art-label { position: absolute; left: 22px; top: 22px; background: var(--radio-ink); color: var(--radio-bone); padding: 12px 16px; font-size: 14px; font-weight: 600; }
+    .art-caption { position: absolute; bottom: 20px; left: 22px; padding: 12px 16px; background: var(--radio-acid); color: var(--radio-ink); border: 3px solid var(--radio-ink); font-weight: 700; transform: rotate(-3deg); font-size: 20px; }
+    .typography { background: var(--radio-acid); color: var(--radio-ink); padding: 28px 30px; }
+    .type-split { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+    .type-headline { font: 800 80px/.92 var(--radio-heading); letter-spacing: -.02em; }
+    .type-meta { margin-top: 10px; font-size: 14px; font-weight: 600; }
+    .alphabet { font: 700 29px/1.1 var(--radio-heading); margin-top: 20px; letter-spacing: .025em; overflow-wrap: anywhere; }
+    .ui-specimen { border-left: 2px solid var(--radio-ink); padding-left: 22px; }
+    .grotesk-name { font: 600 38px/1.02 var(--radio-body); letter-spacing: -.05em; }
+    .ui-copy { font-size: 18px; line-height: 1.5; margin-top: 19px; }
+    .weights { display: flex; gap: 12px; font-size: 16px; margin-top: 17px; }
+    .numerals { border-top: 2px solid var(--radio-ink); padding-top: 13px; margin-top: 21px; font-size: 36px; line-height: 1; font-weight: 500; letter-spacing: .045em; font-variant-numeric: tabular-nums; }
+    .numerals small { font-size: 14px; margin-left: 12px; letter-spacing: 0; }
+    .palette { background: var(--radio-bone); color: var(--radio-ink); padding: 28px 30px; }
+    .palette h2 { font: 800 51px/.95 var(--radio-heading); text-transform: uppercase; margin-top: 15px; }
+    .swatches { margin-top: 18px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .swatch { height: 210px; border: 2px solid var(--radio-ink); display: flex; flex-direction: column; padding: 14px 10px; justify-content: space-between; }
+    .swatch b { font: 700 27px/.95 var(--radio-heading); text-transform: uppercase; }
+    .swatch span { font-size: 14px; line-height: 1.25; }
+    .swatch code { font: 500 14px var(--radio-body); display: block; margin-top: 8px; }
+    .ink { background: var(--radio-ink); color: var(--radio-bone); }
+    .bone { background: var(--radio-bone); color: var(--radio-ink); }
+    .acid { background: var(--radio-acid); color: var(--radio-ink); }
+    .orange { background: var(--radio-orange); color: var(--radio-ink); }
+    .blue { background: var(--radio-blue); color: var(--radio-bone); }
+    .palette-note { font-size: 14px; margin-top: 15px; }
+    .application { background: var(--radio-blue); padding: 28px 30px; }
+    .app-window { margin-top: 21px; border: 3px solid var(--radio-ink); background: var(--radio-bone); color: var(--radio-ink); box-shadow: 8px 8px 0 var(--radio-ink); }
+    .app-nav { background: var(--radio-ink); color: var(--radio-bone); padding: 13px 17px; display: flex; justify-content: space-between; align-items: center; }
+    .app-nav b { font: 800 26px var(--radio-heading); }
+    .app-nav span { font-size: 14px; color: var(--radio-acid); font-weight: 600; }
+    .app-content { padding: 21px 21px 18px; }
+    .app-content h2 { font: 800 51px/.94 var(--radio-heading); text-transform: uppercase; max-width: 400px; }
+    .app-content p { font-size: 16px; margin-top: 12px; max-width: 440px; }
+    .app-action { display: inline-flex; align-items: center; gap: 30px; background: var(--radio-acid); border: 2px solid var(--radio-ink); box-shadow: 3px 3px 0 var(--radio-ink); padding: 10px 17px; font-weight: 700; font-size: 16px; margin-top: 20px; }
+    .app-caption { margin-top: 23px; font-size: 14px; }
+    .system { background: var(--radio-orange); color: var(--radio-ink); padding: 28px 30px; }
+    .stickers { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; margin-top: 22px; }
+    .icon-card { background: var(--radio-ink); border: 4px solid var(--radio-bone); padding: 11px; width: 210px; height: 210px; transform: rotate(-6deg); box-shadow: 5px 5px 0 var(--radio-ink); }
+    .icon-card img { width: 100%; height: 100%; object-fit: contain; }
+    .sticker-word { display: inline-block; font: 800 42px/.95 var(--radio-heading); text-transform: uppercase; background: var(--radio-bone); padding: 10px 15px; border: 3px solid var(--radio-ink); box-shadow: 4px 4px 0 var(--radio-ink); transform: rotate(3deg); }
+    .sticker-word.second { background: var(--radio-acid); margin-top: 22px; transform: rotate(-3deg); }
+    .system-rule { border-top: 2px solid var(--radio-ink); padding-top: 17px; margin-top: 27px; display: flex; gap: 20px; }
+    .system-rule b { font: 700 33px/.9 var(--radio-heading); max-width: 190px; text-transform: uppercase; }
+    .system-rule p { flex: 1; font-size: 16px; }
+    .footer { padding-top: 22px; display: flex; justify-content: space-between; font-size: 14px; color: var(--radio-muted); }
+    .footer strong { color: var(--radio-bone); font-weight: 500; }
+    @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } .board { margin: 0; } }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="lockup"><img src="../../../public/images/lyra-radio/mark.png" alt="Lyra headphone L mark"><div class="lockup-name">LYRA <span>RADIO</span></div></div>
+      <p class="edition"><strong>Identity system / 01</strong><br>Personal music. Street-level energy.</p>
+    </header>
+    <div class="grid">
+      <section class="panel manifesto" aria-labelledby="manifesto-title">
+        <div class="panel-label"><span>Wordmark + voice</span><span class="number">01</span></div>
+        <img class="wordmark" src="../../../public/images/lyra-radio/wordmark.png" alt="Original graffiti Lyra wordmark with audio cable underline">
+        <h1 id="manifesto-title"><span>Own your</span><span class="frequency">frequency.</span></h1>
+        <div class="manifesto-bottom"><p>A personal music library<br>with a pirate-radio attitude.</p><span class="direction-arrow" aria-hidden="true">↗</span></div>
+      </section>
+      <figure class="panel art">
+        <img src="../../../public/images/lyra-radio/rooftop-dj.png" alt="Original anime DJ on a rooftop with headphones, skateboard-era clothing and a boombox">
+        <div class="art-label">02 / THE VISUAL WORLD</div>
+        <figcaption class="art-caption">TURN THE CITY UP.</figcaption>
+      </figure>
+      <section class="panel typography" aria-labelledby="type-title">
+        <div class="panel-label"><span id="type-title">Type that cuts through</span><span class="number">03</span></div>
+        <div class="type-split">
+          <div><h2 class="type-headline">BARLOW<br>CONDENSED</h2><p class="type-meta">DISPLAY / 800 · HEADLINES / 700</p><p class="alphabet">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p></div>
+          <div class="ui-specimen"><h3 class="grotesk-name">Space<br>Grotesk</h3><p class="type-meta">INTERFACE + READING</p><p class="ui-copy">Your collection.<br>Your next discovery.</p><p class="weights"><span style="font-weight:400">400</span><span style="font-weight:500">500</span><span style="font-weight:600">600</span><span style="font-weight:700">700</span></p></div>
+        </div>
+        <p class="numerals">0123456789 <small>SPACE GROTESK / 500</small></p>
+      </section>
+      <section class="panel palette" aria-labelledby="palette-title">
+        <div class="panel-label"><span>Color with a job to do</span><span class="number">04</span></div>
+        <h2 id="palette-title">Five inks. One signal.</h2>
+        <div class="swatches">
+          <div class="swatch ink"><b>Ink</b><span>Structure<br>+ text<code>#17191C</code></span></div>
+          <div class="swatch bone"><b>Bone</b><span>Reading<br>surfaces<code>#F5F2E9</code></span></div>
+          <div class="swatch acid"><b>Acid</b><span>Primary<br>action<code>#D7FF3F</code></span></div>
+          <div class="swatch orange"><b>Orange</b><span>Emphasis<br>+ artwork<code>#FF7144</code></span></div>
+          <div class="swatch blue"><b>Blue</b><span>Secondary<br>panels<code>#3B4FD8</code></span></div>
+        </div>
+        <p class="palette-note">Ink on acid. Ink on orange. Bone on blue. No neon body text.</p>
+      </section>
+      <section class="panel application" aria-labelledby="app-title">
+        <div class="panel-label"><span>Product application</span><span class="number">05</span></div>
+        <div class="app-window">
+          <div class="app-nav"><b>LYRA RADIO</b><span>YOUR COLLECTION</span></div>
+          <div class="app-content"><h2 id="app-title">A new route through<br>your records.</h2><p>Find connections in the music you already have.</p><div class="app-action">Explore your music <span aria-hidden="true">↗</span></div></div>
+        </div>
+        <p class="app-caption">Static identity study — typography, hierarchy and action styling.</p>
+      </section>
+      <section class="panel system" aria-labelledby="system-title">
+        <div class="panel-label"><span>Marks that travel</span><span class="number">06</span></div>
+        <div class="stickers">
+          <div class="icon-card"><img src="../../../public/images/lyra-radio/mark.png" alt="Lyra headphone L sticker"></div>
+          <div><span class="sticker-word">Independent<br>by design.</span><span class="sticker-word second">Listen your way.</span></div>
+        </div>
+        <div class="system-rule"><h2 id="system-title">LOUD ART.<br>CLEAR CONTROLS.</h2><p>Graffiti for identity. Condensed type for impact. Plain language for everything you use.</p></div>
+      </section>
+    </div>
+    <footer class="footer"><strong>LYRA RADIO / ORIGINAL IDENTITY STUDY</strong><span>Editable HTML + CSS · Real Google Fonts · Original artwork</span></footer>
+  </main>
+</body>
+</html>

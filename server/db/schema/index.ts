@@ -276,3 +276,4 @@ export const scanFileRelations = relations(scanFiles, ({ one }) => ({
 //     references: [users.userId],
 //   }),
 // }));
+export * from './track-embeddings';

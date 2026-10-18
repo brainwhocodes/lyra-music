@@ -1,0 +1,26 @@
+[
+  {
+    "source": "public\\images\\lyra-radio\\rooftop-dj.png",
+    "output": "public\\images\\lyra-radio\\rooftop-dj.webp",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "5247120509470d0a573b970e67ef81a6a3ffbb206689f704560ef6e93b7729aa",
+    "operation": "Proportional resize and WebP encoding only; no crop or artwork editing"
+  },
+  {
+    "source": "public\\images\\lyra-radio\\wordmark.png",
+    "output": "public\\images\\lyra-radio\\wordmark.webp",
+    "width": 720,
+    "height": 300,
+    "sha256": "556b8a864aa8a40e0a934d57cfc2354ad8f5dc4c1398c36beb11cab918af465c",
+    "operation": "Proportional resize and WebP encoding only; no crop or artwork editing"
+  },
+  {
+    "source": "public\\images\\lyra-radio\\mark.png",
+    "output": "public\\images\\lyra-radio\\mark.webp",
+    "width": 256,
+    "height": 256,
+    "sha256": "2b42d2e38704fac4618e05271954eaced41023876d419988fb752e57dfaa4143",
+    "operation": "Proportional resize and WebP encoding only; no crop or artwork editing"
+  }
+]

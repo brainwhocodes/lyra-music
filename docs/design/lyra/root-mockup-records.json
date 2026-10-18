@@ -1,0 +1,185 @@
+[
+  {
+    "id": "landing",
+    "routes": [
+      "/"
+    ],
+    "prompt": "Design a single polished desktop landing-page mockup for Lyra, a self-hosted personal music library. Use attached inspected HTML brand board as identity and typography reference: warm paper, ink, copper, Bodoni Moda headlines and Public Sans utility. 1440px-wide website, tall image showing full short page, all text readable. Top navigation lyra left, Features, Self-host, Log in right, ruled baseline. Hero split approximately45/55, huge live-type-look heading 'Your music. Your own little world.' on left, paragraph about a thoughtful home for music you keep, copper 'Open your library' button and understated 'Explore Lyra' link. On right reuse EXACT vinyl/copper sleeve photograph pictured in board; don't invent other images. Below one fine rule and three editorial numbered feature columns 'A proper record collection', 'Follow your curiosity', 'Keep it close'. Final compact horizontal CTA 'Make room for a good listen.' with Create an account, footer with Lyra / Features / Self-host / GitHub. Cream everywhere, no card shadows, no gradients, no eyebrows, no badges, no fabricated social proof. Airy professional layout, aligned content gutters, original mark and lowercase wordmark. No browser or device frame. This is one actual page, not a brand board or collage.",
+    "path": "docs/design/lyra/landing-mockup.png",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-461d9aef-6e2a-4d81-8cb2-c5a30cdbeb92.png",
+    "selectedAt": "2026-10-18T08:45:28.345Z",
+    "inspection": "Selected split hero and ruled editorial lower sections. Reuse existing hero; retain live copy, omit decorative numbered kickers and replace unsupported privacy absolutes with scoped local-model claims."
+  },
+  {
+    "id": "library",
+    "routes": [
+      "/library"
+    ],
+    "prompt": "One page-specific polished UI mockup for Lyra. First attached image is inspected brand board controlling identity, palette, real fonts and existing image. Second is selected landing controlling visual language. Warm paper #f4efe5, ink #262522, secondary #62594f, copper #a34127; Bodoni Moda headlines, Public Sans16px body/14px minimum, generous space, thin rules, square artwork, small corner radii. Desktop1440x1000, readable page notcollage, no deviceframe. Library home. Fixed slim 216px cream sidebar lyra at top and Library, Albums, Artists, Genres, Tracks, Playlists, Explore, Discover, Podcasts, Radio, Settings; selected Library has copper leading rule. Wide content starts search field then heading 'Your library' with 'Good music, within reach.' Below feature panel using exact existing vinyl photo, headline 'Find your next favourite in your own collection' and Explore your music. Below Albums with two square placeholder covers labeled Monomyth and Library Songs 5 / Scott Buckley, plus View all. Lower Artists, Playlists and Genres rows. Bottom compact playback bar. Only existing vinyl photo and plain neutral cover placeholders with original logo; no invented album art. All functionality live-type-look controls,44pxtargets, no gradients/shadows/eyebrowlabels/emoji/rangesliders. Use only the already generated vinylphoto where expressly requested; neutral placeholders for missing real album art.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-78a26802-7de2-4a25-b9c6-417ac716408d.png",
+    "path": "docs/design/lyra/library-mockup.png",
+    "selectedAt": "2026-10-18T08:47:40.744Z"
+  },
+  {
+    "id": "albums",
+    "routes": [
+      "/albums"
+    ],
+    "prompt": "One page-specific polished UI mockup for Lyra. First attached image is inspected brand board controlling identity, palette, real fonts and existing image. Second is selected landing controlling visual language. Warm paper #f4efe5, ink #262522, secondary #62594f, copper #a34127; Bodoni Moda headlines, Public Sans16px body/14px minimum, generous space, thin rules, square artwork, small corner radii. Desktop1440x1000, readable page notcollage, no deviceframe. Albums index. Same216px sidebar. Main editorial heading Albums and count, search albums input, sort by Title select, view buttons. Two generously spaced square neutral record-placeholder covers (no photo invention) with titles Monomyth, Library Songs 5, artist Scott Buckley and understated Play + album options. Clear simple album grid, generous whitespace, thin horizontal rules. All functionality live-type-look controls,44pxtargets, no gradients/shadows/eyebrowlabels/emoji/rangesliders. Use only the already generated vinylphoto where expressly requested; neutral placeholders for missing real album art.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-ebf7940d-b838-4154-97df-f8a661ee9ff9.png",
+    "path": "docs/design/lyra/albums-mockup.png",
+    "selectedAt": "2026-10-18T08:48:12.036Z"
+  },
+  {
+    "id": "album-detail",
+    "routes": [
+      "/albums/[id]"
+    ],
+    "prompt": "Single readable page-specific Lyra desktop UI mockup,1440x1000. Attached brand board controlsfonts/identity/colors, attachedlibrarypagecontrols216pxleftsidebar andeditorialstyle. Cream#f4efe5 ink#262522 secondary#62594f copper#a34127. BodoniModa headings,PublicSans16pxbody/14pxmetadata. Album detail Monomyth by Scott Buckley. Sidebar. Breadcrumb Albums, large square neutral record artwork placeholder at left, title and year2025 at right, Play album copper button, Add to playlist, Edit metadata controls. Below track list with01 The Distant Sun 0:12 and options. Footer note metadata editable. Persistent compact playback bar. No invented cover. Design thisdistinctpageonly, notcollage. No newillustration; placeholders use attachedoriginalmark centered onsolidcream, nofakealbumcover. Alltextstrongcontrast,44pxbuttons, flatfineborders,noeyebrows/noemoji/no gradients/shadows/no rangesliders. Keepcomplete sidebarnavigation like libraryreference.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-8cdfc088-1ad4-43ce-bba4-00ca77d0e169.png",
+    "path": "docs/design/lyra/album-detail-mockup.png",
+    "selectedAt": "2026-10-18T08:50:14.222Z"
+  },
+  {
+    "id": "artists",
+    "routes": [
+      "/artists"
+    ],
+    "prompt": "Single readable page-specific Lyra desktop UI mockup,1440x1000. Attached brand board controlsfonts/identity/colors, attachedlibrarypagecontrols216pxleftsidebar andeditorialstyle. Cream#f4efe5 ink#262522 secondary#62594f copper#a34127. BodoniModa headings,PublicSans16pxbody/14pxmetadata. Artists index. Sidebar. Heading Artists with search artists and sort select. Elegant large neutral square portrait placeholder (no actual portrait) with initial S and label Scott Buckley,2albums,link. Rule and airy empty collection space. No invented photos. Design thisdistinctpageonly, notcollage. No newillustration; placeholders use attachedoriginalmark centered onsolidcream, nofakealbumcover. Alltextstrongcontrast,44pxbuttons, flatfineborders,noeyebrows/noemoji/no gradients/shadows/no rangesliders. Keepcomplete sidebarnavigation like libraryreference.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-56f90885-fdb5-4dc4-b05e-5ffe27c97617.png",
+    "path": "docs/design/lyra/artists-mockup.png",
+    "selectedAt": "2026-10-18T08:50:14.550Z"
+  },
+  {
+    "id": "artist-detail",
+    "routes": [
+      "/artists/[id]"
+    ],
+    "prompt": "Single readable page-specific Lyra desktop UI mockup,1440x1000. Attached brand board controlsfonts/identity/colors, attachedlibrarypagecontrols216pxleftsidebar andeditorialstyle. Cream#f4efe5 ink#262522 secondary#62594f copper#a34127. BodoniModa headings,PublicSans16pxbody/14pxmetadata. Artist detail Scott Buckley. Sidebar; Artists breadcrumb, type-led large title, neutral small portrait placeholder initial S, button Play tracks. Albums subsection two square placeholder album sleeves Monomyth and Library Songs 5. Tracks subsection with The Distant Sun and Signal to Noise durations and play buttons. Design thisdistinctpageonly, notcollage. No newillustration; placeholders use attachedoriginalmark centered onsolidcream, nofakealbumcover. Alltextstrongcontrast,44pxbuttons, flatfineborders,noeyebrows/noemoji/no gradients/shadows/no rangesliders. Keepcomplete sidebarnavigation like libraryreference.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-c240f20c-9b3a-4253-a82f-377077fffa15.png",
+    "path": "docs/design/lyra/artist-detail-mockup.png",
+    "selectedAt": "2026-10-18T08:50:14.897Z"
+  },
+  {
+    "id": "explore",
+    "routes": [
+      "/explore"
+    ],
+    "prompt": "One polished single-page Lyra UI mockup. Brand board attachment controls originalmark, BodoniModa headlines/PublicSans body,cream#f4efe5,ink#262522,copper#a34127,muted#62594f. Libraryattachmentcontrolsappnavigation/sidebar. Semantic Explore page withsidebar. Heading Explore your music. Description Describe a mood, an instrument, or a lyric. Wide labelled Search your library field containing quiet cinematic music,Searchcopperbutton. Clear status Index3tracks / Updateindex action. Tabs orsection headings Search results / For you. Results The Distant Sun andSignal toNoise with metadata,relevancecaption andPlay; rowShow suggestedtags reveals Cinematic,Ambient with 'Suggested from metadata and lyrics'. Sidebar informationdescribeslocalEmbeddingGemmamodelstatus. No accuracypercentages or fabricatedconfidence. Readable desktop1440x1000 frame, no collage ordeviceborder. No eyebrowlabels,noinventedimages,nogradients,noshadowcards. Neverinvent counts orprobabilities. Originalmark onneutralcovers. Do not draw range sliders: progressdisplay plusdiscrete labeled buttons. Keep content inview andalltext14pxminimum.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e820d017-8f08-4022-ab25-161c589b0153.png",
+    "path": "docs/design/lyra/explore-mockup.png",
+    "selectedAt": "2026-10-18T08:51:13.328Z"
+  },
+  {
+    "id": "full-player",
+    "routes": [
+      "#full-screen-player"
+    ],
+    "prompt": "One polished single-page Lyra UI mockup. Brand board attachment controls originalmark, BodoniModa headlines/PublicSans body,cream#f4efe5,ink#262522,copper#a34127,muted#62594f. Libraryattachmentcontrolsappnavigation/sidebar. Single mobile full-screen musicplayer390pxwidthportrait. Creampaper,coppercontrols,Bodonitracktitle. Close full screen playerbutton top,lyra tinywordmark. Square neutral recordplaceholder,The Distant Sun,ScottBuckley,Monomyth. PlayPause bigbutton,Previous,Next,Shuffle,Repeatallsemanticallylabelled. Progress line isdisplayonly with0:03/0:12, Back10seconds andForward10secondsbuttons insteadofslider. Quieter,Mute,LouderbuttonsandVolume80%. BottomUpNextandLyricsbuttons. No range sliders,nodragging,no deadmoremenu. Alltext14pxminimum,44pxtargets. Readable portrait mobile390x844 frame, no collage ordeviceborder. No eyebrowlabels,noinventedimages,nogradients,noshadowcards. Neverinvent counts orprobabilities. Originalmark onneutralcovers. Do not draw range sliders: progressdisplay plusdiscrete labeled buttons. Keep content inview andalltext14pxminimum.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-9350820c-a8df-4f6c-b822-329a10be22cd.png",
+    "path": "docs/design/lyra/full-player-mockup.png",
+    "selectedAt": "2026-10-18T08:51:39.096Z"
+  },
+  {
+    "id": "genres",
+    "routes": [
+      "/genres"
+    ],
+    "prompt": "One readable1440x1000 desktop Lyra page mockup. Attachedbrandboard controlsfont/color/mark; attachedlibrarycontrols consistent216pxsidebar andlayout. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14min. Genres index withsidebar. Heading Genres, subtitle Browse your collection by sound. A large bordered rectangular Ambient tile with big serif text and count2tracks, Soundtrack tile beside. Simple restrained monochrome tiles, no decorative images, crisp rules and lots ofspace. Show only statedtracks, countsrealdata. Fine rules andsquarecontrols, noeyebrows, no gradients, no collage ordeviceframe, no inventedart/photos. Originalmarkonplainneutral if needed. Same fullnavigation aslibrary includingExplore.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-53204b4a-ca16-41d7-b021-0be680278225.png",
+    "path": "docs/design/lyra/genres-mockup.png",
+    "selectedAt": "2026-10-18T08:56:52.893Z"
+  },
+  {
+    "id": "genre-detail",
+    "routes": [
+      "/genres/[genreId]"
+    ],
+    "prompt": "One readable1440x1000 desktop Lyra page mockup. Attachedbrandboard controlsfont/color/mark; attachedlibrarycontrols consistent216pxsidebar andlayout. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14min. Genre detail Ambient withsidebar, back Genres link. Large serif Ambient title, description Tracks tagged in your collection, Play all copper button. Labeled track table The Distant Sun / Monomyth / Scott Buckley /0:12 and Signal to Noise / Library Songs5 / Scott Buckley /0:12, each play menu actions. Show only statedtracks, countsrealdata. Fine rules andsquarecontrols, noeyebrows, no gradients, no collage ordeviceframe, no inventedart/photos. Originalmarkonplainneutral if needed. Same fullnavigation aslibrary includingExplore.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-03c0336e-4ed6-4664-9a76-3e2da7dda534.png",
+    "path": "docs/design/lyra/genre-detail-mockup.png",
+    "selectedAt": "2026-10-18T08:57:23.797Z"
+  },
+  {
+    "id": "tracks",
+    "routes": [
+      "/tracks"
+    ],
+    "prompt": "One readable1440x1000 desktop Lyra page mockup. Attachedbrandboard controlsfont/color/mark; attachedlibrarycontrols consistent216pxsidebar andlayout. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14min. Tracks index withsidebar, large Tracks title and Your complete collection description, modest search/sort space if useful. Readable ruled table Title,Album,Artist,Duration; The Distant Sun, Signal to Noise, Original speech test. Visible play buttons eachrow. Use natural responsive list rhythm, neutral creambackground, no unnecessary artwork. Show only statedtracks, countsrealdata. Fine rules andsquarecontrols, noeyebrows, no gradients, no collage ordeviceframe, no inventedart/photos. Originalmarkonplainneutral if needed. Same fullnavigation aslibrary includingExplore.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-40793753-8bef-44e1-8864-fb01c52b1482.png",
+    "path": "docs/design/lyra/tracks-mockup.png",
+    "selectedAt": "2026-10-18T08:57:55.931Z"
+  },
+  {
+    "id": "login",
+    "routes": [
+      "/login"
+    ],
+    "prompt": "One readable1440x1000 desktop Lyra page mockup. Attachedbrandboard controlsfont/color/mark; attachedlandingcontrols visualstyle. Cream#f4efe5 ink#262522 copper#a34127, BodoniModa headings PublicSans16body/14min. Public login page. Topbrand lyra and backHome link. Split layout: left exact vinyl photo fromboard and headline 'Welcome back to your music.' Right restrained formheading Login, labelled Email and Password fields, copper Loginbutton, error slot below, Don't have an account? Register link. No sidebar, no inventedimage. Fine rules, flatlayout, generousformspacing, noeyebrows/no gradient/no collage/deviceframe. Exactexistingvinylphotoreuse, no otherart. Readable44pxinputs/buttons. Label allfields. Distinctsinglepage.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-82f2fcb7-6417-4f4b-a8be-336c65b1f6ea.png",
+    "path": "docs/design/lyra/login-mockup.png",
+    "selectedAt": "2026-10-18T08:59:47.946Z"
+  },
+  {
+    "id": "register",
+    "routes": [
+      "/register"
+    ],
+    "prompt": "One readable1440x1000 desktop Lyra page mockup. Attachedbrandboard controlsfont/color/mark; attachedlandingcontrols visualstyle. Cream#f4efe5 ink#262522 copper#a34127, BodoniModa headings PublicSans16body/14min. Public registration page. Topbrand lyra and backHome. Left narrower exact vinylphoto and heading 'A place for your collection.' Right form heading Register, fields Email,Name,Password,Confirm Password,Access Code, helper Get an access code from your server administrator. Copper Register button and Already have an account? Login. No sidebar. Fine rules, flatlayout, generousformspacing, noeyebrows/no gradient/no collage/deviceframe. Exactexistingvinylphotoreuse, no otherart. Readable44pxinputs/buttons. Label allfields. Distinctsinglepage.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-585d38ff-6c02-4103-84fe-bced87a43ab8.png",
+    "path": "docs/design/lyra/register-mockup.png",
+    "selectedAt": "2026-10-18T09:00:19.592Z"
+  },
+  {
+    "id": "features",
+    "routes": [
+      "/features"
+    ],
+    "prompt": "One readable single page Lyra website mockup1440pxwide tall enough for completepage. Attachedinspectedbrandboard controlsoriginalmark/fonts/colors; selectedlandingcontrolsvisualdesign. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14minimum. Features marketing landingpage. Top lyra,Features,Self-host,Log in. Large heading 'More ways to get lost in your music.' Intro about albums,playlists andlocalsemanticdiscovery. Editorial two-column section with EXACTexistingvinylphotoleft and Album-first listening text right. Below three horizontal ruled feature rows numbered only ifnecessary with headings Search by what you mean / Find a new connection / Keep the words close. Truthful copy metadataandlyrics embeddings; localtranscription; noqualityclaims. FooterCTA Open yourlibrary and links. Fullshortpage,readable. Fine rules,quietalignedlayout,nocardshadows, noeyebrows/noemoji/no gradients/no collage/deviceframes. Only reuse existing vinyl/coppersleeve photograph frombrandboard, no otherimage. Realhuman productcopy, no unverifiedprivacy/accuracy claims. No imaginaryfeatures.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-15657181-4f5e-47c7-8907-44a15e23cfca.png",
+    "path": "docs/design/lyra/features-mockup.png",
+    "selectedAt": "2026-10-18T09:03:49.350Z"
+  },
+  {
+    "id": "self-host",
+    "routes": [
+      "/self-host"
+    ],
+    "prompt": "One readable single page Lyra website mockup1440pxwide tall enough for completepage. Attachedinspectedbrandboard controlsoriginalmark/fonts/colors; selectedlandingcontrolsvisualdesign. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14minimum. Self-host marketing/instruction landingpage. Top lyra,Features,Self-host,Log in. Heading 'Your collection. On your terms.' intro Lyra runs on your own server. Wide short exactvinylphoto strip. Below three numbered practicalsetupsteps Get the project,Connect a musicfolder,Enable local discovery. Requirements Node22.12+,pnpm10.12.1,FFmpeg, optionalPython3.12models; honest optionaldownloadnotice. Buttons Read setup onGitHub andLog in to thisserver. No giantcodewall,no fakeoneclickinstall. Fullshortpage. Fine rules,quietalignedlayout,nocardshadows, noeyebrows/noemoji/no gradients/no collage/deviceframes. Only reuse existing vinyl/coppersleeve photograph frombrandboard, no otherimage. Realhuman productcopy, no unverifiedprivacy/accuracy claims. No imaginaryfeatures.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-5d80307f-6fca-4a93-a8af-80b35858c43d.png",
+    "path": "docs/design/lyra/self-host-mockup.png",
+    "selectedAt": "2026-10-18T09:04:15.246Z"
+  },
+  {
+    "id": "logout",
+    "routes": [
+      "/logout"
+    ],
+    "prompt": "One readable single page Lyra website mockup1440pxwidex1000. Attachedinspectedbrandboard controlsoriginalmark/fonts/colors; selectedlandingcontrolsvisualdesign. Cream#f4efe5 ink#262522 copper#a34127, BodoniModaheadlines PublicSans16body/14minimum. Public transient Logout page. Lyra brand top left, cream paper, centered restrained headline 'Signing you out' with explanatory Returning to the home page and small unobtrusive progress indicator. No fake interactive controls, no sidebar, no photo. This is a short transient route state. Fine rules,quietalignedlayout,nocardshadows, noeyebrows/noemoji/no gradients/no collage/deviceframes. Only reuse existing vinyl/coppersleeve photograph frombrandboard, no otherimage. Realhuman productcopy, no unverifiedprivacy/accuracy claims. No imaginaryfeatures.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-ae57c576-90e5-4a3c-909b-414d42e17c79.png",
+    "path": "docs/design/lyra/logout-mockup.png",
+    "selectedAt": "2026-10-18T09:04:37.432Z"
+  },
+  {
+    "id": "queue-state",
+    "routes": [
+      "#queue-state"
+    ],
+    "prompt": "Create a single mobile390x844 Lyra player overlay UI mockup. Brandboard controls warm cream#f4efe5/ink#262522/copper#a34127, BodoniModaheadline,PublicSans16px body, min14px. Fullplayerreference controlsidentity. Up Next queue state: title Up Next, Close button, Clear queue textbutton. Two ruled rows The Distant Sun / Scott Buckley /0:12 and Signal to Noise / Scott Buckley /0:12. Each row explicitPlaybutton and currenttrack indicator. Small neutralmarkplaceholder square. Quietemptyspace below. No imaginaryimages,newart,eyebrows,emoji,sliders,gradients,shadows,deviceframe,collage. Allbuttons44px andtextstrongcontrast.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-8fd8c067-40ae-43c6-a264-08ad55dfc8d5.png",
+    "path": "docs/design/lyra/queue-state-mockup.png",
+    "selectedAt": "2026-10-18T09:10:32.406Z",
+    "inspection": "Selected warm paper overlay, seriftitle and flatrowcontrols. Nativekeyboardbuttons and realtrack/lyricsdata replace allrastercontent."
+  },
+  {
+    "id": "lyrics-state",
+    "routes": [
+      "#lyrics-state"
+    ],
+    "prompt": "Create a single mobile390x844 Lyra player overlay UI mockup. Brandboard controls warm cream#f4efe5/ink#262522/copper#a34127, BodoniModaheadline,PublicSans16px body, min14px. Fullplayerreference controlsidentity. Lyrics state: heading Lyrics, subtitle Original speech test, Closebutton. Large centered lines 'The music plays softly' and 'in the morning.' withtiming0:00/0:02. Firstactive linecopperonpaper underline. Lyricslinesareclickableto seek. Bottom Autoscrolltoggle andRegeneratebuttons. Caption Generated words need review. Natural calmreading surface. No imaginaryimages,newart,eyebrows,emoji,sliders,gradients,shadows,deviceframe,collage. Allbuttons44px andtextstrongcontrast.",
+    "raw": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-9904918b-10ed-443b-a314-e7804699919a.png",
+    "path": "docs/design/lyra/lyrics-state-mockup.png",
+    "selectedAt": "2026-10-18T09:10:58.884Z",
+    "inspection": "Selected warm paper overlay, seriftitle and flatrowcontrols. Nativekeyboardbuttons and realtrack/lyricsdata replace allrastercontent."
+  }
+]

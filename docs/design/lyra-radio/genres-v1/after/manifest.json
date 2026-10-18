@@ -1,0 +1,47 @@
+{
+  "productionBuild": "local-model/private-album release build 2",
+  "publicBrowserResult": "74/74 passed",
+  "images": [
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-desktop/genre-artwork-ready.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/desktop-ready.png",
+      "sha256": "6775165c5f465efd0fff7fe45200d0e2882003b63863f7408bb716476ea8a5b1"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-desktop/skeleton-genres.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/desktop-loading.png",
+      "sha256": "6fedeb11c358bfd4ebf865596523a54ddd40d66ed3c0b37969f2d5e6488eb340"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-desktop/compact320-genre-artwork-ready.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/desktop-ready-320.png",
+      "sha256": "82111b59b32c32ecad0c949398f909d91b5b9605e162ee0ab9ddab91bcdcc423"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-desktop/compact320-skeleton-genres.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/desktop-loading-320.png",
+      "sha256": "c50075c57d19b29054f6f3404d4005f0723ed69a7b7bcfc49debbeacf8d62250"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-tablet/genre-artwork-ready.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/tablet-ready.png",
+      "sha256": "bf18484eebff92af5df585246ae43b047aa70ecc89b51dc106448020ec722906"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-tablet/skeleton-genres.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/tablet-loading.png",
+      "sha256": "96e31aed28b8c2604a61be016de14bf630bc052d825ff82b8065d33a36cd462a"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-mobile/genre-artwork-ready.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/mobile-ready.png",
+      "sha256": "8170520e174431e897cedd6ac9d1df8e18524b3101a1bcb52e324d26685c9f9e"
+    },
+    {
+      "source": ".test-data/release-build2-production/test-results/loading-states-collection--4186d-and-yield-to-usable-content-mobile/skeleton-genres.png",
+      "output": "docs/design/lyra-radio/genres-v1/after/mobile-loading.png",
+      "sha256": "3f0025cb670c30347024c6bf277997c5baea4586023a954e964a6cedfcb42523"
+    }
+  ],
+  "scope": "Real Ambient fixture genre at desktop1440, tablet768, mobile390 and compact320. Every image decoded from the real local WebP; only public test data is pictured. All seven generated genre sources were independently inspected at generation, but this does not claim seven live genres in the two-album public fixture."
+}

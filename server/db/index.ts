@@ -15,7 +15,7 @@ if (!sqlitePath) {
 }
 
 // --- Added: Test Environment Check ---
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'test' && !process.env.DATABASE_URL) {
   // Construct path relative to project root (where process.cwd() usually points)
   sqlitePath = path.join(process.cwd(), 'server', 'tests', 'integration', 'scanner', 'test-db.sqlite');
   console.log(`NODE_ENV is 'test', using test database at: ${sqlitePath}`);

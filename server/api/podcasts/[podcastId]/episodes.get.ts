@@ -134,7 +134,7 @@ export default defineEventHandler(async (event): Promise<PodcastEpisode[]> => {
   }
 
   try {
-    const xml = await $fetch<string>(podcast.feedUrl);
+    const xml = await $fetch<string>(podcast.feedUrl, { responseType: 'text' });
     const episodes = parseEpisodes(xml, podcastId);
     return episodes;
   } catch (error) {

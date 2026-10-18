@@ -1,0 +1,64 @@
+name: API-key-free tests
+
+on:
+  pull_request:
+  push:
+    branches: [master, 'codex/**']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm fixtures:verify
+      - run: pnpm test
+      - name: Setup and private ZIP safety regressions
+        run: |
+          python -m unittest discover -s tests -p setup_models_test.py
+          python scripts/private-albums-extract.py --self-test
+      - run: pnpm evals
+      - name: Install public Whistle runtime and model
+        run: python scripts/setup-models.py install --models whistle
+        env:
+          NEEDLE_TELEMETRY: '0'
+          DO_NOT_TRACK: '1'
+      - name: Real offline transcription smoke tests
+        run: |
+          . .tools/models/runtime-env.sh
+          pnpm exec vitest run tests/integration/whistle-runtime.test.ts
+        env:
+          WHISTLE_REAL_TESTS: '1'
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Long Ogg waveform range regression
+        run: pnpm test:waveform-ranges
+      - run: pnpm build
+      - run: |
+          . .tools/models/runtime-env.sh
+          pnpm test:e2e
+        env:
+          LYRA_WHISTLE_E2E: '1'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

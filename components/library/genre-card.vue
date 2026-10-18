@@ -1,30 +1,15 @@
 <template>
-  <NuxtLink :to="`/genres/${genre.id}`" class="card bg-base-100 shadow-xl image-full hover:scale-105 transition-transform duration-300 ease-in-out">
-    <figure>
-      <img :src="genreImage" alt="Genre Image" class="w-full h-full object-cover" />
-    </figure>
-    <div class="card-body justify-center items-center">
-      <h2 class="card-title text-white text-2xl font-bold">{{ genre.name }}</h2>
-    </div>
+  <NuxtLink :to="`/genres/${genre.genreId}`" class="library-item genre-link">
+    <AlbumArt :src="getGenreImageUrl(genre.name)" />
+    <span
+      ><strong>{{ genre.name }}</strong
+      ><small>Browse albums</small></span
+    >
+    <span aria-hidden="true">↗</span>
   </NuxtLink>
 </template>
-
 <script setup lang="ts">
-import { computed } from '#imports';
-
-const props = defineProps<{ 
-  genre: { 
-    id: string;
-    name: string;
-  }
-}>();
-
+import AlbumArt from "~/components/album/album-art.vue";
+defineProps<{ genre: { genreId: string; name: string } }>();
 const { getGenreImageUrl } = useGenreImage();
-const genreImage = computed(() => getGenreImageUrl(props.genre.name));
 </script>
-
-<style scoped>
-.card {
-  aspect-ratio: 16 / 9;
-}
-</style>

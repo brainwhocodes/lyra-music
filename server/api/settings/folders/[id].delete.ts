@@ -1,55 +1,17 @@
-// server/api/settings/folders/[id].delete.ts
+import { defineEventHandler, createError, getRouterParam } from 'h3';
+import { and, eq } from 'drizzle-orm';
 import { db } from '~/server/db';
 import { mediaFolders } from '~/server/db/schema';
-import { eq } from 'drizzle-orm';
-import { defineEventHandler, createError, getRouterParam } from 'h3';
-import { z } from 'zod';
+import { getUserFromEvent } from '~/server/utils/auth';
 
-// Schema to validate the ID parameter
-const IdParamSchema = z.coerce.string();
-
-export default defineEventHandler(async (event) => {
-  try {
-    // Get the folder ID from the route parameter
-    const folderIdParam = getRouterParam(event, 'id');
-
-    // Validate the ID
-    const validationResult = IdParamSchema.safeParse(folderIdParam);
-    if (!validationResult.success) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid Folder ID parameter',
-        data: validationResult.error.errors,
-      });
-    }
-
-    const folderId = validationResult.data;
-
-    // Attempt to delete the folder from the database
-    const result = await db.delete(mediaFolders).where(eq(mediaFolders.mediaFolderId, folderId)).returning({ mediaFolderId: mediaFolders.mediaFolderId });
-
-    // Check if a folder was actually deleted (result array will have one element if successful)
-    if (result.length === 0) {
-      throw createError({
-        statusCode: 404, // Not Found
-        statusMessage: `Media folder with ID ${folderId} not found.`,
-      });
-    }
-
-    // Return success response
-    return { success: true, message: `Folder with ID ${folderId} deleted successfully.` };
-
-  } catch (error: any) {
-    console.error(`Error deleting media folder with ID:`, error);
-
-    // If it's already an H3Error, rethrow it, otherwise wrap it
-    if (error.statusCode) {
-      throw error;
-    } else {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to delete media folder',
-      });
-    }
-  }
+export default defineEventHandler(async event => {
+  const user = await getUserFromEvent(event);
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
+  const id = getRouterParam(event, 'id');
+  if (!id) throw createError({ statusCode: 400, statusMessage: 'Folder ID required' });
+  const removed = db.delete(mediaFolders).where(and(
+    eq(mediaFolders.mediaFolderId, id), eq(mediaFolders.userId, user.userId),
+  )).returning({ mediaFolderId: mediaFolders.mediaFolderId }).get();
+  if (!removed) throw createError({ statusCode: 404, statusMessage: 'Media folder not found' });
+  return { success: true, message: 'Folder removed from the list.' };
 });

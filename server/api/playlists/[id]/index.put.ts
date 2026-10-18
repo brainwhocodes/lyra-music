@@ -1,7 +1,7 @@
-import { defineEventHandler, getRouterParam, readBody } from 'h3';
+import { createError, defineEventHandler, getRouterParam, readBody } from 'h3';
 import { db } from '~/server/db';
 import { playlists } from '~/server/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { getUserFromEvent } from '~/server/utils/auth';
 
 interface UpdatePlaylistBody {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Unauthorized',
     });
   }
-  if (!body.name?.trim()) {
+  if (typeof body?.name !== 'string' || !body.name.trim()) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Playlist name is required',
@@ -60,8 +60,7 @@ export default defineEventHandler(async (event) => {
         and(
           eq(playlists.userId, user.userId),
           eq(playlists.name, body.name.trim()),
-          // @ts-ignore - drizzle-orm needs better type support for not()
-          playlists.playlistId !== playlistId
+          ne(playlists.playlistId, playlistId)
         )
       )
       .get();

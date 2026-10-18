@@ -1,0 +1,1321 @@
+{
+  "run": {
+    "id": 1,
+    "runType": "full",
+    "createdAt": "2026-10-18T08:57:43.396Z"
+  },
+  "evals": [
+    {
+      "id": 3,
+      "name": "Real EmbeddingGemma2 / listening-history recommendations",
+      "filepath": "C:/Users/mille/Documents/ChatGPT/lyra/evals/semantic.eval.ts",
+      "duration": 0,
+      "status": "success",
+      "createdAt": "2026-10-18T08:58:01.361Z",
+      "averageScore": 1,
+      "results": [
+        {
+          "id": 15,
+          "duration": 1,
+          "input": "quiet-piano",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "quiet-guitar",
+                "cosine": 0.9002951880915431,
+                "reason": "Similar metadata and lyrics to “Nightclub at Dawn”, which you listened to."
+              },
+              {
+                "id": "loss-piano",
+                "cosine": 0.859072741259805,
+                "reason": "Similar metadata and lyrics to “Nightclub at Dawn”, which you listened to."
+              },
+              {
+                "id": "forest",
+                "cosine": 0.8479541473506884,
+                "reason": "Similar metadata and lyrics to “Nightclub at Dawn”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "quiet-piano",
+            "relevant": [
+              "quiet-guitar"
+            ],
+            "forbidden": [
+              "dance-synth",
+              "dance-drums"
+            ]
+          },
+          "status": "success",
+          "colOrder": 0,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.361Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 15,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.363Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 16,
+          "duration": 1,
+          "input": "dance-synth",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "dance-drums",
+                "cosine": 0.9203076686544026,
+                "reason": "Similar metadata and lyrics to “Still Water”, which you listened to."
+              },
+              {
+                "id": "ocean",
+                "cosine": 0.8214160684521765,
+                "reason": "Similar metadata and lyrics to “Still Water”, which you listened to."
+              },
+              {
+                "id": "forest",
+                "cosine": 0.8142627205874182,
+                "reason": "Similar metadata and lyrics to “Still Water”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "dance-synth",
+            "relevant": [
+              "dance-drums"
+            ],
+            "forbidden": [
+              "quiet-piano",
+              "quiet-guitar"
+            ]
+          },
+          "status": "success",
+          "colOrder": 1,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.363Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 16,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.364Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 17,
+          "duration": 1,
+          "input": "loss-piano",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "loss-folk",
+                "cosine": 0.9109331885091274,
+                "reason": "Similar metadata and lyrics to “The Empty Chair”, which you listened to."
+              },
+              {
+                "id": "quiet-piano",
+                "cosine": 0.859072741259805,
+                "reason": "Similar metadata and lyrics to “The Empty Chair”, which you listened to."
+              },
+              {
+                "id": "quiet-guitar",
+                "cosine": 0.8550541520747053,
+                "reason": "Similar metadata and lyrics to “The Empty Chair”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "loss-piano",
+            "relevant": [
+              "loss-folk"
+            ],
+            "forbidden": [
+              "dance-synth",
+              "dance-drums"
+            ]
+          },
+          "status": "success",
+          "colOrder": 2,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.365Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 17,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.366Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 18,
+          "duration": 1,
+          "input": "forest",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "ocean",
+                "cosine": 0.8781211534315592,
+                "reason": "Similar metadata and lyrics to “Under the Canopy”, which you listened to."
+              },
+              {
+                "id": "quiet-guitar",
+                "cosine": 0.8635138211155374,
+                "reason": "Similar metadata and lyrics to “Under the Canopy”, which you listened to."
+              },
+              {
+                "id": "quiet-piano",
+                "cosine": 0.8479541473506883,
+                "reason": "Similar metadata and lyrics to “Under the Canopy”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "forest",
+            "relevant": [
+              "ocean"
+            ],
+            "forbidden": [
+              "dance-synth",
+              "dance-drums"
+            ]
+          },
+          "status": "success",
+          "colOrder": 3,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.367Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 18,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.368Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 19,
+          "duration": 0,
+          "input": "love-jazz",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "love-folk",
+                "cosine": 0.9023615406523635,
+                "reason": "Similar metadata and lyrics to “Your Hand in Mine”, which you listened to."
+              },
+              {
+                "id": "quiet-piano",
+                "cosine": 0.8403645693306273,
+                "reason": "Similar metadata and lyrics to “Your Hand in Mine”, which you listened to."
+              },
+              {
+                "id": "quiet-guitar",
+                "cosine": 0.8167388581380494,
+                "reason": "Similar metadata and lyrics to “Your Hand in Mine”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "love-jazz",
+            "relevant": [
+              "love-folk"
+            ],
+            "forbidden": [
+              "loss-piano",
+              "loss-folk"
+            ]
+          },
+          "status": "success",
+          "colOrder": 4,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.368Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 19,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.369Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 20,
+          "duration": 1,
+          "input": "travel-rock",
+          "output": {
+            "basis": "history",
+            "tracks": [
+              {
+                "id": "travel-folk",
+                "cosine": 0.9061121167075216,
+                "reason": "Similar metadata and lyrics to “Beyond the Border”, which you listened to."
+              },
+              {
+                "id": "dance-drums",
+                "cosine": 0.8442988608977965,
+                "reason": "Similar metadata and lyrics to “Beyond the Border”, which you listened to."
+              },
+              {
+                "id": "forest",
+                "cosine": 0.8377630464766239,
+                "reason": "Similar metadata and lyrics to “Beyond the Border”, which you listened to."
+              }
+            ]
+          },
+          "expected": {
+            "seed": "travel-rock",
+            "relevant": [
+              "travel-folk"
+            ],
+            "forbidden": [
+              "quiet-piano",
+              "quiet-guitar"
+            ]
+          },
+          "status": "success",
+          "colOrder": 5,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.370Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 20,
+              "name": "Relevant alternative in top2; no seed replay or contradictory first pick",
+              "score": 1,
+              "metadata": {
+                "reciprocalRank": 1,
+                "hasSeed": false,
+                "unrelatedFirst": false,
+                "unique": true
+              },
+              "createdAt": "2026-10-18T08:58:01.371Z"
+            }
+          ],
+          "traces": []
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Real EmbeddingGemma2 / descriptive tags",
+      "filepath": "C:/Users/mille/Documents/ChatGPT/lyra/evals/semantic.eval.ts",
+      "duration": 0,
+      "status": "success",
+      "createdAt": "2026-10-18T08:58:01.352Z",
+      "averageScore": 0.8333333333333334,
+      "results": [
+        {
+          "id": 9,
+          "duration": 1,
+          "input": "quiet-piano",
+          "output": [
+            {
+              "id": "nature",
+              "cosine": 0.8730745592232656
+            },
+            {
+              "id": "instrumental",
+              "cosine": 0.8683921211844176
+            },
+            {
+              "id": "electronic",
+              "cosine": 0.8647020864825378
+            }
+          ],
+          "expected": {
+            "required": [
+              "calm"
+            ],
+            "forbidden": [
+              "energetic",
+              "romantic"
+            ]
+          },
+          "status": "success",
+          "colOrder": 0,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.352Z",
+          "averageScore": 0,
+          "scores": [
+            {
+              "id": 9,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 0,
+              "metadata": {
+                "ids": [
+                  "nature",
+                  "instrumental",
+                  "electronic"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.353Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 10,
+          "duration": 1,
+          "input": "dance-synth",
+          "output": [
+            {
+              "id": "electronic",
+              "cosine": 0.8703711753231237
+            },
+            {
+              "id": "energetic",
+              "cosine": 0.823918164865288
+            },
+            {
+              "id": "nature",
+              "cosine": 0.7976399400946212
+            }
+          ],
+          "expected": {
+            "required": [
+              "energetic",
+              "electronic"
+            ],
+            "forbidden": [
+              "calm",
+              "melancholy"
+            ]
+          },
+          "status": "success",
+          "colOrder": 1,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.354Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 10,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 1,
+              "metadata": {
+                "ids": [
+                  "electronic",
+                  "energetic",
+                  "nature"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.355Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 11,
+          "duration": 0,
+          "input": "loss-piano",
+          "output": [
+            {
+              "id": "melancholy",
+              "cosine": 0.8766801736790054
+            },
+            {
+              "id": "romantic",
+              "cosine": 0.8696493752034814
+            },
+            {
+              "id": "nature",
+              "cosine": 0.8518951763278483
+            }
+          ],
+          "expected": {
+            "required": [
+              "melancholy"
+            ],
+            "forbidden": [
+              "energetic",
+              "hopeful"
+            ]
+          },
+          "status": "success",
+          "colOrder": 2,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.355Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 11,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 1,
+              "metadata": {
+                "ids": [
+                  "melancholy",
+                  "romantic",
+                  "nature"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.356Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 12,
+          "duration": 1,
+          "input": "forest",
+          "output": [
+            {
+              "id": "nature",
+              "cosine": 0.9012467189042256
+            },
+            {
+              "id": "electronic",
+              "cosine": 0.8775463729708805
+            },
+            {
+              "id": "reflection",
+              "cosine": 0.8534134052327125
+            }
+          ],
+          "expected": {
+            "required": [
+              "nature"
+            ],
+            "forbidden": [
+              "romantic",
+              "energetic"
+            ]
+          },
+          "status": "success",
+          "colOrder": 3,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.357Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 12,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 1,
+              "metadata": {
+                "ids": [
+                  "nature",
+                  "electronic",
+                  "reflection"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.358Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 13,
+          "duration": 0,
+          "input": "love-jazz",
+          "output": [
+            {
+              "id": "romantic",
+              "cosine": 0.8932055547274903
+            },
+            {
+              "id": "instrumental",
+              "cosine": 0.8543443987242363
+            },
+            {
+              "id": "nature",
+              "cosine": 0.8474975470392548
+            }
+          ],
+          "expected": {
+            "required": [
+              "romantic"
+            ],
+            "forbidden": [
+              "melancholy",
+              "journey"
+            ]
+          },
+          "status": "success",
+          "colOrder": 4,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.358Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 13,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 1,
+              "metadata": {
+                "ids": [
+                  "romantic",
+                  "instrumental",
+                  "nature"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.359Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 14,
+          "duration": 1,
+          "input": "travel-rock",
+          "output": [
+            {
+              "id": "journey",
+              "cosine": 0.8791025578483919
+            },
+            {
+              "id": "nature",
+              "cosine": 0.8557255122451024
+            },
+            {
+              "id": "instrumental",
+              "cosine": 0.8489973672954418
+            }
+          ],
+          "expected": {
+            "required": [
+              "journey"
+            ],
+            "forbidden": [
+              "romantic",
+              "calm"
+            ]
+          },
+          "status": "success",
+          "colOrder": 5,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.359Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 14,
+              "name": "At least one relevant tag, no contradictory tag, bounded output",
+              "score": 1,
+              "metadata": {
+                "ids": [
+                  "journey",
+                  "nature",
+                  "instrumental"
+                ],
+                "allowedInterpretation": "Text metadata/description affinity; not a measurement of the audio."
+              },
+              "createdAt": "2026-10-18T08:58:01.360Z"
+            }
+          ],
+          "traces": []
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Real EmbeddingGemma2 / semantic retrieval",
+      "filepath": "C:/Users/mille/Documents/ChatGPT/lyra/evals/semantic.eval.ts",
+      "duration": 0,
+      "status": "success",
+      "createdAt": "2026-10-18T08:57:43.396Z",
+      "averageScore": 0.875,
+      "results": [
+        {
+          "id": 1,
+          "duration": 17938,
+          "input": {
+            "query": "Help me unwind and rest after a stressful afternoon.",
+            "index": 0
+          },
+          "output": [
+            {
+              "id": "dance-drums",
+              "cosine": 0.6521096656425195
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.6447849575005623
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6176682478494184
+            },
+            {
+              "id": "forest",
+              "cosine": 0.606830809232443
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.598265267477522
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.5779778048119842
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.5723146041570014
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.5706959746653771
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.5663158359994048
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.5637530685505551
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.5631602343991536
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.5564423860006662
+            }
+          ],
+          "expected": {
+            "quiet-piano": 2,
+            "quiet-guitar": 2
+          },
+          "status": "success",
+          "colOrder": 0,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:57:43.396Z",
+          "averageScore": 0,
+          "scores": [
+            {
+              "id": 1,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 0,
+              "metadata": {
+                "mrr": 0.5,
+                "recallAt3": 1,
+                "ndcgAt3": 0.6934264036172708
+              },
+              "createdAt": "2026-10-18T08:58:01.336Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 2,
+          "duration": 1,
+          "input": {
+            "query": "Fast songs for dancing with a crowd.",
+            "index": 1
+          },
+          "output": [
+            {
+              "id": "dance-drums",
+              "cosine": 0.7129111886923482
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.6765365542188794
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6430488313582348
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.6261230016430203
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.6169125063121952
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6129794839731484
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.6052730078912851
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.599487798712661
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.5966366548207819
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.5864848649654631
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.5839081044974429
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.557452459152719
+            }
+          ],
+          "expected": {
+            "dance-synth": 2,
+            "dance-drums": 2
+          },
+          "status": "success",
+          "colOrder": 1,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.338Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 2,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 1
+              },
+              "createdAt": "2026-10-18T08:58:01.339Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 3,
+          "duration": 1,
+          "input": {
+            "query": "Songs about mourning someone and feeling alone.",
+            "index": 2
+          },
+          "output": [
+            {
+              "id": "loss-piano",
+              "cosine": 0.7827267864283651
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.7218801311302799
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.6954926978139574
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6756203125363256
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.6701166047744983
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.6576719918734101
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6428203331106566
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.6165483313348366
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.609412291060657
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.5963667650327344
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.5922998292248557
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.5544160779966412
+            }
+          ],
+          "expected": {
+            "loss-piano": 2,
+            "loss-folk": 2
+          },
+          "status": "success",
+          "colOrder": 2,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.340Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 3,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 1
+              },
+              "createdAt": "2026-10-18T08:58:01.341Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 4,
+          "duration": 1,
+          "input": {
+            "query": "Escape outdoors among trees, water and wildlife.",
+            "index": 3
+          },
+          "output": [
+            {
+              "id": "forest",
+              "cosine": 0.6975572771274627
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.6618036251640604
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.6540718100528363
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.6519166235538246
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.6356654310748732
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.6313574393915693
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.6214512208352047
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6117992315396077
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.604264209615757
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.5983830065689972
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.5880006581827907
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.5628912278273602
+            }
+          ],
+          "expected": {
+            "forest": 2,
+            "ocean": 1
+          },
+          "status": "success",
+          "colOrder": 3,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.342Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 4,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 0.5,
+                "ndcgAt3": 0.8262346571285599
+              },
+              "createdAt": "2026-10-18T08:58:01.343Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 5,
+          "duration": 1,
+          "input": {
+            "query": "Tender music for two people in love.",
+            "index": 4
+          },
+          "output": [
+            {
+              "id": "love-jazz",
+              "cosine": 0.7527974332698635
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.7238790166843853
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.7099965010564677
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6973744430095467
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.666189406628433
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.6594187157657656
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6465332692649253
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.6327071787179579
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.6295074596954507
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.6219994545996994
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.6154568420665498
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.5877171769599389
+            }
+          ],
+          "expected": {
+            "love-jazz": 2,
+            "love-folk": 2
+          },
+          "status": "success",
+          "colOrder": 4,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.344Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 5,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 1
+              },
+              "createdAt": "2026-10-18T08:58:01.345Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 6,
+          "duration": 1,
+          "input": {
+            "query": "Leaving home to discover faraway places.",
+            "index": 5
+          },
+          "output": [
+            {
+              "id": "travel-rock",
+              "cosine": 0.7196006681751179
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.6704680039164398
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.6593335016610542
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.6478717566774903
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.6441780661841495
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6367236197526135
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.6345037288620458
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.6273933183813932
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6228758516293232
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.6141635806149538
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.5912143883185127
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.5820664536961958
+            }
+          ],
+          "expected": {
+            "travel-rock": 2,
+            "travel-folk": 2
+          },
+          "status": "success",
+          "colOrder": 5,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.346Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 6,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 1
+              },
+              "createdAt": "2026-10-18T08:58:01.347Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 7,
+          "duration": 1,
+          "input": {
+            "query": "Instrumental music for a quiet breathing exercise.",
+            "index": 6
+          },
+          "output": [
+            {
+              "id": "quiet-piano",
+              "cosine": 0.7208882317146011
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.7054126087297273
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.6511963758716426
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6419452369552869
+            },
+            {
+              "id": "ocean",
+              "cosine": 0.6260554036657755
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.6208969822101702
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.599249062344032
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.5983748809865157
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.598353063775384
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.5941386652012731
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.5645346571824758
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.5572694518508693
+            }
+          ],
+          "expected": {
+            "quiet-piano": 2,
+            "quiet-guitar": 2
+          },
+          "status": "success",
+          "colOrder": 6,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.348Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 7,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 1
+              },
+              "createdAt": "2026-10-18T08:58:01.349Z"
+            }
+          ],
+          "traces": []
+        },
+        {
+          "id": 8,
+          "duration": 1,
+          "input": {
+            "query": "Something that evokes waves and a seaside landscape.",
+            "index": 7
+          },
+          "output": [
+            {
+              "id": "ocean",
+              "cosine": 0.7751479416709299
+            },
+            {
+              "id": "quiet-piano",
+              "cosine": 0.6762903000218063
+            },
+            {
+              "id": "forest",
+              "cosine": 0.6619874439425456
+            },
+            {
+              "id": "dance-synth",
+              "cosine": 0.6529449001899806
+            },
+            {
+              "id": "dance-drums",
+              "cosine": 0.6512034241412635
+            },
+            {
+              "id": "loss-piano",
+              "cosine": 0.6423822555308332
+            },
+            {
+              "id": "love-jazz",
+              "cosine": 0.6352755474515944
+            },
+            {
+              "id": "love-folk",
+              "cosine": 0.6342022626650635
+            },
+            {
+              "id": "quiet-guitar",
+              "cosine": 0.6341608828363778
+            },
+            {
+              "id": "travel-rock",
+              "cosine": 0.6307073343851414
+            },
+            {
+              "id": "travel-folk",
+              "cosine": 0.6261696341513638
+            },
+            {
+              "id": "loss-folk",
+              "cosine": 0.6212455613218689
+            }
+          ],
+          "expected": {
+            "ocean": 2,
+            "forest": 1
+          },
+          "status": "success",
+          "colOrder": 7,
+          "renderedColumns": [],
+          "createdAt": "2026-10-18T08:58:01.349Z",
+          "averageScore": 1,
+          "scores": [
+            {
+              "id": 8,
+              "name": "Retrieval floor: MRR >= .5, Recall@3 >= .5, nDCG@3 >= .7",
+              "score": 1,
+              "metadata": {
+                "mrr": 1,
+                "recallAt3": 1,
+                "ndcgAt3": 0.9639404333166532
+              },
+              "createdAt": "2026-10-18T08:58:01.351Z"
+            }
+          ],
+          "traces": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,15 +1,13 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import Database from 'better-sqlite3';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { join } from 'node:path';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { db } from '~/server/db';
 import { enqueueJob, requestJobCancel } from '~/server/jobs/queue';
 import { processSingleJob } from '~/server/jobs/worker';
 import { jobQueue, scanFiles, scanRuns } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { tmpdir } from 'node:os';
-import { readFileSync } from 'node:fs';
+import { migrateTestDatabase } from '../../helpers/database';
 
 vi.mock('~/server/services/scanner/ingestion', () => ({
   runLibraryIngestion: vi.fn().mockResolvedValue({
@@ -22,28 +20,11 @@ vi.mock('~/server/services/scanner/ingestion', () => ({
   }),
 }));
 
-const root = fileURLToPath(new URL('../../../', import.meta.url));
-const testDbPath = join(root, 'server', 'tests', 'integration', 'scanner', 'test-db.sqlite');
-
-async function applyMigrations() {
-  const conn = new Database(testDbPath);
-  const migrationDir = join(root, 'server', 'db', 'migrations');
-  const migrationFiles = (await readdir(migrationDir))
-    .filter((name) => /^\d+_.*\.sql$/.test(name))
-    .sort();
-
-  for (const file of migrationFiles) {
-    const sql = readFileSync(join(migrationDir, file), 'utf8').replaceAll('--> statement-breakpoint', '');
-    try { conn.exec(sql); } catch (error: any) { if (!String(error.message).includes('already exists')) throw error; }
-  }
-  conn.close();
-}
-
 describe('queue + worker scan integration', () => {
   beforeAll(async () => {
-    await mkdir(dirname(testDbPath), { recursive: true });
-    await applyMigrations();
+    migrateTestDatabase(db.$client);
   });
+  afterAll(() => db.$client.close());
 
   beforeEach(async () => {
     await db.delete(scanFiles);
@@ -95,6 +76,51 @@ describe('queue + worker scan integration', () => {
 
       const [scan] = await db.select().from(scanRuns).where(eq(scanRuns.scanId, scanId)).limit(1);
       expect(scan?.state).toBe('cancelled');
+    } finally {
+      await rm(fixtureDir, { recursive: true, force: true });
+    }
+  });
+
+  it('allows a nested album directory within an approved music root', async () => {
+    const fixtureDir = await mkdtemp(join(tmpdir(), 'scan-nested-'));
+    try {
+      const albumPath = join(fixtureDir, 'Artist', 'Album');
+      await mkdir(albumPath, { recursive: true });
+      await writeFile(join(albumPath, 'one.mp3'), '1');
+      const scanId = 'scan-nested';
+      const queued = await enqueueJob({
+        type: 'scan.directory',
+        payload: { scanId, libraryId: 'lib-1', userId: 'u1', rootPath: albumPath, allowedRoots: [fixtureDir], processOnlyUnprocessed: false, options: {} },
+      });
+      await db.insert(scanRuns).values({ scanId, jobId: queued.jobId!, userId: 'u1', rootPath: albumPath, state: 'queued' });
+      await processSingleJob();
+      const [scan] = await db.select().from(scanRuns).where(eq(scanRuns.scanId, scanId));
+      expect(scan.state).toBe('succeeded');
+      expect(scan.filesPersisted).toBe(1);
+    } finally {
+      await rm(fixtureDir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects a sibling directory sharing the allowed root prefix', async () => {
+    const fixtureDir = await mkdtemp(join(tmpdir(), 'scan-sibling-'));
+    try {
+      const allowed = join(fixtureDir, 'music');
+      const sibling = join(fixtureDir, 'music-private');
+      await mkdir(allowed);
+      await mkdir(sibling);
+      const scanId = 'scan-sibling';
+      const queued = await enqueueJob({
+        type: 'scan.directory',
+        payload: { scanId, libraryId: 'lib-1', userId: 'u1', rootPath: sibling, allowedRoots: [allowed], processOnlyUnprocessed: false, options: {} },
+      });
+      await db.insert(scanRuns).values({ scanId, jobId: queued.jobId!, userId: 'u1', rootPath: sibling, state: 'queued' });
+      await processSingleJob();
+      const [scan] = await db.select().from(scanRuns).where(eq(scanRuns.scanId, scanId));
+      expect(scan.state).not.toBe('succeeded');
+      expect(scan.filesPersisted).toBe(0);
+      const [job] = await db.select().from(jobQueue).where(eq(jobQueue.jobId, queued.jobId!));
+      expect(job.lastError).toContain('outside allowed roots');
     } finally {
       await rm(fixtureDir, { recursive: true, force: true });
     }

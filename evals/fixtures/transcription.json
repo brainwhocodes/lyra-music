@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "1272-128104-0000",
+      "kind": "human-speech",
+      "reference": "MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL",
+      "file": "evals/fixtures/speech/1272-128104-0000.wav",
+      "durationSeconds": 5.855,
+      "sha256": "2c02feda0ee1e38e31b96bbd8c9726a08f9567f1e3b41ba8981687fd7bf8be2e",
+      "source": "https://huggingface.co/datasets/hf-internal-testing/librispeech_asr_dummy",
+      "corpus": "https://www.openslr.org/12",
+      "speakerId": 1272,
+      "attribution": "LibriSpeech, Vassil Panayotov and Daniel Povey; LibriVox narrator 1272",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "4e25e22555cd16e90edb0a3b49fdcf1fe652b2a1250ab643634db33895c75b41",
+      "modification": "Decoded FLAC to mono 16 kHz PCM WAV; no trimming."
+    },
+    {
+      "id": "1272-135031-0005",
+      "kind": "human-speech",
+      "reference": "I BEGGED RUGGEDO LONG AGO TO SEND HIM AWAY BUT HE WOULD NOT DO SO",
+      "file": "evals/fixtures/speech/1272-135031-0005.wav",
+      "durationSeconds": 4.625,
+      "sha256": "627a7844566a8a99b18d7a69cfc90fab340f3e03eb9da6da4ac3e8d8bd00c88d",
+      "source": "https://huggingface.co/datasets/hf-internal-testing/librispeech_asr_dummy",
+      "corpus": "https://www.openslr.org/12",
+      "speakerId": 1272,
+      "attribution": "LibriSpeech, Vassil Panayotov and Daniel Povey; LibriVox narrator 1272",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "d3da297f1f6a0f933ce6d778b8dc8fecff4cc7c21616dbd536146e76ebb98fbe",
+      "modification": "Decoded FLAC to mono 16 kHz PCM WAV; no trimming."
+    },
+    {
+      "id": "1272-141231-0010",
+      "kind": "human-speech",
+      "reference": "PARTICULARLY SO ON THIS LAST NIGHT WHEN ONLY TWO OF THE LITTLE CUBICLES WERE OCCUPIED THE THOUSANDS OF OTHERS STANDING WITH DARK EMPTY DOORS",
+      "file": "evals/fixtures/speech/1272-141231-0010.wav",
+      "durationSeconds": 10.76,
+      "sha256": "8e2de81f4535add979c310823a0f67943f8de65042fd1baf55c3b7a9b88fad56",
+      "source": "https://huggingface.co/datasets/hf-internal-testing/librispeech_asr_dummy",
+      "corpus": "https://www.openslr.org/12",
+      "speakerId": 1272,
+      "attribution": "LibriSpeech, Vassil Panayotov and Daniel Povey; LibriVox narrator 1272",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "b0316adbccaff2af04f6d397c03905f157a6b2418a9b54e88a16d5859b000211",
+      "modification": "Decoded FLAC to mono 16 kHz PCM WAV; no trimming."
+    },
+    {
+      "id": "silence",
+      "kind": "silence",
+      "reference": "",
+      "file": "evals/fixtures/speech/silence-10s.wav",
+      "durationSeconds": 10.0,
+      "sha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "source": "Generated digital zero samples."
+    },
+    {
+      "id": "the-distant-sun",
+      "kind": "instrumental",
+      "reference": "",
+      "file": "evals/fixtures/speech/the-distant-sun.wav",
+      "durationSeconds": 12.0,
+      "sha256": "4f210a637b8c4e1216d778a25ee7552b5a161d013edf6ca95716923df136411e",
+      "source": "https://www.scottbuckley.com.au/library/the-distant-sun/",
+      "attribution": "Scott Buckley",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "modification": "Existing 12-second excerpt decoded to mono 16 kHz PCM WAV."
+    },
+    {
+      "id": "signal-to-noise",
+      "kind": "instrumental",
+      "reference": "",
+      "file": "evals/fixtures/speech/signal-to-noise.wav",
+      "durationSeconds": 12.0,
+      "sha256": "94daf7fed1c406b38035fa7895ff971945d4c071f050b018216af8fd186dface",
+      "source": "https://www.scottbuckley.com.au/library/signal-to-noise/",
+      "attribution": "Scott Buckley",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "modification": "Existing 12-second excerpt decoded to mono 16 kHz PCM WAV."
+    },
+    {
+      "id": "speech-with-music",
+      "kind": "speech-with-music",
+      "reference": "MISTER QUILTER IS THE APOSTLE OF THE MIDDLE CLASSES AND WE ARE GLAD TO WELCOME HIS GOSPEL",
+      "file": "evals/fixtures/speech/speech-with-music.wav",
+      "durationSeconds": 5.855,
+      "sha256": "52739e32336aa35f8d112ec9fe1a8c03dc542a15232912928e9e2e1f17d536af",
+      "source": "Derived from 1272-128104-0000 and The Distant Sun above.",
+      "attribution": "LibriSpeech / LibriVox narrator 1272 and Scott Buckley",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "modification": "Music gain 0.25; mixed without normalization; duration follows speech."
+    },
+    {
+      "id": "synthetic-speech",
+      "kind": "synthetic-speech",
+      "reference": "The music plays softly in the morning.",
+      "file": "tests/fixtures/music/audio/spoken-test.wav",
+      "durationSeconds": 2.864,
+      "sha256": "e1520daa0b84d65fa48bf6de029aeb4035ed050c2115d6bbf91dca138a83fc59",
+      "source": "Original locally generated speech; see tests/fixtures/music/README.md."
+    }
+  ]
+}

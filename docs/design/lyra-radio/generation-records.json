@@ -1,0 +1,68 @@
+[
+  {
+    "role": "art",
+    "file": "public/images/lyra-radio/rooftop-dj.png",
+    "prompt": "Create an original production illustration for LYRA, an anime-inspired personal music radio app. Widescreen landscape 3:2. Bold 2000s cel-shaded skate/graffiti game aesthetic, spirit of Jet Set Radio and Bomb Rush Cyberfunk but completely ORIGINAL character and symbols. A charismatic androgynous young adult pirate-radio DJ with spiky midnight-blue hair, massive orange over-ear headphones, cropped acid-yellow street jacket over black shirt, baggy black cargo trousers, black fingerless gloves, chunky trainers. Confident low-angle three-quarter pose perched on a giant battered portable speaker, one hand on headphones, other resting on knee. Rooftop antennae, blocky urban skyline, angular white clouds, layered abstract graffiti on concrete. Character prominently on right half, large painted acid yellow empty area on left for separate live webpage text. Thick near-black line work, flat shadow blocks, hand-drawn orange paint strokes, limited halftone and photocopy grit, energetic diagonals. Palette acid yellow #d7ff3f, carbon #17191c, bone #f5f2e9, signal orange #ff7144, restrained blue #3b4fd8. Strong graphic silhouette and editorial screenprint composition, professional art direction, NO photorealism, NO gradients, NO real game characters or logos, NO words, NO letters, NO captions, NO UI controls, NO watermark. This is standalone illustration, not a website screenshot.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-51585f8a-e39c-4036-9800-cf105f60dc3c.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspected": true,
+    "finishing": "Original generation; no image editing",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-51585f8a-e39c-4036-9800-cf105f60dc3c.png",
+    "artifact": {
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2468186,
+      "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+    },
+    "inputReferences": []
+  },
+  {
+    "role": "wordmark",
+    "file": "public/images/lyra-radio/wordmark.png",
+    "prompt": "Create a standalone original LYRA graffiti wordmark logo on a fully TRANSPARENT background. Match the graphic confidence and palette of attached original anime radio illustration. Exact lettering LYRA, four uppercase letters only, instantly legible as LYRA. Custom broad angular hand-drawn graffiti lettering with a forward 12 degree lean, thick near-black #17191c outline, acid-yellow #d7ff3f solid interior, a crisp cream #f5f2e9 sticker keyline, subtle small orange #ff7144 offset shadow. Connect the L foot into a sweeping underline evoking a sound cable, simplified clean edges, minimal small notches. Width roughly 2.4x height. Bold screenprint vector-like flat shapes, NOT a font typed plain, no generic lightning bolt, no bubbles, no intricate wildstyle, no texture inside letter counters that compromises small-size legibility. Original mark for personal music radio application, energetic skateboard/graffiti culture. Full logo centered with 12% transparent safe padding. No mascot, no extra text, no mockup, no background, no drop shadow outside logo, no real game branding.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-ff620402-d18c-4b63-9dc2-8d3446f32a81.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspected": true,
+    "finishing": "Original generation; no image editing",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-ff620402-d18c-4b63-9dc2-8d3446f32a81.png",
+    "artifact": {
+      "width": 1942,
+      "height": 809,
+      "bytes": 1113450,
+      "sha256": "c445b423883925bf47acf9b34d673604fb7f793f17d3cc7893bb7295e94b9667"
+    },
+    "inputReferences": [
+      {
+        "sourcePath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-51585f8a-e39c-4036-9800-cf105f60dc3c.png",
+        "portablePath": "public/images/lyra-radio/rooftop-dj.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2468186,
+        "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+      }
+    ]
+  },
+  {
+    "role": "mark",
+    "file": "public/images/lyra-radio/mark.png",
+    "prompt": "Create an ORIGINAL standalone icon / app mark for LYRA RADIO. Use the attached original LYRA wordmark as exact visual family. Fully transparent background. One bold angular capital L symbol with sweeping lower horizontal stroke, combined with ONE simple pair of headphones: headphone arch subtly crowns the L and two square earpads at its sides. Reduced, balanced geometric silhouette readable at 24px; inner negative space open. Acid yellow #d7ff3f fill, very thick near-black #17191c outer silhouette, narrow cream #f5f2e9 sticker outline, tiny orange #ff7144 under-edge. Consistent forward lean and sharp corner cuts from wordmark, but greatly simplified. No extra letters or words, no tiny details, no lightning bolt, no circle badge, no texture, no background. Centered square logo fills 76% of image. Flat graphic professionally drawn vector-like artwork.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-c9cebe2c-27b9-4363-ae8a-626e7d4dbff1.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspected": true,
+    "finishing": "Original generation; no image editing",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-c9cebe2c-27b9-4363-ae8a-626e7d4dbff1.png",
+    "artifact": {
+      "width": 1254,
+      "height": 1254,
+      "bytes": 895488,
+      "sha256": "369cb005a4b45aecda2b831bb8207dbf1d752fc445129bfee6e45b08cdedb76c"
+    },
+    "inputReferences": [
+      {
+        "sourcePath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-ff620402-d18c-4b63-9dc2-8d3446f32a81.png",
+        "portablePath": "public/images/lyra-radio/wordmark.png",
+        "width": 1942,
+        "height": 809,
+        "bytes": 1113450,
+        "sha256": "c445b423883925bf47acf9b34d673604fb7f793f17d3cc7893bb7295e94b9667"
+      }
+    ]
+  }
+]

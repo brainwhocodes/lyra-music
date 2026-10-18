@@ -1,21 +1,8 @@
 import { stat } from 'node:fs/promises';
-import { join, extname } from 'node:path';
 import { db } from '~/server/db';
 import { tracks } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { FileMetadata } from './scan-types';
-
-const SUPPORTED_AUDIO_EXTENSIONS = new Set([
-  '.mp3', '.flac', '.m4a', '.aac', '.ogg', '.wav', '.wma', '.mp4'
-]);
-
-/**
- * Checks if a file is a supported audio format
- */
-export function isSupportedAudioFile(filePath: string): boolean {
-  const extension = extname(filePath).toLowerCase();
-  return SUPPORTED_AUDIO_EXTENSIONS.has(extension);
-}
 
 /**
  * Gets file metadata including modification time and size

@@ -1,242 +1,316 @@
 <template>
-  <div :class="['modal', { 'modal-open': open }]" @keydown.esc="closeModal">
-    <div class="modal-box w-11/12 max-w-2xl relative">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10" @click="closeModal" :disabled="isLoading || isGenerating" aria-label="Close modal">✕</button>
-      <h3 v-if="track" class="font-bold text-lg mb-4">Edit Lyrics for {{ track.title }}</h3>
-      <h3 v-else class="font-bold text-lg mb-4">Edit Lyrics</h3>
-
-      <!-- Initial Loading State -->
-      <div v-if="isLoading && !initialFetchDone" class="text-center py-10">
-        <span class="loading loading-spinner loading-lg"></span>
-        <p class="mt-2">Loading lyrics...</p>
-      </div>
-
-      <!-- Error Display -->
-      <div v-if="errorMessage && !isGenerating" class="alert alert-error mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        <span>{{ errorMessage }}</span>
-      </div>
-
-      <!-- Generating Lyrics State -->
-      <div v-if="isGenerating" class="text-center py-10">
-        <span class="loading loading-spinner loading-lg"></span>
-        <p class="mt-2">Generating lyrics, please wait...</p>
-      </div>
-
-      <!-- Main Content: Edit or Generate -->
-      <div v-if="initialFetchDone && !isLoading && !isGenerating" class="flex flex-col flex-grow min-h-0">
-        <!-- No Lyrics Exist: Show Generate Button -->
-        <div v-if="!hasLyrics" class="text-center py-10 my-auto">
-          <p class="mb-4">No lyrics found for this track.</p>
+  <UtilityDialog
+    :open="open"
+    :title="track ? 'Edit Lyrics for ' + track.title : 'Edit Lyrics'"
+    @update:open="
+      (value) => {
+        if (!value) closeModal();
+      }
+    "
+  >
+    <UiLoadingSkeleton
+      v-if="loading"
+      label="Loading lyrics…"
+      variant="text"
+      :count="4"
+    />
+    <div v-else-if="loadError">
+      <p role="alert" class="text-error">{{ loadError }}</p>
+      <button class="btn btn-outline mt-3" @click="loadLyrics">
+        Retry loading lyrics
+      </button>
+    </div>
+    <form
+      v-else-if="track"
+      :id="formId"
+      @submit.prevent="saveLyrics"
+      :aria-busy="saving || generating"
+    >
+      <p v-if="!lines.length" class="mb-4">
+        No lyrics found for this track. Add a line manually or generate lyrics
+        locally.
+      </p>
+      <div class="lyrics-editor">
+        <div
+          v-for="(line, index) in lines"
+          :key="index"
+          class="lyric-editor-line"
+        >
+          <label
+            ><span>Time for line {{ index + 1 }}</span
+            ><input
+              v-model="line.time"
+              type="text"
+              placeholder="MM:SS.mmm"
+              class="input"
+              :aria-label="'Time for line ' + (index + 1)"
+              required
+              pattern="(?:\d+:)?\d+:[0-5]\d(?:\.\d{1,3})?"
+              :disabled="saving || generating"
+          /></label>
+          <label
+            ><span>Lyrics for line {{ index + 1 }}</span
+            ><input
+              v-model="line.text"
+              type="text"
+              class="input"
+              :aria-label="'Lyrics for line ' + (index + 1)"
+              :disabled="saving || generating"
+          /></label>
           <button
             type="button"
-            class="btn btn-primary mb-4"
-            @click="handleGenerateLyrics"
-            :disabled="isGenerating || isLoading">
-            <span v-if="isGenerating" class="loading loading-spinner loading-xs mr-2"></span>
-            Generate Lyrics (AI)
-          </button>
-          <p class="text-sm text-base-content/70 mb-2">Alternatively, add lines manually:</p>
-          <button type="button" class="btn btn-sm btn-outline" @click="addNewLyricLine">
-            <Icon name="material-symbols:add" class="w-4 h-4 mr-1" /> Add First Line
+            class="btn btn-ghost"
+            :aria-label="'Remove line ' + (index + 1)"
+            :disabled="saving || generating"
+            @click="lines.splice(index, 1)"
+          >
+            Remove
           </button>
         </div>
-
-        <!-- Lyrics Exist: Show Editor -->
-        <form v-else @submit.prevent="handleSubmit" class="flex flex-col flex-grow min-h-0">
-          <div class="space-y-2 mb-4 max-h-[50vh] overflow-y-auto pr-2 flex-grow">
-            <div v-for="(line, index) in editableLyricsLines" :key="index" class="flex items-center space-x-2">
-              <input
-                type="text"
-                v-model="line.time"
-                placeholder="MM:SS.mmm"
-                class="input input-bordered input-sm w-28 font-mono text-xs flex-shrink-0"
-                :disabled="isLoading || isGenerating" />
-              <input
-                type="text"
-                v-model="line.text"
-                placeholder="Lyric text..."
-                class="input input-bordered input-sm flex-grow"
-                :disabled="isLoading || isGenerating" />
-              <button
-                type="button"
-                class="btn btn-xs btn-ghost text-error"
-                @click="removeLyricLine(index)"
-                :disabled="isLoading || isGenerating"
-                aria-label="Remove line">
-                <Icon name="material-symbols:delete-outline-rounded" class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline mb-4 self-start"
-            @click="addNewLyricLine"
-            :disabled="isLoading || isGenerating">
-            <Icon name="material-symbols:add" class="w-4 h-4 mr-1" /> Add Line
-          </button>
-
-          <div class="modal-action mt-auto pt-4 border-t border-base-300">
-            <button
-              type="button"
-              class="btn btn-ghost"
-              @click="closeModal"
-              :disabled="isLoading || isGenerating">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              :disabled="isLoading || isGenerating || !hasLyrics">
-              <span v-if="isLoading && !isGenerating" class="loading loading-spinner loading-xs mr-2"></span>
-              Save Changes
-            </button>
-          </div>
-        </form>
       </div>
+      <div class="lyrics-tools">
+        <button
+          type="button"
+          class="btn btn-outline"
+          :disabled="saving || generating"
+          @click="addLine"
+        >
+          {{ lines.length ? "Add Line" : "Add First Line" }}</button
+        ><button
+          type="button"
+          class="btn btn-outline"
+          :disabled="saving || generating"
+          @click="generateLyrics"
+        >
+          {{ generating ? "Generating…" : "Generate Lyrics" }}
+        </button>
+      </div>
+      <p v-if="generating" role="status" class="mt-4">
+        Generating lyrics locally. This may take a few minutes.
+      </p>
+      <p v-if="saving" role="status" class="mt-4">Saving lyrics…</p>
+      <p v-if="error" role="alert" class="text-error mt-4">{{ error }}</p>
+      <p class="lyrics-note">
+        Generated words need review. Music and singing can be harder to
+        recognise than speech.
+      </p>
+    </form>
+    <div class="modal-action">
+      <button type="button" class="btn" autofocus @click="closeModal">
+        Cancel</button
+      ><button
+        v-if="!loading && !loadError && track"
+        type="submit"
+        :form="formId"
+        class="btn btn-primary"
+        :disabled="saving || generating"
+      >
+        Save Changes
+      </button>
     </div>
-    <div class="modal-backdrop" @click="(!isLoading && !isGenerating) ? closeModal() : null"></div>
-  </div>
+  </UtilityDialog>
 </template>
 
 <script setup lang="ts">
-import type { Track } from '~/types/track';
-import type { Lyrics, TimestampedLyric } from '~/types/lyrics';
+import type { Track } from "~/types/track";
+import type { Lyrics, TimestampedLyric } from "~/types/lyrics";
+import UtilityDialog from "~/components/utility/dialog.vue";
 
-const props = defineProps<{
-  open: boolean;
-  track: Track | null;
-}>();
-
+const props = defineProps<{ open: boolean; track: Track | null }>();
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'lyricsUpdated', updatedLyrics: Lyrics): void;
-  (e: 'updateError', message: string): void;
+  close: [];
+  lyricsUpdated: [lyrics: Lyrics];
+  updateError: [message: string];
 }>();
-
-const editableLyricsLines = ref<TimestampedLyric[]>([]);
-const isLoading = ref<boolean>(false);
-const isGenerating = ref<boolean>(false);
-const errorMessage = ref<string | null>(null);
-const initialFetchDone = ref<boolean>(false);
-
-const hasLyrics = computed((): boolean => editableLyricsLines.value.length > 0);
-
-const fetchLyrics = async (trackId: string): Promise<void> => {
-  isLoading.value = true;
-  errorMessage.value = null;
-  initialFetchDone.value = false;
-  try {
-    const fetchedLyrics = await $fetch<Lyrics>(`/api/tracks/${trackId}/lyrics`, { cache: 'no-cache' });
-    if (fetchedLyrics && fetchedLyrics.lyricsJson) {
-      editableLyricsLines.value = Array.isArray(fetchedLyrics.lyricsJson) ? JSON.parse(JSON.stringify(fetchedLyrics.lyricsJson)) : [];
-    } else {
-      editableLyricsLines.value = [];
-    }
-  } catch (error: any) {
-    console.error('Error fetching lyrics:', error);
-    if (error.response?.status === 404) {
-      editableLyricsLines.value = [];
-    } else {
-      errorMessage.value = 'Failed to load lyrics. ' + (error.data?.message || error.message || 'Unknown error');
-      editableLyricsLines.value = [];
-    }
-  }
-  isLoading.value = false;
-  initialFetchDone.value = true;
+const formId = useId();
+const lines = ref<TimestampedLyric[]>([]);
+const loading = ref(false),
+  saving = ref(false),
+  generating = ref(false),
+  loadError = ref(""),
+  error = ref("");
+let version = 0;
+let controller: AbortController | undefined;
+const timePattern = /^(?:\d+:)?\d+:[0-5]\d(?:\.\d{1,3})?$/;
+const seconds = (time: string) =>
+  time.split(":").reduce((total, value) => total * 60 + Number(value), 0);
+const copyLines = (value: unknown): TimestampedLyric[] => {
+  if (
+    !Array.isArray(value) ||
+    !value.every(
+      (line) =>
+        line && typeof line.time === "string" && typeof line.text === "string",
+    )
+  )
+    throw new Error("Invalid lyrics response");
+  return value.map((line) => ({ time: line.time, text: line.text }));
 };
 
-watch(() => props.open, (newVal: boolean) => {
-  if (newVal && props.track) {
-    fetchLyrics(props.track.trackId);
-  } else if (!newVal) {
-    editableLyricsLines.value = [];
-    errorMessage.value = null;
-    isLoading.value = false;
-    isGenerating.value = false;
-    initialFetchDone.value = false;
-  }
-});
-
-const handleGenerateLyrics = async (): Promise<void> => {
-  if (!props.track) return;
-  isGenerating.value = true;
-  errorMessage.value = null;
+function closeModal() {
+  emit("close");
+}
+async function loadLyrics() {
+  const trackId = props.track?.trackId;
+  if (!trackId || !props.open) return;
+  const request = ++version;
+  controller?.abort();
+  controller = new AbortController();
+  loading.value = true;
+  loadError.value = "";
   try {
-    await $fetch(`/api/tracks/${props.track.trackId}/lyrics/generate`, {
-      method: 'POST',
-    });
-    await fetchLyrics(props.track.trackId);
-  } catch (error: any) {
-    console.error('Error generating lyrics:', error);
-    errorMessage.value = 'Failed to generate lyrics. ' + (error.data?.message || error.message || 'Unknown error');
-    if (!initialFetchDone.value) initialFetchDone.value = true; 
-  }
-  isGenerating.value = false;
-};
-
-const handleSubmit = async (): Promise<void> => {
-  if (!props.track) return;
-  isLoading.value = true;
-  errorMessage.value = null;
-  try {
-    const response = await $fetch<{ message: string; updatedLyrics: Lyrics }>(
-      `/api/tracks/${props.track.trackId}/lyrics`,
-      {
-        method: 'PUT',
-        body: { lyricsJson: toRaw(editableLyricsLines.value) },
-      }
+    const result = await $fetch<Lyrics>(
+      "/api/tracks/" + encodeURIComponent(trackId) + "/lyrics",
+      { signal: controller.signal, retry: 0 },
     );
-    emit('lyricsUpdated', response.updatedLyrics);
-    emit('close');
-  } catch (error: any) {
-    console.error('Error updating lyrics:', error);
-    const message = error.data?.message || error.message || 'Unknown error';
-    errorMessage.value = `Failed to save lyrics: ${message}`;
-    emit('updateError', message);
+    if (request === version) lines.value = copyLines(result.lyricsJson ?? []);
+  } catch (cause: any) {
+    if (request !== version || cause?.name === "AbortError") return;
+    if (cause?.statusCode === 404 || cause?.response?.status === 404)
+      lines.value = [];
+    else loadError.value = "Could not load lyrics. Please try again.";
+  } finally {
+    if (request === version) loading.value = false;
   }
-  isLoading.value = false;
-};
+}
 
-const addNewLyricLine = (): void => {
-  editableLyricsLines.value.push({ time: '00:00.000', text: '' });
-};
+async function generateLyrics() {
+  const trackId = props.track?.trackId;
+  if (
+    !trackId ||
+    generating.value ||
+    saving.value ||
+    loading.value ||
+    !props.open
+  )
+    return;
+  const request = version;
+  generating.value = true;
+  error.value = "";
+  try {
+    const result = await $fetch<Lyrics>(
+      "/api/tracks/" + encodeURIComponent(trackId) + "/lyrics/generate",
+      { method: "POST", timeout: 910000, retry: 0 },
+    );
+    if (request === version) lines.value = copyLines(result.lyricsJson ?? []);
+  } catch (cause: any) {
+    if (request === version)
+      error.value =
+        cause?.data?.statusMessage ||
+        "Could not generate lyrics. Existing lines were kept.";
+  } finally {
+    if (request === version) generating.value = false;
+  }
+}
 
-const removeLyricLine = (index: number): void => {
-  editableLyricsLines.value.splice(index, 1);
-};
+async function saveLyrics() {
+  const trackId = props.track?.trackId;
+  if (
+    !trackId ||
+    saving.value ||
+    generating.value ||
+    loading.value ||
+    !props.open
+  )
+    return;
+  const payload = lines.value.map((line) => ({
+    time: line.time.trim(),
+    text: line.text,
+  }));
+  if (
+    payload.some(
+      (line, index) =>
+        !timePattern.test(line.time) ||
+        !Number.isFinite(seconds(line.time)) ||
+        (index > 0 && seconds(line.time) < seconds(payload[index - 1].time)),
+    )
+  ) {
+    error.value = "Use timestamps such as 00:12.500 in chronological order.";
+    return;
+  }
+  const request = version;
+  saving.value = true;
+  error.value = "";
+  try {
+    const result = await $fetch<{ updatedLyrics: Lyrics }>(
+      "/api/tracks/" + encodeURIComponent(trackId) + "/lyrics",
+      { method: "PUT", body: { lyricsJson: payload }, retry: 0 },
+    );
+    if (request !== version || !props.open || props.track?.trackId !== trackId)
+      return;
+    emit("lyricsUpdated", result.updatedLyrics);
+    closeModal();
+  } catch (cause: any) {
+    if (request !== version) return;
+    error.value =
+      cause?.data?.statusMessage ||
+      cause?.data?.message ||
+      "Could not save lyrics. Please try again.";
+    emit("updateError", error.value);
+  } finally {
+    if (request === version) saving.value = false;
+  }
+}
 
-const closeModal = (): void => {
-  if (isLoading.value || isGenerating.value) return;
-  emit('close');
-};
-
+function addLine() {
+  lines.value.push({ time: lines.value.at(-1)?.time || "00:00.000", text: "" });
+}
+watch(
+  [() => props.open, () => props.track?.trackId],
+  ([open]) => {
+    version++;
+    controller?.abort();
+    lines.value = [];
+    loading.value = saving.value = generating.value = false;
+    loadError.value = error.value = "";
+    if (open) void loadLyrics();
+  },
+  { immediate: true },
+);
+onBeforeUnmount(() => {
+  version++;
+  controller?.abort();
+});
 </script>
 
 <style scoped>
-.modal-box {
-  max-height: 80vh; /* Ensure modal doesn't get too tall */
-  display: flex;
-  flex-direction: column;
+.lyrics-editor {
+  max-height: 50vh;
+  overflow: auto;
 }
-form {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+.lyric-editor-line {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: 1rem;
 }
-
-.modal-box {
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
+.lyric-editor-line label > span {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
 }
-form {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+.lyric-editor-line .input {
+  width: 100%;
+  min-width: 0;
 }
-.form-control textarea {
-  flex-grow: 1;
-  resize: vertical; /* Allow vertical resize, but usually constrained by modal height */
+.lyrics-tools {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.lyrics-note {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+@media (max-width: 500px) {
+  .lyric-editor-line {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+  }
+  .lyric-editor-line .btn {
+    grid-column: 1/-1;
+    justify-self: end;
+  }
 }
 </style>

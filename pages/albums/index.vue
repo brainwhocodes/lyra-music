@@ -1,455 +1,327 @@
 <template>
-  <div
-    class="albums w-full h-full px-4 pt-4 pb-20 bg-base-200 overflow-y-auto">
-    <h1 class="text-3xl font-bold mb-6">Albums {{ artistName ? `by ${artistName}` : '' }}</h1>
-
-    <!-- Search Input (Desktop) -->
-    <div class="mb-6 hidden sm:block">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Search albums by title or artist..."
-        class="input input-bordered w-full max-w-xs sm:max-w-sm md:max-w-md"
+  <div class="albums-page">
+    <header class="page-intro">
+      <h1 class="page-heading">
+        Albums<span v-if="artistName" class="artist-filter">
+          by {{ artistName }}</span
+        >
+      </h1>
+      <p v-if="albums">
+        {{ albums.length }} {{ albums.length === 1 ? "album" : "albums" }} in
+        your collection
+      </p>
+    </header>
+    <div class="page-toolbar album-toolbar">
+      <label class="album-search"
+        ><span class="sr-only">Search albums</span
+        ><input
+          v-model="searchQuery"
+          type="search"
+          class="input input-bordered"
+          placeholder="Search albums by title or artist..."
+      /></label>
+      <label
+        ><span class="sr-only">Sort albums</span
+        ><select
+          v-model="sort"
+          class="select select-bordered"
+          aria-label="Sort albums"
+        >
+          <option value="title">Sort by: Title</option>
+          <option value="artist">Sort by: Artist</option>
+          <option value="year">Sort by: Year</option>
+        </select></label
+      >
+      <div class="view-switch" role="group" aria-label="Album view">
+        <button
+          class="btn"
+          :class="{ 'btn-primary': view === 'grid' }"
+          :aria-pressed="view === 'grid'"
+          aria-label="Grid view"
+          @click="view = 'grid'"
+        >
+          <Icon name="material-symbols:grid-view-outline" /></button
+        ><button
+          class="btn"
+          :class="{ 'btn-primary': view === 'list' }"
+          :aria-pressed="view === 'list'"
+          aria-label="List view"
+          @click="view = 'list'"
+        >
+          <Icon name="material-symbols:format-list-bulleted" />
+        </button>
+      </div>
+    </div>
+    <UiLoadingSkeleton
+      v-if="pending"
+      label="Loading albums…"
+      :variant="view === 'grid' ? 'cards' : 'rows'"
+    />
+    <p v-else-if="error" role="alert">
+      Could not load albums.
+      <button class="btn btn-outline" @click="refresh()">Try again</button>
+    </p>
+    <p v-else-if="!filteredAlbums.length" role="status">
+      No albums found{{ artistName ? ` for ${artistName}` : ""
+      }}{{ searchQuery ? " matching your search" : "" }}.
+    </p>
+    <div v-else :class="['collection-grid', { 'album-list': view === 'list' }]">
+      <AlbumCard
+        v-for="album in filteredAlbums"
+        :key="album.albumId"
+        :album="album"
+        :is-playing-this-album="
+          player.isPlaying && player.currentTrack?.albumId === album.albumId
+        "
+        :is-loading-this-album="loadingAlbumId === album.albumId"
+        @play="playAlbum"
+        @add-to-playlist="openPicker"
+        @edit-album="selectedEdit = $event"
+        @delete-album="selectedDelete = $event"
       />
     </div>
-
-    <div v-if="loading" class="text-center">
-      <span class="loading loading-lg loading-spinner"></span>
-    </div>
-
-    <div v-else-if="error" class="alert alert-error">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <span>Error loading albums: {{ error }}</span>
-    </div>
-
-    <div v-else-if="!filteredAlbums || filteredAlbums.length === 0" class="text-center text-gray-500">
-      No albums found{{ artistName ? ` for ${artistName}` : '' }}{{ searchQuery ? ' matching your search' : ''}}.
-    </div>
-
-    <!-- Album List/Grid -->
-    <div v-else
-      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <AlbumCard v-for="album_item in filteredAlbums" :key="album_item.albumId" :album="album_item"
-        :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === album_item.albumId"
-        :is-loading-this-album="albumIdLoading === album_item.albumId && currentAlbumLoading"
-        @card-click="goToAlbum(album_item.albumId)" @add-to-playlist="openAddToPlaylistModal"
-        @edit-album="handleEditAlbum" @delete-album="openDeleteAlbumModal" @play="handleAlbumCardPlayEvent(album_item)" />
-    </div>
-
+    <PlaylistPicker
+      :open="Boolean(selectedPlaylistAlbum)"
+      :title="`Add ${selectedPlaylistAlbum?.title || 'album'} to playlist`"
+      :playlists="playlists"
+      :pending="loadingPlaylists"
+      :load-error="
+        playlistsError ? 'Could not load playlists. Please try again.' : ''
+      "
+      @retry="fetchPlaylists"
+      :busy="adding"
+      :error="addError"
+      @close="selectedPlaylistAlbum = null"
+      @select="addToPlaylist"
+    />
+    <EditAlbumModal
+      v-if="selectedEdit"
+      :album="selectedEdit"
+      :open="true"
+      @close="selectedEdit = null"
+      @album-updated="albumUpdated"
+      @update-error="showNotification($event, 'error')"
+    />
+    <ConfirmDeleteModal
+      :open="Boolean(selectedDelete)"
+      title="Delete Album"
+      :message="`Delete ${selectedDelete?.title || 'this album'} from your library? This cannot be undone.`"
+      @close="selectedDelete = null"
+      @confirm="deleteAlbum"
+    />
   </div>
-
-  <!-- Add to Playlist Modal -->
-  <div v-if="isAddToPlaylistModalOpen" class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">
-        Add "{{ selectedAlbumForPlaylist?.title }}" to playlist:
-      </h3>
-      <button @click="isAddToPlaylistModalOpen = false"
-        class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-
-      <div v-if="!playlists.length" class="text-center text-neutral-content italic py-4">
-        <p>No playlists found. <NuxtLink to="/playlists" class="link link-primary">Create one?</NuxtLink>
-        </p>
-      </div>
-      <ul v-else class="menu bg-base-100 rounded-box max-h-60 overflow-y-auto">
-        <li v-for="playlist in playlists" :key="playlist.playlistId">
-          <a @click="addAlbumToPlaylist(playlist.playlistId)">
-            {{ playlist.name }}
-          </a>
-        </li>
-      </ul>
-      <div class="modal-action">
-        <button class="btn btn-ghost" @click="isAddToPlaylistModalOpen = false">Cancel</button>
-      </div>
-    </div>
-    <!-- Click outside to close -->
-    <div class="modal-backdrop" @click="isAddToPlaylistModalOpen = false"></div>
-  </div>
-
-
-<!-- Edit Album Modal -->
-<EditAlbumModal v-if="selectedAlbumForEdit" :album="selectedAlbumForEdit" :open="isEditAlbumModalOpen"
-  @close="closeEditAlbumModal" @albumUpdated="handleAlbumUpdated" @updateError="handleUpdateError" />
-
-<ConfirmDeleteModal
-  :open="isDeleteAlbumModalOpen"
-  title="Delete Album"
-  message="Are you sure you want to delete this album? This action cannot be undone."
-  @close="closeDeleteAlbumModal"
-  @confirm="confirmDeleteAlbum" />
-
 </template>
-
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onUnmounted } from '#imports';
-import { useNotification } from '~/composables/useNotification';
-import { storeToRefs } from 'pinia';
-import { useSearchStore } from '~/stores/search-store';
-import { useRoute, useRouter } from 'vue-router';
-import { usePlayerStore } from '~/stores/player';
-import type { Album, AlbumArtistDetail } from '~/types/album';
-import AlbumCard from '~/components/album/album-card.vue';
-import EditAlbumModal from '~/components/modals/edit-album-modal.vue';
-import ConfirmDeleteModal from '~/components/modals/confirm-delete-modal.vue';
-import type { Track, TrackArtistDetail } from '~/types/track';
-import { useCoverArt } from '~/composables/use-cover-art';
-import { usePlaylists } from '~/composables/usePlaylists';
-
-// Apply the sidebar layout
-definePageMeta({
-  layout: 'sidebar-layout'
-});
-
-const playerStore = usePlayerStore();
-const searchStore = useSearchStore();
-const { searchQuery } = storeToRefs(searchStore);
-const { getCoverArtUrl } = useCoverArt();
-const { showNotification } = useNotification();
-
-// --- State for Album Details and Playback ---
-const currentAlbum = ref<Album | null>(null);
-const currentAlbumLoading = ref<boolean>(false);
-const albumIdLoading = ref<string | null>(null);
-
-// --- State for Album Operations ---
-const selectedAlbumForPlaylist = ref<Album | null>(null);
-const isAddToPlaylistModalOpen = ref<boolean>(false);
-const selectedAlbumForEdit = ref<Album | null>(null);
-const isEditAlbumModalOpen = ref<boolean>(false);
-const selectedAlbumForDelete = ref<Album | null>(null);
-const isDeleteAlbumModalOpen = ref<boolean>(false);
-const { playlists, fetchPlaylists } = usePlaylists();
-
-// --- State for Albums List Display ---
+import type { Album } from "~/types/album";
+import { usePlayerStore } from "~/stores/player";
+import { usePlaylists } from "~/composables/usePlaylists";
+import AlbumCard from "~/components/album/album-card.vue";
+import PlaylistPicker from "~/components/library/playlist-picker.vue";
+import EditAlbumModal from "~/components/modals/edit-album-modal.vue";
+import ConfirmDeleteModal from "~/components/modals/confirm-delete-modal.vue";
+definePageMeta({ layout: "sidebar-layout" });
+useSeoMeta({ title: usePageTitle("Albums") });
 const route = useRoute();
-const artistName = ref<string | null>(null);
-// searchQuery is now from searchStore
-
-// Computed property for API query parameters for fetching the albums list
-const apiQuery = computed(() => {
-  const query: { artistId?: string } = {};
-  if (route.query.artistId) {
-    query.artistId = route.query.artistId as string;
-  }
-  return query;
-});
-
-const { data: albums, pending: loading, error } = await useLazyFetch<Album[]>('/api/albums', {
-  query: apiQuery,
-  watch: [apiQuery], // Automatically re-fetch when apiQuery changes
-  immediate: true // Fetch immediately on component setup
-});
-
-// Computed property to filter albums based on search query
+const query = computed(() =>
+  route.query.artistId ? { artistId: String(route.query.artistId) } : {},
+);
+const {
+  data: albums,
+  pending,
+  error,
+  refresh,
+} = useLazyFetch<Album[]>("/api/albums", { query });
+const searchQuery = ref("");
+const sort = ref("title");
+const view = ref<"grid" | "list">("grid");
+const artistName = computed(
+  () =>
+    albums.value
+      ?.flatMap((album) => album.artists || [])
+      .find((artist) => artist.artistId === route.query.artistId)?.name,
+);
 const filteredAlbums = computed(() => {
-  if (!albums.value) return [];
-  if (!searchQuery.value.trim()) {
-    return albums.value;
-  }
-  const lowerSearchQuery = searchQuery.value.toLowerCase();
-  return albums.value.filter((album: Album) => {
-    const titleMatch = album.title?.toLowerCase().includes(lowerSearchQuery);
-    const artistMatch = album.artists?.some((artist: AlbumArtistDetail) =>
-      artist.name?.toLowerCase().includes(lowerSearchQuery)
+  const query = searchQuery.value.trim().toLowerCase();
+  return (albums.value || [])
+    .filter(
+      (album) =>
+        !query ||
+        album.title.toLowerCase().includes(query) ||
+        album.artists?.some((artist) =>
+          artist.name.toLowerCase().includes(query),
+        ),
+    )
+    .sort((a, b) =>
+      sort.value === "year"
+        ? (b.year || 0) - (a.year || 0) || a.title.localeCompare(b.title)
+        : sort.value === "artist"
+          ? (a.artists?.[0]?.name || "").localeCompare(
+              b.artists?.[0]?.name || "",
+            ) || a.title.localeCompare(b.title)
+          : a.title.localeCompare(b.title),
     );
-    return titleMatch || artistMatch;
-  });
 });
-
-// Watch the fetched albums data to derive artistName
-watch(albums, (newAlbums: Album[] | null) => {
-  artistName.value = null; // Reset artist name
-  if (newAlbums && newAlbums.length > 0 && apiQuery.value.artistId) {
-    const currentArtistId = apiQuery.value.artistId;
-    const firstAlbum = newAlbums[0];
-    if (firstAlbum && firstAlbum.artists) {
-      const primaryArtist = firstAlbum.artists.find((a: AlbumArtistDetail) => a.isPrimaryArtist);
-      const specificArtist = firstAlbum.artists.find((a: AlbumArtistDetail) => a.artistId === currentArtistId);
-      if (specificArtist) {
-        artistName.value = specificArtist.name;
-      } else if (primaryArtist) {
-        artistName.value = primaryArtist.name;
-      } else if (firstAlbum.artists.length > 0 && firstAlbum.artists[0]) {
-        artistName.value = firstAlbum.artists[0].name;
-      }
-    }
-  }
-});
-
-onMounted(() => {
-  searchStore.setActiveSearchContext('albums');
-});
-
-onUnmounted(() => {
-  if (searchStore.activeSearchContext === 'albums') {
-    searchStore.clearSearch(); // Clears query and context
-  }
-});
-
-useSeoMeta({
-  title: usePageTitle(`Albums`)
-});
-
-// New function to fetch and map album details for playback
-async function fetchAlbumDetailsById(id: string): Promise<Album | null> {
-  currentAlbumLoading.value = true;
-  albumIdLoading.value = id;
-  let fetchedAlbum: Album | null = null;
-
+const player = usePlayerStore();
+const { showNotification } = useNotification();
+const {
+  playlists,
+  fetchPlaylists,
+  loading: loadingPlaylists,
+  error: playlistsError,
+} = usePlaylists();
+const loadingAlbumId = ref<string | null>(null);
+const selectedEdit = ref<Album | null>(null);
+const selectedDelete = ref<Album | null>(null);
+const selectedPlaylistAlbum = ref<Album | null>(null);
+const adding = ref(false);
+const addError = ref("");
+async function playAlbum(album: Album) {
+  if (loadingAlbumId.value) return;
+  if (
+    player.currentQueueContext.type === "album" &&
+    player.currentQueueContext.id === album.albumId
+  )
+    return player.togglePlayPause();
+  loadingAlbumId.value = album.albumId;
   try {
-    const apiResponse = await $fetch<Album>(`/api/albums/${id}`);
-    // await new Promise(resolve => setTimeout(resolve, 1000));
-    if (apiResponse && Array.isArray(apiResponse.tracks) && apiResponse.tracks.length > 0) {
-      const tracksForPlayer: Track[] = apiResponse.tracks.map((trackApiResponse: any /* Assuming track from API might be any */) => {
-        // Helper to get display artist name for a track
-        const getTrackDisplayArtistName = (trackArtists: TrackArtistDetail[]): string => {
-          if (!trackArtists || trackArtists.length === 0) return 'Unknown Artist';
-          const primary = trackArtists.find(a => a.isPrimaryArtist);
-          if (primary) return primary.name;
-          return trackArtists.map(a => a.name).join(', ');
-        };
-
-        return {
-          trackId: trackApiResponse.trackId,
-          title: trackApiResponse.title ?? 'Unknown Track',
-          // artists field should be directly mapped if API provides it in correct format
-          artists: trackApiResponse.artists, // Ensure this matches TrackArtistDetail[]
-          // artistName is now derived or handled by components that display track artists
-          albumTitle: trackApiResponse.albumTitle ?? apiResponse.title ?? 'Unknown Album',
-          filePath: trackApiResponse.filePath,
-          duration: trackApiResponse.duration ?? 0,
-          coverPath: apiResponse.coverPath, // Album cover for all tracks
-          albumId: apiResponse.albumId,
-          trackNumber: trackApiResponse.trackNumber ?? null,
-          // Fields from Track type that might not be in trackApiResponse directly
-          genre: trackApiResponse.genre ?? null,
-          year: trackApiResponse.year ?? null,
-          diskNumber: trackApiResponse.diskNumber ?? null,
-          explicit: trackApiResponse.explicit ?? false,
-          createdAt: trackApiResponse.createdAt ?? new Date().toISOString(),
-          updatedAt: trackApiResponse.updatedAt ?? new Date().toISOString(),
-          musicbrainzTrackId: trackApiResponse.musicbrainzTrackId ?? undefined,
-        };
-      });
-
-      fetchedAlbum = {
-        albumId: apiResponse.albumId,
-        title: apiResponse.title,
-        year: apiResponse.year,
-        coverPath: apiResponse.coverPath,
-        artists: apiResponse.artists, // Directly use the artists array from the API response
-        tracks: tracksForPlayer,
-      };
-    } else {
-      // console.warn(`[AlbumsIndex] fetchAlbumDetailsById: No tracks found or invalid response for album ID: ${id}`, apiResponse);
-    }
-  } catch (err) {
-    // console.error(`[AlbumsIndex] fetchAlbumDetailsById: Error fetching album ${id}:`, err);
-    fetchedAlbum = null; // Ensure it's null on error
+    const details = await $fetch<Album>(`/api/albums/${album.albumId}`);
+    const tracks = (details.tracks || []).map((track) => ({
+      ...track,
+      albumId: details.albumId,
+      albumTitle: details.title,
+      coverPath: details.coverPath,
+    }));
+    if (!tracks.length)
+      return showNotification("No tracks in this album yet.", "info");
+    player.loadQueue(
+      tracks,
+      { type: "album", id: album.albumId, name: album.title },
+      true,
+    );
+  } catch {
+    showNotification("Could not play this album.", "error");
   } finally {
-    currentAlbumLoading.value = false;
-    // albumIdLoading.value = null; // Resetting here might be too soon if multiple clicks happen
+    loadingAlbumId.value = null;
   }
-  return fetchedAlbum;
 }
-
-// Function to play a specific album from the list
-const playAlbum = async (albumId: string): Promise<void> => {
-  if (!albumId) {
-    // console.warn('[AlbumsIndex] playAlbum: albumId is null or undefined.');
-    return;
-  }
-
-  let albumDataForPlayback: Album | null = null;
-
-  // Check if the clicked album is already the one stored in currentAlbum
-  if (currentAlbum.value && currentAlbum.value.albumId === albumId) {
-    albumDataForPlayback = currentAlbum.value;
-  } else {
-    if (playerStore.isPlaying && playerStore.currentTrack?.albumId !== albumId) {
-      playerStore.togglePlayPause(); // Pause if a *different* album is playing
-    }
-    // Add a 1-second delay before fetching
-    const newlyFetchedAlbum = await fetchAlbumDetailsById(albumId);
-    currentAlbum.value = newlyFetchedAlbum; // Cache the newly fetched album details
-    albumDataForPlayback = newlyFetchedAlbum;
-  }
-
-  if (!albumDataForPlayback || !albumDataForPlayback.tracks || albumDataForPlayback.tracks.length === 0) {
-    return;
-  }
-
-  const trackIndex = 0; // Play from the first track
-  const trackToPlay = albumDataForPlayback.tracks[trackIndex];
-
-  // If the exact same track is already current and playing, toggle pause. If paused, play.
-  if (playerStore.currentTrack?.trackId === trackToPlay?.trackId) {
-    playerStore.togglePlayPause();
-    return;
-  }
-
-  // Check if the queue needs to be reloaded (i.e., different album)
-  const playerQueueAlbumId = playerStore.queue.length > 0 ? playerStore.queue[0].albumId : null;
-  if (playerQueueAlbumId !== albumDataForPlayback.albumId) {
-    playerStore.loadQueue(albumDataForPlayback.tracks);
-  }
-
-  playerStore.playFromQueue(trackIndex);
-};
-
-// New handler for the 'play' event from AlbumCard
-const handleAlbumCardPlayEvent = (album: Album): void => {
-  if (album && album.albumId) {
-    playAlbum(album.albumId);
-  } else {
-    // console.error('[AlbumsIndex] handleAlbumCardPlayEvent: Album or albumId is missing.', album);
-  }
-};
-
-// Navigation function
-const goToAlbum = (albumId: string): void => {
-  navigateTo(`/albums/${albumId}`);
-};
-
-
-// Fetch user's playlists provided by usePlaylists composable
-
-// Open the Add to Playlist modal
-const openAddToPlaylistModal = (album: Album): void => {
-  selectedAlbumForPlaylist.value = album;
-  isAddToPlaylistModalOpen.value = true;
+function openPicker(album: Album) {
+  selectedPlaylistAlbum.value = album;
+  addError.value = "";
   fetchPlaylists();
-};
-
-// Add all album tracks to a playlist
-const addAlbumToPlaylist = async (playlistId: string): Promise<void> => {
-  if (!selectedAlbumForPlaylist.value?.tracks || selectedAlbumForPlaylist.value.tracks.length === 0) {
-    // If tracks aren't loaded in the album object, fetch them first
-    const albumWithTracks = await fetchAlbumDetailsById(selectedAlbumForPlaylist.value!.albumId);
-    if (!albumWithTracks?.tracks || albumWithTracks.tracks.length === 0) {
-      showNotification('Could not load album tracks', 'error');
-      isAddToPlaylistModalOpen.value = false;
-      selectedAlbumForPlaylist.value = null;
+}
+async function addToPlaylist(playlistId: string) {
+  if (!selectedPlaylistAlbum.value || adding.value) return;
+  adding.value = true;
+  addError.value = "";
+  try {
+    const album = await $fetch<Album>(
+      `/api/albums/${selectedPlaylistAlbum.value.albumId}`,
+    );
+    const trackIds = (album.tracks || []).map((track) => track.trackId);
+    if (!trackIds.length) {
+      addError.value = "This album has no tracks yet.";
       return;
     }
-    selectedAlbumForPlaylist.value = albumWithTracks;
-  }
-
-  const trackIds = selectedAlbumForPlaylist.value.tracks.map((track: any) => track.trackId);
-  await addTracksToPlaylist(playlistId, trackIds);
-};
-
-// Generic function to add tracks to a playlist
-const addTracksToPlaylist = async (playlistId: string, trackIds: string[]): Promise<void> => {
-  if (!trackIds.length) return;
-
-  try {
     await $fetch(`/api/playlists/${playlistId}/tracks`, {
-      method: 'POST',
-      body: {
-        action: 'add',
-        trackIds,
-      },
+      method: "POST",
+      body: { action: "add", trackIds },
     });
-    showNotification(`Added to playlist successfully`, 'success');
-    isAddToPlaylistModalOpen.value = false;
-    selectedAlbumForPlaylist.value = null;
-  } catch (e: unknown) {
-    // console.error('Error adding tracks to playlist:', e);
-    const errorMessage = e && typeof e === 'object' && 'data' in e && e.data && typeof e.data === 'object' && 'message' in e.data ?
-      String(e.data.message) : 'Failed to add to playlist.';
-    showNotification(errorMessage, 'error');
-  }
-};
-
-// Function to handle edit album action
-const handleEditAlbum = (album: Album): void => {
-  selectedAlbumForEdit.value = album;
-  isEditAlbumModalOpen.value = true;
-};
-
-// Function to close the edit album modal
-const closeEditAlbumModal = (): void => {
-  isEditAlbumModalOpen.value = false;
-  // Keep the selected album for a moment to avoid UI flicker
-  setTimeout(() => {
-    selectedAlbumForEdit.value = null;
-  }, 300);
-};
-
-// Handle successful album update
-const handleAlbumUpdated = (updatedAlbum: Album): void => {
-  // Update the album in the albums list
-  const index = albums.value ? albums.value.findIndex((a: Album) => a.albumId === updatedAlbum.albumId) : -1;
-  if (albums.value && index !== -1) {
-    albums.value[index] = { ...albums.value[index], ...updatedAlbum };
-  }
-
-  // Update the album in the player store if it's loaded
-  playerStore.updateAlbumDetailsInPlayer(updatedAlbum);
-
-  // Close the modal and show success notification
-  closeEditAlbumModal();
-  showNotification(`Album "${updatedAlbum.title}" updated successfully.`, 'success');
-};
-
-// Handle album update error
-const handleUpdateError = (errorMessage: string): void => {
-  showNotification(errorMessage || 'Failed to update album.', 'error');
-};
-
-// --- Delete Album ---
-const openDeleteAlbumModal = (album: Album): void => {
-  selectedAlbumForDelete.value = album;
-  isDeleteAlbumModalOpen.value = true;
-};
-
-const closeDeleteAlbumModal = (): void => {
-  isDeleteAlbumModalOpen.value = false;
-  selectedAlbumForDelete.value = null;
-};
-
-const confirmDeleteAlbum = async (): Promise<void> => {
-  if (!selectedAlbumForDelete.value) return;
-
-  try {
-    await $fetch(`/api/albums/${selectedAlbumForDelete.value.albumId}`, { method: 'DELETE' });
-    if (albums.value) {
-      albums.value = albums.value.filter((a: Album) => a.albumId !== selectedAlbumForDelete.value!.albumId);
-    }
-    showNotification('Album deleted successfully.', 'success');
-  } catch (err) {
-    console.error('Failed to delete album:', err);
-    showNotification('Failed to delete album.', 'error');
+    selectedPlaylistAlbum.value = null;
+    showNotification("Album added to playlist.", "success");
+  } catch {
+    addError.value = "Could not add this album. Please try again.";
   } finally {
-    closeDeleteAlbumModal();
+    adding.value = false;
   }
-};
-
+}
+async function albumUpdated(album: Album) {
+  selectedEdit.value = null;
+  player.updateAlbumDetailsInPlayer(album);
+  await refresh();
+  showNotification("Album updated.", "success");
+}
+async function deleteAlbum() {
+  if (!selectedDelete.value) return;
+  try {
+    await $fetch(`/api/albums/${selectedDelete.value.albumId}`, {
+      method: "DELETE",
+    });
+    selectedDelete.value = null;
+    await refresh();
+    showNotification("Album deleted.", "success");
+  } catch {
+    showNotification("Could not delete this album.", "error");
+  }
+}
 </script>
-
 <style scoped>
-.card-title {
-  white-space: normal;
-  overflow-wrap: break-word;
+.artist-filter {
+  font-size: 0.5em;
 }
-
-.album-play-button {
-  cursor: pointer;
+.album-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--line, #c9c1b4);
 }
-
-.album-play-button-hover-effect {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease-in-out;
+.album-search {
+  flex: 1;
+  min-width: min(100%, 220px);
 }
-
-/* Targets the button when the AlbumCard (which has .group) is hovered */
-:deep(.group:hover) .album-play-button-hover-effect {
-  opacity: 1;
-  pointer-events: auto;
+.album-search input {
+  width: 100%;
+}
+.view-switch {
+  display: flex;
+  gap: 0.5rem;
+}
+.album-list {
+  grid-template-columns: 1fr;
+}
+.album-list :deep(.record-card) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.65fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line, #c9c1b4);
+  padding-bottom: 1.25rem;
+}
+.album-list :deep(.record-link) {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.album-list :deep(.album-art) {
+  width: 88px;
+  flex-shrink: 0;
+}
+.album-list :deep(.record-year) {
+  display: none;
+}
+.album-list :deep(.record-actions) {
+  margin: 0;
+}
+@media (max-width: 650px) {
+  .album-list :deep(.record-card) {
+    grid-template-columns: 1fr;
+  }
+  .album-list :deep(.record-credit) {
+    margin-top: -0.5rem;
+  }
+  .album-toolbar > label:nth-child(2) {
+    flex: 1;
+  }
+  .album-toolbar select {
+    width: 100%;
+  }
+}
+@media (max-width: 440px) {
+  .album-toolbar > label,
+  .album-toolbar > label:nth-child(2) {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
 </style>

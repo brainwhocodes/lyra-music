@@ -1,98 +1,125 @@
 <template>
-  <div class="w-full h-[calc(100vh+5rem)] p-4 bg-base-200 overflow-y-auto">
-    <div class="flex justify-between items-center mb-2 sticky top-0 bg-base-200/80 backdrop-blur py-2 z-10">
-      <div class="form-control">
-        <input type="text" placeholder="Search Discovery Playlists..." class="input input-bordered w-72 md:w-96" v-model="searchQuery" />
-      </div>
+  <div class="utility-page">
+    <header>
+      <h1 class="page-heading">Discover.</h1>
+      <p class="page-intro utility-subtitle">
+        A fresh path through familiar music.
+      </p>
+      <p class="page-intro">
+        Discovery playlists bring together tracks from your library. Open a
+        collection, or explore with your own words.
+      </p>
+    </header>
+    <div class="page-toolbar">
+      <label
+        >Search discovery playlists<input
+          v-model="query"
+          type="search"
+          class="input"
+          placeholder="Find a collection" /></label
+      ><NuxtLink to="/explore" class="btn btn-outline">Open Explore</NuxtLink>
     </div>
-
-    <div v-if="pending" class="flex justify-center items-center py-12">
-      <span class="loading loading-spinner loading-lg"></span>
+    <UiLoadingSkeleton
+      v-if="pending"
+      label="Loading discovery playlists…"
+      variant="rows"
+      :count="3"
+    />
+    <div v-else-if="error" class="utility-status" role="alert">
+      Could not load discovery playlists.
+      <button class="btn btn-outline" @click="refresh()">Try again</button>
     </div>
-
-    <div v-else-if="error" class="alert alert-error mt-4">
-      <Icon name="material-symbols:error-outline" class="w-6 h-6" />
-      <span>Failed to load playlists. Please try again later.</span>
+    <div v-else-if="!playlists?.length" class="utility-empty">
+      <h2>A new way into your library.</h2>
+      <p>
+        No discovery playlists are available yet. Explore can help you find
+        music by description.
+      </p>
+      <NuxtLink to="/explore" class="btn btn-primary"
+        >Explore your music</NuxtLink
+      >
     </div>
-
-    <div v-else-if="!playlists || playlists.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
-      <Icon name="material-symbols:lightbulb-outline" class="w-20 h-20 text-primary mb-4" />
-      <h3 class="text-xl font-bold mb-2">No Discovery Playlists Yet</h3>
-      <p class="text-base-content/70 mb-6 max-w-md">Generate discovery playlists to find new music.</p>
-    </div>
-
-    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
-      <div v-for="playlist in filteredPlaylists" :key="playlist.discoveryPlaylistId" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group" @click="navigateToPlaylist(playlist.discoveryPlaylistId)">
-        <figure class="relative pt-[100%] bg-base-300 overflow-hidden">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="grid grid-cols-2 w-full h-full">
-              <div class="bg-base-200 aspect-square"></div>
-              <div class="bg-base-300 aspect-square"></div>
-              <div class="bg-base-200 aspect-square"></div>
-              <div class="bg-base-300 aspect-square"></div>
-            </div>
-          </div>
-          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <button class="btn btn-circle btn-primary" @click.stop="playPlaylist(playlist.discoveryPlaylistId)">
-              <Icon name="material-symbols:play-arrow" class="w-8 h-8" />
-            </button>
-          </div>
-        </figure>
-
-        <div class="card-body p-4">
-          <h2 class="card-title text-base truncate">{{ playlist.title }}</h2>
-          <p class="text-sm text-base-content/70">{{ formatTrackCount(playlist.trackCount) }}</p>
+    <p v-else-if="!filtered.length" class="utility-empty" role="status">
+      No collections match “{{ query }}”.
+    </p>
+    <div v-else class="utility-list">
+      <article
+        v-for="playlist in filtered"
+        :key="playlist.discoveryPlaylistId"
+        class="utility-row"
+      >
+        <UtilityArt />
+        <div>
+          <h2>
+            <NuxtLink :to="`/discovery/${playlist.discoveryPlaylistId}`">{{
+              playlist.title
+            }}</NuxtLink>
+          </h2>
+          <p>
+            {{ playlist.trackCount }}
+            {{ playlist.trackCount === 1 ? "track" : "tracks" }}
+          </p>
         </div>
-      </div>
+        <div class="utility-actions">
+          <NuxtLink
+            :to="`/discovery/${playlist.discoveryPlaylistId}`"
+            class="btn btn-primary"
+            >Open</NuxtLink
+          ><button
+            class="btn btn-outline"
+            :aria-label="`Play ${playlist.title}`"
+            :disabled="
+              !playlist.trackCount || busyId === playlist.discoveryPlaylistId
+            "
+            @click="play(playlist.discoveryPlaylistId)"
+          >
+            Play
+          </button>
+        </div>
+      </article>
     </div>
+    <p v-if="playError" role="alert" class="utility-status text-error">
+      {{ playError }}
+    </p>
   </div>
 </template>
-
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
-import type { DiscoveryPlaylist } from '~/types/discovery-playlist';
-import { usePageTitle } from '~/composables/page-defaults';
-
-useSeoMeta({
-  title: usePageTitle('Discover')
-});
-
-const searchQuery = ref('');
-const { data: playlists, pending, error, refresh } = useLazyFetch<DiscoveryPlaylist[]>('/api/discovery-playlists');
-
-const playerStore = usePlayerStore();
-
-const filteredPlaylists = computed(() => {
-  if (!playlists.value) return [];
-  if (!searchQuery.value.trim()) return playlists.value;
-  const query = searchQuery.value.toLowerCase();
-  return playlists.value.filter(p => p.title.toLowerCase().includes(query));
-});
-
-const navigateToPlaylist = (id: string) => {
-  navigateTo(`/discovery/${id}`);
-};
-
-const playPlaylist = async (id: string) => {
+import type { DiscoveryPlaylist } from "~/types/discovery-playlist";
+import { usePlayerStore } from "~/stores/player";
+definePageMeta({ layout: "sidebar-layout" });
+useSeoMeta({ title: usePageTitle("Discover") });
+const {
+  data: playlists,
+  pending,
+  error,
+  refresh,
+} = useLazyFetch<DiscoveryPlaylist[]>("/api/discovery-playlists");
+const query = ref(""),
+  busyId = ref(""),
+  playError = ref("");
+const filtered = computed(() =>
+  (playlists.value || []).filter((p) =>
+    p.title.toLowerCase().includes(query.value.trim().toLowerCase()),
+  ),
+);
+const player = usePlayerStore();
+async function play(id: string) {
+  busyId.value = id;
+  playError.value = "";
   try {
-    const playlistWithTracks = await $fetch<any>(`/api/discovery-playlists/${id}`);
-    if (!playlistWithTracks.tracks || playlistWithTracks.tracks.length === 0) return;
-    playerStore.loadQueue(playlistWithTracks.tracks);
-    playerStore.playFromQueue(0);
-  } catch (err) {
-    console.error('Error playing discovery playlist:', err);
+    const result = await $fetch<DiscoveryPlaylist>(
+      `/api/discovery-playlists/${id}`,
+    );
+    if (!result.tracks.length) return;
+    player.loadQueue(
+      result.tracks.map((t) => t.track),
+      { type: "discovery", id },
+    );
+  } catch {
+    playError.value = "Could not play this collection. Please try again.";
+  } finally {
+    busyId.value = "";
   }
-};
-
-const formatTrackCount = (count: number): string => {
-  return count === 1 ? '1 track' : `${count} tracks`;
-};
-
-onMounted(() => {
-  refresh();
-});
-
-definePageMeta({
-  layout: 'sidebar-layout'
-});
+}
 </script>
+<style src="~/assets/utility-pages.css"></style>

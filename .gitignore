@@ -4,6 +4,7 @@
 .nuxt
 .nitro
 .cache
+.cache-*
 dist
 
 *.db
@@ -138,7 +139,7 @@ coverage/
 # Ignore all files in image directories but keep the directories themselves
 public/images/covers/
 public/images/artists/*
-uploads/
+/uploads/
 
 # Don't ignore .gitkeep files to keep empty directories in git
 !public/images/covers/.gitkeep
@@ -150,3 +151,14 @@ uploads/
 !public/images/icons/default-artists-art.webp
 
 .windsurf
+
+# Local inference and test output
+.venv-whistle/
+__pycache__/
+.tools/
+.test-data/
+test-results/
+playwright-report/
+.venv-embedding/
+.venv-evals/
+evals/results/

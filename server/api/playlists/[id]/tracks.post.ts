@@ -1,176 +1,40 @@
-import { defineEventHandler, getRouterParam, readBody } from 'h3';
+import { createError, defineEventHandler, getRouterParam, readBody } from 'h3';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { db } from '~/server/db';
 import { playlists, playlistTracks, tracks } from '~/server/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
-import { v7 as uuidv7 } from 'uuid';
 import { getUserFromEvent } from '~/server/utils/auth';
 
-interface UpdatePlaylistTracksBody {
-  action: 'add' | 'remove';
-  trackIds: string[];
-}
-
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const user = await getUserFromEvent(event);
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
   const playlistId = getRouterParam(event, 'id');
-  const body = await readBody<UpdatePlaylistTracksBody>(event);
-
-  if (!playlistId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Playlist ID is required',
-    });
+  if (!playlistId) throw createError({ statusCode: 400, statusMessage: 'Playlist ID is required' });
+  const body = await readBody(event);
+  if (!body || !['add', 'remove'].includes(body.action) || !Array.isArray(body.trackIds) ||
+      !body.trackIds.length || body.trackIds.length > 500 || body.trackIds.some((id: unknown) => typeof id !== 'string' || !id || id.length > 200)) {
+    throw createError({ statusCode: 400, statusMessage: 'Provide add/remove and 1–500 valid track IDs.' });
   }
-
-  if (!body.trackIds || !Array.isArray(body.trackIds) || body.trackIds.length === 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'At least one track ID is required',
-    });
-  }
-
-  if (body.action !== 'add' && body.action !== 'remove') {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Action must be either "add" or "remove"',
-    });
-  }
-
-  if (!user) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
-    });
-  }
-
-  try {
-    // Verify the playlist exists and belongs to the user
-    const playlist = await db
-      .select()
-      .from(playlists)
-      .where(
-        and(
-          eq(playlists.playlistId, playlistId),
-          eq(playlists.userId, user.userId)
-        )
-      )
-      .get();
-
-    if (!playlist) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Playlist not found',
-      });
-    }
-
-    // Verify all track IDs exist
-    const existingTracks = await db
-      .select({ trackId: tracks.trackId })
-      .from(tracks)
-      .where(sql`${tracks.trackId} IN ${body.trackIds}`);
-
-    const existingTrackIds = new Set(existingTracks.map(t => t.trackId));
-    const invalidTrackIds = body.trackIds.filter(id => !existingTrackIds.has(id));
-
-    if (invalidTrackIds.length > 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: `The following track IDs do not exist: ${invalidTrackIds.join(', ')}`,
-      });
-    }
-
+  const trackIds = [...new Set<string>(body.trackIds)];
+  db.transaction(tx => {
+    const owned = and(eq(playlists.playlistId, playlistId), eq(playlists.userId, user.userId));
+    if (!tx.select().from(playlists).where(owned).get()) throw createError({ statusCode: 404, statusMessage: 'Playlist not found' });
+    // Tracks are shared library content; playlist ownership controls mutations.
+    const available = tx.select({ id: tracks.trackId }).from(tracks).where(inArray(tracks.trackId, trackIds)).all();
+    if (available.length !== trackIds.length) throw createError({ statusCode: 400, statusMessage: 'One or more tracks do not exist.' });
+    const entries = tx.select().from(playlistTracks).where(eq(playlistTracks.playlistId, playlistId)).orderBy(asc(playlistTracks.order), asc(playlistTracks.playlistTrackId)).all();
+    const updatedAt = new Date().toISOString();
     if (body.action === 'add') {
-      // Check for existing tracks in the playlist to avoid duplicates
-      const existingPlaylistTracks = await db
-        .select({ trackId: playlistTracks.trackId })
-        .from(playlistTracks)
-        .where(
-          and(
-            eq(playlistTracks.playlistId, playlistId),
-            sql`${playlistTracks.trackId} IN ${body.trackIds}`
-          )
-        );
-      
-      const existingPlaylistTrackIds = new Set(existingPlaylistTracks.map(pt => pt.trackId));
-      const tracksToAdd = body.trackIds.filter(id => !existingPlaylistTrackIds.has(id));
-      
-      // If all tracks are already in the playlist, return early
-      if (tracksToAdd.length === 0) {
-        return { message: 'All tracks are already in the playlist' };
-      }
-      
-      // Get current max order to append new tracks at the end
-      const maxOrderResult = await db
-        .select({ maxOrder: sql<number>`MAX(${playlistTracks.order})` })
-        .from(playlistTracks)
-        .where(eq(playlistTracks.playlistId, playlistId))
-        .get();
-      
-      const currentMaxOrder = maxOrderResult?.maxOrder || 0;
-      const now = new Date().toISOString();
-
-      // Insert new tracks with sequential order values
-      const newPlaylistTracks = tracksToAdd.map((trackId, index) => ({
-        playlistTrackId: uuidv7(),
-        playlistId,
-        trackId,
-        order: currentMaxOrder + index + 1,
-        addedAt: now,
-        updatedAt: now,
-      }));
-
-      await db.insert(playlistTracks).values(newPlaylistTracks);
+      const present = new Set(entries.map(entry => entry.trackId));
+      const additions = trackIds.filter(id => !present.has(id));
+      const offset = entries.length ? Math.max(...entries.map(entry => entry.order ?? 0)) + 1 : 0;
+      if (additions.length) tx.insert(playlistTracks).values(additions.map((trackId, index) => ({ playlistId, trackId, order: offset + index, updatedAt }))).run();
     } else {
-      // Remove tracks from the playlist
-      await db
-        .delete(playlistTracks)
-        .where(
-          and(
-            eq(playlistTracks.playlistId, playlistId),
-            sql`${playlistTracks.trackId} IN ${body.trackIds}`
-          )
-        )
-        .run();
-
-      // Reorder remaining tracks to fill gaps
-      // First get all remaining tracks ordered by their current order
-      const remainingTracks = await db
-        .select()
-        .from(playlistTracks)
-        .where(eq(playlistTracks.playlistId, playlistId))
-        .orderBy(playlistTracks.order);
-      
-      // Then update each track with a new sequential order concurrently
-      await Promise.all(
-        remainingTracks.map((track, i) =>
-          db
-            .update(playlistTracks)
-            .set({ order: i, updatedAt: new Date().toISOString() })
-            .where(
-              and(
-                eq(playlistTracks.playlistId, playlistId),
-                eq(playlistTracks.playlistTrackId, track.playlistTrackId)
-              )
-            )
-        )
-      );
+      tx.delete(playlistTracks).where(and(eq(playlistTracks.playlistId, playlistId), inArray(playlistTracks.trackId, trackIds))).run();
+      entries.filter(entry => !trackIds.includes(entry.trackId)).forEach((entry, order) => {
+        tx.update(playlistTracks).set({ order, updatedAt }).where(eq(playlistTracks.playlistTrackId, entry.playlistTrackId)).run();
+      });
     }
-
-    // Update the playlist's updated_at timestamp
-    await db
-      .update(playlists)
-      .set({ updatedAt: new Date().toISOString() })
-      .where(eq(playlists.playlistId, playlistId));
-
-    return { success: true };
-  } catch (error: any) {
-    if (error.statusCode) {
-      throw error;
-    }
-    console.error('Error updating playlist tracks:', error);
-    throw createError({
-      statusCode: 500,
-      statusMessage: `Failed to ${body.action} tracks from playlist`,
-    });
-  }
+    tx.update(playlists).set({ updatedAt }).where(owned).run();
+  });
+  return { success: true };
 });

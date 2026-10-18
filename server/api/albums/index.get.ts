@@ -3,7 +3,7 @@ import { defineEventHandler, createError, getQuery } from 'h3'
 import { db } from '~/server/db'
 import { albums, artists, tracks, albumArtists } from '~/server/db/schema';
 import type { AlbumArtistDetail } from '~/types/album';
-import { eq, asc, like, SQL, and, inArray } from 'drizzle-orm'
+import { eq, asc, like, SQL, and, inArray, exists } from 'drizzle-orm'
 import { useCoverArt } from '~/composables/use-cover-art';
 import { getUserFromEvent } from '~/server/utils/auth';
 
@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const titleFilter = query.title as string | undefined;
   const genreFilter = query.genre as string | undefined;
+  const artistIdFilter = query.artistId as string | undefined;
 
   const user = await getUserFromEvent(event);
   if (!user) {
@@ -35,6 +36,10 @@ export default defineEventHandler(async (event) => {
 
     if (titleFilter) {
       conditions.push(like(albums.title, `%${titleFilter}%`));
+    }
+    if (artistIdFilter) {
+      conditions.push(exists(db.select({ artistId: albumArtists.artistId }).from(albumArtists)
+        .where(and(eq(albumArtists.albumId, albums.albumId), eq(albumArtists.artistId, artistIdFilter)))));
     }
 
     if (genreFilter) {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { walkDirectory } from '~/server/services/scanner/walk';
 
 describe('walkDirectory', () => {
@@ -16,7 +16,7 @@ describe('walkDirectory', () => {
 
       const found: string[] = [];
       for await (const entry of walkDirectory(root, { ignoreDirectories: ['ignored'], maxFiles: 1 })) {
-        found.push(entry.path.replace(`${root}/`, ''));
+        found.push(relative(root, entry.path));
       }
 
       expect(found).toEqual(['a.mp3']);

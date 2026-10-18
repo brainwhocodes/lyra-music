@@ -1,171 +1,154 @@
 <template>
-  <div class="p-4 sm:p-6 lg:p-8">
-    <div class="max-w-6xl mx-auto">
-      <div class="mb-6">
-        <NuxtLink :to="`/radio/${channelId}`" class="btn btn-ghost">
-          <Icon name="ph:arrow-left" class="mr-2" /> Back to Station
-        </NuxtLink>
-      </div>
-
-      <h1 class="text-3xl font-bold tracking-tight text-base-content">Radio Station Settings</h1>
-        <p class="mt-2 text-sm text-base-content/70">
-          Update your station's name and branding.
-        </p>
-
-      <div class="mt-8">
-        <div v-if="pending" class="animate-pulse">
-          <div class="h-8 bg-base-300 rounded w-1/3 mb-4"></div>
-          <div class="h-32 bg-base-300 rounded mb-4"></div>
-          <div class="h-8 bg-base-300 rounded w-1/4 mb-4"></div>
-          <div class="h-32 bg-base-300 rounded"></div>
-        </div>
-
-        <div v-else-if="error" class="alert alert-error">
-          <Icon name="ph:warning" class="w-6 h-6" />
-          <span>Failed to load radio station. Please try again later.</span>
-        </div>
-
-        <div v-else-if="station" class="space-y-8 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-8">
-          <!-- Left Column -->
-          <div class="lg:col-span-1">
-            <div class="card bg-base-200">
-              <div class="card-body">
-                <h2 class="card-title">
-                  <Icon name="ph:pencil-simple-line-duotone" class="w-6 h-6" />
-                  Station Details
-                </h2>
-                <p class="text-sm text-base-content/70 mt-1">
-                  Change the public name of your radio station.
-                </p>
-                <div class="form-control mt-4">
-                  <label class="label">
-                    <span class="label-text font-medium">Station Name</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    v-model="stationName" 
-                    class="input input-bordered" 
-                    placeholder="Enter station name"
-                  />
-                </div>
-                <div class="flex justify-end mt-4">
-                  <button 
-                    @click="saveStationDetails" 
-                    class="btn btn-primary" 
-                    :disabled="!stationDetailsChanged || isSavingDetails"
-                  >
-                    <span v-if="isSavingDetails" class="loading loading-spinner"></span>
-                    {{ isSavingDetails ? 'Saving...' : 'Save Details' }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column -->
-          <div class="lg:col-span-2">
-            <div class="card bg-base-200">
-              <div class="card-body">
-                <h2 class="card-title">
-                  <Icon name="ph:image-duotone" class="w-6 h-6" />
-                  Station Images
-                </h2>
-                <p class="text-sm text-base-content/70 mt-1">
-                  Upload a logo and background image for your station's page.
-                </p>
-                <div class="mt-4">
-                  <RadioImageUpload 
-                    :channelId="channelId" 
-                    :currentLogoPath="station.logoImagePath" 
-                    :currentBackgroundPath="station.backgroundImagePath"
-                    @updated="handleImagesUpdated"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="text-center py-8">
-          <p class="text-base-content/70">No radio station found with this ID.</p>
-        </div>
-      </div>
+  <div class="utility-page">
+    <NuxtLink to="/settings/radio" class="utility-back"
+      >← Your radio stations</NuxtLink
+    >
+    <h1 class="page-heading">Edit station.</h1>
+    <p class="page-intro">
+      Give your station a name and a look that feels familiar.
+    </p>
+    <UiLoadingSkeleton
+      v-if="pending || userPending"
+      label="Loading station…"
+      variant="text"
+      :count="4"
+    />
+    <div v-else-if="error || userError" class="utility-status" role="alert">
+      Could not load this station.
+      <button class="btn btn-outline" @click="reload">Try again</button>
     </div>
+    <p v-else-if="!isOwner" class="utility-status">
+      Only the station’s creator can edit its settings.
+    </p>
+    <template v-else-if="station">
+      <form class="utility-panel" @submit.prevent="saveName">
+        <div class="utility-form-line">
+          <label for="radio-station-name"
+            >Station Name<input
+              id="radio-station-name"
+              v-model="name"
+              class="input"
+              required
+              maxlength="200" /></label
+          ><button
+            class="btn btn-primary"
+            :disabled="saving || !name.trim() || name.trim() === station.name"
+          >
+            Save Details</button
+          ><NuxtLink class="btn btn-outline" :to="`/radio/${id}`"
+            >Back to station</NuxtLink
+          >
+        </div>
+        <p v-if="saveError" role="alert" class="text-error mt-4">
+          {{ saveError }}
+        </p>
+        <p v-if="saved" role="status" class="mt-4">Station details saved.</p>
+      </form>
+      <section class="utility-section">
+        <div class="utility-head">
+          <div>
+            <h2>Artist and genre seeds</h2>
+            <p class="mt-3 text-base-content/70">
+              Choose the music that shapes this station.
+            </p>
+          </div>
+          <button class="btn btn-outline" @click="seedsOpen = true">
+            Edit seeds
+          </button>
+        </div>
+        <p>
+          {{
+            [
+              ...station.radioChannelArtists.map((s) => s.artist.name),
+              ...station.radioChannelGenres.map((s) => s.genre.name),
+            ].join(" · ") || "No seeds selected"
+          }}
+        </p>
+      </section>
+      <section class="utility-section">
+        <h2>Station images</h2>
+        <p>
+          Add a logo and an optional background. PNG, JPEG, WebP or GIF, up to 5
+          MB each.
+        </p>
+        <RadioImageUpload
+          :channel-id="id"
+          :current-logo-path="station.logoImagePath"
+          :current-background-path="station.backgroundImagePath"
+          @updated="imagesUpdated"
+        />
+      </section>
+      <EditRadioStationModal
+        :open="seedsOpen"
+        :station="station"
+        @close="seedsOpen = false"
+        @station-updated="refresh()"
+      />
+    </template>
   </div>
 </template>
-
 <script setup lang="ts">
-import type { RadioChannel } from '~/server/db/schema/radio-channels';
-import { ref, computed } from '#imports';
-
-definePageMeta({
-  layout: 'sidebar-layout',
-});
-
+import type { RadioStation } from "~/types/radio";
+import EditRadioStationModal from "~/components/modals/edit-radio-station-modal.vue";
+definePageMeta({ layout: "sidebar-layout" });
+useSeoMeta({ title: usePageTitle("Edit radio station") });
 const route = useRoute();
-const channelId = route.params.id as string;
-const toast = useToast();
-
-const { data: station, pending, error, refresh } = await useFetch<RadioChannel>(`/api/radio-stations/${channelId}`, {
-  lazy: true,
-});
-
-const stationName = ref<string>('');
-const isSavingDetails = ref<boolean>(false);
-const stationDetailsChanged = computed((): boolean => {
-  return station.value && stationName.value !== station.value.name;
-});
-
-// Initialize form values when data is loaded
-watch(station, (newStation: RadioChannel) => {
-  if (newStation) {
-    stationName.value = newStation.name;
-  }
-}, { immediate: true });
-
-async function saveStationDetails(): Promise<void> {
-  if (!stationDetailsChanged.value) return;
-  
-  isSavingDetails.value = true;
-  
+const id = computed(() => String(route.params.id));
+const {
+  data: station,
+  pending,
+  error,
+  refresh,
+} = useLazyFetch<RadioStation>(() => `/api/radio-stations/${id.value}`);
+const {
+  data: user,
+  pending: userPending,
+  error: userError,
+  refresh: refreshUser,
+} = useLazyFetch<{ userId: string }>("/api/auth/me", { method: "POST" });
+const isOwner = computed(
+  () => !!user.value?.userId && user.value.userId === station.value?.userId,
+);
+const name = ref(""),
+  saving = ref(false),
+  saved = ref(false),
+  saveError = ref(""),
+  seedsOpen = ref(false);
+watch(
+  station,
+  (value) => {
+    if (value) name.value = value.name;
+  },
+  { immediate: true },
+);
+async function reload() {
+  await Promise.all([refresh(), refreshUser()]);
+}
+async function saveName() {
+  if (saving.value || !name.value.trim()) return;
+  saving.value = true;
+  saveError.value = "";
+  saved.value = false;
   try {
-    await $fetch(`/api/radio-stations/${channelId}`, {
-      method: 'PUT',
-      body: {
-        name: stationName.value
-      }
+    await $fetch(`/api/radio-stations/${id.value}`, {
+      method: "PUT",
+      body: { name: name.value.trim() },
     });
-    
-    toast.add({
-      message: 'Station details updated successfully',
-      type: 'success'
-    });
-    
-    refresh();
-  } catch (error) {
-    console.error('Error saving station details:', error);
-    toast.add({
-      message: 'Failed to update station details',
-      type: 'error'
-    });
+    await refresh();
+    saved.value = true;
+  } catch (err: any) {
+    saveError.value =
+      err?.data?.statusMessage ||
+      "Could not save station details. Please try again.";
   } finally {
-    isSavingDetails.value = false;
+    saving.value = false;
   }
 }
-
-function handleImagesUpdated(data: { logoImagePath?: string | null, backgroundImagePath?: string | null }): void {
-  if (station.value) {
-    if (data.logoImagePath !== undefined) {
-      station.value.logoImagePath = data.logoImagePath;
-    }
-    if (data.backgroundImagePath !== undefined) {
-      station.value.backgroundImagePath = data.backgroundImagePath;
-    }
-  }
-  
-  toast.add({
-    message: 'Station images updated successfully',
-    type: 'success'
-  });
+function imagesUpdated(data: {
+  logoImagePath?: string | null;
+  backgroundImagePath?: string | null;
+}) {
+  if (station.value) Object.assign(station.value, data);
 }
 </script>
+<style src="~/assets/utility-pages.css"></style>

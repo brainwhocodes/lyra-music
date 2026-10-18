@@ -35,4 +35,5 @@ export interface Track {
   artistId?: string | null;     // Primary artist ID (for backwards compatibility)
   formattedArtists?: FormattedArtist[]; // Formatted artist data for UI
   url?: string;                 // URL for audio playback
+  audioUrl?: string;            // Publisher URL for podcast playback; excluded from local analysis
 }

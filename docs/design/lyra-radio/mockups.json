@@ -1,0 +1,155 @@
+[
+  {
+    "id": "home",
+    "route": "/",
+    "selected": true,
+    "path": "docs/design/lyra-radio/mockups/home.png",
+    "prompt": "Generate a high-fidelity desktop website design mockup for LYRA RADIO public home page /, full page readable 1440px-wide browser layout, portrait 4:5 image. Use attached inspected brand board as identity source and attached standalone rooftop DJ illustration as EXACT hero art pose; original graffiti LYRA wordmark is attached. This is a personal music library app with anime pirate-radio attitude, not a broadcasting service. Palette near-black #17191c, bone #f5f2e9, acid #d7ff3f, orange #ff7144. Bold Barlow Condensed 800 uppercase display and Space Grotesk readable body. Top header bone, compact graffiti LYRA logo left, links Features Self-host Log in right. Main hero big bordered screenprint composition: acid yellow solid left text panel with giant 3-line headline 'OWN YOUR FREQUENCY.' and short text 'Your collection. Your station. Your rules. Turn the music you keep into a mix that moves with you.' Black button 'Tune into radio', underlined 'Open your library'. Right half/60% original seated headphone DJ and speaker pose; don't cover face. Include small orange sticker 'Sound on. World off.' near bottom edge; no live counts or made-upmusic. Below hero black strip with three short separated real product descriptors 'YOUR MUSIC / LOCAL DISCOVERY / NO ALGORITHM RENT'. Below section cream three roomy columns numbered01/02/03 with headings 'Build your station.', 'Find your next obsession.', 'Keep your collection.' Short practical body sentences; functional text links 'Build a station', 'Explore your music', 'Browse your library'. Bottom bold orange horizontal CTA block 'GOOD MUSIC. YOUR RULES.' and black 'Create an account' button, then simple cream footer. Strong black rules, square buttons, offset print shadows only onheroCTA/stickers; no gratuitousUIcard soup. No top eyebrow labels. Allbody16px and minimumcaption14px equivalent, 44pxcontrols. Keep allcopylive-ready and imagejusthero; no extraneouslogo or novelillustrations. Designincludesentirebottom notcutoff.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e01baafa-e0d5-4358-a4f6-8303ac1e054d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspectedBeforeImplementation": true,
+    "adjustments": "Live font rendering; only actual data; existing navigation order and accessible button-based player; responsive stacking inferred at tablet/mobile. Omit generated fake copyright dates and invented capability claims.",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e01baafa-e0d5-4358-a4f6-8303ac1e054d.png",
+    "artifact": {
+      "width": 1122,
+      "height": 1402,
+      "bytes": 2005248,
+      "sha256": "a581bed1aeff6175ae768d3a84b92f6d272fef2dc5e72dfc5f0672ffe6b6a3d5"
+    },
+    "intendedFrame": {
+      "widthCssPx": 1440,
+      "heightCssPx": 1800,
+      "source": "Requested nominal 1440px browser frame; portrait 4:5 home and landscape 3:2 radio pages.",
+      "rasterIsExactCssFrame": false,
+      "note": "The generated raster dimensions are recorded separately. This is an art-directed reference, not a browser capture or pixel-perfect implementation claim."
+    },
+    "inputReferences": [
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+        "portablePath": "docs/design/lyra-radio/brand-board.png",
+        "width": 1440,
+        "height": 1744,
+        "bytes": 943967,
+        "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\public\\images\\lyra-radio\\rooftop-dj.png",
+        "portablePath": "public/images/lyra-radio/rooftop-dj.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2468186,
+        "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\public\\images\\lyra-radio\\wordmark.png",
+        "portablePath": "public/images/lyra-radio/wordmark.png",
+        "width": 1942,
+        "height": 809,
+        "bytes": 1113450,
+        "sha256": "c445b423883925bf47acf9b34d673604fb7f793f17d3cc7893bb7295e94b9667"
+      }
+    ],
+    "inputReferencesVerifiedBy": "Exact imagegen path arrays confirmed by the generating agent before packaging."
+  },
+  {
+    "id": "radio-index",
+    "route": "/radio",
+    "selected": true,
+    "path": "docs/design/lyra-radio/mockups/radio-index.png",
+    "prompt": "Design a desktop UI mockup for LYRA authenticated /radio station browser, landscape 3:2 at nominal1440px. Use attached inspected brandkit and selected home design as identity and language, and rooftop art exact pose. Cream background, nearblackink, acidyellow, restrainedorange. Left216pxsidebar cream blackrule with compact graffiti LYRA logo and verticalnav Library Albums Artists Genres Tracks Explore Playlists Discovery Podcasts Radio(selected acid band) Settings Log out; top mainsearchbar. Maincontent big poster hero borderedblack: left acid solid text 'FIND YOUR FREQUENCY.' in BarlowCondensed800 with shortcopy 'Choose a station. Let your own collection take it from here.' and smallfact 'Fresh queues from artist and genre seeds.' Right40% original rooftopDJ crop face visible. Below largeheading 'Your stations', filters labeled Search stations input and Filter by genre select plus Manage stations outlinedbutton. Below a clean horizontalstationrow cream blackborder, original headphone-L fallback art left100px, actualteststation 'Quiet Hours', genres 'Ambient', artists 'With Scott Buckley', right acidblacktext Play station button and Open outlinedlink. A second rowcanbesample 'Night Drive' but mark sampledataonlynotlibraryfacts. Lowerbriefnotice 'Stations play matching tracks from your library.' Nofake livebroadcaststatus no listenercounts no playlists notintheapp. Squarebuttons44px,16body14metadata, SpaceGrotesk controls. Strong condensedtype, generousworkingroom, tactileprintborder. No redundanteyebrows or stickerscoveringcontrols. Fulldesktopframe with functional-looking controls andno clippedpage.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-fe760489-ad2e-406b-b8b1-e384100ee252.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspectedBeforeImplementation": true,
+    "adjustments": "Live font rendering; only actual data; existing navigation order and accessible button-based player; responsive stacking inferred at tablet/mobile. Omit generated fake copyright dates and invented capability claims.",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-fe760489-ad2e-406b-b8b1-e384100ee252.png",
+    "artifact": {
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1835639,
+      "sha256": "495549172a153ab3ebd49251e0ccafaaffd27f2b14532d6f7ce964ef7384b460"
+    },
+    "intendedFrame": {
+      "widthCssPx": 1440,
+      "heightCssPx": 960,
+      "source": "Requested nominal 1440px browser frame; portrait 4:5 home and landscape 3:2 radio pages.",
+      "rasterIsExactCssFrame": false,
+      "note": "The generated raster dimensions are recorded separately. This is an art-directed reference, not a browser capture or pixel-perfect implementation claim."
+    },
+    "inputReferences": [
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+        "portablePath": "docs/design/lyra-radio/brand-board.png",
+        "width": 1440,
+        "height": 1744,
+        "bytes": 943967,
+        "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e01baafa-e0d5-4358-a4f6-8303ac1e054d.png",
+        "portablePath": "docs/design/lyra-radio/mockups/home.png",
+        "width": 1122,
+        "height": 1402,
+        "bytes": 2005248,
+        "sha256": "a581bed1aeff6175ae768d3a84b92f6d272fef2dc5e72dfc5f0672ffe6b6a3d5"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\public\\images\\lyra-radio\\rooftop-dj.png",
+        "portablePath": "public/images/lyra-radio/rooftop-dj.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2468186,
+        "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+      }
+    ],
+    "inputReferencesVerifiedBy": "Exact imagegen path arrays confirmed by the generating agent before packaging."
+  },
+  {
+    "id": "radio-detail",
+    "route": "/radio/[id]",
+    "selected": true,
+    "path": "docs/design/lyra-radio/mockups/radio-detail.png",
+    "prompt": "Design a desktop UI mockup for LYRA authenticated radio detail page /radio/quiet-hours, landscape3:2 nominal1440px. Use attached inspected brandkit, home reference and exactoriginalrooftopDJ art. Same cream left216pxsidebar and topsearch fromapplication; selectedRadio acidband. Contentbacklink 'Radio'. Mainstation playerdesk solid near-black panel with bone text and acid accents: originalheadphoneL mark in largecream squaresleeve left; right large heading 'QUIET HOURS', paragraph 'A fresh mix from your own collection.' then 'Start with these artists and genres, then follow the music.' Acidbutton 'Play station', creamoutlined 'Next track', underlined 'Edit station'. Useoriginalrooftopart as rightedge narrowillustration onlyifroom, notnewpose. Underpanel simple Now playing section withtrack 'The Distant Sun' and 'Scott Buckley · Monomyth'; actualruntimewillonlyshowwhenplaying. Lower two clearly separatedcreamcolumns with headings 'SEED ARTISTS' and 'SEED GENRES', paragraphs explainingseeds, outlinedlinks Scott Buckley andAmbient. Atbottom player'sexistingqueue strip withtitle/artist playpause Next controls, no fakebroadcastorlistenercount. BarlowCondensed700/800 headings SpaceGroteskbody16. Realhierarchy, controlledgraffiti flavor, blackrules and squaretouchcontrols. No small categorylabels aboveheadings. No inventedalbumart; useoriginalheadphonemark asfallback. Maintainlegiblefullcontent.",
+    "output_hint": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-8a929181-1783-4e2f-a091-cc5c9c05a5e6.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "inspectedBeforeImplementation": true,
+    "adjustments": "Live font rendering; only actual data; existing navigation order and accessible button-based player; responsive stacking inferred at tablet/mobile. Omit generated fake copyright dates and invented capability claims.",
+    "rawOutputPath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-8a929181-1783-4e2f-a091-cc5c9c05a5e6.png",
+    "artifact": {
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1773975,
+      "sha256": "04695376fba9fe0cc9218cf92413fafbe7bbed50ca741657f64c43afa7214f1d"
+    },
+    "intendedFrame": {
+      "widthCssPx": 1440,
+      "heightCssPx": 960,
+      "source": "Requested nominal 1440px browser frame; portrait 4:5 home and landscape 3:2 radio pages.",
+      "rasterIsExactCssFrame": false,
+      "note": "The generated raster dimensions are recorded separately. This is an art-directed reference, not a browser capture or pixel-perfect implementation claim."
+    },
+    "inputReferences": [
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+        "portablePath": "docs/design/lyra-radio/brand-board.png",
+        "width": 1440,
+        "height": 1744,
+        "bytes": 943967,
+        "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e01baafa-e0d5-4358-a4f6-8303ac1e054d.png",
+        "portablePath": "docs/design/lyra-radio/mockups/home.png",
+        "width": 1122,
+        "height": 1402,
+        "bytes": 2005248,
+        "sha256": "a581bed1aeff6175ae768d3a84b92f6d272fef2dc5e72dfc5f0672ffe6b6a3d5"
+      },
+      {
+        "sourcePath": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\public\\images\\lyra-radio\\rooftop-dj.png",
+        "portablePath": "public/images/lyra-radio/rooftop-dj.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2468186,
+        "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+      }
+    ],
+    "inputReferencesVerifiedBy": "Exact imagegen path arrays confirmed by the generating agent before packaging."
+  }
+]

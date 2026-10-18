@@ -1,0 +1,33 @@
+{
+  "createdAt": "2026-10-18T08:43:49.084Z",
+  "skill": "https://github.com/brainwhocodes/image-gen-soul",
+  "direction": "Warm record-store editorial; selected under delegated design scope after optional direction question.",
+  "references": [
+    {
+      "url": "https://bandcamp.com/",
+      "role": "Album-led navigation/editorial discovery content organization"
+    },
+    {
+      "url": "https://fonts.google.com/specimen/Bodoni+Moda",
+      "role": "Editorial headline family"
+    },
+    {
+      "url": "https://fonts.google.com/specimen/Public+Sans",
+      "role": "Controls and body family"
+    }
+  ],
+  "assets": [
+    {
+      "path": "public/images/lyra/listening-room.png",
+      "prompt": "Create a premium editorial photograph for Lyra, a personal music library application. Standalone image asset, no UI, no text, no logos. Landscape 3:2 composition. A tactile black vinyl record halfway out of an unprinted burnt-orange record sleeve on a cream linen surface, a small walnut speaker and the edge of a vintage turntable at upper right, warm afternoon window light, long soft shadows. Close overhead still-life crop, strong diagonals, analog film grain, quiet intimate listening-room mood, art-directed contemporary record-store magazine. Palette warm ivory #f4efe5, near-black #262522, copper #a34127, walnut. Keep vinyl entirely readable, sleeve empty. No people, no floating objects, no shiny plastic 3d look, no collage.",
+      "raw": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e56a6c18-527f-4e77-8146-dc7e3c0e794f.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "inspection": "Accepted: textured vinyl/sleeve diagonal, cream negative space, warm walnut. Exact reused image on brand board and landing; no color correction."
+    },
+    {
+      "path": "public/images/lyra/mark.png",
+      "prompt": "A single original minimalist brand symbol for Lyra, a warm editorial personal music library: three elegantly curved parallel copper lines suggesting both a lyre string instrument and the grooves of a vinyl record, joined by one simple baseline into an abstract lowercase l-shaped music glyph. Flat ink print, near-black #262522 only, no gradients, no shadow, no wording or letters, no frame, no extra elements. Strong silhouette, centered with moderate clear padding. Square format. Transparent background. Precise editorial identity for a record-store magazine, calm and distinctive.",
+      "raw": "Generated images are saved to C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23 as C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-61316f7f-0712-4897-8f17-e253eb253dd5.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "inspection": "Accepted: three dark curved strings, distinctive simple glyph; transparent master, placement crop retains full silhouette. No correction."
+    }
+  ]
+}

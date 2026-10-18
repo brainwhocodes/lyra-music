@@ -1,0 +1,191 @@
+{
+  "createdAt": "2026-10-18T17:47:20.717Z",
+  "records": [
+    {
+      "id": "radio-a-desktop",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-652690a2-6175-42d4-bd84-6c527d635ec6.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/radio-a-desktop.png",
+      "startedAt": "2026-10-18T17:41:56.239Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate a single detailed desktop UI screenshot 1440x1000-ish of a RADICALLY more task-focused RADIO INDEX, alternative A: compact acid header strip 'Find your frequency.' only120px high, cropped existing DJ art at far right. Preserve215px left side rail and top global search from attached before screenshot. Radio highlighted in rail. Main body heading 'Your stations', simple station search+genre filter+Manage stations row. One spacious full-width station row only: small headphone-L art, 'Quiet hours', 'Ambient', 'With Scott Buckley', acid 'Play station' button and outline 'Open'. This station and both play/open controls must be above viewport midpoint. Below a small bone explanation 'Stations play matching tracks from your library.' Keep honest spacious empty remaining page. Show no playback bar because none is active. Clear layout hierarchy and compact utility. Use brand board as art guide and attached actual before screenshot as factual content baseline. Do not reproduce its giant hero.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/radio-desktop.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/radio-a-desktop.png",
+        "width": 1505,
+        "height": 1045,
+        "sha256": "709c26337e6de30732fb44d679b96e7f898ce915315c7b88f5ea95bb4b673e62"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/radio-desktop.png",
+          "width": 1440,
+          "height": 1000,
+          "sha256": "a9afda1e3956f71d4936adf11b975302b02552bb3c863285a4deb017679a44b4"
+        }
+      ]
+    },
+    {
+      "id": "radio-b-desktop",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-f5170705-a6fb-460c-a755-d977f863b241.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/radio-b-desktop.png",
+      "startedAt": "2026-10-18T17:42:42.060Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate a single detailed desktop UI screenshot 1440x1000-ish of RADIO INDEX alternative B. Same factual state as attached before: exactly one station Quiet hours / Ambient / With Scott Buckley, nothing playing. Preserve215px left navigation rail and top search. Completely change hierarchy: no top hero. Large heading 'Your stations' plus compact subtitle 'Find your frequency.' on bone, Manage stations right. Two-column workspace below: wide left70% station search+genre filter then full-width one Quiet hours row with logo, metadata, Play station and Open; right30% an ink bordered vertical art editorial poster of same rooftop DJ, acid caption 'Your music. A different route.' and brief 'Build a mix from artists and genres in your library.' Station controls at top third of viewport; art is secondary separate right rail. Empty lower area remains honest, no fake stats. Do not duplicate navigation or use sliders. Compare structural alternative of artwork lateral versus header strip. All body text legible16px.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/radio-desktop.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/radio-b-desktop.png",
+        "width": 1505,
+        "height": 1045,
+        "sha256": "a04df1d3b639db8e110477a726a15503e5a7b1b3d6ff93d21aa3d1ecc8c96ffe"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/radio-desktop.png",
+          "width": 1440,
+          "height": 1000,
+          "sha256": "a9afda1e3956f71d4936adf11b975302b02552bb3c863285a4deb017679a44b4"
+        }
+      ]
+    },
+    {
+      "id": "library-desktop",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-48c8f368-f208-4005-bb03-7661afeac624.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/library-desktop.png",
+      "startedAt": "2026-10-18T17:44:06.805Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate a polished detailed desktop LYRA LIBRARY screenshot. Preserve215px sidebar and top search seen in before capture. Replace enormous promotion-before-albums with compact heading row 'Your library.' + 16px line 'Good music, within reach.' and a blue-outline 'Explore your music' link at right. Albums section immediately below heading, heading Albums, View all albums link. Show exactly two real album tiles, 'Library Songs 5' by Scott Buckley /2020 and 'Monomyth' by Scott Buckley /2019, headphone-L placeholder covers, acid Play buttons, three-dot menu buttons. At desktop the album section occupies70% width and right30% is compact editorial art panel with same anime DJ, title 'Find your next favourite.' + 'Explore your music' button below (live text separate from image). Below albums/feature, three simple text list columns Artists (Scott Buckley), Playlists (Local listening,2 tracks), Genres (Ambient). No huge promotional hero, no invented music. First album Play button around520px down at1440x1000. All content readable. Keep bone background, ink rules and original artwork. No fake player because no track playing.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/library-desktop.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/library-desktop.png",
+        "width": 1487,
+        "height": 1058,
+        "sha256": "0bfe4cd53bb4dfffe7a0efd4d9c5c6f5c7e957fb0c712332b4fceada8b17a712"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/library-desktop.png",
+          "width": 1440,
+          "height": 1563,
+          "sha256": "5d09dce9c4df57af987999faa2a93ed5393ba0002b5a560a3f3a719a10d9eb17"
+        }
+      ]
+    },
+    {
+      "id": "player-desktop",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-b25ff13c-297d-423b-8ed5-127338c6f1e2.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/player-desktop.png",
+      "startedAt": "2026-10-18T17:44:06.805Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate a detailed DESKTOP full screen NOW PLAYING UI replacing the attached previous vertical tablet player. Width1440height1000, bone background with small graffiti LYRA logo top left and outlined Close button top right. Main two-column listening workspace centeredmax1100px. Leftcolumn55%: album artwork square250px with headphone-L fallback inside thick ink border, adjacent title 'The Distant Sun' in large heavy condensed, Scott Buckley, album Monomyth. Below: previous/shuffle/acidplay/next/repeat controls, readonly playback progress 0:03/0:12, labelled Back10seconds, Seekseconds numberinput+Go, Forward10seconds; Quieter Mute Louder and80%volume. Buttons not sliders. Footer twoequal buttons 'Up Next' and 'Lyrics'. Rightcolumn45%: bordered ink panel with bone contents headed 'Audio analysis'. Explain 'A waveform from the first 30 seconds of this track.' Show completed real-sample-design amplitude waveform 96bars in blue on bone, labels0s/12s; metadata MP3 /44,100 Hz /2 channels /12.0s analyzed; text 'Amplitude preview, not a loudness score.' and small outline 'Analyze again'. Do not put waveform in playback timeline, no fake seek interaction. This is a DESIGN of success state, numeric sample data illustrative only. Show modest acid top rule on analysis panel. Enough room both panels without scrolling desktop, not dashboard stats/medals. Text/control hierarchy clear.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/player-tablet.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/player-desktop.png",
+        "width": 1487,
+        "height": 1058,
+        "sha256": "a9354ec2e596bc9b0f97acccdc634c19a28d87b0a0c1d31be3525b0fce020a0d"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/player-tablet.png",
+          "width": 1536,
+          "height": 2048,
+          "sha256": "eaa30539457511fff5a29687d34057146dfd13db562a0afe53867f6adda60d7b"
+        }
+      ]
+    },
+    {
+      "id": "radio-mobile",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-165b2425-207b-4a69-8162-04f412643f9f.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/radio-mobile.png",
+      "startedAt": "2026-10-18T17:44:06.805Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate one tall MOBILE app UI screenshot390x844 logicalpixels of radio index selected compact-banner direction. Header narrow LYRA logo + menu button; searchfield below. Very compact acid banner 'Find your frequency.' in40px heavy condensed, one short16px sentence 'A mix from your own collection.' a small cropped DJ head tuckedright no textoverlap. Then heading Your stations, Manage stations link. Search stations labelled field, Filter by genre select in two compact full-width rows. One station row Quiet hours, Ambient, With Scott Buckley, small headphone-Llogo, Play station and Open buttons side by side. BOTH buttons visible nearbottomof844viewport. Art must not be a giant extra row. First real station is primary. Preserve accessible44pxbuttons16pxbody. No bottomplayer since noneplaying. No new globalbottomnav. Make actualphonecontent, not device mockup.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/radio-desktop.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/radio-mobile.png",
+        "width": 853,
+        "height": 1844,
+        "sha256": "0ab90c3ad0589690c2329c3e2c6c98c16eb79824c6bee3cd1ed0836e369596ac"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/radio-desktop.png",
+          "width": 1440,
+          "height": 1000,
+          "sha256": "a9afda1e3956f71d4936adf11b975302b02552bb3c863285a4deb017679a44b4"
+        }
+      ]
+    },
+    {
+      "id": "player-mobile",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-f2e36959-fdc0-40ce-a13d-caa4e7f2e43c.png",
+      "output": "docs/design/lyra-radio/ux-v2/concepts/player-mobile.png",
+      "startedAt": "2026-10-18T17:46:31.983Z",
+      "prompt": "Design an actual implementation-ready LYRA personal music app UI, maintaining this attached brand identity: original graffiti wordmark, Barlow Condensed heavy headings, Space Grotesk 16px body, ink #17191c / bone #f5f2e9 / acid #d7ff3f / orange #ff7144 / blue #3b4fd8. Crisp flat ink outlines, no gradients, no generic floating dashboard cards. Existing anime rooftop DJ artwork stays as a secondary accent, never behind text. Native semantic controls with44px minimum targets, readable captions14px, visible labels, no sliders, no drag-only controls, no eyebrow labels above headings. Use exactly real supplied fixture data. Never claim live broadcast, listener counts or invented recommendations. This is a design reference only, not production screenshot. Generate a tall mobile LYRA full screen player UI (390px logicalwidth, scrollheight~1200), adapting the existing attached tablet player into compact mobile music-first workspace. Header LYRAwordmarkleft Closebuttonright. Small144px squarealbumart headphone-L nextto title The Distant Sun / Scott Buckley / Monomyth; at390px this pair can stack titlebelowart ifneeded but no hugeimage. Transportprevious/shuffle/play/next/repeat all44px; acidplay56px. Readonlytimeline0:03/0:12, visiblebuttons Back10seconds, Forward10seconds, Seekseconds numericinput+Go, Quieter/Mute/Louder/80%. Then Up Next and Lyrics buttons. Below outline panel with acidtopstripe, 'Audio analysis', text 'A waveform from the first30seconds of this track.' Initial idle state, button 'Analyze audio', text 'Runs on your device. Playback keeps its place.' A small croppedDJartstrip belowoptional no repeatlargesection. Give usefulcontrols roomy readable16pxspace but visualhierarchy compact, no fake waveform untilanalyzed. Show all interface text live-stylelegible. No sliders. Existingbeforeattached factualstructure, brandboardreferenceidentity. This is a page-specific mobile design reference; not device frame.",
+      "references": [
+        "docs/design/lyra-radio/brand-board.png",
+        "docs/design/lyra-radio/ux-v2/before/player-tablet.png"
+      ],
+      "outputEvidence": {
+        "path": "docs/design/lyra-radio/ux-v2/concepts/player-mobile.png",
+        "width": 941,
+        "height": 1672,
+        "sha256": "cd336557bfc67d6dbeb46f67dcd56ce7de37ae823b39be7e8e2149450be83498"
+      },
+      "referenceEvidence": [
+        {
+          "path": "docs/design/lyra-radio/brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "docs/design/lyra-radio/ux-v2/before/player-tablet.png",
+          "width": 1536,
+          "height": 2048,
+          "sha256": "eaa30539457511fff5a29687d34057146dfd13db562a0afe53867f6adda60d7b"
+        }
+      ]
+    }
+  ]
+}

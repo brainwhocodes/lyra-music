@@ -1,53 +1,63 @@
 <template>
-  <div>
-    <div v-if="pending" class="text-center py-10">
-      <span class="loading loading-spinner loading-lg"></span>
-    </div>
-    <div v-else-if="error" class="alert alert-error">
-      <Icon name="mdi:alert-circle-outline" class="w-6 h-6" />
-      <span>Error loading playlists: {{ error.message }}</span>
-    </div>
-    <div v-else-if="playlists && playlists.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 md:gap-6">
-      <PlaylistCard 
-        v-for="playlist in playlists"
-        :key="playlist.playlistId"
-        :playlist="playlist"
-        @click="navigateToPlaylist"
-        @play="playPlaylist"
-      />
-    </div>
-    <div v-else class="text-center text-gray-500 py-10">
-      No playlists found. You can create new ones here.
+  <UiLoadingSkeleton
+    v-if="pending"
+    label="Loading playlists…"
+    variant="compact"
+  />
+  <p v-else-if="error" role="alert">
+    Could not load playlists. Please try again.
+  </p>
+  <div v-else-if="playlists?.length" class="library-links">
+    <div
+      v-for="playlist in playlists.slice(0, 4)"
+      :key="playlist.playlistId"
+      class="library-item"
+    >
+      <AlbumArt />
+      <NuxtLink :to="`/playlists/${playlist.playlistId}`"
+        ><strong>{{ playlist.name }}</strong
+        ><small
+          >{{ playlist.trackCount }}
+          {{ playlist.trackCount === 1 ? "track" : "tracks" }}</small
+        ></NuxtLink
+      >
+      <button
+        class="btn btn-ghost"
+        type="button"
+        :aria-label="`Play ${playlist.name}`"
+        @click="playPlaylist(playlist.playlistId)"
+      >
+        <Icon name="material-symbols:play-arrow-rounded" aria-hidden="true" />
+      </button>
     </div>
   </div>
+  <p v-else>
+    No playlists yet. <NuxtLink to="/playlists">Create a playlist</NuxtLink>.
+  </p>
 </template>
-
 <script setup lang="ts">
-import PlaylistCard from '~/components/playlist/playlist-card.vue';
-import { usePlaylists } from '~/composables/usePlaylists';
-import { usePlayerStore } from '~/stores/player';
-import type { Playlist } from '~/types/playlist';
-
-const { playlists, pending, error, fetchPlaylists } = usePlaylists();
-const playerStore = usePlayerStore();
-
-fetchPlaylists();
-
-const navigateToPlaylist = (playlistId: string) => {
-  navigateTo(`/playlists/${playlistId}`);
-};
-
-const playPlaylist = async (playlistId: string) => {
+import AlbumArt from "~/components/album/album-art.vue";
+import { usePlayerStore } from "~/stores/player";
+import type { Playlist } from "~/types/playlist";
+const {
+  data: playlists,
+  pending,
+  error,
+} = useLazyFetch<Playlist[]>("/api/playlists");
+const player = usePlayerStore();
+const { showNotification } = useNotification();
+async function playPlaylist(id: string) {
   try {
-    const playlistWithTracks = await $fetch<any>(`/api/playlists/${playlistId}`);
-    if (!playlistWithTracks.tracks || playlistWithTracks.tracks.length === 0) {
-      console.warn('No tracks in this playlist');
-      return;
-    }
-    playerStore.loadQueue(playlistWithTracks.tracks);
-    playerStore.playFromQueue(0);
-  } catch (err) {
-    console.error('Error playing playlist:', err);
+    const playlist = await $fetch<Playlist>(`/api/playlists/${id}`);
+    if (!playlist.tracks.length)
+      return showNotification("This playlist has no tracks yet.", "info");
+    player.loadQueue(
+      playlist.tracks.map((entry) => entry.track),
+      { type: "playlist", id, name: playlist.name },
+      true,
+    );
+  } catch {
+    showNotification("Could not play this playlist.", "error");
   }
-};
+}
 </script>

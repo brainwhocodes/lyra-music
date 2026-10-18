@@ -1,149 +1,90 @@
-import { H3Event, readMultipartFormData, createError } from 'h3';
+import { createError, defineEventHandler, getRouterParam, readMultipartFormData } from 'h3';
+import { and, eq } from 'drizzle-orm';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 import { db } from '~/server/db';
-import { albums, artists, users, albumArtists } from '~/server/db/schema';
-import type { AlbumArtistDetail } from '~/types/album';
-import { writeFile, mkdir, access } from 'node:fs/promises'; // For promise-based file system operations
-import path from 'path';   // For path manipulation
-import { useCoverArt } from '~/composables/use-cover-art';
-import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
-import { eq, and } from 'drizzle-orm';
+import { albumArtists, albums, artists } from '~/server/db/schema';
 import { getUserFromEvent } from '~/server/utils/auth';
 import { splitArtistString } from '~/server/utils/artist-utils';
+import { uploadedImagePath } from '~/server/utils/uploaded-images';
 
-
-// Define the expected request body type
-// Request body will be FormData, so we'll parse fields individually
-
-export default defineEventHandler(async (event: H3Event) => {
+export default defineEventHandler(async event => {
   const user = await getUserFromEvent(event);
-  if (!user) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
-  }
-
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
   const albumId = getRouterParam(event, 'id');
-  if (!albumId) {
-    throw createError({ statusCode: 400, statusMessage: 'Album ID is required' });
+  if (!albumId) throw createError({ statusCode: 400, statusMessage: 'Album ID is required' });
+  const owned = and(eq(albums.albumId, albumId), eq(albums.userId, user.userId));
+  if (!db.select().from(albums).where(owned).get()) throw createError({ statusCode: 404, statusMessage: 'Album not found' });
+  const parts = await readMultipartFormData(event);
+  if (!parts?.length) throw createError({ statusCode: 400, statusMessage: 'No updateable fields provided.' });
+
+  const update: Partial<typeof albums.$inferInsert> = {};
+  let artistNames: string[] | undefined;
+  let image: Buffer | undefined;
+  const seen = new Set<string>();
+  for (const part of parts) {
+    if (!part.name || !['title', 'artistName', 'year', 'coverImage'].includes(part.name)) continue;
+    if (seen.has(part.name)) throw createError({ statusCode: 400, statusMessage: 'Duplicate form fields are not allowed.' });
+    seen.add(part.name);
+    if (part.name === 'coverImage') {
+      if (!part.filename || !part.data.length) throw createError({ statusCode: 400, statusMessage: 'Choose a cover image.' });
+      if (part.data.length > 5 * 1024 * 1024) throw createError({ statusCode: 413, statusMessage: 'Image exceeds 5 MB.' });
+      try {
+        const decoder = sharp(part.data, { limitInputPixels: 20_000_000 });
+        const metadata = await decoder.metadata();
+        if (!metadata.width || !metadata.height || !['png', 'jpeg', 'webp', 'gif'].includes(metadata.format || '')) throw new Error();
+        image = await decoder.webp({ quality: 85 }).toBuffer();
+      } catch { throw createError({ statusCode: 400, statusMessage: 'Choose a valid PNG, JPEG, WebP or GIF image.' }); }
+      continue;
+    }
+    if (part.data.length > 4_000) throw createError({ statusCode: 400, statusMessage: 'Form field is too long.' });
+    const value = part.data.toString('utf8').trim();
+    if (part.name === 'title') {
+      if (!value || value.length > 300) throw createError({ statusCode: 400, statusMessage: 'Title must contain 1 to 300 characters.' });
+      update.title = value;
+    } else if (part.name === 'year') {
+      if (value && (!/^\d{1,4}$/.test(value) || Number(value) < 1)) throw createError({ statusCode: 400, statusMessage: 'Year must be between 1 and 9999, or blank.' });
+      update.year = value ? Number(value) : null;
+    } else {
+      artistNames = [...new Set(splitArtistString(value))];
+      if (!artistNames.length || artistNames.length > 50 || artistNames.some(name => name.length > 200)) throw createError({ statusCode: 400, statusMessage: 'Provide 1 to 50 artist names, each under 200 characters.' });
+    }
   }
-
-  const multipartFormData = await readMultipartFormData(event);
-  if (!multipartFormData) {
-    throw createError({ statusCode: 400, statusMessage: 'Request body is missing.' });
-  }
-
-  let title: string | undefined;
-  let artistNameString: string | undefined;
-  let year: number | null | undefined = undefined;
-  let coverImageFile: Buffer | undefined;
-  let coverImageExtension: string | undefined;
-
-  for (const part of multipartFormData) {
-    if (part.name === 'title') title = part.data.toString().trim();
-    if (part.name === 'artistName') artistNameString = part.data.toString().trim();
-    if (part.name === 'year') {
-      const yearStr = part.data.toString().trim();
-      year = yearStr ? parseInt(yearStr, 10) : null;
-      if (yearStr && isNaN(year as number)) year = null;
+  if (!seen.size) throw createError({ statusCode: 400, statusMessage: 'No updateable fields provided.' });
+  let written: string | undefined;
+  let superseded: string | undefined;
+  try {
+    if (image) {
+      update.coverPath = `/uploads/images/covers/${randomUUID()}.webp`;
+      written = uploadedImagePath(update.coverPath)!;
+      await mkdir(path.dirname(written), { recursive: true });
+      await writeFile(written, image, { flag: 'wx' });
     }
-    if (part.name === 'coverImage' && part.filename && part.data.length > 0) {
-      coverImageFile = part.data;
-      coverImageExtension = path.extname(part.filename);
-    }
-  }
-
-  if (title === undefined && artistNameString === undefined && year === undefined && coverImageFile === undefined) {
-    throw createError({ statusCode: 400, statusMessage: 'No updateable fields provided.' });
-  }
-
-  return await db.transaction(async (tx) => {
-    const existingAlbum = await tx.query.albums.findFirst({
-      where: and(eq(albums.albumId, albumId), eq(albums.userId, user.userId)),
-    });
-
-    if (!existingAlbum) {
-      throw createError({ statusCode: 404, statusMessage: 'Album not found or permission denied.' });
-    }
-
-    const albumUpdateData: Partial<typeof albums.$inferInsert> = {};
-    let hasAlbumRecordChanges = false;
-
-    if (title !== undefined) {
-      albumUpdateData.title = title;
-      hasAlbumRecordChanges = true;
-    }
-    if (year !== undefined) {
-      albumUpdateData.year = year;
-      hasAlbumRecordChanges = true;
-    }
-
-    if (coverImageFile && coverImageExtension) {
-      const uploadsDir = path.join(process.cwd(), 'public', 'images', 'covers');
-      await mkdir(uploadsDir, { recursive: true });
-      const uniqueFilename = `${uuidv4()}${coverImageExtension}`;
-      const filePath = path.join(uploadsDir, uniqueFilename);
-      await writeFile(filePath, coverImageFile);
-      albumUpdateData.coverPath = `/images/covers/${uniqueFilename}`;
-      hasAlbumRecordChanges = true;
-    }
-
-    if (hasAlbumRecordChanges) {
-      albumUpdateData.updatedAt = new Date().toISOString();
-      await tx.update(albums).set(albumUpdateData).where(eq(albums.albumId, albumId));
-    }
-
-    if (artistNameString !== undefined) {
-      const parsedArtistNames = splitArtistString(artistNameString);
-      if (parsedArtistNames.length === 0) {
-        throw createError({ statusCode: 400, statusMessage: 'Artist name cannot be empty.' });
+    const result = db.transaction(tx => {
+      const previous = tx.select().from(albums).where(owned).get();
+      if (!previous) throw createError({ statusCode: 404, statusMessage: 'Album not found' });
+      // Only our per-upload UUID covers are safe to remove; scanner hashes can be shared.
+      if (written && /^\/uploads\/images\/covers\/[a-f0-9-]{36}\.webp$/i.test(previous.coverPath || '')) superseded = uploadedImagePath(previous.coverPath!);
+      tx.update(albums).set({ ...update, updatedAt: new Date().toISOString() }).where(owned).run();
+      if (artistNames) {
+        const links = artistNames.map((name, index) => {
+          const artist = tx.select().from(artists).where(eq(artists.name, name)).get() || tx.insert(artists).values({ name }).returning().get();
+          return { albumId, artistId: artist.artistId, role: 'performer', isPrimaryArtist: index === 0 ? 1 : 0 };
+        });
+        tx.delete(albumArtists).where(eq(albumArtists.albumId, albumId)).run();
+        tx.insert(albumArtists).values(links).run();
       }
-
-      const processedArtistLinks = await Promise.all(
-        parsedArtistNames.map(async (name, index) => {
-          let artistRecord = await tx.query.artists.findFirst({ where: eq(artists.name, name) });
-          if (!artistRecord) {
-            [artistRecord] = await tx.insert(artists).values({ name }).returning();
-          }
-          if (!artistRecord) {
-            throw createError({ statusCode: 500, statusMessage: `Failed to process artist ${name}` });
-          }
-          return {
-            artistId: artistRecord.artistId,
-            role: 'performer',
-            isPrimaryArtist: index === 0 ? 1 : 0,
-          } as Omit<typeof albumArtists.$inferInsert, 'albumId' | 'albumArtistId'>;
-        })
-      );
-
-      await tx.delete(albumArtists).where(eq(albumArtists.albumId, albumId));
-      if (processedArtistLinks.length > 0) {
-        const albumArtistValues = processedArtistLinks.map(link => ({ albumId, ...link }));
-        await tx.insert(albumArtists).values(albumArtistValues);
-      }
-    }
-
-    const finalAlbumData = await tx.query.albums.findFirst({
-      where: eq(albums.albumId, albumId),
+      const record = tx.select().from(albums).where(owned).get()!;
+      const credits = tx.select({ artistId: artists.artistId, name: artists.name, role: albumArtists.role, isPrimaryArtist: albumArtists.isPrimaryArtist })
+        .from(albumArtists).innerJoin(artists, eq(albumArtists.artistId, artists.artistId)).where(eq(albumArtists.albumId, albumId)).all();
+      return { ...record, artists: credits.map(credit => ({ ...credit, isPrimaryArtist: credit.isPrimaryArtist === 1 })) };
     });
-
-    if (!finalAlbumData) {
-      throw createError({ statusCode: 404, statusMessage: 'Updated album not found.' });
-    }
-
-    const finalAlbumArtistsRaw = await tx.query.albumArtists.findMany({
-      where: eq(albumArtists.albumId, albumId),
-      with: { artist: { columns: { artistId: true, name: true } } },
-    });
-
-    const finalAlbumArtistDetails: AlbumArtistDetail[] = finalAlbumArtistsRaw.map(link => ({
-      artistId: link.artist.artistId,
-      name: link.artist.name,
-      role: link.role ?? undefined,
-      isPrimaryArtist: link.isPrimaryArtist === 1,
-    }));
-
-    return {
-      ...finalAlbumData,
-      coverPath: finalAlbumData.coverPath ? useCoverArt().getCoverArtUrl(finalAlbumData.coverPath) : undefined,
-      artists: finalAlbumArtistDetails,
-    };
-  });
+    if (superseded) await unlink(superseded).catch(() => {});
+    return result;
+  } catch (error) {
+    if (written) await unlink(written).catch(() => {});
+    throw error;
+  }
 });

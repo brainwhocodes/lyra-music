@@ -1,0 +1,8 @@
+{
+  "capturedAt": "2026-10-18T09:24:00.000Z",
+  "scope": "Post-run audit of the unchanged cached Whistle runtime used in transcription.windows-x64.json. The historical timing report is preserved separately.",
+  "cactusNeedleVersion": "3.2.1",
+  "weightsFile": "whistle.cact",
+  "weightsBytes": 16919407,
+  "weightsSha256": "b6e02f048568ac5d01a2042556c658061e699acbc0aa2a1439f52f3d461dffeb"
+}

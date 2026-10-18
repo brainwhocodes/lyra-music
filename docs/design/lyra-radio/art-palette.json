@@ -1,0 +1,78 @@
+{
+  "source": {
+    "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\public\\images\\lyra-radio\\rooftop-dj.png",
+    "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b",
+    "original_mode": "RGB",
+    "stored_size": [
+      1536,
+      1024
+    ],
+    "displayed_size": [
+      1536,
+      1024
+    ],
+    "has_alpha": false,
+    "color_management": "No embedded ICC profile; RGB/grayscale input assumed sRGB."
+  },
+  "colors": [
+    {
+      "hex": "#daf83d",
+      "percent": 33.79
+    },
+    {
+      "hex": "#2a2725",
+      "percent": 32.42
+    },
+    {
+      "hex": "#998766",
+      "percent": 11.78
+    },
+    {
+      "hex": "#eee6c0",
+      "percent": 10.09
+    },
+    {
+      "hex": "#e77527",
+      "percent": 6.06
+    },
+    {
+      "hex": "#3a5097",
+      "percent": 5.86
+    }
+  ],
+  "luminance": [
+    24.888,
+    5.976,
+    4.726,
+    3.077,
+    1.825,
+    1.622,
+    1.499,
+    1.437,
+    1.624,
+    1.473,
+    3.024,
+    1.878,
+    1.537,
+    0.889,
+    0.758,
+    0.656,
+    0.496,
+    0.448,
+    0.409,
+    0.388,
+    0.425,
+    0.37,
+    0.356,
+    0.336,
+    0.651,
+    0.662,
+    28.616,
+    8.217,
+    1.389,
+    0.251,
+    0.089,
+    0.007
+  ],
+  "method": "5-bit sRGB histogram; 6 weighted RGB clusters; 256 px sample; alpha-weighted area shares. Luminance: 32 linear-light bins."
+}

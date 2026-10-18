@@ -19,7 +19,6 @@ import {
   getFileMetadata, 
   getChangedFiles, 
   filterChangedFiles, 
-  isSupportedAudioFile,
   calculateOptimalBatchSize,
   validateDirectoryPath
 } from './file-system-utils';

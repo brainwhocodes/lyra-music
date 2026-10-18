@@ -1,0 +1,99 @@
+{
+  "run": ".test-data/anime-radio-build4-production",
+  "method": "Sharp side-by-side and 50% overlay; uniform 720px width; full aspect ratios preserved. ODiff unavailable on this host. No numerical fidelity claim.",
+  "records": [
+    {
+      "id": "home",
+      "reference": {
+        "path": "docs/design/lyra-radio/mockups/home.png",
+        "sha256": "a581bed1aeff6175ae768d3a84b92f6d272fef2dc5e72dfc5f0672ffe6b6a3d5",
+        "width": 1122,
+        "height": 1402
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-landing.png",
+          "sha256": "6328ca825cc19e7ee9a0f4fdfb64139ea56e82e80c0f54c3f9d17cc9bb2d5605",
+          "width": 1440,
+          "height": 1701
+        },
+        "tablet": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-landing.png",
+          "sha256": "47301c80cff445dfa7b3a974b0925ca80ac805b6cd686e9a9d098da72e097d8b",
+          "width": 1536,
+          "height": 4566
+        },
+        "mobile": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-landing.png",
+          "sha256": "e1ded620bb9415d08454931af327001da441db54d7a245a727da1000e71602b1",
+          "width": 1170,
+          "height": 7848
+        }
+      },
+      "comparison": "docs/design/lyra-radio/verification/home-comparison.webp",
+      "overlay": "docs/design/lyra-radio/verification/home-overlay.webp"
+    },
+    {
+      "id": "radio-index",
+      "reference": {
+        "path": "docs/design/lyra-radio/mockups/radio-index.png",
+        "sha256": "495549172a153ab3ebd49251e0ccafaaffd27f2b14532d6f7ce964ef7384b460",
+        "width": 1536,
+        "height": 1024
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio.png",
+          "sha256": "a9afda1e3956f71d4936adf11b975302b02552bb3c863285a4deb017679a44b4",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio.png",
+          "sha256": "65ee069eb3ec9362c9ee8c917355a5e6292d837c1c1aecaa6461c21d8af7d265",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio.png",
+          "sha256": "dba12e581adac03dd40d17df239a3e5cc2ff936f329cf36338d056c22b262a6a",
+          "width": 1170,
+          "height": 4143
+        }
+      },
+      "comparison": "docs/design/lyra-radio/verification/radio-index-comparison.webp",
+      "overlay": "docs/design/lyra-radio/verification/radio-index-overlay.webp"
+    },
+    {
+      "id": "radio-detail",
+      "reference": {
+        "path": "docs/design/lyra-radio/mockups/radio-detail.png",
+        "sha256": "04695376fba9fe0cc9218cf92413fafbe7bbed50ca741657f64c43afa7214f1d",
+        "width": 1536,
+        "height": 1024
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio-quiet-hours.png",
+          "sha256": "bc1dbc56969716604eba40fa1919979326cbcbb13404a5b779b59c01e3c7a62e",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio-quiet-hours.png",
+          "sha256": "5dfdc309326a4ab42eec53ba40cf6884fd1e7437d93592981e646716e053c7c1",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/anime-radio-build4-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio-quiet-hours.png",
+          "sha256": "e9c08d8fd8871a7f01436e9042c2dd0ecb97b942ce89a7ce67c700295583dfa9",
+          "width": 1170,
+          "height": 3960
+        }
+      },
+      "comparison": "docs/design/lyra-radio/verification/radio-detail-comparison.webp",
+      "overlay": "docs/design/lyra-radio/verification/radio-detail-overlay.webp"
+    }
+  ]
+}

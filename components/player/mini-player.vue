@@ -1,84 +1,120 @@
 <template>
-  <div
+  <section
     v-if="playerStore.currentTrack"
-    class="fixed bottom-0 left-0 right-0 bg-base-200 text-base-content p-3 shadow-lg z-100 cursor-pointer hover:bg-base-300 transition-colors"
+    class="mini-player"
+    aria-label="Music player"
   >
-    <div class="flex items-center gap-3">
-      <!-- Album Cover -->
-      <div class="flex-shrink-0 w-12 h-12 rounded overflow-hidden bg-base-100" @click="playerStore.toggleFullScreenPlayer()">
-        <img
-          v-if="playerStore.currentTrack.coverPath"
-          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
-          :alt="`${playerStore.currentTrack.title} cover`"
-          class="w-full h-full object-cover"
-        />
-        <div v-else class="w-full h-full flex items-center justify-center bg-base-100">
-          <Icon name="material-symbols:music-note" class="w-6 h-6 text-base-content/50" />
-        </div>
-      </div>
-
-      <!-- Track Info -->
-      <div class="flex-1 min-w-0" @click="playerStore.toggleFullScreenPlayer()">
-        <div class="font-semibold truncate text-sm" :title="playerStore.currentTrack.title">
-          {{ playerStore.currentTrack.title || 'Unknown Track' }}
-        </div>
-        <!-- Artist display with formatted artists if available -->
-        <div class="text-xs text-base-content/70 truncate">
-          <!-- Use formatted artists if available -->
-          <template v-if="playerStore.currentTrack.formattedArtists && playerStore.currentTrack.formattedArtists.length">
-            <span v-for="(artist, index) in playerStore.currentTrack.formattedArtists" :key="artist.artistId" class="mr-1">
-              <span class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
-                {{ artist.name }}
-              </span>
-              <span v-if="index < playerStore.currentTrack.formattedArtists.length - 2">, </span>
-              <span v-else-if="index === playerStore.currentTrack.formattedArtists.length - 2"> &</span>
-            </span>
-          </template>
-          <!-- Fallback to simple artist name if no formatted artists -->
-          <span v-else>{{ playerStore.currentTrack.artistName || 'Unknown Artist' }}</span>
-        </div>
-      </div>
-
-      <!-- Play/Pause Button -->
-      <button
-        class="btn btn-ghost btn-circle btn-md text-base-content mini-player-play-pause-button"
-        @click="playerStore.togglePlayPause()"
-        :disabled="playerStore.isLoading"
-        title="Play/Pause"
-      >
-        <Icon
-          v-if="playerStore.isLoading"
-          name="svg-spinners:180-ring-with-bg"
-          class="w-5 h-5"
-          style="pointer-events: none;"
-        />
-        <Icon
-          v-else-if="playerStore.isPlaying"
-          name="material-symbols:pause-rounded"
-          class="w-5 h-5"
-          style="pointer-events: none;"
-        />
-        <Icon
-          v-else
-          name="material-symbols:play-arrow-rounded"
-          class="w-5 h-5"
-          style="pointer-events: none;"
-        />
-      </button>
-    </div>
-  </div>
+    <button
+      class="mini-info"
+      :aria-label="`Open full screen player: ${playerStore.currentTrack.title || 'Unknown track'} ${playerStore.currentTrack.formattedArtists?.map((a) => a.name).join(', ') || playerStore.currentTrack.artistName || 'Unknown artist'}`"
+      @click="playerStore.toggleFullScreenPlayer"
+    >
+      <img
+        :src="
+          playerStore.currentTrack.coverPath
+            ? getCoverArtUrl(playerStore.currentTrack.coverPath)
+            : '/images/lyra-radio/mark.webp'
+        "
+        alt=""
+        :class="{
+          'placeholder-art': isPlaceholderArt(
+            playerStore.currentTrack.coverPath,
+          ),
+        }"
+      /><span
+        ><strong>{{ playerStore.currentTrack.title || "Unknown track" }}</strong
+        >{{ " "
+        }}<span>{{
+          playerStore.currentTrack.formattedArtists
+            ?.map((a) => a.name)
+            .join(", ") ||
+          playerStore.currentTrack.artistName ||
+          "Unknown artist"
+        }}</span></span
+      ></button
+    ><button
+      class="btn btn-primary btn-circle"
+      :aria-label="playerStore.isPlaying ? 'Pause playback' : 'Play playback'"
+      @click="playerStore.togglePlayPause"
+      :disabled="playerStore.isLoading && !playerStore.isPlaying"
+    >
+      <Icon
+        :name="
+          playerStore.isPlaying
+            ? 'material-symbols:pause-rounded'
+            : 'material-symbols:play-arrow-rounded'
+        "
+        size="24"
+        class="w-6 h-6"
+      />
+    </button>
+    <WaveformSeek compact class="mini-seek" />
+  </section>
 </template>
-
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
-import { useCoverArt } from '~/composables/use-cover-art';
-
+import { usePlayerStore } from "~/stores/player";
+import { useCoverArt } from "~/composables/use-cover-art";
+import WaveformSeek from "./waveform-seek.vue";
 const playerStore = usePlayerStore();
-const { getCoverArtUrl } = useCoverArt();
+const { getCoverArtUrl, isPlaceholderArt } = useCoverArt();
 </script>
-
 <style scoped>
-.mini-player-play-pause-button {
-  cursor: pointer;
+.mini-player {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 60;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 1rem;
+}
+.mini-seek {
+  grid-column: 1 / -1;
+}
+.mini-player > .btn-circle {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+}
+.mini-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
+}
+.mini-info img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  background: var(--color-base-200);
+}
+.mini-info img.placeholder-art {
+  padding: 9px;
+  object-fit: contain;
+}
+.mini-info > span {
+  min-width: 0;
+}
+.mini-info strong,
+.mini-info span span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+.mini-info span span {
+  color: var(--muted);
 }
 </style>

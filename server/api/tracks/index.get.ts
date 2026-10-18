@@ -1,8 +1,8 @@
 // server/api/library/tracks.get.ts
 import { defineEventHandler, getQuery, createError } from 'h3' // Added createError
 import { db } from '~/server/db'
-import { tracks, artists, albums } from '~/server/db/schema'
-import { sql, eq, and, or, like, SQL, asc } from 'drizzle-orm' // Import necessary Drizzle operators & asc
+import { tracks, artists, albums, artistsTracks } from '~/server/db/schema'
+import { sql, eq, and, exists, like, SQL, asc } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   // Get filter parameters from the query string
@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   const albumTitleFilter = query.albumTitle as string | undefined;
   const genreFilter = query.genre as string | undefined;
   const albumIdFilter = query.albumId as string | undefined;
+  const artistIdFilter = query.artistId as string | undefined;
 
   // Define the selection structure
   const selection = {
@@ -25,6 +26,7 @@ export default defineEventHandler(async (event) => {
       createdAt: tracks.createdAt,
       albumTitle: albums.title, // Select album title
       albumId: albums.albumId,       // Select album id
+      coverPath: albums.coverPath,
       artistName: artists.name, // Select artist name
       artistId: artists.artistId      // Select artist id
   };
@@ -34,7 +36,14 @@ export default defineEventHandler(async (event) => {
   let dbQuery = db.select(selection)
     .from(tracks)
     .leftJoin(albums, eq(tracks.albumId, albums.albumId))
-    .leftJoin(artists, eq(tracks.artistId, artists.artistId));
+    // Artist IDs live in the junction table. Pick one display artist per
+    // track, preferring the primary credit, so collaborations are not duplicated.
+    .leftJoin(artists, eq(artists.artistId, sql<string>`(
+      SELECT ${artistsTracks.artistId} FROM ${artistsTracks}
+      WHERE ${artistsTracks.trackId} = ${tracks.trackId}
+      ORDER BY ${artistsTracks.isPrimaryArtist} DESC, ${artistsTracks.artistId} ASC
+      LIMIT 1
+    )`));
 
   // Dynamically build the WHERE clause
   const conditions: SQL[] = [];
@@ -62,6 +71,10 @@ export default defineEventHandler(async (event) => {
   // Add album ID filtering (exact match)
   if (albumIdFilter) {
     conditions.push(eq(tracks.albumId, albumIdFilter));
+  }
+  if (artistIdFilter) {
+    conditions.push(exists(db.select({ id: artistsTracks.artistId }).from(artistsTracks)
+      .where(and(eq(artistsTracks.trackId, tracks.trackId), eq(artistsTracks.artistId, artistIdFilter)))));
   }
 
   // Apply conditions if any exist

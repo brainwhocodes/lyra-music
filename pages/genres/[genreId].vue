@@ -1,201 +1,185 @@
-<script setup lang="ts">
-import { ref, useSeoMeta } from '#imports';
-import { useRoute, useRouter } from 'vue-router';
-import type { Album } from '~/types/album'; 
-import type { Track, TrackArtistDetail } from '~/types/track'; 
-import { usePlayerStore, type QueueContext } from '~/stores/player'; 
-import AlbumCard from '~/components/album/album-card.vue'; 
-import { useCoverArt } from '~/composables/use-cover-art';
-import { useTrackArtists } from '~/composables/useTrackArtists';
-import { useGenreImage } from '~/composables/useGenreImage';
-
-interface GenreBasicInfo {
-  genreId: string;
-  name: string;
-  albumCount?: number;
-  description?: string;
-}
-
-const route = useRoute();
-const router = useRouter(); 
-const playerStore = usePlayerStore(); 
-const genreId = route.params.genreId as string;
-const genreName = ref<string | null>(null);
-const loadingAlbumIdForPlay = ref<string | null>(null);
-
-const { getGenreImageUrl } = useGenreImage();
-
-
-
-const { getCoverArtUrl } = useCoverArt();
-
-const { data: albums, pending, error } = await useLazyFetch<Album[]>(`/api/genres/${genreId}/albums`, {
-  transform: (fetchedAlbums: Album[]) => {
-    return fetchedAlbums.map(album => ({
-      ...album,
-      coverPath: album.coverPath // The API already applies getCoverArtUrl
-    }));
-  }
-});
-
-const { data: allGenres } = await useLazyFetch<GenreBasicInfo[]>(`/api/genres`); 
-
-if (allGenres.value && genreId) {
-    const genre = allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId);
-    if (genre) {
-      useSeoMeta({
-        title: `${genre.name} | Albums - Otogami Music`
-      });
-    }
-  }
-watch(allGenres.value, (newGenres: GenreBasicInfo[] | null) => {
-  if (newGenres) {
-    genreName.value = newGenres.find((g: GenreBasicInfo) => g.genreId === genreId)?.name;
-    useSeoMeta({
-      title: `${genreName.value} | Albums - Otogami Music`
-    });
-    allGenres.value = newGenres;
-  }
-});
-
-if (allGenres.value) {
-  genreName.value = allGenres.value.find((g: GenreBasicInfo) => g.genreId === genreId)?.name;
-  useSeoMeta({
-    title: usePageTitle(`${genreName.value} | Albums`)
-  });
-}
-
-
-
-watch(albums.value, (newAlbums: Album[] | null) => {
-  if (newAlbums) {
-    pending.value = false;
-    useSeoMeta({
-      title: `${allGenres.value?.find((g: GenreBasicInfo) => g.genreId === genreId)?.name} | Albums - Otogami Music`
-    });
-    albums.value = newAlbums;
-  }
-});
-
-// Computed property to check if the player's current album context matches the given album ID
-const isAlbumContextLoaded = (albumId: string): boolean => {
-  return playerStore.queueContext?.type === 'album' && playerStore.queueContext?.id === albumId;
-};
-
-// This is defined later in the file
-
-// Navigation handler to go to album detail page
-const navigateToAlbumDetail = (albumId: string): void => {
-  router.push(`/albums/${albumId}`);
-};
-
-// Function to get the genre name for display
-const getGenreName = (g: GenreBasicInfo | null): string => {
-  if (!g) return 'Unknown Genre';
-  return g.name || 'Unknown Genre';
-};
-
-// Function to get the genre description for display
-const getGenreDescription = (g: GenreBasicInfo | null): string => {
-  if (!g) return '';
-  return g.description || `Browse albums in the ${g.name} genre`;
-};
-
-// Play album function
-const playAlbum = async (albumIdToPlay: string): Promise<void> => {
-  if (!albumIdToPlay) {
-    return;
-  }
-
-  // Check if the context of the clicked album is already loaded in the player
-  if (isAlbumContextLoaded(albumIdToPlay)) {
-    playerStore.togglePlayPause();
-    return; 
-  }
-  
-  // If context is not for this album, or no album context, then load this album.
-  loadingAlbumIdForPlay.value = albumIdToPlay;
-  try {
-    const albumDetails = await $fetch<Album>(`/api/albums/${albumIdToPlay}`); 
-    
-    if (albumDetails && albumDetails.tracks && albumDetails.tracks.length > 0) {
-      const { getFormattedTrackArtists } = useTrackArtists();
-      const currentAlbumId = albumDetails.albumId;
-      
-      // Process tracks with proper artist handling
-      const tracksToPlay = albumDetails.tracks.map((t: any): Track => {
-        // Get primary artist name from track artists if available
-        const primaryArtistName = t.artists && t.artists.length > 0
-          ? t.artists.find((a: TrackArtistDetail) => a.isPrimaryArtist)?.name || t.artists[0].name
-          : 'Unknown Artist';
-          
-        return {
-          ...t, 
-          albumId: currentAlbumId,
-          artistName: primaryArtistName,
-          albumTitle: albumDetails.title || 'Unknown Album',
-          coverPath: t.coverPath || albumDetails.coverPath,
-          formattedArtists: getFormattedTrackArtists(t.artists || []),
-        };
-      });
-
-      const context: QueueContext = { type: 'album', id: albumDetails.albumId, name: albumDetails.title };
-      playerStore.loadQueue(tracksToPlay, context, true, 0);
-    }
-  } catch (err) {
-    console.error(`Error playing album ${albumIdToPlay}:`, err);
-  } finally {
-    loadingAlbumIdForPlay.value = null;
-  }
-};
-
-// Handler for the play button click on an album card
-const handlePlayAlbumEvent = (album: Album): void => {
-  if (album && album.albumId) {
-    playAlbum(album.albumId);
-  }
-};
-
-definePageMeta({
-  layout: 'sidebar-layout',
-  middleware: 'session'
-});
-
-</script>
-
 <template>
-  <div class="w-full h-full px-4 py-8 overflow-y-auto bg-base-200">
-    <div class="mb-6">
-      <NuxtLink to="/genres" class="btn btn-ghost btn-sm mb-4">&larr; Back to Genres</NuxtLink>
-      <div class="flex items-center gap-4">
-        <img
-          :src="getGenreImageUrl(genreName || '')"
-          :alt="`${genreName} artwork`"
-          class="w-20 h-20 object-cover rounded"
+  <div>
+    <NuxtLink to="/genres" class="btn btn-ghost genre-back">← Genres</NuxtLink>
+    <header class="page-intro genre-intro">
+      <h1 class="page-heading">{{ genre?.name || "Genre" }}</h1>
+      <p>
+        {{
+          genre
+            ? `The albums and tracks filed under ${genre.name} in your collection.`
+            : "Browse the music in your collection."
+        }}
+      </p>
+      <p v-if="collection">
+        {{ genreTracks.length }}
+        {{ genreTracks.length === 1 ? "track" : "tracks" }} ·
+        {{ collection.albums.length }}
+        {{ collection.albums.length === 1 ? "album" : "albums" }}
+      </p>
+      <button
+        class="btn btn-primary"
+        :disabled="!genreTracks.length"
+        @click="playAll"
+      >
+        Play all
+      </button>
+    </header>
+    <UiLoadingSkeleton
+      v-if="pending"
+      label="Loading this genre…"
+      variant="tracks"
+      :count="6"
+    />
+    <p v-else-if="error" role="alert">
+      Could not load this genre.
+      <button class="btn btn-outline" @click="refresh()">Try again</button>
+    </p>
+    <template v-else>
+      <section class="genre-section">
+        <h2>Tracks</h2>
+        <TrackTable
+          v-if="genreTracks.length"
+          :tracks="genreTracks"
+          :caption="`Tracks in ${genre?.name || 'this genre'}`"
+          @play="playTrack"
         />
-        <h1 class="text-3xl font-bold">{{ genreName || 'Genre' }} Albums</h1>
-      </div>
-    </div>
-
-    <div v-if="pending" class="text-center">
-      <span class="loading loading-spinner loading-lg"></span>
-    </div>
-    <div v-else-if="error" class="text-center text-error">
-      <p>Error loading albums for this genre: {{ error.message }}</p>
-    </div>
-    <div v-else-if="!albums || albums.length === 0" class="text-center">
-      <p>No albums found for this genre.</p>
-    </div>
-    <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-      <AlbumCard 
-        v-for="albumItem in albums" 
-        :key="albumItem.albumId" 
-        :album="albumItem"
-        :is-playing-this-album="playerStore.isPlaying && playerStore.currentTrack?.albumId === albumItem.albumId"
-        :is-loading-this-album="loadingAlbumIdForPlay === albumItem.albumId"
-        @cardClick="navigateToAlbumDetail(albumItem.albumId)" 
-        @play="handlePlayAlbumEvent(albumItem)" 
-      />
-    </div>
+        <p v-else>No tracks found for this genre.</p>
+      </section>
+      <section class="genre-section">
+        <h2>Albums</h2>
+        <div v-if="collection?.albums.length" class="collection-grid">
+          <AlbumCard
+            v-for="album in collection.albums"
+            :key="album.albumId"
+            :album="album"
+            :available-actions="[]"
+            :is-playing-this-album="
+              player.isPlaying && player.currentTrack?.albumId === album.albumId
+            "
+            @play="playAlbum"
+          />
+        </div>
+        <p v-else>No albums found for this genre.</p>
+      </section>
+    </template>
   </div>
 </template>
+<script setup lang="ts">
+import type { Album } from "~/types/album";
+import type { Track } from "~/types/track";
+import type { Genre } from "~/types/genre";
+import { usePlayerStore } from "~/stores/player";
+import AlbumCard from "~/components/album/album-card.vue";
+import TrackTable from "~/components/library/track-table.vue";
+definePageMeta({ layout: "sidebar-layout" });
+const route = useRoute();
+const genreId = computed(() => String(route.params.genreId));
+const request = useRequestFetch();
+const { data: genres } = useLazyFetch<Genre[]>("/api/genres");
+const genre = computed(() =>
+  genres.value?.find((value) => value.genreId === genreId.value),
+);
+useHead(() => ({ title: usePageTitle(genre.value?.name || "Genre") }));
+const {
+  data: collection,
+  pending,
+  error,
+  refresh,
+} = useLazyAsyncData(
+  `genre-collection-${genreId.value}`,
+  async () => {
+    const albums = await request<Album[]>(
+      `/api/genres/${genreId.value}/albums`,
+    );
+    const details = await Promise.all(
+      albums.map((album) => request<Album>(`/api/albums/${album.albumId}`)),
+    );
+    return {
+      albums,
+      tracks: details.flatMap((album) =>
+        (album.tracks || []).map((track) => ({
+          ...track,
+          albumId: album.albumId,
+          albumTitle: album.title,
+          coverPath: album.coverPath,
+          artistId:
+            track.artists?.find((artist) => artist.isPrimaryArtist)?.artistId ||
+            track.artists?.[0]?.artistId,
+          artistName: track.artists?.map((artist) => artist.name).join(", "),
+        })),
+      ),
+    };
+  },
+  { watch: [genreId] },
+);
+const player = usePlayerStore();
+const genreTracks = computed(() => collection.value?.tracks || []);
+function playAll() {
+  if (genreTracks.value.length)
+    player.loadQueue(
+      genreTracks.value,
+      {
+        type: "all_tracks",
+        id: `genre-${genreId.value}`,
+        name: genre.value?.name || "Genre",
+      },
+      true,
+    );
+}
+function playTrack(track: Track) {
+  if (player.currentTrack?.trackId === track.trackId)
+    return player.togglePlayPause();
+  player.loadQueue(
+    genreTracks.value,
+    {
+      type: "all_tracks",
+      id: `genre-${genreId.value}`,
+      name: genre.value?.name || "Genre",
+    },
+    true,
+    genreTracks.value.findIndex((item) => item.trackId === track.trackId),
+  );
+}
+function playAlbum(album: Album) {
+  if (
+    player.currentQueueContext.type === "album" &&
+    player.currentQueueContext.id === album.albumId
+  )
+    return player.togglePlayPause();
+  const tracks = genreTracks.value.filter(
+    (track) => track.albumId === album.albumId,
+  );
+  if (tracks.length)
+    player.loadQueue(
+      tracks,
+      { type: "album", id: album.albumId, name: album.title },
+      true,
+    );
+}
+</script>
+<style scoped>
+.genre-back {
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+.genre-intro {
+  max-width: 52rem;
+}
+.genre-intro > p {
+  max-width: 50ch;
+  margin: 1rem 0;
+  font-size: 1.125rem;
+}
+.genre-intro > button {
+  margin-top: 0.75rem;
+}
+.genre-section {
+  border-top: 1px solid var(--rule, #b4a99a);
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+}
+.genre-section h2 {
+  margin: 0 0 1.25rem;
+  font-weight: 500;
+}
+</style>

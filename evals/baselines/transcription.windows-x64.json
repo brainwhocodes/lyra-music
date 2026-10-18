@@ -1,0 +1,394 @@
+{
+  "createdAt": "2026-10-18T08:45:45.853Z",
+  "system": {
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "AMD Ryzen 9 3900X 12-Core Processor            "
+  },
+  "protocol": "Eight fixed clips. Each model uses a fresh process with cached weights; end-to-end wall time includes startup. Whisper CPU int8, 4 threads, beam5, English, VAD off. Whistle production adapter. No lyric prompt. Lexical WER is not capped at 1.",
+  "limitations": [
+    "Three human speech clips share one narrator.",
+    "No verified sung-lyric corpus. Speech mixed with music is not singing.",
+    "Latency is a local single-run pipeline comparison, not a model benchmark."
+  ],
+  "decision": "Retain Whistle in production. This small diagnostic set cannot establish superiority for sung lyrics.",
+  "summary": {
+    "whistle": {
+      "humanSpeechWer": 0.03571428571428571,
+      "humanReferenceWords": 56,
+      "nonspeechHallucinatedWords": 5,
+      "totalPipelineMs": 8896
+    },
+    "faster-whisper-base.en": {
+      "humanSpeechWer": 0.07142857142857142,
+      "humanReferenceWords": 56,
+      "nonspeechHallucinatedWords": 6,
+      "totalPipelineMs": 24536
+    }
+  },
+  "results": [
+    {
+      "id": "1272-128104-0000",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "2c02feda0ee1e38e31b96bbd8c9726a08f9567f1e3b41ba8981687fd7bf8be2e",
+      "durationSeconds": 5.855,
+      "pipelineMs": 1171,
+      "text": "Mr. Quilder is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.560",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.960",
+          "text": "Quilder is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "errors": 2,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.11764705882352941
+    },
+    {
+      "id": "1272-128104-0000",
+      "kind": "human-speech",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "2c02feda0ee1e38e31b96bbd8c9726a08f9567f1e3b41ba8981687fd7bf8be2e",
+      "durationSeconds": 5.855,
+      "pipelineMs": 4344,
+      "text": "Mr. Quilter is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.900",
+          "text": "Quilter is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "errors": 1,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.058823529411764705
+    },
+    {
+      "id": "1272-135031-0005",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "627a7844566a8a99b18d7a69cfc90fab340f3e03eb9da6da4ac3e8d8bd00c88d",
+      "durationSeconds": 4.625,
+      "pipelineMs": 778,
+      "text": "I begged Ruggedo long ago to send him away, but he would not do so.",
+      "lines": [
+        {
+          "time": "00:00.400",
+          "text": "I begged Ruggedo long ago to send him"
+        },
+        {
+          "time": "00:02.640",
+          "text": "away, but he would not do so."
+        }
+      ],
+      "errors": 0,
+      "referenceWords": 15,
+      "hypothesisWords": 15,
+      "wer": 0
+    },
+    {
+      "id": "1272-135031-0005",
+      "kind": "human-speech",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "627a7844566a8a99b18d7a69cfc90fab340f3e03eb9da6da4ac3e8d8bd00c88d",
+      "durationSeconds": 4.625,
+      "pipelineMs": 2002,
+      "text": "I begged Rugged out a long ago to send him away but he would not do so.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "I begged Rugged out a long ago to"
+        },
+        {
+          "time": "00:02.160",
+          "text": "send him away but he would not do"
+        },
+        {
+          "time": "00:03.720",
+          "text": "so."
+        }
+      ],
+      "errors": 3,
+      "referenceWords": 15,
+      "hypothesisWords": 17,
+      "wer": 0.2
+    },
+    {
+      "id": "1272-141231-0010",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "8e2de81f4535add979c310823a0f67943f8de65042fd1baf55c3b7a9b88fad56",
+      "durationSeconds": 10.76,
+      "pipelineMs": 1596,
+      "text": "Particularly so, on this last night, when only two of the little cubicles were occupied, the thousands of others standing with dark empty doors.",
+      "lines": [
+        {
+          "time": "00:00.640",
+          "text": "Particularly so, on this last night, when only"
+        },
+        {
+          "time": "00:03.920",
+          "text": "two of the little cubicles were occupied, the"
+        },
+        {
+          "time": "00:06.880",
+          "text": "thousands of others standing with dark empty doors."
+        }
+      ],
+      "errors": 0,
+      "referenceWords": 24,
+      "hypothesisWords": 24,
+      "wer": 0
+    },
+    {
+      "id": "1272-141231-0010",
+      "kind": "human-speech",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "8e2de81f4535add979c310823a0f67943f8de65042fd1baf55c3b7a9b88fad56",
+      "durationSeconds": 10.76,
+      "pipelineMs": 2322,
+      "text": "Particularly so, on this last night, when only two of the little cubicles were occupied, the thousands of others standing with dark empty doors.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "Particularly so, on this last night, when only"
+        },
+        {
+          "time": "00:03.680",
+          "text": "two of the little cubicles were occupied, the"
+        },
+        {
+          "time": "00:06.760",
+          "text": "thousands of others standing with dark empty doors."
+        }
+      ],
+      "errors": 0,
+      "referenceWords": 24,
+      "hypothesisWords": 24,
+      "wer": 0
+    },
+    {
+      "id": "silence",
+      "kind": "silence",
+      "model": "whistle",
+      "fixtureSha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "durationSeconds": 10,
+      "pipelineMs": 634,
+      "text": "",
+      "lines": [],
+      "errors": 0,
+      "referenceWords": 0,
+      "hypothesisWords": 0,
+      "wer": null
+    },
+    {
+      "id": "silence",
+      "kind": "silence",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "durationSeconds": 10,
+      "pipelineMs": 1927,
+      "text": "You",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "You"
+        }
+      ],
+      "errors": 1,
+      "referenceWords": 0,
+      "hypothesisWords": 1,
+      "wer": null
+    },
+    {
+      "id": "the-distant-sun",
+      "kind": "instrumental",
+      "model": "whistle",
+      "fixtureSha256": "4f210a637b8c4e1216d778a25ee7552b5a161d013edf6ca95716923df136411e",
+      "durationSeconds": 12,
+      "pipelineMs": 1423,
+      "text": "Gracias, señora presidenta.",
+      "lines": [
+        {
+          "time": "00:06.000",
+          "text": "Gracias, señora presidenta."
+        }
+      ],
+      "errors": 3,
+      "referenceWords": 0,
+      "hypothesisWords": 3,
+      "wer": null
+    },
+    {
+      "id": "the-distant-sun",
+      "kind": "instrumental",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "4f210a637b8c4e1216d778a25ee7552b5a161d013edf6ca95716923df136411e",
+      "durationSeconds": 12,
+      "pipelineMs": 6277,
+      "text": "MUSIC You",
+      "lines": [
+        {
+          "time": "00:05.740",
+          "text": "MUSIC"
+        },
+        {
+          "time": "00:09.940",
+          "text": "You"
+        }
+      ],
+      "errors": 2,
+      "referenceWords": 0,
+      "hypothesisWords": 2,
+      "wer": null
+    },
+    {
+      "id": "signal-to-noise",
+      "kind": "instrumental",
+      "model": "whistle",
+      "fixtureSha256": "94daf7fed1c406b38035fa7895ff971945d4c071f050b018216af8fd186dface",
+      "durationSeconds": 12,
+      "pipelineMs": 1324,
+      "text": "Thank you.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "Thank you."
+        }
+      ],
+      "errors": 2,
+      "referenceWords": 0,
+      "hypothesisWords": 2,
+      "wer": null
+    },
+    {
+      "id": "signal-to-noise",
+      "kind": "instrumental",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "94daf7fed1c406b38035fa7895ff971945d4c071f050b018216af8fd186dface",
+      "durationSeconds": 12,
+      "pipelineMs": 3818,
+      "text": "Thanks for watching!",
+      "lines": [
+        {
+          "time": "00:09.140",
+          "text": "Thanks for watching!"
+        }
+      ],
+      "errors": 3,
+      "referenceWords": 0,
+      "hypothesisWords": 3,
+      "wer": null
+    },
+    {
+      "id": "speech-with-music",
+      "kind": "speech-with-music",
+      "model": "whistle",
+      "fixtureSha256": "52739e32336aa35f8d112ec9fe1a8c03dc542a15232912928e9e2e1f17d536af",
+      "durationSeconds": 5.855,
+      "pipelineMs": 1201,
+      "text": "Mr. Quilder is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.560",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.960",
+          "text": "Quilder is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "errors": 2,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.11764705882352941
+    },
+    {
+      "id": "speech-with-music",
+      "kind": "speech-with-music",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "52739e32336aa35f8d112ec9fe1a8c03dc542a15232912928e9e2e1f17d536af",
+      "durationSeconds": 5.855,
+      "pipelineMs": 1971,
+      "text": "Mr. Quilter is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.900",
+          "text": "Quilter is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "errors": 1,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.058823529411764705
+    },
+    {
+      "id": "synthetic-speech",
+      "kind": "synthetic-speech",
+      "model": "whistle",
+      "fixtureSha256": "e1520daa0b84d65fa48bf6de029aeb4035ed050c2115d6bbf91dca138a83fc59",
+      "durationSeconds": 2.864,
+      "pipelineMs": 769,
+      "text": "The Music Play SOFTLY IN THE MORNING.",
+      "lines": [
+        {
+          "time": "00:00.160",
+          "text": "The Music Play SOFTLY IN THE MORNING."
+        }
+      ],
+      "errors": 1,
+      "referenceWords": 7,
+      "hypothesisWords": 7,
+      "wer": 0.14285714285714285
+    },
+    {
+      "id": "synthetic-speech",
+      "kind": "synthetic-speech",
+      "model": "faster-whisper-base.en",
+      "fixtureSha256": "e1520daa0b84d65fa48bf6de029aeb4035ed050c2115d6bbf91dca138a83fc59",
+      "durationSeconds": 2.864,
+      "pipelineMs": 1875,
+      "text": "The music plays softly in the morning.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "The music plays softly in the morning."
+        }
+      ],
+      "errors": 0,
+      "referenceWords": 7,
+      "hypothesisWords": 7,
+      "wer": 0
+    }
+  ]
+}

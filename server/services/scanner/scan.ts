@@ -1,4 +1,5 @@
 import { realpath } from 'node:fs/promises';
+import { isAbsolute, relative, sep } from 'node:path';
 import { and, eq } from 'drizzle-orm';
 import { db } from '~/server/db';
 import { jobQueue, scanRuns } from '~/server/db/schema';
@@ -10,7 +11,10 @@ import { ScanBatchWriter } from './persist';
 import { runLibraryIngestion } from './ingestion';
 
 function isInsideAllowedRoot(candidate: string, allowedRoots: string[]): boolean {
-  return allowedRoots.some((root) => candidate === root || candidate.startsWith(`${root}/`));
+  return allowedRoots.some((root) => {
+    const location = relative(root, candidate);
+    return location === '' || (!isAbsolute(location) && location !== '..' && !location.startsWith(`..${sep}`));
+  });
 }
 
 export async function runScanDirectoryJob(jobId: string, payload: ScanDirectoryJobPayload, isCancelled: () => Promise<boolean>) {

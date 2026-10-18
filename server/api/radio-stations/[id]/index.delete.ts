@@ -1,48 +1,21 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3';
-import { db } from '~/server/db';
-import { radioChannels } from '~/server/db/schema/radio-channels';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { unlink } from 'node:fs/promises';
-import path from 'node:path';
+import { db } from '~/server/db';
+import { radioChannels } from '~/server/db/schema';
+import { getUserFromEvent } from '~/server/utils/auth';
+import { stationImagePath } from '~/server/utils/radio-station';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
+  const user = await getUserFromEvent(event);
+  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
   const channelId = getRouterParam(event, 'id');
-
-  if (!channelId) {
-    throw createError({ statusCode: 400, statusMessage: 'Missing channel ID' });
-  }
-
-  try {
-    // First, find the station to get image paths for deletion
-    const [stationToDelete] = await db
-      .select()
-      .from(radioChannels)
-      .where(eq(radioChannels.channelId, channelId));
-
-    if (!stationToDelete) {
-      throw createError({ statusCode: 404, statusMessage: 'Radio station not found' });
-    }
-
-    // Delete the station from the database
-    await db.delete(radioChannels).where(eq(radioChannels.channelId, channelId));
-
-    const publicDir = path.join(process.cwd(), 'public');
-
-    // Delete associated images, ignoring errors if files don't exist
-    if (stationToDelete.logoImagePath) {
-      await unlink(path.join(publicDir, stationToDelete.logoImagePath)).catch(() => {});
-    }
-    if (stationToDelete.backgroundImagePath) {
-      await unlink(path.join(publicDir, stationToDelete.backgroundImagePath)).catch(() => {});
-    }
-
-    return { success: true, message: `Radio station ${channelId} deleted.` };
-  } catch (error: any) {
-     if (error.statusCode) {
-      throw error;
-    }
-
-    console.error(`Error deleting radio station ${channelId}:`, error);
-    throw createError({ statusCode: 500, statusMessage: 'Failed to delete radio station', data: error.message });
-  }
+  if (!channelId) throw createError({ statusCode: 400, statusMessage: 'Missing channel ID' });
+  const station = db.delete(radioChannels).where(and(eq(radioChannels.channelId, channelId), eq(radioChannels.userId, user.userId))).returning().get();
+  if (!station) throw createError({ statusCode: 404, statusMessage: 'Radio station not found' });
+  await Promise.all([station.logoImagePath, station.backgroundImagePath].map(async stored => {
+    const file = stationImagePath(stored);
+    if (file) await unlink(file).catch(() => {});
+  }));
+  return { success: true };
 });

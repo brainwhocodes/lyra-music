@@ -1,67 +1,90 @@
 <template>
-  <dialog :class="['modal', { 'modal-open': open }]">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">Remove Track</h3>
-      <p>Are you sure you want to remove "{{ track?.title }}" from this playlist?</p>
-      <div class="modal-action">
-        <button class="btn" @click="close">Cancel</button>
-        <button class="btn btn-error" @click="removeTrack">Remove</button>
-      </div>
+  <UtilityDialog
+    :open="open"
+    title="Remove Track"
+    @update:open="
+      (value) => {
+        if (!value) close();
+      }
+    "
+  >
+    <p>Remove “{{ track?.title }}” from this playlist?</p>
+    <p v-if="pending" role="status" class="mt-4">Removing track…</p>
+    <p v-if="error" role="alert" class="text-error mt-4">{{ error }}</p>
+    <div class="modal-action">
+      <button type="button" class="btn" autofocus @click="close">Cancel</button
+      ><button
+        type="button"
+        class="btn btn-error"
+        :disabled="pending || !track"
+        @click="removeTrack"
+      >
+        Remove
+      </button>
     </div>
-  </dialog>
+  </UtilityDialog>
 </template>
 
 <script setup lang="ts">
-import type { Track } from '~/types/track';
-import type { Playlist } from '~/types/playlist';
+import type { Track } from "~/types/track";
+import type { Playlist } from "~/types/playlist";
+import UtilityDialog from "~/components/utility/dialog.vue";
 
-const props = defineProps({
-  open: {
-    type: Boolean,
-    required: true,
-  },
-  track: {
-    type: Object as () => Track | null,
-    required: false,
-    default: null,
-  },
-  playlistId: {
-    type: String,
-    required: true,
-  },
-});
-
-const emit = defineEmits(['update:open', 'playlist-updated']);
-const pending = ref(false);
-const error = ref<string | null>(null);
-
-// No need for manual token handling - using cookie-based authentication
-
-const close = (): void => {
-  emit('update:open', false);
-  error.value = null;
-};
-
-const removeTrack = async (): Promise<void> => {
-  if (!props.track) return;
-  
-  pending.value = true;
-  error.value = null;
-  
-  try {
-    const updatedPlaylist = await $fetch<Playlist>(`/api/playlists/${props.playlistId}/tracks`, {
-      method: 'DELETE',
-      body: {
-        trackIds: [props.track.trackId]
-      }
-    });
-    
-    emit('playlist-updated', updatedPlaylist);
-    close();
-  } catch (err: any) {
-    error.value = err?.data?.statusMessage || 'Failed to remove track from playlist';
-  } finally {
+const props = defineProps<{
+  open: boolean;
+  track?: Track | null;
+  playlistId: string;
+}>();
+const emit = defineEmits<{
+  "update:open": [value: boolean];
+  "playlist-updated": [playlist: Playlist];
+}>();
+const pending = ref(false),
+  error = ref("");
+let version = 0;
+watch(
+  [() => props.open, () => props.track?.trackId, () => props.playlistId],
+  () => {
+    version++;
     pending.value = false;
+    error.value = "";
+  },
+  { immediate: true },
+);
+function close() {
+  emit("update:open", false);
+}
+async function removeTrack() {
+  const trackId = props.track?.trackId,
+    playlistId = props.playlistId;
+  if (!trackId || !playlistId || pending.value || !props.open) return;
+  const request = version;
+  pending.value = true;
+  error.value = "";
+  try {
+    const result = await $fetch<Playlist>(
+      "/api/playlists/" + encodeURIComponent(playlistId) + "/tracks",
+      { method: "DELETE", body: { trackIds: [trackId] }, retry: 0 },
+    );
+    if (
+      request !== version ||
+      !props.open ||
+      props.track?.trackId !== trackId ||
+      props.playlistId !== playlistId
+    )
+      return;
+    emit("playlist-updated", result);
+    close();
+  } catch (cause: any) {
+    if (request === version)
+      error.value =
+        cause?.data?.statusMessage ||
+        "Could not remove the track. Please try again.";
+  } finally {
+    if (request === version) pending.value = false;
   }
-};
+}
+onBeforeUnmount(() => {
+  version++;
+});
 </script>

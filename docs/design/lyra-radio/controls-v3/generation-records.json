@@ -1,0 +1,110 @@
+{
+  "records": [
+    {
+      "id": "forms",
+      "prompt": "Use case: ui-mockup. Asset type: implementation reference for LYRA's complete form component kit, one highly legible 1600x1800-ish design board. References: attached brand board supplies original graffiti logo, anime/street radio identity and real typography; attached live library screenshot supplies UPDATED cool-neutral palette. The user rejects the old cream surfaces and fussy all-caps eyebrows. Design with judgment and craft: cool concrete #f3f4f6, white form fields, ink #17191c, acid #d7ff3f primary actions, restrained blue #3b4fd8 focus, orange only tiny accent. Barlow Condensed bold section headings, Space Grotesk 16px reading, minimum14px labels. Flat crisp outlines, restrained2px corners, expressive brand through logo/type/acid, clean usable forms rather than noise. This is a component library board, not a product page. Title 'Lyra / Forms'. Three spacious columns with horizontal component alignment, all states readable. Include: text field default with visible label 'Playlist name', filled 'Late night', blue-focused filled field, disabled field, validation error with text 'Enter a name.' and icon; search field with search icon and clear button; password field with eye toggle and visible label; select 'Genre'/'Ambient', textarea 'Description'; checkbox unchecked/checked and radio unchecked/checked with adjacent text; toggle off/on; removable filter chip 'Ambient ×'; buttons primary 'Save playlist', secondary 'Cancel', subtle 'Clear', destructive 'Delete', disabled and loading 'Saving…'; error notice and success notice; a complete compact actual example dialog 'Create playlist' with Name,Description,Cancel,Create footer aligned. Show default/focus/error/disabled states as clear specimen groups, sentence-case section labels. Use no cream, individual italic words, gradients, glows, decorative pills, huge poster slogans, invented features or fake stats. Controls minimum44px touch size; desktop fields same52px height, blue3px focus with offset. Exact useful copy, no lorem ipsum. Existing logo is the only image; no new raster artwork needed. No player yet: this board is the entire reusable form language.",
+      "references": [
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\ux-v2\\after\\library-desktop.png"
+      ],
+      "startedAt": "2026-10-18T18:36:01.981Z",
+      "output": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/forms.png",
+      "rawOutput": "C:/Users/mille/.codex/generated_images/01a14dff-a0e9-76b1-92b0-c50f1c963b23/exec-9f193db1-12c7-4605-89ac-5d0d1ca23a16.png",
+      "tool": "image_gen.imagegen",
+      "inspected": true,
+      "outputEvidence": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/forms.png",
+        "width": 1182,
+        "height": 1330,
+        "sha256": "d35bcabe0eaa570ef624d8ab9c3b1d046660a1650834eb4b566b79536f14c95a"
+      },
+      "referenceEvidence": [
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\ux-v2\\after\\library-desktop.png",
+          "width": 1440,
+          "height": 1199,
+          "sha256": "16e6a1e8f0d5474e067262e315f10717ce4ec418d6679c687c805734d0fde30e"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "prompt": "Use case: ui-mockup. Create an implementation-ready LYRA transport control kit with a polished desktop player, phone player, compact bottom bar, and expanded volume state, all clearly legible on one generous 1800x1600-ish board. Attachments: originalbrandboard defines exactlogo/mark/anime identity; existingplayer is the BEFORE to simplify aggressively; selectedformkit defines cool white/concrete controltreatment. UPDATED palette coolconcrete#f3f4f6,whitefields,ink#17191c,acid#d7ff3f,blue#3b4fd8; NO cream. BarlowCondensed700/800 headings, SpaceGrotesk16px body. Title 'Lyra / Listening controls'. A beautifully restrained street-radio UI, not an audioengineering dashboard. Main desktopcomposition: square existingheadphone-L cover atleft with plentyofpresence, title 'The Distant Sun', 'Scott Buckley · Monomyth' at right above ONE directlyinteractivewaveformseekbar. Waveform is the progressrail itself: blueplayedbars, mutedunplayedbars, thinthumb/playhead, smalltimes '0:03' and '0:12' below endpoints. A core row of previous,largeacidcircularPlay,next; quieter shuffle/repeat icons at outeredges. Beneath one smallsecondaryrow 'Up Next', 'Lyrics', speakericon Volume. No separateanalyticspanel, Analyzeaction, PCMmetrics, codecs, technicalcopy, numericseekfield, Go, Back10,Forward10,Quieter,Louder,volumepercentageinline. Phone390pxcomposition: logo+Close at top, modestcover, title/artist, waveformseek, samefiveiconrow with strongPlay, tinysecondaryrow; all comfortably fit in844pxheight with44px hit areas and14pxmintype. Preserveoriginalartascover/brandonly,nohugeDJpanel. Compactdesktopbar:cover+trackidentityleft, prev/play/next andonewaveformrailcenter, queue/lyrics/volume/expand iconsright, ~110pxheight. Separate volumeopenstate: smallpopoverwithlabelVolume,muteiconbutton,andhorizontalnativerange; no always-visiblepercentage. Show a focusedseekstate with blueoutlineandvisiblethumb, oneplainseekfallbackwhenwaveformunavailable, muted/activeShuffleandRepeatstates. FunctionaliconsfromcommonMaterialSymbolsstyle. Explainstatesonlyonkitboard notinsideproduct. Actualwaveformdisplayhereillustrative; implementationwillrenderrealdata. Makecontrolscomfortable,visualrhythmpreciseandcohesivewithforms, noextraneousdata, noeyebrowlabels, noitalicheadlineemphasis, nofakecounts. Thisboardisdesignreference,notproductionscreenshot.",
+      "references": [
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\ux-v2\\after\\player-desktop.png",
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\concepts\\forms.png"
+      ],
+      "startedAt": "2026-10-18T18:37:55.997Z",
+      "output": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/transport.png",
+      "rawOutput": "C:/Users/mille/.codex/generated_images/01a14dff-a0e9-76b1-92b0-c50f1c963b23/exec-04bf0137-7744-494b-81bb-a8bd4901cbd4.png",
+      "tool": "image_gen.imagegen",
+      "inspected": true,
+      "outputEvidence": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/transport.png",
+        "width": 1330,
+        "height": 1182,
+        "sha256": "45765a3801b400ca9028ecb0b29da2853911138652042d916e7fec85f71e67ac"
+      },
+      "referenceEvidence": [
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        },
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\ux-v2\\after\\player-desktop.png",
+          "width": 1440,
+          "height": 1000,
+          "sha256": "1db5c11488128e88cbce084d307d38b7726a79af0a4d5e0fafbccd1a3147ae72"
+        },
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\concepts\\forms.png",
+          "width": 1182,
+          "height": 1330,
+          "sha256": "d35bcabe0eaa570ef624d8ab9c3b1d046660a1650834eb4b566b79536f14c95a"
+        }
+      ]
+    },
+    {
+      "id": "form-states",
+      "prompt": "Use case: ui-mockup. Create a LYRA forms extension board in the EXACT selected attached formkit language, coolconcrete#f3f4f6, whitefields, ink#17191c, acid#d7ff3f, blue#3b4fd8focus, darkred#9a2723errorTEXTforcontrast. Title 'Lyra / Form states'. Readable1400x1200-ish board, nohugeemptyarea. This is an implementationreference for real existingforms only. Firstcolumn: numberfield label'Year' value'2020' withnativeincrementarrows; numberfield'Track number' value'1'; fileuploadlabel'Album cover', outlined'Choose image' button, 'PNG, JPEG or WebP' supporttext, squareoriginalheadphone-L preview with 'Remove image' action, error'Choose an image under 5 MB.'; checkboxlabel'Explicit' unchecked/checked; selectlabel'Genre' value'Ambient'. Middlecolumn: complete minimaldialog 'Create New Playlist' with ONLY label'Playlist name', input'Late night', Cancel andacidCreatebuttons; show adjacenterrorstate inputempty, darkred'Enter a playlist name.' withwarningicon, andsubmittingstate'Saving…'disabled. Do NOT addDescription,Genre,publicvisibility,collaborationorprofilefeaturestoCreatePlaylist. Thirdcolumn: actualaccountform'Login' withEmail,Password field pluscontainedeyeiconbutton,primaryLogin,smallerror'Email or password is incorrect.';show focusedpassword anddisabledsubmitstate. Atbottom showalignedprimary/secondary/destructivebuttonswithdarkredDelete+whitetext, andfield16pxtext,52pxheight,2pxcorners,3pxbluefocus. BarlowCondensedheadingsSpaceGroteskbody. No cream, noitalicheadlines, nofakefeatures, noeverpresenttechnicalmetrics. Legible44pxtargets; errorshavewordsandcolor. Originalbrandmarkprovided viafirstboardonlyasidentityreference.",
+      "references": [
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\concepts\\forms.png",
+        "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png"
+      ],
+      "startedAt": "2026-10-18T18:39:53.401Z",
+      "output": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/form-states.png",
+      "rawOutput": "C:/Users/mille/.codex/generated_images/01a14dff-a0e9-76b1-92b0-c50f1c963b23/exec-e310ae4d-5162-43ad-ab50-2299107ff1f4.png",
+      "tool": "image_gen.imagegen",
+      "inspected": true,
+      "outputEvidence": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/form-states.png",
+        "width": 1355,
+        "height": 1161,
+        "sha256": "289097b08f411a0fd192acfb05ceea02f72f68852d15ad7b5929c0c87282164e"
+      },
+      "referenceEvidence": [
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\concepts\\forms.png",
+          "width": 1182,
+          "height": 1330,
+          "sha256": "d35bcabe0eaa570ef624d8ab9c3b1d046660a1650834eb4b566b79536f14c95a"
+        },
+        {
+          "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\brand-board.png",
+          "width": 1440,
+          "height": 1744,
+          "sha256": "c0ff99407a2a24dfcb6d01d36e266a3b6b5cf3a6bf9c6cb949f9f234a8eddca0"
+        }
+      ]
+    }
+  ]
+}

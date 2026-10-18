@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
   if (!podcast) {
     try {
-      const xml = await $fetch<string>(feedUrl);
+      const xml = await $fetch<string>(feedUrl, { responseType: 'text' });
       const meta = parseFeedMeta(xml, feedUrl);
       podcast = {
         podcastId: uuidv7(),

@@ -1,0 +1,1348 @@
+{
+  "artifact": "control-kit.html",
+  "sourceStyles": [
+    "assets/fonts.css",
+    "assets/control-kit.css"
+  ],
+  "browser": "156.0.8078.4",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "screenshot": "after/control-kit-desktop.png",
+      "sha256": "c026c17048391e536c8e64d863ef9a48d5e4a90fa2ad44b690b10b6c71b01a0a",
+      "volumeScreenshot": {
+        "path": "after/control-kit-volume-desktop.png",
+        "sha256": "e39f0b8c6b08804ef0308078be41f38bc93e8783ed4cba27e685eb33cc6979c5"
+      },
+      "assets": {
+        "fonts": [
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "loaded": true
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 800,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 400,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 700,
+            "loaded": true
+          }
+        ],
+        "images": [
+          {
+            "src": "../../../../public/images/lyra-radio/wordmark.png",
+            "width": 1942,
+            "height": 809
+          },
+          {
+            "src": "../../../../public/images/lyra-radio/mark.png",
+            "width": 1254,
+            "height": 1254
+          }
+        ],
+        "loadedFaces": [
+          {
+            "family": "Barlow Condensed",
+            "weight": "700"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": "800"
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": "400 700"
+          }
+        ]
+      },
+      "geometry": {
+        "viewport": 1440,
+        "width": 1440,
+        "height": 1975,
+        "textMinimum": 14
+      },
+      "inventory": [
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Default text",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "search",
+          "name": "Search",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear search",
+          "disabled": false
+        },
+        {
+          "tag": "select",
+          "type": null,
+          "name": "Genre",
+          "disabled": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "Description",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Year",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Track number",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "file",
+          "name": "Album cover",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Focus appearance",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Validation error",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Disabled field",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Explicit",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Disabled choice",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option one",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option two",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Toggle example",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Save",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Delete",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Disabled",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Saving…",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Playlist Name",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "reset",
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Create",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "Email",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "password",
+          "name": "Password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": "Show password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Login",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Seek demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Shuffle",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Previous track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Play demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Next track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Repeat demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "summary",
+          "type": null,
+          "name": "Volume"
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Mute",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Volume",
+          "disabled": false
+        },
+        {
+          "tag": "a",
+          "type": null,
+          "name": "Music credits & license"
+        }
+      ],
+      "accessibilityViolations": 0,
+      "errors": [],
+      "externalRequests": 0
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "screenshot": "after/control-kit-mobile.png",
+      "sha256": "6c2eb3e16e875f527f49bc0fd86f5931b1e047033640b44ded89f18c2de42635",
+      "volumeScreenshot": {
+        "path": "after/control-kit-volume-mobile.png",
+        "sha256": "64d47a7bd066ad40cd32e6bb62402d41693861f99d203a921400b528b5cd3d61"
+      },
+      "assets": {
+        "fonts": [
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "loaded": true
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 800,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 400,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 700,
+            "loaded": true
+          }
+        ],
+        "images": [
+          {
+            "src": "../../../../public/images/lyra-radio/wordmark.png",
+            "width": 1942,
+            "height": 809
+          },
+          {
+            "src": "../../../../public/images/lyra-radio/mark.png",
+            "width": 1254,
+            "height": 1254
+          }
+        ],
+        "loadedFaces": [
+          {
+            "family": "Barlow Condensed",
+            "weight": "700"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": "800"
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": "400 700"
+          }
+        ]
+      },
+      "geometry": {
+        "viewport": 390,
+        "width": 390,
+        "height": 4102,
+        "textMinimum": 14
+      },
+      "inventory": [
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Default text",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "search",
+          "name": "Search",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear search",
+          "disabled": false
+        },
+        {
+          "tag": "select",
+          "type": null,
+          "name": "Genre",
+          "disabled": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "Description",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Year",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Track number",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "file",
+          "name": "Album cover",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Focus appearance",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Validation error",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Disabled field",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Explicit",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Disabled choice",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option one",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option two",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Toggle example",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Save",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Delete",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Disabled",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Saving…",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Playlist Name",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "reset",
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Create",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "Email",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "password",
+          "name": "Password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": "Show password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Login",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Seek demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Shuffle",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Previous track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Play demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Next track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Repeat demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "summary",
+          "type": null,
+          "name": "Volume"
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Mute",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Volume",
+          "disabled": false
+        },
+        {
+          "tag": "a",
+          "type": null,
+          "name": "Music credits & license"
+        }
+      ],
+      "accessibilityViolations": 0,
+      "errors": [],
+      "externalRequests": 0
+    },
+    {
+      "name": "compact",
+      "width": 320,
+      "screenshot": "after/control-kit-compact.png",
+      "sha256": "226d929e821e1e8e28ac9aa5b4cbc64d3f905c50a17395968d7f335de72723ac",
+      "volumeScreenshot": null,
+      "assets": {
+        "fonts": [
+          {
+            "family": "Barlow Condensed",
+            "weight": 700,
+            "loaded": true
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": 800,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 400,
+            "loaded": true
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": 700,
+            "loaded": true
+          }
+        ],
+        "images": [
+          {
+            "src": "../../../../public/images/lyra-radio/wordmark.png",
+            "width": 1942,
+            "height": 809
+          },
+          {
+            "src": "../../../../public/images/lyra-radio/mark.png",
+            "width": 1254,
+            "height": 1254
+          }
+        ],
+        "loadedFaces": [
+          {
+            "family": "Barlow Condensed",
+            "weight": "700"
+          },
+          {
+            "family": "Barlow Condensed",
+            "weight": "800"
+          },
+          {
+            "family": "Space Grotesk",
+            "weight": "400 700"
+          }
+        ]
+      },
+      "geometry": {
+        "viewport": 320,
+        "width": 320,
+        "height": 4239,
+        "textMinimum": 14
+      },
+      "inventory": [
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Default text",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "search",
+          "name": "Search",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear search",
+          "disabled": false
+        },
+        {
+          "tag": "select",
+          "type": null,
+          "name": "Genre",
+          "disabled": false
+        },
+        {
+          "tag": "textarea",
+          "type": null,
+          "name": "Description",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Year",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "number",
+          "name": "Track number",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "file",
+          "name": "Album cover",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Focus appearance",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Validation error",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Disabled field",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Explicit",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Disabled choice",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option one",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "radio",
+          "name": "Option two",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "Toggle example",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Save",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Clear",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Delete",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Disabled",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Saving…",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": null,
+          "name": "Playlist Name",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "reset",
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Create",
+          "disabled": true
+        },
+        {
+          "tag": "input",
+          "type": "email",
+          "name": "Email",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "password",
+          "name": "Password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "name": "Show password",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": "submit",
+          "name": "Login",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Seek demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Shuffle",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Previous track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Play demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Next track",
+          "disabled": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Repeat demo audio",
+          "disabled": false
+        },
+        {
+          "tag": "summary",
+          "type": null,
+          "name": "Volume"
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "name": "Mute",
+          "disabled": false
+        },
+        {
+          "tag": "input",
+          "type": "range",
+          "name": "Volume",
+          "disabled": false
+        },
+        {
+          "tag": "a",
+          "type": null,
+          "name": "Music credits & license"
+        }
+      ],
+      "accessibilityViolations": 0,
+      "errors": [],
+      "externalRequests": 0
+    }
+  ],
+  "coverage": [
+    {
+      "name": "Default text",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Search",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Clear search",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Genre",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Description",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Year",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Track number",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Album cover",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Focus appearance",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Validation error",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "fill, clear, select, increment, choose local file, focus"
+      ],
+      "assertions": [
+        "native values change; error/focus/file feedback matches"
+      ]
+    },
+    {
+      "name": "Explicit",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "check or keyboard Space"
+      ],
+      "assertions": [
+        "native checked state matches"
+      ]
+    },
+    {
+      "name": "Option one",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "check or keyboard Space"
+      ],
+      "assertions": [
+        "native checked state matches"
+      ]
+    },
+    {
+      "name": "Option two",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "check or keyboard Space"
+      ],
+      "assertions": [
+        "native checked state matches"
+      ]
+    },
+    {
+      "name": "Toggle example",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "check or keyboard Space"
+      ],
+      "assertions": [
+        "native checked state matches"
+      ]
+    },
+    {
+      "name": "Save",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "activate each action"
+      ],
+      "assertions": [
+        "local-only feedback names activated action"
+      ]
+    },
+    {
+      "name": "Cancel (action)",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "activate each action"
+      ],
+      "assertions": [
+        "local-only feedback names activated action"
+      ]
+    },
+    {
+      "name": "Clear",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "activate each action"
+      ],
+      "assertions": [
+        "local-only feedback names activated action"
+      ]
+    },
+    {
+      "name": "Delete",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "activate each action"
+      ],
+      "assertions": [
+        "local-only feedback names activated action"
+      ]
+    },
+    {
+      "name": "Playlist Name",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "empty disabled, fill, Enter submit, reset"
+      ],
+      "assertions": [
+        "preview names input; reset clears field and disables Create"
+      ]
+    },
+    {
+      "name": "Create",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "empty disabled, fill, Enter submit, reset"
+      ],
+      "assertions": [
+        "preview names input; reset clears field and disables Create"
+      ]
+    },
+    {
+      "name": "Cancel (playlist)",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "empty disabled, fill, Enter submit, reset"
+      ],
+      "assertions": [
+        "preview names input; reset clears field and disables Create"
+      ]
+    },
+    {
+      "name": "Email",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "invalid submits, valid fill, toggle visibility, submit"
+      ],
+      "assertions": [
+        "validation messages and input types; no sign-in request"
+      ]
+    },
+    {
+      "name": "Password",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "invalid submits, valid fill, toggle visibility, submit"
+      ],
+      "assertions": [
+        "validation messages and input types; no sign-in request"
+      ]
+    },
+    {
+      "name": "Show/Hide password",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "invalid submits, valid fill, toggle visibility, submit"
+      ],
+      "assertions": [
+        "validation messages and input types; no sign-in request"
+      ]
+    },
+    {
+      "name": "Login",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "invalid submits, valid fill, toggle visibility, submit"
+      ],
+      "assertions": [
+        "validation messages and input types; no sign-in request"
+      ]
+    },
+    {
+      "name": "Play/Pause demo audio",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "play actual MP3; pause; keyboard/pointer seek; repeat; range and mute"
+      ],
+      "assertions": [
+        "native media currentTime/volume and pressed state match controls"
+      ]
+    },
+    {
+      "name": "Seek demo audio",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "play actual MP3; pause; keyboard/pointer seek; repeat; range and mute"
+      ],
+      "assertions": [
+        "native media currentTime/volume and pressed state match controls"
+      ]
+    },
+    {
+      "name": "Repeat demo audio",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "play actual MP3; pause; keyboard/pointer seek; repeat; range and mute"
+      ],
+      "assertions": [
+        "native media currentTime/volume and pressed state match controls"
+      ]
+    },
+    {
+      "name": "Volume range",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "play actual MP3; pause; keyboard/pointer seek; repeat; range and mute"
+      ],
+      "assertions": [
+        "native media currentTime/volume and pressed state match controls"
+      ]
+    },
+    {
+      "name": "Mute/Unmute",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "play actual MP3; pause; keyboard/pointer seek; repeat; range and mute"
+      ],
+      "assertions": [
+        "native media currentTime/volume and pressed state match controls"
+      ]
+    },
+    {
+      "name": "Volume disclosure",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "Enter opens; Escape from range closes"
+      ],
+      "assertions": [
+        "range initially hidden; panel visible; focus returns to Volume"
+      ]
+    },
+    {
+      "name": "Music credits & license",
+      "status": "covered",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "open local credits link"
+      ],
+      "assertions": [
+        "existing attribution document contains CC BY 4.0"
+      ]
+    },
+    {
+      "name": "Disabled field",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Disabled choice",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Disabled",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Saving…",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Shuffle",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Previous track",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    },
+    {
+      "name": "Next track",
+      "status": "state-asserted",
+      "testedBy": "render-control-kit.mjs",
+      "actions": [
+        "inspect intentionally disabled state"
+      ],
+      "assertions": [
+        "native disabled is true"
+      ]
+    }
+  ],
+  "negativeControl": "Deliberately expecting the old Ambient value after Clear failed with actual empty value."
+}

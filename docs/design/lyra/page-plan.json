@@ -1,0 +1,189 @@
+[
+  {
+    "id": "library",
+    "routes": [
+      "/library"
+    ],
+    "content": "Library home. Fixed slim 216px cream sidebar lyra at top and Library, Albums, Artists, Genres, Tracks, Playlists, Explore, Discover, Podcasts, Radio, Settings; selected Library has copper leading rule. Wide content starts search field then heading 'Your library' with 'Good music, within reach.' Below feature panel using exact existing vinyl photo, headline 'Find your next favourite in your own collection' and Explore your music. Below Albums with two square placeholder covers labeled Monomyth and Library Songs 5 / Scott Buckley, plus View all. Lower Artists, Playlists and Genres rows. Bottom compact playback bar. Only existing vinyl photo and plain neutral cover placeholders with original logo; no invented album art."
+  },
+  {
+    "id": "albums",
+    "routes": [
+      "/albums"
+    ],
+    "content": "Albums index. Same216px sidebar. Main editorial heading Albums and count, search albums input, sort by Title select, view buttons. Two generously spaced square neutral record-placeholder covers (no photo invention) with titles Monomyth, Library Songs 5, artist Scott Buckley and understated Play + album options. Clear simple album grid, generous whitespace, thin horizontal rules."
+  },
+  {
+    "id": "album-detail",
+    "routes": [
+      "/albums/[id]"
+    ],
+    "content": "Album detail Monomyth by Scott Buckley. Sidebar. Breadcrumb Albums, large square neutral record artwork placeholder at left, title and year2025 at right, Play album copper button, Add to playlist, Edit metadata controls. Below track list with01 The Distant Sun 0:12 and options. Footer note metadata editable. Persistent compact playback bar. No invented cover."
+  },
+  {
+    "id": "artists",
+    "routes": [
+      "/artists"
+    ],
+    "content": "Artists index. Sidebar. Heading Artists with search artists and sort select. Elegant large neutral square portrait placeholder (no actual portrait) with initial S and label Scott Buckley,2albums,link. Rule and airy empty collection space. No invented photos."
+  },
+  {
+    "id": "artist-detail",
+    "routes": [
+      "/artists/[id]"
+    ],
+    "content": "Artist detail Scott Buckley. Sidebar; Artists breadcrumb, type-led large title, neutral small portrait placeholder initial S, button Play tracks. Albums subsection two square placeholder album sleeves Monomyth and Library Songs 5. Tracks subsection with The Distant Sun and Signal to Noise durations and play buttons."
+  },
+  {
+    "id": "genres",
+    "routes": [
+      "/genres"
+    ],
+    "content": "Genres index withsidebar. Heading Genres, subtitle Browse your collection by sound. A large bordered rectangular Ambient tile with big serif text and count2tracks, Soundtrack tile beside. Simple restrained monochrome tiles, no decorative images, crisp rules and lots ofspace."
+  },
+  {
+    "id": "genre-detail",
+    "routes": [
+      "/genres/[genreId]"
+    ],
+    "content": "Genre detail Ambient withsidebar, back Genres link. Large serif Ambient title, description Tracks tagged in your collection, Play all copper button. Labeled track table The Distant Sun / Monomyth / Scott Buckley /0:12 and Signal to Noise / Library Songs5 / Scott Buckley /0:12, each play menu actions."
+  },
+  {
+    "id": "tracks",
+    "routes": [
+      "/tracks"
+    ],
+    "content": "Tracks index withsidebar, large Tracks title and Your complete collection description, modest search/sort space if useful. Readable ruled table Title,Album,Artist,Duration; The Distant Sun, Signal to Noise, Original speech test. Visible play buttons eachrow. Use natural responsive list rhythm, neutral creambackground, no unnecessary artwork."
+  },
+  {
+    "id": "playlists",
+    "routes": [
+      "/playlists"
+    ],
+    "content": "Playlists index. Sidebar. Large heading Playlists, paragraph Make a place for every mood, Create Playlist copper action right. Card Local Listening with neutral recordplaceholder,2tracks,Play,Open playlist,moreactions. Generous whitespace and useful empty message for no otherlists. No invented artwork."
+  },
+  {
+    "id": "playlist-detail",
+    "routes": [
+      "/playlists/[id]"
+    ],
+    "content": "Playlist detail Local Listening. Sidebar, backPlaylists, large editorial title withsmall Rename button and Delete playlist. Play all and Add to queue. Ruled tracklist The Distant Sun and Signal to Noise withduration, play, removebuttons. Fine rules, warm paper and copper primary action."
+  },
+  {
+    "id": "discovery",
+    "routes": [
+      "/discovery"
+    ],
+    "content": "Discovery playlists index. Sidebar, heading Discover, explanatory Local discovery playlists assembled from your library. One bordered type-led card Local Discoveries,2tracks,Open and Play actions. Link 'Try semantic exploration' to Explore. No madeup recommendations or imagery, no empty decorative cards."
+  },
+  {
+    "id": "discovery-detail",
+    "routes": [
+      "/discovery/[id]"
+    ],
+    "content": "Discovery playlist detail Local Discoveries. Sidebar, backDiscover, large heading, subtitle A listening path through your collection. Play all, Save as playlist actions. Ruled list The Distant Sun and Signal to Noise and small durations. Simple readable exactcollectioncontent, no invented imagery."
+  },
+  {
+    "id": "podcasts",
+    "routes": [
+      "/podcasts"
+    ],
+    "content": "Podcasts collection. Sidebar, heading Podcasts, supporting Follow a feed and settle into a conversation. Form labelled RSS feed URL with Subscribe button. One show Original Test Podcast with neutral initial artwork placeholder and1episode, open link. Meaningful empty area. No actual remote photos."
+  },
+  {
+    "id": "podcast-detail",
+    "routes": [
+      "/podcasts/[id]"
+    ],
+    "content": "Podcast detail Original Test Podcast. Sidebar, breadcrumb Podcasts, neutral square initial artwork and heading, Update feed and Unsubscribe buttons. Show description A local test of the listening experience. Episode list Original audio test / October2026 /0:12 with Play episode buttons and description. Clean editorial detail composition."
+  },
+  {
+    "id": "radio",
+    "routes": [
+      "/radio"
+    ],
+    "content": "Radio directory. Sidebar, heading Radio and A little company, whenever you need it. Search stations input, genre filter. One Local Test Radio card neutral monogramart,Ambient,Play station andOpen. Link Manage stations. No fake externalstations or imagery."
+  },
+  {
+    "id": "radio-detail",
+    "routes": [
+      "/radio/[id]"
+    ],
+    "content": "Radio station detail Local Test Radio. Sidebar, Radio breadcrumb, neutral monogram square, large title, description A local stream for testing playback, genre Ambient, primary Play station action. Secondary Edit station owner control. Stream detail in simple ruled panel. No invented photos."
+  },
+  {
+    "id": "settings",
+    "routes": [
+      "/settings"
+    ],
+    "content": "Settings page withsidebar. Large Settings heading, subtitle Make Lyra feel at home. Media library folders section table Path / Actions with example C:\\Music and Remove. Labelled Folder path input, Browse and Add folder aligned, Scan all folders action. Below local intelligence explanatory status panel and Open Explore link. No placeholders promising future features."
+  },
+  {
+    "id": "radio-settings",
+    "routes": [
+      "/settings/radio"
+    ],
+    "content": "Radio station settings withsidebar. Heading Your radio stations, Add station copperbutton, back Settings link. Table Local Test Radio / Ambient / Edit / Delete. Add station form below withName,Stream URL,Description,Genre,Save station fields; clear admin utility layout andfieldlabels."
+  },
+  {
+    "id": "radio-edit",
+    "routes": [
+      "/settings/radio/[id]"
+    ],
+    "content": "Edit radio station form withsidebar. Back Your radio stations; heading Edit station. Field labels Station name (Local Test Radio), Stream URL, Description, Website, Genre, Image upload. Save changes copperbutton and Cancel. Calm boundedwidthform, no unnecessaryimage."
+  },
+  {
+    "id": "login",
+    "routes": [
+      "/login"
+    ],
+    "public": true,
+    "content": "Public login page. Topbrand lyra and backHome link. Split layout: left exact vinyl photo fromboard and headline 'Welcome back to your music.' Right restrained formheading Login, labelled Email and Password fields, copper Loginbutton, error slot below, Don't have an account? Register link. No sidebar, no inventedimage."
+  },
+  {
+    "id": "register",
+    "routes": [
+      "/register"
+    ],
+    "public": true,
+    "content": "Public registration page. Topbrand lyra and backHome. Left narrower exact vinylphoto and heading 'A place for your collection.' Right form heading Register, fields Email,Name,Password,Confirm Password,Access Code, helper Get an access code from your server administrator. Copper Register button and Already have an account? Login. No sidebar."
+  },
+  {
+    "id": "logout",
+    "routes": [
+      "/logout"
+    ],
+    "public": true,
+    "content": "Public transient Logout page. Lyra brand top left, cream paper, centered restrained headline 'Signing you out' with explanatory Returning to the home page and small unobtrusive progress indicator. No fake interactive controls, no sidebar, no photo. This is a short transient route state."
+  },
+  {
+    "id": "features",
+    "routes": [
+      "/features"
+    ],
+    "public": true,
+    "content": "Features marketing landingpage. Top lyra,Features,Self-host,Log in. Large heading 'More ways to get lost in your music.' Intro about albums,playlists andlocalsemanticdiscovery. Editorial two-column section with EXACTexistingvinylphotoleft and Album-first listening text right. Below three horizontal ruled feature rows numbered only ifnecessary with headings Search by what you mean / Find a new connection / Keep the words close. Truthful copy metadataandlyrics embeddings; localtranscription; noqualityclaims. FooterCTA Open yourlibrary and links. Fullshortpage,readable."
+  },
+  {
+    "id": "self-host",
+    "routes": [
+      "/self-host"
+    ],
+    "public": true,
+    "content": "Self-host marketing/instruction landingpage. Top lyra,Features,Self-host,Log in. Heading 'Your collection. On your terms.' intro Lyra runs on your own server. Wide short exactvinylphoto strip. Below three numbered practicalsetupsteps Get the project,Connect a musicfolder,Enable local discovery. Requirements Node22.12+,pnpm10.12.1,FFmpeg, optionalPython3.12models; honest optionaldownloadnotice. Buttons Read setup onGitHub andLog in to thisserver. No giantcodewall,no fakeoneclickinstall. Fullshortpage."
+  },
+  {
+    "id": "explore",
+    "routes": [
+      "/explore"
+    ],
+    "content": "Semantic Explore page withsidebar. Heading Explore your music. Description Describe a mood, an instrument, or a lyric. Wide labelled Search your library field containing quiet cinematic music,Searchcopperbutton. Clear status Index3tracks / Updateindex action. Tabs orsection headings Search results / For you. Results The Distant Sun andSignal toNoise with metadata,relevancecaption andPlay; rowShow suggestedtags reveals Cinematic,Ambient with 'Suggested from metadata and lyrics'. Sidebar informationdescribeslocalEmbeddingGemmamodelstatus. No accuracypercentages or fabricatedconfidence."
+  },
+  {
+    "id": "full-player",
+    "routes": [
+      "#full-screen-player"
+    ],
+    "content": "Single mobile full-screen musicplayer390pxwidthportrait. Creampaper,coppercontrols,Bodonitracktitle. Close full screen playerbutton top,lyra tinywordmark. Square neutral recordplaceholder,The Distant Sun,ScottBuckley,Monomyth. PlayPause bigbutton,Previous,Next,Shuffle,Repeatallsemanticallylabelled. Progress line isdisplayonly with0:03/0:12, Back10seconds andForward10secondsbuttons insteadofslider. Quieter,Mute,LouderbuttonsandVolume80%. BottomUpNextandLyricsbuttons. No range sliders,nodragging,no deadmoremenu. Alltext14pxminimum,44pxtargets."
+  }
+]

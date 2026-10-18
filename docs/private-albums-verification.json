@@ -1,0 +1,82 @@
+{
+  "productionBuild": "local-model/private-album release build 3",
+  "privateMediaExcluded": true,
+  "sourceArchivesUnmodified": true,
+  "import": {
+    "archives": 4,
+    "tracks": 37,
+    "albums": 4,
+    "covers": 4,
+    "unicodeTracks": 6,
+    "codecs": [
+      "Vorbis I"
+    ],
+    "totalDurationSeconds": 7286.184482851474,
+    "longestTrackSeconds": 411.4281405895692,
+    "fullyDecodedFiles": 37,
+    "idempotentRescan": true,
+    "outboundProviderCalls": 0
+  },
+  "verification": {
+    "applicationAndModelCases": {
+      "passed": 10,
+      "failed": 0
+    },
+    "separateNativeCodecCase": {
+      "passed": 1,
+      "failed": 0,
+      "durationMs": 9494.389
+    },
+    "originalCombinedAttempt": {
+      "passed": 10,
+      "failed": 1,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 232619.725
+    },
+    "originalFailure": "The separate codec fixture wrote HTML into an ImageDocument and never created its native media element. Replaced only that synthetic document; genuine media endpoints and assertions unchanged.",
+    "interpretation": "10 application/model cases and 1 native-codec case passed in separate runs on the same immutable production build; not one 11-case all-green run."
+  },
+  "models": {
+    "intelligence": {
+      "indexed": 37,
+      "dimensions": 256,
+      "searchResults": 20,
+      "tags": 3,
+      "recommendations": 20,
+      "basis": "history",
+      "interpretation": "Runtime and application wiring only; no relevance or audio-classification accuracy score."
+    },
+    "whistle": {
+      "status": 200,
+      "seconds": 107.5436507936508,
+      "savedSegments": 8,
+      "originalPreservedOnNoSpeech": false,
+      "interpretation": "Whole-track local inference and persistence only; no reference transcript or song accuracy score."
+    }
+  },
+  "nativeCodecFallback": {
+    "nativeCodec": "MP3",
+    "originalSeconds": 411.4281405895692,
+    "decodedSeconds": 411.428141,
+    "authenticatedRangeBytes": 512,
+    "nearEndSeekAndResume": true,
+    "scope": "Separate Chromium native-media integration; does not impersonate a Safari engine or replace app capability checks."
+  },
+  "coverage": {
+    "inventories": 21,
+    "observations": 1187,
+    "directlyCovered": 0,
+    "intentionalGaps": 1187,
+    "matrixSchemaVerified": true,
+    "browserGatePassed": false,
+    "interpretation": "The original private matrix remains conservatively all owned gaps because that original combined run contained a fixture failure. Focused assertions and the separate codec repair are reported above; no inventory row is silently promoted."
+  },
+  "limits": [
+    "Chromium desktop and mobile emulation only; no native Safari or Firefox verification.",
+    "No human song transcript labels; no WER/CER or transcription accuracy claim.",
+    "Metadata/lyrics embeddings are not audio classification or guaranteed recommendation relevance.",
+    "Real direct scanner import is covered; the complete queued worker is not.",
+    "Private media, transcripts, titles, covers, credentials, traces and detailed reports remain ignored."
+  ]
+}

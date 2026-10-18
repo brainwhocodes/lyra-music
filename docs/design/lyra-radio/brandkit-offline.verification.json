@@ -1,0 +1,132 @@
+{
+  "capturedAt": "2026-10-18T15:00:17.930Z",
+  "valid": true,
+  "archive": "lyra-radio-brandkit.zip",
+  "archiveSha256": "5644b3d96f45b96513879613b0a2bbcf1dcc075813439f90cf02ee3f589a382e",
+  "extractedFiles": 37,
+  "offlineContext": true,
+  "externalRequests": [],
+  "failures": [],
+  "fonts": [
+    {
+      "font": "700 32px \"Barlow Condensed\"",
+      "faces": [
+        {
+          "family": "Barlow Condensed",
+          "weight": "700",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "font": "800 32px \"Barlow Condensed\"",
+      "faces": [
+        {
+          "family": "Barlow Condensed",
+          "weight": "800",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "font": "400 32px \"Space Grotesk\"",
+      "faces": [
+        {
+          "family": "Space Grotesk",
+          "weight": "400",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "font": "500 32px \"Space Grotesk\"",
+      "faces": [
+        {
+          "family": "Space Grotesk",
+          "weight": "500",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "font": "600 32px \"Space Grotesk\"",
+      "faces": [
+        {
+          "family": "Space Grotesk",
+          "weight": "600",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "font": "700 32px \"Space Grotesk\"",
+      "faces": [
+        {
+          "family": "Space Grotesk",
+          "weight": "700",
+          "status": "loaded"
+        }
+      ]
+    }
+  ],
+  "images": [
+    {
+      "path": "../../../public/images/lyra-radio/mark.png",
+      "complete": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "../../../public/images/lyra-radio/wordmark.png",
+      "complete": true,
+      "width": 1942,
+      "height": 809
+    },
+    {
+      "path": "../../../public/images/lyra-radio/rooftop-dj.png",
+      "complete": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "../../../public/images/lyra-radio/mark.png",
+      "complete": true,
+      "width": 1254,
+      "height": 1254
+    }
+  ],
+  "panels": [
+    {
+      "label": "manifesto-title",
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "artwork",
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "type-title",
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "palette-title",
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "app-title",
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "system-title",
+      "overflowX": false,
+      "overflowY": false
+    }
+  ],
+  "width": 1440,
+  "height": 1744
+}

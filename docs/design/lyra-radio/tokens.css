@@ -1,0 +1,18 @@
+:root {
+  --radio-ink: #17191c;
+  --radio-bone: #f5f2e9;
+  --radio-acid: #d7ff3f;
+  --radio-orange: #ff7144;
+  --radio-blue: #3b4fd8;
+  --radio-muted: #b7b9af;
+  --radio-heading: "Barlow Condensed", Impact, sans-serif;
+  --radio-body: "Space Grotesk", Arial, sans-serif;
+  --radio-display-weight: 800;
+  --radio-heading-weight: 700;
+  --radio-body-weight: 400;
+  --radio-label-weight: 600;
+  --radio-border: 3px solid var(--radio-ink);
+  --radio-radius: 0;
+  --radio-space-unit: 8px;
+  --radio-focus: 3px solid var(--radio-blue);
+}

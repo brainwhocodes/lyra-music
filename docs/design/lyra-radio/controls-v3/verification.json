@@ -1,0 +1,185 @@
+{
+  "method": "Manual image review with uniform-width comparisons; aspect ratios preserved. Generated boards contain multiple specimens, so no pixel similarity score or full-board overlay is claimed.",
+  "records": [
+    {
+      "id": "player-desktop",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/audio-analysis-a-decoded-w-bc2f9-layback-across-cached-views-desktop/waveform-seeking-paused.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "b350c260b90edd251541085ad39771a6e8654c30f640f5163970daa826712ba3"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\player-desktop.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "b350c260b90edd251541085ad39771a6e8654c30f640f5163970daa826712ba3"
+      },
+      "reference": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/transport.png",
+        "width": 1330,
+        "height": 1182,
+        "sha256": "45765a3801b400ca9028ecb0b29da2853911138652042d916e7fec85f71e67ac"
+      }
+    },
+    {
+      "id": "player-tablet",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/audio-analysis-a-decoded-w-bc2f9-layback-across-cached-views-tablet/waveform-seeking-paused.png",
+        "width": 1536,
+        "height": 2048,
+        "sha256": "d3f42558f3aa43fa79f4ab4b161534211a78b1e3a9ed45a63b53a433c9227f4a"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\player-tablet.png",
+        "width": 1536,
+        "height": 2048,
+        "sha256": "d3f42558f3aa43fa79f4ab4b161534211a78b1e3a9ed45a63b53a433c9227f4a"
+      },
+      "reference": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/transport.png",
+        "width": 1330,
+        "height": 1182,
+        "sha256": "45765a3801b400ca9028ecb0b29da2853911138652042d916e7fec85f71e67ac"
+      }
+    },
+    {
+      "id": "player-mobile",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/audio-analysis-a-decoded-w-bc2f9-layback-across-cached-views-mobile/waveform-seeking-paused.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "aed7f55f0844763280c1330b93cbecd06473d148a19f3d09127d12a17a6595bd"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\player-mobile.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "aed7f55f0844763280c1330b93cbecd06473d148a19f3d09127d12a17a6595bd"
+      },
+      "reference": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/transport.png",
+        "width": 1330,
+        "height": 1182,
+        "sha256": "45765a3801b400ca9028ecb0b29da2853911138652042d916e7fec85f71e67ac"
+      }
+    },
+    {
+      "id": "compact-desktop",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/local-library-search-finds-21994--decodes-its-licensed-audio-desktop/album-playing.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "5a587ed80243363f2853e82b76700dfccd4785514663c144868f3284ac79e13a"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\compact-desktop.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "5a587ed80243363f2853e82b76700dfccd4785514663c144868f3284ac79e13a"
+      }
+    },
+    {
+      "id": "compact-mobile",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/local-library-search-finds-21994--decodes-its-licensed-audio-mobile/album-playing.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "428f3765b69878c54e53d4af96916d445562f58e675da3d4f125b4618e4717ae"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\compact-mobile.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "428f3765b69878c54e53d4af96916d445562f58e675da3d4f125b4618e4717ae"
+      }
+    },
+    {
+      "id": "login-desktop",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/local-library-login-reject-21a7f-ion-and-keyboard-submission-desktop/login.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "b18365a6994bf6be5062d94ce205e866755c8c72c5045a785b9693de59fc124f"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\login-desktop.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "b18365a6994bf6be5062d94ce205e866755c8c72c5045a785b9693de59fc124f"
+      },
+      "reference": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/forms.png",
+        "width": 1182,
+        "height": 1330,
+        "sha256": "d35bcabe0eaa570ef624d8ab9c3b1d046660a1650834eb4b566b79536f14c95a"
+      }
+    },
+    {
+      "id": "registration-mobile",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/core-library-registration--3055c-local-account-and-signs-out-mobile/registration-filled.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "6b3686cc5052d16e68d7931206d9e9943bbe87e0381622af8e83a3a44139436c"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\registration-mobile.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "6b3686cc5052d16e68d7931206d9e9943bbe87e0381622af8e83a3a44139436c"
+      },
+      "reference": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/controls-v3/concepts/form-states.png",
+        "width": 1355,
+        "height": 1161,
+        "sha256": "289097b08f411a0fd192acfb05ceea02f72f68852d15ad7b5929c0c87282164e"
+      }
+    },
+    {
+      "id": "volume-desktop",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/local-library-search-finds-21994--decodes-its-licensed-audio-desktop/player-volume-popover.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "8d1a72d7b686a4b16f616fd9e311c72409ac9d6db7cd53ac37e59d7b282f1320"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\volume-desktop.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "8d1a72d7b686a4b16f616fd9e311c72409ac9d6db7cd53ac37e59d7b282f1320"
+      }
+    },
+    {
+      "id": "volume-mobile",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/local-library-search-finds-21994--decodes-its-licensed-audio-mobile/player-volume-popover.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "cddfa6178d9f9ccd6b48da252303ff900f9330890b9612e7b2a47b97d799fd5a"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\volume-mobile.png",
+        "width": 1170,
+        "height": 1992,
+        "sha256": "cddfa6178d9f9ccd6b48da252303ff900f9330890b9612e7b2a47b97d799fd5a"
+      }
+    },
+    {
+      "id": "volume-text200-320",
+      "source": {
+        "path": "C:/Users/mille/Documents/ChatGPT/lyra/.test-data/controls-v3-build5-production/test-results/text-scaling-public-librar-3189b-in-usable-with-text-doubled-desktop/text200-compact320-volume.png",
+        "width": 320,
+        "height": 800,
+        "sha256": "4396ca7e50ad48699add75615f853a3534ab31b610f83db457ea9db8e299d9bb"
+      },
+      "after": {
+        "path": "C:\\Users\\mille\\Documents\\ChatGPT\\lyra\\docs\\design\\lyra-radio\\controls-v3\\after\\volume-text200-320.png",
+        "width": 320,
+        "height": 800,
+        "sha256": "4396ca7e50ad48699add75615f853a3534ab31b610f83db457ea9db8e299d9bb"
+      }
+    }
+  ]
+}

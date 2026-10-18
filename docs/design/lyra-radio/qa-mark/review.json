@@ -1,0 +1,57 @@
+{
+  "source_name": "mark.png",
+  "source_sha256": "369cb005a4b45aecda2b831bb8207dbf1d752fc445129bfee6e45b08cdedb76c",
+  "stored_dimensions_px": [
+    1254,
+    1254
+  ],
+  "dimensions_px": [
+    1254,
+    1254
+  ],
+  "coordinate_space": "displayed pixels after EXIF orientation normalization",
+  "color_management": "No embedded ICC profile; RGB/grayscale input assumed sRGB.",
+  "alpha_extrema": [
+    0,
+    255
+  ],
+  "alpha_pixels": {
+    "transparent": 973133,
+    "partial": 596919,
+    "opaque": 2464
+  },
+  "visible_subject_bounds_px": [
+    111,
+    68,
+    1224,
+    1212
+  ],
+  "canvas_edge_has_foreground": false,
+  "nonempty_transparency": true,
+  "require_alpha": true,
+  "visual_review_passed": null,
+  "status": "manual_review_required",
+  "warnings": [],
+  "review_instructions": [
+    "Inspect native-size composites, not only the contact sheet.",
+    "Check silhouette AND interior gaps for checkerboard, matte remnants and fringes.",
+    "Compare face, hands, fabric and props to the original for erased details.",
+    "Inspect on actual destination colors and at the rendered placement size.",
+    "This report does not certify clean edges, color accuracy, pose or layout fidelity."
+  ],
+  "backgrounds": [
+    {
+      "color": "#ffffff",
+      "native_size_composite": "background-1.png"
+    },
+    {
+      "color": "#202020",
+      "native_size_composite": "background-2.png"
+    },
+    {
+      "color": "#f5f2e9",
+      "native_size_composite": "background-3.png"
+    }
+  ],
+  "detail_crops": []
+}

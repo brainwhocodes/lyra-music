@@ -1,0 +1,11 @@
+# Fixed candidate comparison
+
+Before running the candidate, eight extra query/relevance pairs were written in `holdout.ts`. They use the existing 12-track fictional corpus, so they test query generalization rather than a fully independent music dataset. The original 20 cases and their floors remain unchanged. First run the current 256d, genre/lyrics-first representation on all 28 cases and save it. Then evaluate this fixed candidate without tuning weights to either result:
+
+- Retrieval: `0.85 * semantic cosine + 0.15 * lexical coverage`. Coverage is the fraction of distinct meaningful query tokens found in the explicit genre or lyrics. Album names, artist names and track titles receive no lexical boost. Matching uses Unicode normalization, lowercasing, punctuation splitting, a fixed common-English stop-word set and conservative English plural/verb suffix handling. Other languages still receive exact normalized token matching and semantic retrieval. If the query has no meaningful tokens, retain the semantic score.
+- Tags: choose the best qualified match from each available category first, then fill remaining slots from the qualified list, up to three total. Keep the same cosine floor (0.7) and relative-best margin (0.08). This prevents two style tags crowding out mood/theme evidence without lowering a confidence rule.
+- Keep 256 dimensions, the pinned model/revision, original corpus, prompts, thresholds, history rules and test clock fixed. Do not change failed expected labels to make results pass. Preserve the raw baseline and candidate reports whether the candidate improves or regresses.
+
+This protocol was fixed after inspecting the original 20-case failures and before viewing any of these eight holdout outputs. It is a development comparison; the holdout should not be represented as a broad external benchmark.
+
+An independent correctness review after the first candidate run added a negation guard: queries containing “no”, “not”, “without”, “avoid”, “excluding” or “exclude” use semantic ranking only. Lexical token overlap cannot interpret an excluded genre. A direct unit case (`not jazz`) verifies this; the candidate weights and quality floors remain unchanged. The final 28-case run includes this guard.

@@ -1,0 +1,2023 @@
+{
+  "createdAt": "2026-10-18T10:27:46.146Z",
+  "tool": "sharp 0.34.2",
+  "command": "node scripts/design-evidence.mjs .test-data/design-final-production",
+  "evidenceRuns": {
+    "status": "passed",
+    "date": "2026-10-18",
+    "scope": "Merged production evidence; newer matching snapshots replace older ones. Build 6 did not run the full 50-case suite.",
+    "runs": [
+      {
+        "build": 5,
+        "root": ".test-data/design-fifth-production",
+        "tests": 50,
+        "passed": 50,
+        "failed": 0,
+        "elapsed": "5.6 minutes",
+        "scope": "Full suite with both real local models: 26 routes across three viewports, 20 authenticated routes at 320px plus public/player/dialog views, doubled text and all focused journeys."
+      },
+      {
+        "build": 6,
+        "root": ".test-data/design-sixth-targeted",
+        "tests": 9,
+        "passed": 9,
+        "failed": 0,
+        "elapsed": "2.4 minutes",
+        "scope": "Three route sweeps, three core album/menu journeys and three real search/playback journeys after track-row wrapping and search-inset fixes; includes direct 320px spacing assertions."
+      }
+    ],
+    "snapshotSelection": [
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-desktop\\album-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-desktop\\albums-list.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-desktop\\track-options.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-desktop\\track-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-mobile\\album-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-mobile\\albums-list.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-mobile\\track-options.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-mobile\\track-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-tablet\\album-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-tablet\\albums-list.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-tablet\\track-options.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-album-views-s-4adde-ylist-selection-stay-usable-tablet\\track-playlist-picker.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-desktop\\artist-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-desktop\\artists-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-desktop\\genre-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-desktop\\tracks-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-mobile\\artist-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-mobile\\artists-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-mobile\\genre-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-mobile\\tracks-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-tablet\\artist-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-tablet\\artists-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-tablet\\genre-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-artist-genre--f855f--and-play-real-local-tracks-tablet\\tracks-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-desktop\\new-library.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-desktop\\registration-filled.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-mobile\\new-library.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-mobile\\registration-filled.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-tablet\\new-library.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "core-library-registration--3055c-local-account-and-signs-out-tablet\\registration-filled.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-desktop\\explore-indexing.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-desktop\\explore-recommendations.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-desktop\\explore-tags.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-desktop\\explore-unindexed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-mobile\\explore-recommendations.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-mobile\\explore-tags.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-tablet\\explore-indexing.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-tablet\\explore-recommendations.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-tablet\\explore-tags.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "explore-local-semantic-dis-731fe-ns-and-plays-the-collection-tablet\\explore-unindexed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-album-naviga-3cb46-ed-and-empty-library-states-desktop\\albums.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-album-naviga-3cb46-ed-and-empty-library-states-mobile\\albums.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-album-naviga-3cb46-ed-and-empty-library-states-tablet\\albums.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-desktop\\login.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-desktop\\registration.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-mobile\\login.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-mobile\\registration.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-tablet\\login.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-login-reject-21a7f-ion-and-keyboard-submission-tablet\\registration.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-desktop\\playlist-dialog.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-desktop\\playlists.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-mobile\\playlist-dialog.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-mobile\\playlists.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-tablet\\playlist-dialog.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-playlist-cre-c71e1-tion-search-and-persistence-tablet\\playlists.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-desktop\\album-playing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-desktop\\library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-desktop\\queue.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-desktop\\search-results.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-mobile\\album-playing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-mobile\\full-screen-player.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-mobile\\library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-mobile\\search-results.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-tablet\\album-playing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-tablet\\full-screen-player.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-tablet\\library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "local-library-search-finds-21994--decodes-its-licensed-audio-tablet\\search-results.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-desktop\\lyrics-current-track.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-desktop\\queue-keyboard.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-mobile\\lyrics-current-track.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-mobile\\queue-keyboard.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-tablet\\lyrics-current-track.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-tablet\\queue-keyboard.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-albums-album-the-distant-sun.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-albums.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-artists-scott-buckley.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-artists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-discovery-local-discoveries.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-discovery.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-explore.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-features.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-genres-ambient.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-genres.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-landing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-login.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-logout.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-playlists-local-listening.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-playlists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-podcasts-listening-notes.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-podcasts.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-register.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-self-host.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-settings-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-settings-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-settings.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop\\route-tracks.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-albums-album-the-distant-sun.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-albums.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-artists-scott-buckley.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-artists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-dialog.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-discovery-local-discoveries.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-discovery.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-explore.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-genres-ambient.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-genres.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-player.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-playlists-local-listening.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-playlists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-podcasts-listening-notes.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-podcasts.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-public.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-settings-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-settings-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-settings.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\compact320-tracks.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-albums-album-the-distant-sun.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-albums.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-artists-scott-buckley.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-artists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-discovery-local-discoveries.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-discovery.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-explore.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-features.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-genres-ambient.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-genres.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-landing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-login.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-logout.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-playlists-local-listening.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-playlists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-podcasts-listening-notes.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-podcasts.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-register.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-self-host.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-settings-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-settings-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-settings.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile\\route-tracks.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-albums-album-the-distant-sun.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-albums.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-artists-scott-buckley.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-artists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-discovery-local-discoveries.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-discovery.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-explore.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-features.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-genres-ambient.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-genres.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-landing.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-library.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-login.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-logout.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-playlists-local-listening.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-playlists.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-podcasts-listening-notes.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-podcasts.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-register.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-self-host.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-settings-radio-quiet-hours.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-settings-radio.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-settings.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet\\route-tracks.inventory.json",
+        "root": ".test-data/design-sixth-targeted"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\album-editor-2019.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\album-editor-2021.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\lyrics-editor.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\shared-playlist-picker.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\track-editor-changed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-desktop\\track-editor-restored.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\album-editor-2019.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\album-editor-2021.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\lyrics-editor.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\shared-playlist-picker.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\track-editor-changed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-mobile\\track-editor-restored.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\album-editor-2019.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\album-editor-2021.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\lyrics-editor.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\shared-playlist-picker.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\track-editor-changed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "shared-modals-album-track--9bc47-ion-supports-keyboard-focus-tablet\\track-editor-restored.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "text-scaling-public-librar-3189b-in-usable-with-text-doubled-desktop\\text200-dialog.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "text-scaling-public-librar-3189b-in-usable-with-text-doubled-desktop\\text200-library.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "text-scaling-public-librar-3189b-in-usable-with-text-doubled-desktop\\text200-player.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "text-scaling-public-librar-3189b-in-usable-with-text-doubled-desktop\\text200-public.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-desktop\\playlist-add-tracks.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-desktop\\playlist-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-desktop\\playlist-edited.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-mobile\\playlist-add-tracks.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-mobile\\playlist-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-mobile\\playlist-edited.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-tablet\\playlist-add-tracks.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-tablet\\playlist-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-a-playlis-8fe69-ist-tracks-without-dragging-tablet\\playlist-edited.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-desktop\\discovery-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-desktop\\discovery-save.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-mobile\\discovery-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-mobile\\discovery-save.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-tablet\\discovery-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-discovery-544be-ave-as-an-editable-playlist-tablet\\discovery-save.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-desktop\\podcast-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-desktop\\podcast-unsubscribe.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-desktop\\podcasts-subscribed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-mobile\\podcast-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-mobile\\podcast-unsubscribe.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-mobile\\podcasts-subscribed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-tablet\\podcast-detail.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-tablet\\podcast-unsubscribe.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-podcast-R-e334d--use-a-real-local-publisher-tablet\\podcasts-subscribed.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-desktop\\radio-create.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-desktop\\radio-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-desktop\\radio-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-desktop\\radio-images-saved.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-desktop\\radio-playing.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-mobile\\radio-create.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-mobile\\radio-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-mobile\\radio-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-mobile\\radio-images-saved.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-mobile\\radio-playing.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-tablet\\radio-create.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-tablet\\radio-delete.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-tablet\\radio-filtered.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-tablet\\radio-images-saved.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-radio-sta-cdc71-with-artist-and-genre-seeds-tablet\\radio-playing.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-desktop\\settings-folder-browser.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-desktop\\settings-remove-folder.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-desktop\\settings-scan-queued.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-mobile\\settings-folder-browser.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-mobile\\settings-remove-folder.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-mobile\\settings-scan-queued.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-tablet\\settings-folder-browser.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-tablet\\settings-remove-folder.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      },
+      {
+        "file": "utility-journeys-settings--d7712-isolated-empty-music-folder-tablet\\settings-scan-queued.inventory.json",
+        "root": ".test-data/design-fifth-production"
+      }
+    ],
+    "coverage": {
+      "file": "tests/e2e/ui-coverage.json",
+      "observations": 5059,
+      "inventories": 244,
+      "counts": {
+        "intentional-gap": 4402,
+        "covered": 647,
+        "state-asserted": 10
+      }
+    },
+    "excludedRun": "The interrupted build5 geometry negative-control attempt overlapped a build and is discarded; it is not validation evidence."
+  },
+  "method": "Aspect-preserving 720px-wide comparison copies, top-left alignment, no masking. Overlay: production alpha 50% over selected reference. Originals untouched. No numerical fidelity score.",
+  "odiff": "ODiff was unavailable on this host; these overlays and regional visual review are the fallback. No ODiff run claimed.",
+  "assets": [
+    {
+      "path": "public/images/lyra/listening-room.png",
+      "sha256": "cadf75d3ccf45e5aac388f388f66a43199ac89619b933806b65be52f1ad60989",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "public/images/lyra/mark.png",
+      "sha256": "cbf396daa5b5f9fc44f5dbde93b7676cd17e2e7b53cdffca88e4971d13151035",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "docs/design/lyra/brand-board.png",
+      "sha256": "e75014b17fe1b833c3a84906718a8c0a9293291081fd8d296c4e0e1c9d3aa025",
+      "width": 1440,
+      "height": 1138
+    }
+  ],
+  "records": [
+    {
+      "id": "landing",
+      "routes": [
+        "/"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/landing-mockup.png",
+        "sha256": "5e430c073e712a13dde0192ff4a035b78cfc7fb5669da99620bdc78785ef7c66",
+        "width": 1024,
+        "height": 1536
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-landing.png",
+          "sha256": "72c44544dd9b95ca0a5c9dd61dea2712797510818a2df5c650d8035666f30346",
+          "width": 1440,
+          "height": 1423
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-landing.png",
+          "sha256": "467a20e73c506b7ea95a19bff21191f19201c65134e6b5cec6ee69510e3f6276",
+          "width": 1536,
+          "height": 4056
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-landing.png",
+          "sha256": "9a6667a283f4691616019dc91e13c84a415e80865772109b8e41e088f3a014af",
+          "width": 1170,
+          "height": 6102
+        }
+      },
+      "comparison": "docs/design/lyra/verification/landing-comparison.webp",
+      "overlay": "docs/design/lyra/verification/landing-overlay.webp"
+    },
+    {
+      "id": "library",
+      "routes": [
+        "/library"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/library-mockup.png",
+        "sha256": "1fdb4de9c0e95b6fff8ab7fdd25e2a3f47c496edc884d3634c8f96764755e162",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-library.png",
+          "sha256": "8bffc955e24a5459b02c99ce5249fe6f3ce181ed5e039fbe41261d1e0214a8d5",
+          "width": 1440,
+          "height": 1421
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-library.png",
+          "sha256": "1e52b6d67f1ac02cf11fadf2a305996ac88e71c2fad9d05dec05fda102cee0d1",
+          "width": 1536,
+          "height": 3194
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-library.png",
+          "sha256": "2ca8d0bb90a47ea596d0fdc31a984100f17b5b5100c6d4a7440a7d9fc3dd5106",
+          "width": 1170,
+          "height": 5112
+        }
+      },
+      "comparison": "docs/design/lyra/verification/library-comparison.webp",
+      "overlay": "docs/design/lyra/verification/library-overlay.webp"
+    },
+    {
+      "id": "albums",
+      "routes": [
+        "/albums"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/albums-mockup.png",
+        "sha256": "0d344dc6914c1dbcb6a1b1ec6603d6b0cbf5c3e302d375cdb605a3b95f5c7e84",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums.png",
+          "sha256": "558161f5d31cfef5ed8f6334809402149d3e5784cdfbfdc6704d2e53358f9325",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums.png",
+          "sha256": "3be305b9e6ff7e8c0721f90ea58b8130643d3bb2140a95e6f1241b0a2905641f",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums.png",
+          "sha256": "60eecba7181f718bbe330916171e26eb9b7cc93d6465aeaec36eb2a658497c7b",
+          "width": 1170,
+          "height": 2712
+        }
+      },
+      "comparison": "docs/design/lyra/verification/albums-comparison.webp",
+      "overlay": "docs/design/lyra/verification/albums-overlay.webp"
+    },
+    {
+      "id": "album-detail",
+      "routes": [
+        "/albums/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/album-detail-mockup.png",
+        "sha256": "c518d057110ab051924480ac2613a5a1bfcf4ffa46d1dbf236a1ef33f8dd6d98",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums-album-the-distant-sun.png",
+          "sha256": "84b0fe0ba0beb151673d76fceadd18c9666f52d71a7cfa1f0aee4a1d38e2f640",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums-album-the-distant-sun.png",
+          "sha256": "16f0c8185e068f554f26bbde70b659c451928f98042e085c1cfc08b868a1a1e7",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums-album-the-distant-sun.png",
+          "sha256": "1a94527cae58011a2454f425077d81feb524387ef1ed32445c2ebbdd2ba40686",
+          "width": 1170,
+          "height": 3717
+        }
+      },
+      "comparison": "docs/design/lyra/verification/album-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/album-detail-overlay.webp"
+    },
+    {
+      "id": "artists",
+      "routes": [
+        "/artists"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/artists-mockup.png",
+        "sha256": "3c6e61c3a94a33ba6a0c086892293d102ec2a0b9b594c2b2d22c5515e474fc40",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists.png",
+          "sha256": "24e4b777a22d1715fbbb0d6cf6ca940773062535d62f5f45a673549408abd499",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists.png",
+          "sha256": "43d43db34fd3faeb28ec55943cf655441bb81e20e583af1fdb08ddd0b69f1e8b",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists.png",
+          "sha256": "4e7d3b36f08c2911c31ad44cca3bf84d57a803e77ed80574a8889a0cdaa5aaac",
+          "width": 1170,
+          "height": 2265
+        }
+      },
+      "comparison": "docs/design/lyra/verification/artists-comparison.webp",
+      "overlay": "docs/design/lyra/verification/artists-overlay.webp"
+    },
+    {
+      "id": "artist-detail",
+      "routes": [
+        "/artists/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/artist-detail-mockup.png",
+        "sha256": "a77e3d3c7d3110b764f22b250db123d4ece43bd0f3c7867c2ca1d14188853391",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists-scott-buckley.png",
+          "sha256": "20c1d2bfd899f3cb1074daa681d95f83b03e13fd6ac9206767938256a824f8e0",
+          "width": 1440,
+          "height": 1440
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists-scott-buckley.png",
+          "sha256": "c6ad84bbab74bf213f1f5a25865f3403c80550d0f3308dfa1992fdf232529b91",
+          "width": 1536,
+          "height": 2840
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists-scott-buckley.png",
+          "sha256": "9d1f25217a2976b0cb6913f1ed117020bed6386ab1aa7e7b370c945a6ba95a5c",
+          "width": 1170,
+          "height": 4734
+        }
+      },
+      "comparison": "docs/design/lyra/verification/artist-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/artist-detail-overlay.webp"
+    },
+    {
+      "id": "explore",
+      "routes": [
+        "/explore"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/explore-mockup.png",
+        "sha256": "6a47a11c46c88738df65b4ef2dd189430ea791ec75d28d7ee2b344c99c558685",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-explore.png",
+          "sha256": "152b7e2561b3a0cdb142f10076a46eb67ea9a35dc3cbce1542613e8945229580",
+          "width": 1440,
+          "height": 1001
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-explore.png",
+          "sha256": "67438844c5a9c6994692f3f30047f886979d03c0776b6ef07b9d4636f6499b45",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-explore.png",
+          "sha256": "c9cc065b223194aa3d8168c13b12b455fc6fb8aaceaf54c6fe706e250b6acd0a",
+          "width": 1170,
+          "height": 3510
+        }
+      },
+      "comparison": "docs/design/lyra/verification/explore-comparison.webp",
+      "overlay": "docs/design/lyra/verification/explore-overlay.webp"
+    },
+    {
+      "id": "full-player",
+      "routes": [
+        "#full-screen-player"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/full-player-mockup.png",
+        "sha256": "d40e5217f63a5558f2fef3a3c561bce024588cbfb2488dc73aeb0586ed449f84",
+        "width": 853,
+        "height": 1844
+      },
+      "captures": {
+        "tablet": {
+          "path": ".test-data/design-final-production/local-library-search-finds-21994--decodes-its-licensed-audio-tablet/full-screen-player.png",
+          "sha256": "31955b342f5a9c3f7bb658edff60506ad0d740faf654717ceef432014dcb4b12",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/local-library-search-finds-21994--decodes-its-licensed-audio-mobile/full-screen-player.png",
+          "sha256": "bba8325755614da5ea5e611acd1c6f676723c24275e347e4b2053c8052d76133",
+          "width": 1170,
+          "height": 1992
+        }
+      },
+      "comparison": "docs/design/lyra/verification/full-player-comparison.webp",
+      "overlay": "docs/design/lyra/verification/full-player-overlay.webp"
+    },
+    {
+      "id": "genres",
+      "routes": [
+        "/genres"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/genres-mockup.png",
+        "sha256": "4673c9d6523b3d6070820ce3b83821032cac81d928103aedbd5389c1686e8dcc",
+        "width": 1487,
+        "height": 1058
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres.png",
+          "sha256": "297438354b7bb3bb6d8f6b05b50e4c7bcef438dd0a6dd9ec95cd98db4f326455",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres.png",
+          "sha256": "1f4096770e7138b38e1b4f986f6f63aa41df14e64ec5f4129cfbb563c1b03b4f",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres.png",
+          "sha256": "1108bcdd0f999dcae1685cc6361eec84546abeeffdd6ed3a729adf67e5be6f62",
+          "width": 1170,
+          "height": 1992
+        }
+      },
+      "comparison": "docs/design/lyra/verification/genres-comparison.webp",
+      "overlay": "docs/design/lyra/verification/genres-overlay.webp"
+    },
+    {
+      "id": "genre-detail",
+      "routes": [
+        "/genres/[genreId]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/genre-detail-mockup.png",
+        "sha256": "354e1db11faa093ac4465b8f510f841d86da46cfc633d4122ff0bd70ce860449",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres-ambient.png",
+          "sha256": "731f44060b85002912ab0342dcb1efd993a2ef9c17beff902a56c4b572276759",
+          "width": 1440,
+          "height": 1374
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres-ambient.png",
+          "sha256": "65b3192cbf5e364aabef172e1b1ac6a56407331c48c8386cf4581e1aaaa0ae05",
+          "width": 1536,
+          "height": 2644
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres-ambient.png",
+          "sha256": "22a1cb825ce1c5a81b1ac585f4362b866fd8c40ccde1274b4c7e5045633159e3",
+          "width": 1170,
+          "height": 3828
+        }
+      },
+      "comparison": "docs/design/lyra/verification/genre-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/genre-detail-overlay.webp"
+    },
+    {
+      "id": "tracks",
+      "routes": [
+        "/tracks"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/tracks-mockup.png",
+        "sha256": "90297522d861652c286ba169c66dec249faa590b131dcc971d76d1bc3f7f0885",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-tracks.png",
+          "sha256": "95c3c100ba1083805037d9599744b521936aeab6c42d73b1cabba559a1602c05",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-tracks.png",
+          "sha256": "a62d902fa9dc1628d13ddedab5bbfda4d0d8eabcb23485d8f8606366487b5c7b",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-tracks.png",
+          "sha256": "3fcc106b3425f94eef563e94745906bd32f2470da80cb67a7b589b9f220b37b5",
+          "width": 1170,
+          "height": 2667
+        }
+      },
+      "comparison": "docs/design/lyra/verification/tracks-comparison.webp",
+      "overlay": "docs/design/lyra/verification/tracks-overlay.webp"
+    },
+    {
+      "id": "login",
+      "routes": [
+        "/login"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/login-mockup.png",
+        "sha256": "dd403c72761430eed685b529bb419c5111e62eb53dab6525c190c7e16a0924d4",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-login.png",
+          "sha256": "b21ed16421d5fd2014e3eaf85ec3160d8c9b2fb9d2f28be4c7f27407dd8d853f",
+          "width": 1440,
+          "height": 1003
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-login.png",
+          "sha256": "6a1a1f6472f699b6f77463e0da40a8b88147616eaa35cae68b32ef61df817901",
+          "width": 1536,
+          "height": 2336
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-login.png",
+          "sha256": "712ba44796271594abf31547f4b34b6ff855acf9d354d27a5c53a52bc9af8aa6",
+          "width": 1170,
+          "height": 3162
+        }
+      },
+      "comparison": "docs/design/lyra/verification/login-comparison.webp",
+      "overlay": "docs/design/lyra/verification/login-overlay.webp"
+    },
+    {
+      "id": "register",
+      "routes": [
+        "/register"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/register-mockup.png",
+        "sha256": "b754e56b45928df2de2f174855888d063fb5e4095b11a3caabae47d6f2c39fee",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-register.png",
+          "sha256": "2d74994a781efd660a009ca7c1993b95edeb7760e1d5deca15c633a0856f0467",
+          "width": 1440,
+          "height": 1105
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-register.png",
+          "sha256": "1ded5740e016d71d0cd1b2eafe7632735890a12901e06054db105296634b8671",
+          "width": 1536,
+          "height": 2990
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-register.png",
+          "sha256": "f7f304c32a6cdf8ff03cc0f1d5202e935ab54d0e9364443946cfcd98bf5290c6",
+          "width": 1170,
+          "height": 4143
+        }
+      },
+      "comparison": "docs/design/lyra/verification/register-comparison.webp",
+      "overlay": "docs/design/lyra/verification/register-overlay.webp"
+    },
+    {
+      "id": "features",
+      "routes": [
+        "/features"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/features-mockup.png",
+        "sha256": "4a2755c01a7d6bcadeade83f90ae0fc3b1102cd60c8be0e89566ac2d72792c92",
+        "width": 941,
+        "height": 1672
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-features.png",
+          "sha256": "fdd44a31d669b21b268b37a5c0a35185bf4b28e68080bed00c8345c147f1129b",
+          "width": 1440,
+          "height": 2083
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-features.png",
+          "sha256": "bbd9656ad6c46455b2b7c3572b23afc035e7dc68f556a7b628511db78c4002a6",
+          "width": 1536,
+          "height": 3944
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-features.png",
+          "sha256": "fa53f91ce5a6bfe8c8b4533219c91b800bc2a7c384b9d8a06b837f6f2c95a6c6",
+          "width": 1170,
+          "height": 7071
+        }
+      },
+      "comparison": "docs/design/lyra/verification/features-comparison.webp",
+      "overlay": "docs/design/lyra/verification/features-overlay.webp"
+    },
+    {
+      "id": "self-host",
+      "routes": [
+        "/self-host"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/self-host-mockup.png",
+        "sha256": "247f5f8c2a51502bcc85e6323fefd76e67234d6737f233c1066376fe99545067",
+        "width": 1487,
+        "height": 1058
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-self-host.png",
+          "sha256": "5ac3f43ec20061db41bd3e26f67a1e9fc0c5f5211f31e978c5aa89608e5de4cb",
+          "width": 1440,
+          "height": 1404
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-self-host.png",
+          "sha256": "625cc49e3280405e8ed3f5b471303d64b300bfd23d4f0775bfb4654a3cf4d27a",
+          "width": 1536,
+          "height": 3942
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-self-host.png",
+          "sha256": "6ab8e6858be8d4a4aead5eed564e1eb9a52a64e999e0325a230b8f026b0d38f1",
+          "width": 1170,
+          "height": 7080
+        }
+      },
+      "comparison": "docs/design/lyra/verification/self-host-comparison.webp",
+      "overlay": "docs/design/lyra/verification/self-host-overlay.webp"
+    },
+    {
+      "id": "logout",
+      "routes": [
+        "/logout"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/logout-mockup.png",
+        "sha256": "6afbb305cbebd25ad4e509470bb35a68cd4bae09c89c12fcf650ef2fa9240437",
+        "width": 1487,
+        "height": 1058
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-logout.png",
+          "sha256": "fe593adc363f3577af759d44e939546b281c5e325ae83ed74de2222d341ffff3",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-logout.png",
+          "sha256": "c2d2992d804e29aac07201947a8de8dfeaffa98290719d18387a97cf8c74ea49",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-logout.png",
+          "sha256": "3e541aecdd0b7e5e750e94ef7f638064a9dbf408344815c9acbed4813539cca0",
+          "width": 1170,
+          "height": 2028
+        }
+      },
+      "comparison": "docs/design/lyra/verification/logout-comparison.webp",
+      "overlay": "docs/design/lyra/verification/logout-overlay.webp"
+    },
+    {
+      "id": "queue-state",
+      "routes": [
+        "#queue-state"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/queue-state-mockup.png",
+        "sha256": "f7ed10dcfe99eecfb4130d9c58aa9b0b699f8a27ea21b54a2becff3e3838fbad",
+        "width": 853,
+        "height": 1844
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-desktop/queue-keyboard.png",
+          "sha256": "822ccd47b3b3d74ec2163ce01d1b7db5f5246a36c056cfce41aee41f8ee83396",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-tablet/queue-keyboard.png",
+          "sha256": "d79a93aab0294cf518e7a3b03b35c8385261e6534cbd5a2e3f15c4d7fe2d9cb7",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-mobile/queue-keyboard.png",
+          "sha256": "75e9971bd33da0da6ecb11045576828e6491ac20a1970407bb9d03b1e0adff8b",
+          "width": 1170,
+          "height": 1992
+        }
+      },
+      "comparison": "docs/design/lyra/verification/queue-state-comparison.webp",
+      "overlay": "docs/design/lyra/verification/queue-state-overlay.webp"
+    },
+    {
+      "id": "lyrics-state",
+      "routes": [
+        "#lyrics-state"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/lyrics-state-mockup.png",
+        "sha256": "9de921d75fb5d0ff957d4d0403e1ae8f43e5a03d1b74b3ec2b94bfffe619d3c6",
+        "width": 853,
+        "height": 1844
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-desktop/lyrics-current-track.png",
+          "sha256": "5d6c9aaede3f1193c6aeb4a81fce43b74c28d35ab4bd9991eb2e4bde3295fa9c",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-tablet/lyrics-current-track.png",
+          "sha256": "3c5f36fd53439451a4a7f39d52fcd304b846a4d39f2716e3b3efdb605ba90368",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/player-states-lyrics-ignor-c815d-keyboard-focus-and-clearing-mobile/lyrics-current-track.png",
+          "sha256": "407b3906dfe60ba963173d8b748aefcf03a36224034f00c92049e8bb1ff09e9c",
+          "width": 1170,
+          "height": 1992
+        }
+      },
+      "comparison": "docs/design/lyra/verification/lyrics-state-comparison.webp",
+      "overlay": "docs/design/lyra/verification/lyrics-state-overlay.webp"
+    },
+    {
+      "id": "playlists",
+      "routes": [
+        "/playlists"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/playlists-mockup.png",
+        "sha256": "b12dc277be1ebec2cea91c852acf4a5e919657ce098e24661d99fcba181e5620",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists.png",
+          "sha256": "736f2f3e72df15aff4f038b291a57102c4631a9e09410c6cb86bdb80e0736034",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists.png",
+          "sha256": "9bd1d3d686723c55114f043f02af54dd097f1be9022a78fa500b1918a31d4500",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists.png",
+          "sha256": "36b3f3ed00f6a6ac9562bd6dcf0e865fb208a22dffdaf6ca62cfd0ef6f1834e0",
+          "width": 1170,
+          "height": 2421
+        }
+      },
+      "comparison": "docs/design/lyra/verification/playlists-comparison.webp",
+      "overlay": "docs/design/lyra/verification/playlists-overlay.webp"
+    },
+    {
+      "id": "playlist-detail",
+      "routes": [
+        "/playlists/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/playlist-detail-mockup.png",
+        "sha256": "76becb06d022b3f7015cb9d3aa4088327869e4c6bd4739516406d3948f7e49b2",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists-local-listening.png",
+          "sha256": "c6996f259a0818f53c57956566ead97636703bea2aaf0a3b8762ac7f0380fbae",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists-local-listening.png",
+          "sha256": "afe9ca17736aa29de4279dcbe2a251da52831f3757d8cc995cd6165496446dd1",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists-local-listening.png",
+          "sha256": "e7829436a52154ed684106d6c3844ba3884cee0eecf66e368564368289f9271c",
+          "width": 1170,
+          "height": 3561
+        }
+      },
+      "comparison": "docs/design/lyra/verification/playlist-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/playlist-detail-overlay.webp"
+    },
+    {
+      "id": "discovery",
+      "routes": [
+        "/discovery"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/discovery-mockup.png",
+        "sha256": "1a134cb2f8dd31f78875fb0a5b1d63c40b8ae83a39a637bea771d3d597458de3",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery.png",
+          "sha256": "3b9c2f81b81f8096b81dbde05ef2d54c1a563c3d832b97a927b0640eb0ed6689",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery.png",
+          "sha256": "e49bfe19adc7cb31bec581e4a7fc7daaf62b80f990fb953c256cad8dda936b7a",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery.png",
+          "sha256": "83cef25f241d04bb45c824da3470dddf807f9a5172a48d01ff9375b3e2477b0d",
+          "width": 1170,
+          "height": 2577
+        }
+      },
+      "comparison": "docs/design/lyra/verification/discovery-comparison.webp",
+      "overlay": "docs/design/lyra/verification/discovery-overlay.webp"
+    },
+    {
+      "id": "discovery-detail",
+      "routes": [
+        "/discovery/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/discovery-detail-mockup.png",
+        "sha256": "c94fa50ccb75b05282e52b77fb5ecb8d3049a6aa1a22b1f71104637ceb2cd76a",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery-local-discoveries.png",
+          "sha256": "964a2151ae4bc962c64d34341c46e69dedef6cf33531456c617fd809988ad643",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery-local-discoveries.png",
+          "sha256": "674b2f8c653a3e103b4f26700f9f8e745aabd363b3614125af86bbe214088da7",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery-local-discoveries.png",
+          "sha256": "c82ee4090660d3e7f6a6dd3caafa32f90c9ab860c10122f0103478e99c3db49e",
+          "width": 1170,
+          "height": 2466
+        }
+      },
+      "comparison": "docs/design/lyra/verification/discovery-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/discovery-detail-overlay.webp"
+    },
+    {
+      "id": "podcasts",
+      "routes": [
+        "/podcasts"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/podcasts-mockup.png",
+        "sha256": "7228ddd2525f64a375041c6b82f1e0cddfda514afeb4dce36822c4b43a6b95c8",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts.png",
+          "sha256": "9060b856077c9c488ebe22c7a3c5b0314e2fb96b8f43ea536f1c9b8a6b56240c",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts.png",
+          "sha256": "744f5e791975ff2f7e902deaa62f577919a599de388cf2852869f904cb0a29a5",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts.png",
+          "sha256": "f04bdab56d7b0a644ecb13162606a6418444bcd331a87a6594ff60a3775ecacf",
+          "width": 1170,
+          "height": 2667
+        }
+      },
+      "comparison": "docs/design/lyra/verification/podcasts-comparison.webp",
+      "overlay": "docs/design/lyra/verification/podcasts-overlay.webp"
+    },
+    {
+      "id": "podcast-detail",
+      "routes": [
+        "/podcasts/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/podcast-detail-mockup.png",
+        "sha256": "17ec06321a22b0f867072c42ca08536c535f5bf38088f47b9372d1623337c4e0",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts-listening-notes.png",
+          "sha256": "d4d92b1a16d1d5d9024f373ab62e2a94cef8714921f03a33b82fa502c85a9dfa",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts-listening-notes.png",
+          "sha256": "09bcc929cd401aebb1da67edc559df3d427fb60ba78bc19fc2f67d20f34fe059",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts-listening-notes.png",
+          "sha256": "7f3bdeb485c5ad17731e6977de9fa977890baf2fa5c1dd34c1a1cf13bf2732c4",
+          "width": 1170,
+          "height": 3987
+        }
+      },
+      "comparison": "docs/design/lyra/verification/podcast-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/podcast-detail-overlay.webp"
+    },
+    {
+      "id": "radio",
+      "routes": [
+        "/radio"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/radio-mockup.png",
+        "sha256": "cdfabce4bd1492d2a5acf709e0c4eb167ac17f7516e64767673f3fdd2b3fdc41",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio.png",
+          "sha256": "f5edc52e8ee844a45e02c3b673a81b8343c37dd637ffb48e978d7bc7b45d448b",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio.png",
+          "sha256": "d24a832216ec3a2feff5c1b09a90ff3645db4dc9e25755b8ee8d988a02b3143e",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio.png",
+          "sha256": "97d204c518246fb980d97a064eb5a8a2b9c8f4e04f18a95445d4907cc582c91d",
+          "width": 1170,
+          "height": 3024
+        }
+      },
+      "comparison": "docs/design/lyra/verification/radio-comparison.webp",
+      "overlay": "docs/design/lyra/verification/radio-overlay.webp"
+    },
+    {
+      "id": "radio-detail",
+      "routes": [
+        "/radio/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/radio-detail-mockup.png",
+        "sha256": "13484d891e66d3448c08a4c2910145b15f2fe5522e89c12d6b9e2c6c8ae7c1d5",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio-quiet-hours.png",
+          "sha256": "efc83d516efddf149bae19e47c4de3642c1e440e3f2b41aad512eace3ecdcc7a",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio-quiet-hours.png",
+          "sha256": "208c47bfa0ec6b266701e2c477c54ce87cbde7d38d4dab5d76a49bd11a476118",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio-quiet-hours.png",
+          "sha256": "eb5d76e215e34ec1d8030d2c7861df2d89f375c86b8632120a2274c00c203c5c",
+          "width": 1170,
+          "height": 4047
+        }
+      },
+      "comparison": "docs/design/lyra/verification/radio-detail-comparison.webp",
+      "overlay": "docs/design/lyra/verification/radio-detail-overlay.webp"
+    },
+    {
+      "id": "settings",
+      "routes": [
+        "/settings"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/settings-mockup.png",
+        "sha256": "1951451e9221b147b604ff5a0f250326ae9ec238a5dba4b3c7b6aca07988c129",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings.png",
+          "sha256": "9ddb124a361446d05d375ffa7a64caf8189a7819347cd8a5c2eb9e328349b61c",
+          "width": 1440,
+          "height": 1142
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings.png",
+          "sha256": "4fd0d04dfba2abe1c450459e9cdcd1cfb678cab8272069102db08df39304fe8c",
+          "width": 1536,
+          "height": 2242
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings.png",
+          "sha256": "b08100258b1112a0b2ce7e38131a603e42b4ebd9eb391b4618fe38ff01f6c922",
+          "width": 1170,
+          "height": 3723
+        }
+      },
+      "comparison": "docs/design/lyra/verification/settings-comparison.webp",
+      "overlay": "docs/design/lyra/verification/settings-overlay.webp"
+    },
+    {
+      "id": "radio-settings",
+      "routes": [
+        "/settings/radio"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/radio-settings-mockup.png",
+        "sha256": "f3af41719f33e30fecb422fa6340da0c06f7da86fd98b962b6415a577b759469",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio.png",
+          "sha256": "04e096ef088e753584a898cf9309a8d6a3f06726b8b6d7812aab0c30c1c98b0d",
+          "width": 1440,
+          "height": 1000
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio.png",
+          "sha256": "76dfe361afc5ad376a4df520b30e6e763e9fee1a5f485cd9984231af4af010fa",
+          "width": 1536,
+          "height": 2048
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio.png",
+          "sha256": "7ac3139bc2f6c52f39565d6e205e46e8f03a308c01821724c353a002ab7e329b",
+          "width": 1170,
+          "height": 2175
+        }
+      },
+      "comparison": "docs/design/lyra/verification/radio-settings-comparison.webp",
+      "overlay": "docs/design/lyra/verification/radio-settings-overlay.webp"
+    },
+    {
+      "id": "radio-edit",
+      "routes": [
+        "/settings/radio/[id]"
+      ],
+      "reference": {
+        "path": "docs/design/lyra/radio-edit-mockup.png",
+        "sha256": "4d2d39b441c24d855b6d735a1c50971be376addbb208559e55d85798f11c0fa0",
+        "width": 1505,
+        "height": 1045
+      },
+      "captures": {
+        "desktop": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio-quiet-hours.png",
+          "sha256": "ebae0c9dc81e279c619134ab2fa75e4e9bccf3c07d4cf9d65540ccece3f638c2",
+          "width": 1440,
+          "height": 1347
+        },
+        "tablet": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio-quiet-hours.png",
+          "sha256": "1ccb7bf6150b5f3a356e72ee8dd3325359ff52f1ea57ef4b75cdc438d0c0dcde",
+          "width": 1536,
+          "height": 2642
+        },
+        "mobile": {
+          "path": ".test-data/design-final-production/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio-quiet-hours.png",
+          "sha256": "62a50adbd2d8f7ffe23df7c50c17e5c633e9975c6cbd7abf2c2910b43c06e09c",
+          "width": 1170,
+          "height": 5589
+        }
+      },
+      "comparison": "docs/design/lyra/verification/radio-edit-comparison.webp",
+      "overlay": "docs/design/lyra/verification/radio-edit-overlay.webp"
+    }
+  ]
+}

@@ -1,132 +1,136 @@
 <template>
-  <div 
-    class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out group"
-    @click="$emit('cardClick', album)"
-  >
-    <figure class="relative aspect-square overflow-hidden">
-      <img 
-        :src="album.coverPath" 
-        :alt="album.title || 'Album cover'" 
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
-        @error="handleImageError"
-      />
-      <button 
-        @click.stop="$emit('play', album)" 
-        :title="buttonTitle"
-        class="bg-primary w-12 h-12 absolute flex items-center justify-center rounded-full focus:outline-none shadow-lg hover:bg-primary-focus transition-colors duration-200"
-        style="bottom: 0.5rem; right: 0.5rem; z-index: 10;"
+  <article class="record-card">
+    <NuxtLink :to="`/albums/${album.albumId}`" class="record-link">
+      <AlbumArt :src="album.coverPath" />
+      <h2 :title="album.title">{{ album.title || "Untitled album" }}</h2>
+    </NuxtLink>
+    <p class="record-credit">{{ displayArtists }}</p>
+    <p v-if="album.year" class="record-year">{{ album.year }}</p>
+    <div class="record-actions">
+      <button
+        type="button"
+        class="btn btn-primary"
+        :disabled="isLoadingThisAlbum"
+        :aria-label="`${isPlayingThisAlbum ? 'Pause' : 'Play'} ${album.title}`"
+        @click="$emit('play', album)"
       >
-        <Icon v-if="isLoadingThisAlbum" name="material-symbols:progress-activity" class="w-7 h-7 animate-spin text-primary-content" />
-        <Icon v-else-if="isPlayingThisAlbum" name="material-symbols:pause-rounded" class="w-7 h-7 text-primary-content" />
-        <Icon v-else name="material-symbols:play-arrow-rounded" class="w-7 h-7 text-primary-content" />
+        <Icon
+          :name="
+            isPlayingThisAlbum
+              ? 'material-symbols:pause-rounded'
+              : 'material-symbols:play-arrow-rounded'
+          "
+          aria-hidden="true"
+        />
+        {{
+          isLoadingThisAlbum
+            ? "Loading…"
+            : isPlayingThisAlbum
+              ? "Pause"
+              : "Play"
+        }}
       </button>
-      
-      <div class="absolute top-2 right-2 z-50">
-        <OptionsMenu>
-          <template #default>
-            <button
-              class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-              @click.stop="$emit('addToPlaylist', album)"
-            >
-              <Icon name="material-symbols:playlist-add" class="w-5 h-5 mr-2" />
-              Add to Playlist
-            </button>
-            <button
-              class="px-4 py-2 text-left hover:bg-base-300 flex items-center"
-              @click.stop="$emit('editAlbum', album)"
-            >
-              <Icon name="material-symbols:edit" class="w-5 h-5 mr-2" />
-              Edit Album
-            </button>
-            <button
-              class="px-4 py-2 text-left hover:bg-base-300 flex items-center text-error"
-              @click.stop="$emit('deleteAlbum', album)"
-            >
-              <Icon name="material-symbols:delete-outline-rounded" class="w-5 h-5 mr-2" />
-              Delete Album
-            </button>
-          </template>
-        </OptionsMenu>
-      </div>
-    </figure>
-    <div class="card-body p-3 md:p-4">
-      <h2 
-        class="card-title text-sm font-semibold truncate" 
-        :title="album.title || 'Unknown Album'"
-      >
-        {{ album.title || 'Unknown Album' }}
-      </h2>
-      <p 
-        class="text-xs color-primary-content truncate"
-        :title="allArtistNames"
-      >
-        {{ displayArtists }}
-      </p>
-      <p 
-        class="text-xs color-primary-content truncate"
-        :title="album.year || 'Unknown Year'"
-      >
-        {{ album.year || 'Unknown Year' }}
-      </p>
-      <div class="card-actions justify-end mt-1">
-        <slot name="actions"></slot>
-      </div>
+      <OptionsMenu
+        v-if="options.length"
+        :options="options"
+        @option-selected="selectOption"
+      />
+      <slot name="actions" />
     </div>
-  </div>
+  </article>
 </template>
-
 <script setup lang="ts">
-import { computed } from '#imports';
-import type { Album, AlbumArtistDetail } from '~/types/album';
-
-const props = defineProps<{
-  album: Album;
-  isPlayingThisAlbum?: boolean; // Is this album currently playing?
-  isLoadingThisAlbum?: boolean; // Is this album currently being loaded for playback?
-}>();
-
+import type { Album } from "~/types/album";
+import AlbumArt from "~/components/album/album-art.vue";
+import OptionsMenu from "~/components/options-menu.vue";
+const props = withDefaults(
+  defineProps<{
+    album: Album;
+    isPlayingThisAlbum?: boolean;
+    isLoadingThisAlbum?: boolean;
+    availableActions?: Array<"add" | "edit" | "delete">;
+  }>(),
+  { availableActions: () => ["add", "edit", "delete"] },
+);
+const emit = defineEmits([
+  "cardClick",
+  "addToPlaylist",
+  "editAlbum",
+  "deleteAlbum",
+  "play",
+]);
 const displayArtists = computed(() => {
-  if (!props.album || !props.album.artists || props.album.artists.length === 0) {
-    return 'Unknown Artist';
-  }
-  const primaryArtist = props.album.artists.find((artist: AlbumArtistDetail) => artist.isPrimaryArtist);
-  if (primaryArtist) {
-    return primaryArtist.name;
-  }
-  return props.album.artists.map((artist: AlbumArtistDetail) => artist.name).join(', ');
+  const credits = props.album.artists || [];
+  const primary = credits.filter((artist) => artist.isPrimaryArtist);
+  return (
+    (primary.length ? primary : credits)
+      .map((artist) => artist.name)
+      .join(", ") || "Unknown artist"
+  );
 });
-
-const allArtistNames = computed(() => {
-  if (!props.album || !props.album.artists || props.album.artists.length === 0) {
-    return 'Unknown Artist';
-  }
-  return props.album.artists.map((artist: AlbumArtistDetail) => artist.name).join(', ');
-});
-
-const emit = defineEmits(['cardClick', 'addToPlaylist', 'editAlbum', 'deleteAlbum', 'play']);
-
-
-
-const imageError = ref(false);
-
-const buttonTitle = computed(() => {
-  if (props.isLoadingThisAlbum) return 'Loading...';
-  if (props.isPlayingThisAlbum) return 'Pause Album';
-  return 'Play Album';
-});
-
-const handleImageError = () => {
-  // console.warn(`Error loading image for album: ${props.album.title}, falling back to default.`);
-  imageError.value = true;
-};
-</script>
-
-<style scoped>
-.card {
-  cursor: pointer;
+const options = computed(() =>
+  [
+    {
+      id: "add",
+      label: "Add to Playlist",
+      icon: "material-symbols:playlist-add",
+    },
+    { id: "edit", label: "Edit Album", icon: "material-symbols:edit" },
+    {
+      id: "delete",
+      label: "Delete Album",
+      icon: "material-symbols:delete-outline",
+    },
+  ].filter((option) =>
+    props.availableActions.includes(option.id as "add" | "edit" | "delete"),
+  ),
+);
+function selectOption(id: string) {
+  if (id === "add") emit("addToPlaylist", props.album);
+  if (id === "edit") emit("editAlbum", props.album);
+  if (id === "delete") emit("deleteAlbum", props.album);
 }
-figure img {
-  max-width: 100%;
-  max-height: 100%;
+</script>
+<style scoped>
+.record-card {
+  min-width: 0;
+}
+.record-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.record-link h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.2vw, 2rem);
+  line-height: 1.12;
+  margin: 1rem 0 0.4rem;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+.record-link:hover h2 {
+  color: var(--copper, #a34127);
+}
+.record-credit {
+  color: var(--muted, #62594f);
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+.record-year {
+  font-size: 0.875rem;
+  margin: 0.3rem 0 0;
+  color: var(--muted, #62594f);
+}
+.record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.record-actions :deep(button) {
+  min-width: 44px;
+  min-height: 44px;
 }
 </style>

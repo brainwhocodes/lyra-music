@@ -1,0 +1,2842 @@
+{
+  "auditVersion": 2,
+  "auditedOn": "2026-10-18",
+  "phase": "verified-production-with-explicit-control-gaps",
+  "scope": "All 26 routes rendered on desktop, tablet and mobile; all 20 authenticated routes plus representative public/player/dialog views at 320px; one desktop doubled-text public/library/player/dialog/radio journey with compact layout, including the changed player at combined 320px and 200% text. Focused journeys pass; unoperated control occurrences retain owned, dated gaps.",
+  "counts": {
+    "routes": 26,
+    "layouts": 2,
+    "components": 45
+  },
+  "routes": [
+    {
+      "route": "/",
+      "source": "pages/index.vue",
+      "layout": "default",
+      "implementationGroup": "public-auth",
+      "authentication": "public",
+      "intendedAuthentication": "public",
+      "examplePath": "/",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [],
+      "journeys": [
+        "Public brand introduction",
+        "Primary CTA to local library or sign in",
+        "Secondary registration CTA",
+        "Landing feature section links"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/login?invalid=true",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-landing.png",
+          "inventory": ".test-data/ui-before/mobile-landing.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/login?invalid=true",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-landing.png",
+          "inventory": ".test-data/ui-before/tablet-landing.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/login?invalid=true",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-landing.png",
+          "inventory": ".test-data/ui-before/desktop-landing.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-landing.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-landing.inventory.json",
+          "controls": 14,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-landing.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-landing.inventory.json",
+          "controls": 14,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-landing.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-landing.inventory.json",
+          "controls": 14,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-public.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/albums",
+      "source": "pages/albums/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/albums",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/albums",
+        "/api/albums/${id}",
+        "/api/albums/${selectedAlbumForDelete.value.albumId}",
+        "/api/playlists/${playlistId}/tracks"
+      ],
+      "journeys": [
+        "Populated album grid",
+        "Title/artist filter and empty results",
+        "Open album",
+        "Play/pause album",
+        "Album options: add to playlist/edit/delete with cancellation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/albums",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-albums.png",
+          "inventory": ".test-data/ui-before/mobile-albums.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/albums",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-albums.png",
+          "inventory": ".test-data/ui-before/tablet-albums.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/albums",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-albums.png",
+          "inventory": ".test-data/ui-before/desktop-albums.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums.inventory.json",
+          "controls": 31,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums.inventory.json",
+          "controls": 19,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums.inventory.json",
+          "controls": 19,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-albums.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/albums/[id]",
+      "source": "pages/albums/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/albums/album-the-distant-sun",
+      "exampleStatus": "existing-fixture",
+      "existingApiDependencies": [
+        "/api/albums/${album.value.albumId}",
+        "/api/albums/${albumId.value}",
+        "/api/playlists/${playlistId}/tracks"
+      ],
+      "journeys": [
+        "Album metadata and track list",
+        "Play/pause and queue context",
+        "Track options: playlist, metadata and lyrics",
+        "Edit album and cancel delete"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/albums/album-the-distant-sun",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-albums_id.png",
+          "inventory": ".test-data/ui-before/mobile-albums_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/albums/album-the-distant-sun",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-albums_id.png",
+          "inventory": ".test-data/ui-before/tablet-albums_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/albums/album-the-distant-sun",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-albums_id.png",
+          "inventory": ".test-data/ui-before/desktop-albums_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums-album-the-distant-sun.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-albums-album-the-distant-sun.inventory.json",
+          "controls": 28,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums-album-the-distant-sun.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-albums-album-the-distant-sun.inventory.json",
+          "controls": 16,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums-album-the-distant-sun.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-albums-album-the-distant-sun.inventory.json",
+          "controls": 16,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-albums-album-the-distant-sun.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/artists",
+      "source": "pages/artists/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/artists",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/artists"
+      ],
+      "journeys": [
+        "Populated artist grid",
+        "Open artist detail",
+        "Empty and error states"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/artists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-artists.png",
+          "inventory": ".test-data/ui-before/mobile-artists.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/artists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-artists.png",
+          "inventory": ".test-data/ui-before/tablet-artists.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/artists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-artists.png",
+          "inventory": ".test-data/ui-before/desktop-artists.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists.inventory.json",
+          "controls": 22,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-artists.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/artists/[id]",
+      "source": "pages/artists/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/artists/scott-buckley",
+      "exampleStatus": "existing-fixture",
+      "existingApiDependencies": [
+        "/api/albums/${albumIdToPlay}",
+        "/api/albums/${artistAlbum.id}",
+        "/api/artists/${artistId.value}",
+        "/api/playlists/${playlistId}/tracks"
+      ],
+      "journeys": [
+        "Artist biography and album list",
+        "Play all and shuffle artist",
+        "Add artist tracks to queue or playlist",
+        "Open artist album"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/artists/scott-buckley",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-artists_id.png",
+          "inventory": ".test-data/ui-before/mobile-artists_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/artists/scott-buckley",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-artists_id.png",
+          "inventory": ".test-data/ui-before/tablet-artists_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/artists/scott-buckley",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-artists_id.png",
+          "inventory": ".test-data/ui-before/desktop-artists_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists-scott-buckley.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-artists-scott-buckley.inventory.json",
+          "controls": 32,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists-scott-buckley.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-artists-scott-buckley.inventory.json",
+          "controls": 20,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists-scott-buckley.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-artists-scott-buckley.inventory.json",
+          "controls": 20,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-artists-scott-buckley.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/discovery",
+      "source": "pages/discovery/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/discovery",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/discovery-playlists",
+        "/api/discovery-playlists/${id}"
+      ],
+      "journeys": [
+        "Discovery collections and search",
+        "Open discovery detail",
+        "Play collection",
+        "Empty collection state"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/discovery",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-discovery.png",
+          "inventory": ".test-data/ui-before/mobile-discovery.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/discovery",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-discovery.png",
+          "inventory": ".test-data/ui-before/tablet-discovery.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/discovery",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-discovery.png",
+          "inventory": ".test-data/ui-before/desktop-discovery.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery.inventory.json",
+          "controls": 24,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-discovery.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/discovery/[id]",
+      "source": "pages/discovery/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/discovery/local-discoveries",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/discovery-playlists/${playlistId.value}"
+      ],
+      "journeys": [
+        "Collection track list",
+        "Play all or selected track",
+        "Empty collection state"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/discovery/local-discoveries",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/mobile-discovery_id.png",
+          "inventory": ".test-data/ui-before/mobile-discovery_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/discovery/local-discoveries",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/tablet-discovery_id.png",
+          "inventory": ".test-data/ui-before/tablet-discovery_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/discovery/local-discoveries",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/desktop-discovery_id.png",
+          "inventory": ".test-data/ui-before/desktop-discovery_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery-local-discoveries.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-discovery-local-discoveries.inventory.json",
+          "controls": 29,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery-local-discoveries.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-discovery-local-discoveries.inventory.json",
+          "controls": 17,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery-local-discoveries.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-discovery-local-discoveries.inventory.json",
+          "controls": 17,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-discovery-local-discoveries.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/explore",
+      "source": "pages/explore.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "local-intelligence",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/explore",
+      "exampleStatus": "new route",
+      "journeys": [
+        "Explicit local indexing and stop after active batch",
+        "Semantic search, recommendations, suggested tag provenance",
+        "Play local result and open album"
+      ],
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Meaningful heading and reachable URL",
+          "No document overflow",
+          "Screenshot and interactive inventory",
+          "Serious/critical axe gate",
+          "First-party network and console guard"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineAuthentication": "required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-explore.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-explore.inventory.json",
+          "controls": 24,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-explore.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-explore.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-explore.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-explore.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-explore.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/features",
+      "source": "pages/features.vue",
+      "layout": "marketing-shell component",
+      "implementationGroup": "public-auth-shell",
+      "authentication": "public",
+      "intendedAuthentication": "public",
+      "examplePath": "/features",
+      "exampleStatus": "new route",
+      "journeys": [
+        "Read product and setup information",
+        "Navigate public pages and authentication"
+      ],
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Meaningful heading and reachable URL",
+          "No document overflow",
+          "Screenshot and interactive inventory",
+          "Serious/critical axe gate",
+          "First-party network and console guard"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineAuthentication": "public",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-features.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-features.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-features.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-features.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-features.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-features.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      }
+    },
+    {
+      "route": "/genres",
+      "source": "pages/genres/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/genres",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/genres"
+      ],
+      "journeys": [
+        "Genre grid and search",
+        "Filtered empty state",
+        "Open genre"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/genres",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-genres.png",
+          "inventory": ".test-data/ui-before/mobile-genres.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/genres",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-genres.png",
+          "inventory": ".test-data/ui-before/tablet-genres.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/genres",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-genres.png",
+          "inventory": ".test-data/ui-before/desktop-genres.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres.inventory.json",
+          "controls": 21,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres.inventory.json",
+          "controls": 9,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres.inventory.json",
+          "controls": 9,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-genres.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/genres/[genreId]",
+      "source": "pages/genres/[genreId].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/genres/ambient",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/albums/${albumIdToPlay}",
+        "/api/genres",
+        "/api/genres/${genreId}/albums"
+      ],
+      "journeys": [
+        "Genre albums",
+        "Open album",
+        "Play album and add to queue"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/genres/ambient",
+          "errorCount": 3,
+          "screenshot": ".test-data/ui-before/mobile-genres_genreId.png",
+          "inventory": ".test-data/ui-before/mobile-genres_genreId.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/genres/ambient",
+          "errorCount": 3,
+          "screenshot": ".test-data/ui-before/tablet-genres_genreId.png",
+          "inventory": ".test-data/ui-before/tablet-genres_genreId.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/genres/ambient",
+          "errorCount": 3,
+          "screenshot": ".test-data/ui-before/desktop-genres_genreId.png",
+          "inventory": ".test-data/ui-before/desktop-genres_genreId.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres-ambient.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-genres-ambient.inventory.json",
+          "controls": 30,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres-ambient.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-genres-ambient.inventory.json",
+          "controls": 18,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres-ambient.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-genres-ambient.inventory.json",
+          "controls": 18,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-genres-ambient.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/library",
+      "source": "pages/library.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/library",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/albums",
+        "/api/albums/${albumId}",
+        "/api/playlists/${playlistId}/tracks"
+      ],
+      "journeys": [
+        "Search albums, artists and playlists",
+        "Open album and artist cards",
+        "Play album and queue tracks",
+        "Open add-to-playlist and metadata dialogs"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/library",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-library.png",
+          "inventory": ".test-data/ui-before/mobile-library.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/library",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-library.png",
+          "inventory": ".test-data/ui-before/tablet-library.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/library",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-library.png",
+          "inventory": ".test-data/ui-before/desktop-library.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-library.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-library.inventory.json",
+          "controls": 37,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-library.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-library.inventory.json",
+          "controls": 27,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-library.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-library.inventory.json",
+          "controls": 27,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-library.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/login",
+      "source": "pages/login.vue",
+      "layout": "default",
+      "implementationGroup": "public-auth",
+      "authentication": "public",
+      "intendedAuthentication": "public",
+      "examplePath": "/login",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/auth/login"
+      ],
+      "journeys": [
+        "Required and minimum-length validation",
+        "Wrong credentials remain signed out",
+        "Keyboard successful login",
+        "Register navigation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-login.png",
+          "inventory": ".test-data/ui-before/mobile-login.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-login.png",
+          "inventory": ".test-data/ui-before/tablet-login.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-login.png",
+          "inventory": ".test-data/ui-before/desktop-login.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "public",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-login.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-login.inventory.json",
+          "controls": 7,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-login.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-login.inventory.json",
+          "controls": 7,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-login.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-login.inventory.json",
+          "controls": 7,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      }
+    },
+    {
+      "route": "/logout",
+      "source": "pages/logout.vue",
+      "layout": "default",
+      "implementationGroup": "public-auth",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/logout",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [],
+      "journeys": [
+        "Authenticated logout clears session",
+        "Redirect to login",
+        "Protected route redirects after logout"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-logout.png",
+          "inventory": ".test-data/ui-before/mobile-logout.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-logout.png",
+          "inventory": ".test-data/ui-before/tablet-logout.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/login",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-logout.png",
+          "inventory": ".test-data/ui-before/desktop-logout.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-logout.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-logout.inventory.json",
+          "controls": 2,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-logout.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-logout.inventory.json",
+          "controls": 2,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-logout.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-logout.inventory.json",
+          "controls": 2,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      }
+    },
+    {
+      "route": "/playlists",
+      "source": "pages/playlists/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/playlists",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/playlists",
+        "/api/playlists/${playlistId}",
+        "/api/playlists/${playlistToDeleteId.value}",
+        "/api/playlists/${playlistToEdit.value.playlistId}"
+      ],
+      "journeys": [
+        "Search playlists",
+        "Create/cancel/keyboard/duplicate-name retry",
+        "Persist after reload",
+        "Open/rename/delete playlist and cancel destructive action"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/playlists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-playlists.png",
+          "inventory": ".test-data/ui-before/mobile-playlists.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/playlists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-playlists.png",
+          "inventory": ".test-data/ui-before/tablet-playlists.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/playlists",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-playlists.png",
+          "inventory": ".test-data/ui-before/desktop-playlists.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists.inventory.json",
+          "controls": 36,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists.inventory.json",
+          "controls": 34,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists.inventory.json",
+          "controls": 44,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-playlists.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/playlists/[id]",
+      "source": "pages/playlists/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/playlists/local-listening",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/playlists/${playlist.value.playlistId}",
+        "/api/playlists/${playlist.value.playlistId}/rename",
+        "/api/playlists/${playlist.value.playlistId}/tracks",
+        "/api/playlists/${playlistId.value}",
+        "/api/playlists/${playlistId.value}/reorder"
+      ],
+      "journeys": [
+        "Track list and playback",
+        "Rename via existing playlist API",
+        "Add/remove tracks",
+        "Reorder tracks with accessible alternative",
+        "Delete confirmation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/playlists/local-listening",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/mobile-playlists_id.png",
+          "inventory": ".test-data/ui-before/mobile-playlists_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/playlists/local-listening",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/tablet-playlists_id.png",
+          "inventory": ".test-data/ui-before/tablet-playlists_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/playlists/local-listening",
+          "errorCount": 1,
+          "screenshot": ".test-data/ui-before/desktop-playlists_id.png",
+          "inventory": ".test-data/ui-before/desktop-playlists_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists-local-listening.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-playlists-local-listening.inventory.json",
+          "controls": 35,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists-local-listening.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-playlists-local-listening.inventory.json",
+          "controls": 23,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists-local-listening.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-playlists-local-listening.inventory.json",
+          "controls": 23,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-playlists-local-listening.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/podcasts",
+      "source": "pages/podcasts/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/podcasts",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/podcasts"
+      ],
+      "journeys": [
+        "Podcast subscriptions grid",
+        "Subscribe dialog validation and cancellation",
+        "Subscribe to local fixture RSS",
+        "Open podcast detail"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/podcasts",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-podcasts.png",
+          "inventory": ".test-data/ui-before/mobile-podcasts.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/podcasts",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-podcasts.png",
+          "inventory": ".test-data/ui-before/tablet-podcasts.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/podcasts",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-podcasts.png",
+          "inventory": ".test-data/ui-before/desktop-podcasts.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts.inventory.json",
+          "controls": 23,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts.inventory.json",
+          "controls": 11,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts.inventory.json",
+          "controls": 11,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-podcasts.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/podcasts/[id]",
+      "source": "pages/podcasts/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/podcasts/listening-notes",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/podcasts/${podcastId}",
+        "/api/podcasts/${podcastId}/episodes"
+      ],
+      "journeys": [
+        "Podcast metadata and episode list from local RSS",
+        "Play latest and selected episode",
+        "Refresh episodes",
+        "Unsubscribe confirmation and cancellation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/podcasts/listening-notes",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-podcasts_id.png",
+          "inventory": ".test-data/ui-before/mobile-podcasts_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/podcasts/listening-notes",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-podcasts_id.png",
+          "inventory": ".test-data/ui-before/tablet-podcasts_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/podcasts/listening-notes",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-podcasts_id.png",
+          "inventory": ".test-data/ui-before/desktop-podcasts_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts-listening-notes.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-podcasts-listening-notes.inventory.json",
+          "controls": 23,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts-listening-notes.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-podcasts-listening-notes.inventory.json",
+          "controls": 11,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts-listening-notes.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-podcasts-listening-notes.inventory.json",
+          "controls": 11,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-podcasts-listening-notes.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/radio",
+      "source": "pages/radio/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/radio",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/radio-stations"
+      ],
+      "journeys": [
+        "Seeded local station grid",
+        "Open station",
+        "Empty station state"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-radio.png",
+          "inventory": ".test-data/ui-before/mobile-radio.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-radio.png",
+          "inventory": ".test-data/ui-before/tablet-radio.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-radio.png",
+          "inventory": ".test-data/ui-before/desktop-radio.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio.inventory.json",
+          "controls": 26,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio.inventory.json",
+          "controls": 14,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio.inventory.json",
+          "controls": 14,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-radio.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/radio/[id]",
+      "source": "pages/radio/[id].vue",
+      "layout": "default",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/radio/quiet-hours",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/auth/me",
+        "/api/radio-stations/${channelId}",
+        "/api/radio-stations/${channelId}/tracks"
+      ],
+      "journeys": [
+        "Station metadata, artist and genre seeds",
+        "Play/pause and next track",
+        "Owner edit link",
+        "Back to station list"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-radio_id.png",
+          "inventory": ".test-data/ui-before/mobile-radio_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-radio_id.png",
+          "inventory": ".test-data/ui-before/tablet-radio_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-radio_id.png",
+          "inventory": ".test-data/ui-before/desktop-radio_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-radio-quiet-hours.inventory.json",
+          "controls": 24,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-radio-quiet-hours.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-radio-quiet-hours.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-radio-quiet-hours.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/register",
+      "source": "pages/register.vue",
+      "layout": "default",
+      "implementationGroup": "public-auth",
+      "authentication": "public",
+      "intendedAuthentication": "public",
+      "examplePath": "/register",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/auth/register"
+      ],
+      "journeys": [
+        "Name, email, password, confirmation and access code validation",
+        "Wrong access code visible error",
+        "Successful registration signs in",
+        "Login navigation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": true,
+        "tablet": false,
+        "desktop": true,
+        "note": "Prior task coverage is scoped to journeys in local-library.spec.ts; registration only navigation."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/register",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-register.png",
+          "inventory": ".test-data/ui-before/mobile-register.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/register",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-register.png",
+          "inventory": ".test-data/ui-before/tablet-register.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/register",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-register.png",
+          "inventory": ".test-data/ui-before/desktop-register.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "public",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-register.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-register.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-register.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-register.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-register.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-register.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      }
+    },
+    {
+      "route": "/self-host",
+      "source": "pages/self-host.vue",
+      "layout": "marketing-shell component",
+      "implementationGroup": "public-auth-shell",
+      "authentication": "public",
+      "intendedAuthentication": "public",
+      "examplePath": "/self-host",
+      "exampleStatus": "new route",
+      "journeys": [
+        "Read product and setup information",
+        "Navigate public pages and authentication"
+      ],
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Meaningful heading and reachable URL",
+          "No document overflow",
+          "Screenshot and interactive inventory",
+          "Serious/critical axe gate",
+          "First-party network and console guard"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineAuthentication": "public",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-self-host.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-self-host.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-self-host.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-self-host.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-self-host.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-self-host.inventory.json",
+          "controls": 10,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      }
+    },
+    {
+      "route": "/settings",
+      "source": "pages/settings/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/settings",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/filesystem/browse",
+        "/api/settings/folders",
+        "/api/settings/folders/${folderId}",
+        "/api/settings/scan"
+      ],
+      "journeys": [
+        "Local media folder list",
+        "Add known fixture directory",
+        "Reject invalid/duplicate path",
+        "Browse fixture directory and cancel",
+        "Remove fixture folder",
+        "Scan fixtures with progress and result"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/settings",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-settings.png",
+          "inventory": ".test-data/ui-before/mobile-settings.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/settings",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-settings.png",
+          "inventory": ".test-data/ui-before/tablet-settings.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/settings",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-settings.png",
+          "inventory": ".test-data/ui-before/desktop-settings.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings.inventory.json",
+          "controls": 25,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings.inventory.json",
+          "controls": 13,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings.inventory.json",
+          "controls": 13,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-settings.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/settings/radio",
+      "source": "pages/settings/radio/index.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/settings/radio",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/radio-stations",
+        "/api/radio-stations/${selectedStation.value.channelId}"
+      ],
+      "journeys": [
+        "Station management table/cards",
+        "Create station with local artist/genre seeds",
+        "Edit seeds",
+        "Delete confirmation/cancel"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/settings/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-settings_radio.png",
+          "inventory": ".test-data/ui-before/mobile-settings_radio.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/settings/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-settings_radio.png",
+          "inventory": ".test-data/ui-before/tablet-settings_radio.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/settings/radio",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-settings_radio.png",
+          "inventory": ".test-data/ui-before/desktop-settings_radio.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio.inventory.json",
+          "controls": 24,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio.inventory.json",
+          "controls": 12,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-settings-radio.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/settings/radio/[id]",
+      "source": "pages/settings/radio/[id].vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "collections-media-settings",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/settings/radio/quiet-hours",
+      "exampleStatus": "planned-fixture",
+      "existingApiDependencies": [
+        "/api/radio-stations/${channelId}"
+      ],
+      "journeys": [
+        "Station name change and persistence",
+        "Logo/background upload using local image fixture",
+        "Back navigation"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/settings/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-settings_radio_id.png",
+          "inventory": ".test-data/ui-before/mobile-settings_radio_id.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/settings/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-settings_radio_id.png",
+          "inventory": ".test-data/ui-before/tablet-settings_radio_id.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/settings/radio/quiet-hours",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-settings_radio_id.png",
+          "inventory": ".test-data/ui-before/desktop-settings_radio_id.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-settings-radio-quiet-hours.inventory.json",
+          "controls": 27,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-settings-radio-quiet-hours.inventory.json",
+          "controls": 15,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio-quiet-hours.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-settings-radio-quiet-hours.inventory.json",
+          "controls": 15,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-settings-radio-quiet-hours.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    },
+    {
+      "route": "/tracks",
+      "source": "pages/tracks.vue",
+      "layout": "sidebar-layout",
+      "implementationGroup": "core-music",
+      "authentication": "required",
+      "intendedAuthentication": "required",
+      "examplePath": "/tracks",
+      "exampleStatus": "literal-route",
+      "existingApiDependencies": [
+        "/api/tracks"
+      ],
+      "journeys": [
+        "All tracks and album/artist query filters",
+        "Play selected track",
+        "Empty query result"
+      ],
+      "baselineBrowserEvidence": {
+        "mobile": false,
+        "tablet": false,
+        "desktop": false,
+        "note": "Source inventoried; not yet browser-observed for redesign."
+      },
+      "verificationPlan": {
+        "viewports": [
+          "mobile",
+          "tablet",
+          "desktop"
+        ],
+        "checks": [
+          "Route opens with meaningful heading/content",
+          "No document horizontal overflow",
+          "Main controls visible and keyboard reachable",
+          "Navigation and primary action produce observable result",
+          "Console and first-party network guard",
+          "Interactive inventory and screenshot",
+          "Serious/critical accessibility scan of changed areas"
+        ],
+        "status": "route-render-layout-accessibility-passed;selected-interactions-passed;remaining-control-gaps-recorded"
+      },
+      "baselineNavigationObservations": [
+        {
+          "viewport": "mobile",
+          "url": "http://127.0.0.1:3100/tracks",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/mobile-tracks.png",
+          "inventory": ".test-data/ui-before/mobile-tracks.inventory.json"
+        },
+        {
+          "viewport": "tablet",
+          "url": "http://127.0.0.1:3100/tracks",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/tablet-tracks.png",
+          "inventory": ".test-data/ui-before/tablet-tracks.inventory.json"
+        },
+        {
+          "viewport": "desktop",
+          "url": "http://127.0.0.1:3100/tracks",
+          "errorCount": 0,
+          "screenshot": ".test-data/ui-before/desktop-tracks.png",
+          "inventory": ".test-data/ui-before/desktop-tracks.inventory.json"
+        }
+      ],
+      "baselineAuthentication": "currently-required",
+      "finalBrowserEvidence": {
+        "desktop": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-tracks.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-desktop/route-tracks.inventory.json",
+          "controls": 28,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "tablet": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-tracks.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-tablet/route-tracks.inventory.json",
+          "controls": 16,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        },
+        "mobile": {
+          "build": "controls-v3-build5",
+          "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-tracks.png",
+          "inventory": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/route-tracks.inventory.json",
+          "controls": 16,
+          "result": "Route heading/URL, layout and serious/critical axe gate passed; individual control interaction coverage is recorded in ui-coverage.json."
+        }
+      },
+      "compact320Evidence": {
+        "build": "controls-v3-build5",
+        "screenshot": ".test-data/controls-v3-build5-production/test-results/responsive-routes-every-ro-7d068-rols-and-responsive-layouts-mobile/compact320-tracks.png",
+        "result": "Reflow geometry passed; selected player/dialog controls were also operated."
+      }
+    }
+  ],
+  "layouts": [
+    "layouts/default.vue",
+    "layouts/sidebar-layout.vue"
+  ],
+  "components": [
+    "components/album/album-card.vue",
+    "components/layout/fullscreen-queue.vue",
+    "components/layout/queue-sidebar.vue",
+    "components/layout/ToastContainer.vue",
+    "components/library/album-grid.vue",
+    "components/library/artist-grid.vue",
+    "components/library/genre-card.vue",
+    "components/library/genre-grid.vue",
+    "components/library/library-header.vue",
+    "components/library/library-nav.vue",
+    "components/library/playlist-grid.vue",
+    "components/modals/add-to-playlist-modal.vue",
+    "components/modals/confirm-delete-modal.vue",
+    "components/modals/confirmation-modal.vue",
+    "components/modals/create-playlist-modal.vue",
+    "components/modals/edit-album-modal.vue",
+    "components/modals/edit-lyrics-modal.vue",
+    "components/modals/edit-radio-station-modal.vue",
+    "components/modals/edit-track-modal.vue",
+    "components/modals/lyrics-modal.vue",
+    "components/modals/remove-from-playlist-modal.vue",
+    "components/options-menu.vue",
+    "components/player/full-screen-player.vue",
+    "components/player/fullscreen-lyrics.vue",
+    "components/player/global-audio-player.vue",
+    "components/player/mini-player.vue",
+    "components/playlist/playlist-card.vue",
+    "components/radio/radio-image-upload.vue",
+    "components/track/track-item.vue",
+    "components/ui/omni-search.vue",
+    "components/ui/sorting-dropdown.vue",
+    "components/ui/spinner.vue"
+  ],
+  "sourceFindings": [
+    {
+      "id": "landing-auth",
+      "source": "middleware/session.global.ts",
+      "description": "Public routes omit /, preventing unauthenticated landing access.",
+      "priority": "high",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "landing-brand",
+      "source": "pages/index.vue",
+      "description": "Landing still introduces Otogami rather than Lyra.",
+      "priority": "medium",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "dead-logout",
+      "source": "components/library/library-header.vue",
+      "description": "Logout anchor has no href or handler; /logout route does exist.",
+      "priority": "high",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "playlist-rename-route",
+      "source": "pages/playlists/[id].vue",
+      "description": "renamePlaylist calls nonexistent PUT /api/playlists/:id/rename; existing API is PUT /api/playlists/:id.",
+      "priority": "high",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "discovery-join",
+      "source": "server/api/discovery-playlists/[id]/index.get.ts",
+      "description": "Discovery detail joins artists through nonexistent tracks.artistId instead of artistsTracks.",
+      "priority": "high",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "discovery-play-shape",
+      "source": "pages/discovery/index.vue",
+      "description": "Card playback passes nested discoveryPlaylistTrack objects directly to loadQueue; detail page correctly maps .track.",
+      "priority": "high",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "discovery-double-fetch",
+      "source": "pages/discovery/index.vue",
+      "description": "onMounted(refresh) redundantly restarts useLazyFetch and can cancel the initial request.",
+      "priority": "medium",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "radio-owner-shape",
+      "source": "pages/radio/[id].vue",
+      "description": "Owner check expects user.value.user.id; /api/auth/me returns the user object directly.",
+      "priority": "high",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "radio-duplicate-detail-api",
+      "source": "server/api/radio-stations/[id].get.ts",
+      "description": "Duplicate detail route at [id]/index.get.ts returns a different bare station shape; clarify one response contract.",
+      "priority": "high",
+      "evidence": "Source repaired; collection HTTP/SQLite regression suite passes. Production browser verification pending.",
+      "status": "implemented-awaiting-final-browser"
+    },
+    {
+      "id": "unimplemented-auth-routes",
+      "source": "middleware/session.global.ts",
+      "description": "Forgot/reset password routes are listed as public but have no page files. No navigation to them is currently provided.",
+      "priority": "low",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "fixed-dimensions",
+      "source": "pages/playlists/index.vue",
+      "description": "Repeated w-72/md:w-96 search inputs, h-[calc(100vh+5rem)] shells, large hero controls and nested overflow require real tablet/mobile checks.",
+      "priority": "medium",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "card-keyboard",
+      "source": "components/album/album-card.vue",
+      "description": "Clickable div cards and track rows lack native navigation/keyboard semantics; options menus and icon-only controls need accessible names.",
+      "priority": "medium",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    },
+    {
+      "id": "album-image-fallback",
+      "source": "components/album/album-card.vue",
+      "description": "Image error toggles imageError but image src never consults it, so broken art does not actually fall back.",
+      "priority": "medium",
+      "evidence": "source-confirmed; browser reproduction pending",
+      "status": "open"
+    }
+  ],
+  "testDataPlan": {
+    "preserve": [
+      "Two licensed albums and three audio fixture hashes",
+      "Existing listener credentials and migrated isolated SQLite database",
+      "Existing 115 Vitest and nine production E2E tests"
+    ],
+    "extend": [
+      "Seed ambient genre and both album relationships",
+      "Seed playlist and discovery collection with both local tracks",
+      "Seed dynamic local radio station with artist/genre seeds",
+      "Run a local external RSS fixture server with deterministic podcast episodes and licensed audio",
+      "Use a temporary media folder under the E2E fixture root for settings tests"
+    ],
+    "externalBoundary": "RSS fixture server substitutes an external podcast publisher, not internal app logic. No provider API keys or production database writes.",
+    "playwrightPlan": "Original journeys retained on desktop/mobile, expanded to tablet and all26routes; focused core workflows and opt-in real Whistle and EmbeddingGemma production tests.",
+    "status": "Implemented isolated genre, playlist, discovery, radio and local external RSS publisher seeds."
+  },
+  "implementationGroups": [
+    {
+      "id": "public-auth-shell",
+      "files": [
+        "pages/index.vue",
+        "pages/login.vue",
+        "pages/register.vue",
+        "pages/logout.vue",
+        "middleware/session.global.ts",
+        "layouts/*",
+        "components/player/*",
+        "components/layout/*",
+        "assets/app.css"
+      ],
+      "owner": "root/design owner"
+    },
+    {
+      "id": "core-music",
+      "files": [
+        "pages/library.vue",
+        "pages/albums/*",
+        "pages/artists/*",
+        "pages/genres/*",
+        "pages/tracks.vue",
+        "components/album/*",
+        "components/library/*",
+        "components/track/*",
+        "components/ui/*",
+        "components/options-menu.vue"
+      ],
+      "owner": "fixtures_and_e2e (core pages), whistle_implementation (track/options menu), root (global search)"
+    },
+    {
+      "id": "collections-media-settings",
+      "files": [
+        "pages/playlists/*",
+        "pages/discovery/*",
+        "pages/podcasts/*",
+        "pages/radio/*",
+        "pages/settings/*",
+        "components/playlist/*",
+        "components/radio/*",
+        "components/modals/*"
+      ],
+      "owner": "adversarial_review"
+    },
+    {
+      "id": "verification",
+      "files": [
+        "tests/e2e/*",
+        "playwright.config.ts",
+        "scripts/e2e-server.mjs",
+        "scripts/ui-coverage-report.mjs",
+        "docs/ui-route-audit.json"
+      ],
+      "owner": "fixtures_and_e2e"
+    },
+    {
+      "id": "local-intelligence",
+      "files": [
+        "pages/explore.vue",
+        "server/api/intelligence/*",
+        "server/services/intelligence/*"
+      ],
+      "owner": "whistle_implementation"
+    }
+  ],
+  "baseline": {
+    "report": ".test-data/ui-before/report.json",
+    "routes": 23,
+    "viewports": 3,
+    "observations": 69,
+    "brokenRoutes": [
+      "/genres/[genreId]",
+      "/playlists/[id]",
+      "/discovery/[id]"
+    ],
+    "guestLandingRedirect": "/login?invalid=true",
+    "globalHorizontalOverflowObservations": 0
+  },
+  "finalViewports": {
+    "compact320": {
+      "width": 320,
+      "height": 800,
+      "scope": "All authenticated routes and representative public/player/dialog views"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 664,
+      "screen": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "tablet": {
+      "width": 768,
+      "height": 1024
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 1000
+    },
+    "text200": {
+      "width": 1440,
+      "height": 1000,
+      "scope": "32px body text via equivalent user stylesheet; public/library/player/dialog controls"
+    }
+  },
+  "currentComponentSources": [
+    "components/album/album-art.vue",
+    "components/album/album-card.vue",
+    "components/auth-shell.vue",
+    "components/layout/ToastContainer.vue",
+    "components/layout/fullscreen-queue.vue",
+    "components/layout/nav-links.vue",
+    "components/layout/queue-sidebar.vue",
+    "components/library/album-grid.vue",
+    "components/library/artist-grid.vue",
+    "components/library/genre-card.vue",
+    "components/library/genre-grid.vue",
+    "components/library/library-header.vue",
+    "components/library/library-nav.vue",
+    "components/library/playlist-grid.vue",
+    "components/library/playlist-picker.vue",
+    "components/library/track-table.vue",
+    "components/lyra-brand.vue",
+    "components/marketing-shell.vue",
+    "components/modals/add-to-playlist-modal.vue",
+    "components/modals/confirm-delete-modal.vue",
+    "components/modals/confirmation-modal.vue",
+    "components/modals/create-playlist-modal.vue",
+    "components/modals/edit-album-modal.vue",
+    "components/modals/edit-lyrics-modal.vue",
+    "components/modals/edit-radio-station-modal.vue",
+    "components/modals/edit-track-modal.vue",
+    "components/modals/lyrics-modal.vue",
+    "components/modals/remove-from-playlist-modal.vue",
+    "components/options-menu.vue",
+    "components/player/full-screen-player.vue",
+    "components/player/fullscreen-lyrics.vue",
+    "components/player/global-audio-player.vue",
+    "components/player/lyrics-view.vue",
+    "components/player/mini-player.vue",
+    "components/player/playback-controls.vue",
+    "components/player/queue-list.vue",
+    "components/playlist/playlist-card.vue",
+    "components/radio/radio-image-upload.vue",
+    "components/track/track-item.vue",
+    "components/ui/omni-search.vue",
+    "components/ui/sorting-dropdown.vue",
+    "components/ui/spinner.vue",
+    "components/utility/art.vue",
+    "components/utility/dialog.vue",
+    "components/utility/track-actions.vue"
+  ],
+  "redesignVerification": {
+    "status": "passed-with-explicit-control-gaps",
+    "productionRuns": [
+      {
+        "build": "anime-radio-build4",
+        "root": ".test-data/anime-radio-build4-production",
+        "tests": 53,
+        "passed": 53,
+        "failed": 0,
+        "elapsed": "6.0 minutes",
+        "scope": "Complete production suite: 49 runtime-free cases, three actual EmbeddingGemma browser journeys and one actual Whistle HTTP-to-SQLite case."
+      },
+      {
+        "build": "anime-radio-build4",
+        "root": ".test-data/anime-radio-build4-text-readiness",
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "elapsed": "9.7 seconds",
+        "scope": "Evidence-only doubled-text rerun after adding exact station detail URL and level-1 heading readiness. Same production bundle; no application change."
+      }
+    ],
+    "negativeEvidence": [
+      {
+        "build": "anime-radio-build2",
+        "root": ".test-data/anime-radio-build2-production",
+        "passed": 41,
+        "failed": 12,
+        "cause": "Repeated contrast failures and redundant radio-choice request cancellations, plus an overstrict test login-query expectation."
+      },
+      {
+        "build": "anime-radio-build3",
+        "root": ".test-data/anime-radio-build3-production",
+        "passed": 52,
+        "failed": 1,
+        "cause": "A delayed playlist autofocus stole focus back from Cancel after real Tab navigation."
+      }
+    ],
+    "evidenceRoot": ".test-data/anime-radio-final-production",
+    "evidenceManifest": ".test-data/anime-radio-final-production/evidence-manifest.json",
+    "routeObservations": 78,
+    "compact320Screenshots": 23,
+    "text200Screenshots": 13,
+    "text200Scope": "One desktop 1440x1000 journey with 200% text/rem sizing and compact navigation/player. Seven supplemental viewport views prove controls are reachable; the two stitched full-page radio images provide context only.",
+    "inventoryFiles": 262,
+    "controlCoverage": {
+      "observations": 5570,
+      "intentional-gap": 4860,
+      "covered": 688,
+      "state-asserted": 22,
+      "owner": "Lyra maintainers",
+      "gapReviewExpires": "2026-11-18"
+    },
+    "semanticQuality": "The separate Evalite quality gate remains failing at 27/28; browser and deterministic tests do not establish model quality."
+  },
+  "baselineViewports": {
+    "mobile": {
+      "width": 390,
+      "height": 844
+    },
+    "tablet": {
+      "width": 834,
+      "height": 1112
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 1000
+    }
+  },
+  "viewports": {
+    "mobile": {
+      "width": 390,
+      "height": 664,
+      "screen": {
+        "width": 390,
+        "height": 844
+      },
+      "device": "Playwright iPhone 13, Chromium"
+    },
+    "tablet": {
+      "width": 768,
+      "height": 1024,
+      "device": "Playwright iPad Mini, Chromium"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 1000,
+      "device": "Playwright Desktop Chrome"
+    }
+  },
+  "historicalEditorialVerification": {
+    "status": "passed-with-explicit-control-gaps",
+    "secondProductionRun": {
+      "passed": 19,
+      "failed": 27,
+      "artifacts": ".test-data/design-second-production",
+      "notes": "Negative-control evidence for RSS XML parsing, mobile options-menu close, accessible-name mismatches; remaining failures include outdated harness assumptions corrected before next run."
+    },
+    "productionRuns": [
+      {
+        "build": 5,
+        "root": ".test-data/design-fifth-production",
+        "tests": 50,
+        "passed": 50,
+        "failed": 0,
+        "elapsed": "5.6 minutes",
+        "scope": "Full suite with both real local models: 26 routes across three viewports, 20 authenticated routes at 320px plus public/player/dialog views, doubled text and all focused journeys."
+      },
+      {
+        "build": 6,
+        "root": ".test-data/design-sixth-targeted",
+        "tests": 9,
+        "passed": 9,
+        "failed": 0,
+        "elapsed": "2.4 minutes",
+        "scope": "Three route sweeps, three core album/menu journeys and three real search/playback journeys after track-row wrapping and search-inset fixes; includes direct 320px spacing assertions."
+      }
+    ],
+    "evidenceRoot": ".test-data/design-final-production",
+    "evidenceManifest": ".test-data/design-final-production/evidence-manifest.json",
+    "routeObservations": 78,
+    "compact320Screenshots": 23,
+    "text200Screenshots": 4,
+    "inventoryFiles": 244,
+    "controlCoverage": {
+      "observations": 5059,
+      "intentional-gap": 4402,
+      "covered": 647,
+      "state-asserted": 10,
+      "owner": "Lyra maintainers",
+      "gapReviewExpires": "2026-11-18"
+    },
+    "semanticQuality": "The separate Evalite quality gate remains failing at 27/28; browser and deterministic tests do not establish model quality."
+  },
+  "historicalListeningVerification": {
+    "status": "passed-with-explicit-control-gaps",
+    "build": "ux-v2-build5",
+    "tests": 61,
+    "passed": 61,
+    "failed": 0,
+    "elapsed": "5.9 minutes",
+    "modelRuntimeCasesEnabled": false,
+    "evidenceRoot": ".test-data/ux-v2-build5-production/test-results",
+    "evidenceManifest": ".test-data/ux-v2-build5-production/evidence-manifest.json",
+    "inventoryFiles": 277,
+    "controlCoverage": {
+      "observations": 6487,
+      "covered": 768,
+      "state-asserted": 45,
+      "intentional-gap": 5674,
+      "owner": "Lyra maintainers",
+      "gapReviewExpires": "2026-11-18"
+    },
+    "changedBehavior": "Actual Mediabunny MP3 decoding, independently measured waveform amplitudes, malformed-byte recovery, native request cancellation and playback preservation, current-station queue preservation, podcast ineligibility and combined 320px/200% text reflow.",
+    "unitEvidence": "230 passed, six opt-in model cases skipped; separate actual-codec proof and historical model runtime results are not added to this count.",
+    "historicalEvidence": "redesignVerification and historicalEditorialVerification below describe earlier revisions. Build 3 of the current listening change was interrupted after 52 completed browser cases; only build 5 establishes the complete 61-case result.",
+    "remainingGaps": "Other browser engines, native mobile browsers and complete site-wide doubled-text coverage are unverified. The separate semantic-quality gate remains failing at 27/28."
+  },
+  "currentControlsVerification": {
+    "status": "passed-with-explicit-control-gaps",
+    "build": "controls-v3-build5",
+    "tests": 61,
+    "passed": 61,
+    "failed": 0,
+    "elapsed": "6.9 minutes",
+    "modelRuntimeCasesEnabled": false,
+    "evidenceRoot": ".test-data/controls-v3-build5-production/test-results",
+    "evidenceManifest": ".test-data/controls-v3-build5-production/evidence-manifest.json",
+    "inventoryFiles": 286,
+    "controlCoverage": {
+      "observations": 6677,
+      "intentional-gap": 5804,
+      "covered": 776,
+      "state-asserted": 97,
+      "owner": "Lyra maintainers",
+      "gapReviewExpires": "2026-11-18"
+    },
+    "changedBehavior": "Automatic complete waveforms beneath native range seeking; real pointer/keyboard/outside-release behavior; shared volume disclosure/mute; decode fallback/reselection/track cancellation; focused password eye controls; no external podcast music-history submission.",
+    "unitEvidence": "279 passed, six opt-in model cases skipped; separate real PCM/native-Chromium codec proof is not counted as model inference.",
+    "remainingGaps": "Other browser engines, native mobile browsers and every route at doubled text remain unverified. Semantic quality gate remains historically failing27/28."
+  },
+  "sourceFindingsNote": "Source findings and their original status wording preserve the initial audit; current route/control verification is recorded separately above."
+}

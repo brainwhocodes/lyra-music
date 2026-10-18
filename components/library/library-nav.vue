@@ -13,16 +13,16 @@
 </template>
 
 <script setup lang="ts">
-  defineProps<{ activeTab: string }>();
-  defineEmits(['update:activeTab']);
+defineProps<{ activeTab: string }>();
+defineEmits(["update:activeTab"]);
 
-  const tabs = [
-    { id: 'playlists', name: 'Playlists' },
-    { id: 'albums', name: 'Albums' },
-    { id: 'artists', name: 'Artists' },
-    { id: 'podcasts', name: 'Podcasts' },
-    { id: 'genres', name: 'Genres' },
-    { id: 'radio', name: 'Radio' },
-    { id: 'discovery', name: 'Discovery' },
-  ];
+const tabs = [
+  { id: "playlists", name: "Playlists" },
+  { id: "albums", name: "Albums" },
+  { id: "artists", name: "Artists" },
+  { id: "podcasts", name: "Podcasts" },
+  { id: "genres", name: "Genres" },
+  { id: "radio", name: "Radio" },
+  { id: "discovery", name: "Discovery" },
+];
 </script>

@@ -1,105 +1,119 @@
 <template>
-  <div class="w-full h-full p-4 bg-base-200 overflow-y-auto">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Artists</h1>
+  <div>
+    <header class="page-intro">
+      <h1 class="page-heading">Artists</h1>
+      <p v-if="artists">
+        {{ artists.length }}
+        {{ artists.length === 1 ? "artist" : "artists" }} in your collection
+      </p>
+    </header>
+    <div class="page-toolbar artist-toolbar">
+      <label
+        ><span class="sr-only">Search artists</span
+        ><input
+          v-model="query"
+          type="search"
+          class="input input-bordered"
+          placeholder="Search artists..."
+      /></label>
+      <select
+        v-model="sort"
+        class="select select-bordered"
+        aria-label="Sort artists"
+      >
+        <option value="asc">Sort: A–Z</option>
+        <option value="desc">Sort: Z–A</option>
+      </select>
     </div>
-
-    <div v-if="loading" class="text-center">
-      <span class="loading loading-lg loading-spinner"></span>
+    <UiLoadingSkeleton v-if="pending" label="Loading artists…" />
+    <p v-else-if="error" role="alert">
+      Could not load artists.
+      <button class="btn btn-outline" @click="refresh()">Try again</button>
+    </p>
+    <p v-else-if="!filteredArtists.length" role="status">
+      {{
+        query
+          ? "No artists match your search."
+          : "No artists in your library yet. Add a music folder in Settings."
+      }}
+    </p>
+    <div v-else class="collection-grid artist-grid">
+      <NuxtLink
+        v-for="artist in filteredArtists"
+        :key="artist.artistId"
+        :to="`/artists/${artist.artistId}`"
+        class="artist-card"
+      >
+        <AlbumArt :src="artist.artistImage" />
+        <h2>{{ artist.artistName }}</h2>
+        <span>Explore artist <span aria-hidden="true">↗</span></span>
+      </NuxtLink>
     </div>
-
-    <div v-else-if="error" class="alert alert-error">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      <span>Error loading artists: {{ error }}</span>
-    </div>
-
-    <div v-else-if="artists.length === 0" class="text-center text-gray-500">
-      No artists found. Have you scanned your libraries?
-    </div>
-
-    <!-- Artist Grid View -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-       <NuxtLink 
-         v-for="artist in artists" 
-         :key="artist.artistId" 
-         :to="`/artists/${artist.artistId}`"
-         class="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-         >
-         <figure class="aspect-square overflow-hidden">
-           <img 
-             :src="getArtistImageUrl(artist.artistImage)" 
-             :alt="artist.artistName" 
-             class="w-full h-full object-cover"
-           />
-         </figure>
-         <div class="card-body items-center text-center">
-           <h2 class="card-title">{{ artist.artistName }}</h2>
-           <!-- TODO: Add album/track counts if added to API -->
-         </div>
-       </NuxtLink>
-    </div>
-  
-
   </div>
 </template>
-
 <script setup lang="ts">
-// Apply the sidebar layout
-definePageMeta({
-  layout: 'sidebar-layout'
-});
-
-// Define type for artist data
-interface Artist {
-  artistId: string;
-  artistName: string;
-  artistImage: string | null;
-  // Add counts later if implemented
-  // albumCount?: number;
-  // trackCount?: number;
-}
-useHead(() => ({
-  title: usePageTitle('Artists'),
-}));
-
-
-// State
-const artists = ref<Artist[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
-const viewMode = ref<'grid' | 'table'>('grid');
-
-// Fetch artists on component mount
-onMounted(async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    const data = await $fetch<Artist[]>('/api/artists');
-    artists.value = data;
-  } catch (err: any) {
-    error.value = err.data?.message || err.message || 'Failed to load artists.';
-  } finally {
-    loading.value = false;
-  }
-});
-
-function getArtistImageUrl(imagePath: string | null): string {
-  return imagePath ? `${imagePath}` : '/images/icons/default-artist-art.webp';
-}
-
-// Navigation function
-function goToArtist(artistId: string): void {
-  // Navigate to the artist detail page
-  navigateTo(`/artists/${artistId}`);
-}
-
-// Handle artist options
-function handleArtistOptions(artist: Artist): void {
-  // Implement options menu functionality here
-}
-
+import AlbumArt from "~/components/album/album-art.vue";
+definePageMeta({ layout: "sidebar-layout" });
+useSeoMeta({ title: usePageTitle("Artists") });
+const {
+  data: artists,
+  pending,
+  error,
+  refresh,
+} = useLazyFetch<
+  Array<{ artistId: string; artistName: string; artistImage: string | null }>
+>("/api/artists");
+const query = ref("");
+const sort = ref("asc");
+const filteredArtists = computed(() =>
+  (artists.value || [])
+    .filter((artist) =>
+      artist.artistName
+        .toLowerCase()
+        .includes(query.value.trim().toLowerCase()),
+    )
+    .sort((a, b) =>
+      sort.value === "asc"
+        ? a.artistName.localeCompare(b.artistName)
+        : b.artistName.localeCompare(a.artistName),
+    ),
+);
 </script>
-
 <style scoped>
-/* Add any page-specific styles here if needed */
+.artist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--line, #c9c1b4);
+}
+.artist-toolbar label {
+  flex: 1;
+  max-width: 650px;
+  min-width: min(100%, 240px);
+}
+.artist-toolbar input {
+  width: 100%;
+}
+.artist-card {
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.artist-card h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  margin: 1rem 0 0.4rem;
+  overflow-wrap: anywhere;
+}
+.artist-card > span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted, #62594f);
+}
+.artist-card:hover h2 {
+  color: var(--copper, #a34127);
+}
 </style>

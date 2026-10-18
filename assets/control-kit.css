@@ -1,0 +1,159 @@
+/* Lyra form and transport kit. References: docs/design/lyra-radio/controls-v3. */
+.btn {
+  border-radius: 2px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+.control-icon.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.control-icon.btn:disabled {
+  background: transparent;
+  color: #737b87;
+  border-color: transparent;
+  opacity: 0.6;
+}
+.btn-primary {
+  background: var(--acid);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn-secondary {
+  background: var(--blue);
+  color: white;
+}
+.btn-error {
+  background: #9a2723;
+  color: white;
+  border-color: #9a2723;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  background: #e4e7ec;
+  color: #636975;
+  border-color: #cbd0d8;
+  box-shadow: none;
+}
+.input,
+.select,
+.textarea,
+.file-input {
+  min-height: 52px;
+  border: 1px solid #676e78;
+  border-radius: 2px;
+  background-color: white;
+  color: var(--ink);
+}
+.input,
+.textarea {
+  cursor: text;
+}
+.select {
+  padding-right: 2.5rem;
+}
+.textarea {
+  min-height: 112px;
+  line-height: 1.5;
+}
+.input:disabled,
+.select:disabled,
+.textarea:disabled,
+.file-input:disabled {
+  background: #e4e7ec;
+  color: #636975;
+  border-color: #b3bac6;
+  cursor: not-allowed;
+}
+.input[aria-invalid="true"],
+.select[aria-invalid="true"],
+.textarea[aria-invalid="true"],
+.input-error {
+  border-color: #9a2723;
+}
+.input:focus,
+.select:focus,
+.textarea:focus,
+.file-input:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.input[aria-invalid="true"]:focus,
+.textarea[aria-invalid="true"]:focus {
+  outline-color: #9a2723;
+}
+.file-input {
+  max-width: 100%;
+  height: auto;
+  padding-right: 0.5rem;
+}
+.file-input::file-selector-button {
+  min-height: 50px;
+  margin-right: 0.75rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-right: 1px solid #676e78;
+  background: #e4e7ec;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.checkbox,
+.radio {
+  border: 1.5px solid #676e78;
+  background-color: white;
+  color: var(--ink);
+}
+.checkbox:checked,
+.radio:checked {
+  background-color: var(--acid);
+  border-color: var(--ink);
+}
+.toggle {
+  border: 1px solid #676e78;
+  background-color: #cbd0d8;
+  color: white;
+}
+.toggle:checked {
+  background-color: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+.checkbox:disabled,
+.radio:disabled,
+.toggle:disabled {
+  opacity: 0.5;
+}
+.label-text {
+  color: var(--ink);
+}
+.field-error {
+  color: #9a2723;
+  font-size: 0.875rem;
+}
+.field-hint {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.has-player .app-main {
+  padding-bottom: 10rem;
+}
+.narrow-layout.has-player .app-main {
+  padding-bottom: 10rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}

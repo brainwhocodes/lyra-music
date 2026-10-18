@@ -1,0 +1,186 @@
+{
+  "records": [
+    {
+      "id": "electronic",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a distinct scene and character, not a copy of the rooftop man. Match its precise confident anime ink drawing, angular cel-shaded clothing, screenprinted concrete/graffiti textures, striking perspective, and restrained acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: An anime young woman with a short electric blue bob and oversized orange headphones, hands on a compact synthesizer atop a street sound system. A stairway and rooftop antenna cut a sharp silhouette behind her. Dynamic three-quarter low camera, confident concentrated expression. Acid yellow sky, ink clothing, cobalt synth and orange cabling. Center the synthesizer and character so they survive square and wide card crops. Compose as a single finished 1024x1024 illustration with clear thumbnail silhouette and crop-safe focal subject. Graphic hand-made energy with fine details reserved for the subject; avoid all-over visual noise. This is generic genre art, not an album cover. No lettering, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:49:35.569Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-c529f635-e5cd-44ec-9d3e-386e439007bb.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/electronic.png",
+      "production": "public/images/genres/electronic-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/electronic.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2980261,
+        "sha256": "f71020486bd5187c90e2425a9c3684c0da3c96dac50f872cfac1e362e8be2d6d"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/electronic-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 171970,
+        "sha256": "f43eff1ee9245d259e3883cf811b7e3db0a6571944427b3a1883819a4c694025"
+      }
+    },
+    {
+      "id": "rock",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a distinct scene and character, not a copy of the rooftop man. Match its precise confident anime ink drawing, angular cel-shaded clothing, screenprinted concrete/graffiti textures, striking perspective, and restrained acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: An anime punk guitarist with short tousled dark hair, blue jacket and orange guitar cable, playing a sharply angular electric guitar on a concrete skate ramp. Frontal low camera; angular torso, fretting hand and guitar are central and readable at thumbnail size. Acid yellow paint on ramp, cobalt shadows, small orange guitar details. Sky and rough concrete retain generous flat ink and color shapes. Compose as a single finished 1024x1024 illustration with clear thumbnail silhouette and crop-safe focal subject. Graphic hand-made energy with fine details reserved for the subject; avoid all-over visual noise. This is generic genre art, not an album cover. No lettering, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:49:35.569Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-328951dc-0f12-4dbd-be86-25307ea775b3.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/rock.png",
+      "production": "public/images/genres/rock-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/rock.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 3075261,
+        "sha256": "e8d2cf3f7039eb898550c4cdd0c8da9fc8e3354f0fd3d75013bab89721374906"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/rock-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 174868,
+        "sha256": "a13a1aa5c04552049b66a3151a9ad3779e65fb24c0f58d12eeabc1754dd417e0"
+      }
+    },
+    {
+      "id": "jazz",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a distinct scene and character, not a copy of the rooftop man. Match its precise confident anime ink drawing, angular cel-shaded clothing, screenprinted concrete/graffiti textures, striking perspective, and restrained acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: An anime saxophone player with a cropped dark jacket and a cobalt cap, standing in a concrete underpass near a large round speaker. A brass-orange saxophone curves boldly across the center. Calm self-assured expression, slightly off-axis waist-up composition. Cobalt blue overpass and dark ink blocks, acid yellow shaft of daylight, rough screenprinted textures. Subject and saxophone both survive square and wide card crops. Compose as a single finished 1024x1024 illustration with clear thumbnail silhouette and crop-safe focal subject. Graphic hand-made energy with fine details reserved for the subject; avoid all-over visual noise. This is generic genre art, not an album cover. No lettering, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:49:35.569Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-8bd5f428-7865-4ab1-8ce2-fb0e9301377b.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/jazz.png",
+      "production": "public/images/genres/jazz-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/jazz.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 3107483,
+        "sha256": "2f01c0350c917d13aba5a986a5440726de631ee2fce8602a1b9861189d7e0755"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/jazz-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 187260,
+        "sha256": "6b33c595069f244b950d2727ec86b6c2e3dd81b0e61a53a0250322ebad763438"
+      }
+    },
+    {
+      "id": "ambient",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a new subject and scene. Match its precise confident anime ink drawing, angular cel-shading, screenprinted concrete/graffiti texture, striking perspective and acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: A quiet late-night rooftop listening scene with NO PERSON: a chunky cobalt portable cassette player and orange over-ear headphones resting on a concrete ledge, antenna towers against a deep ink and cobalt night sky. Tiny acid yellow windows and a broad acid crescent-like pool of light behind the skyline. High viewpoint with cassette and headphones large in the foreground, plenty of broad calm shadow shapes. Evoke ambient, downtempo, instrumental listening. Keep this scene calmer and blue-dominant than the original, same rough hand-printed art treatment. Compose as a single finished 1024x1024 illustration, crop-safe focal subject with clear thumbnail silhouette. Fine detail focused on the subject, broad supporting color shapes. This is generic genre art, not an album cover. No letters, brands, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:51:49.295Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-50f11c92-8685-4283-aa39-e6e7e31d2f26.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/ambient.png",
+      "production": "public/images/genres/ambient-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/ambient.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 3315033,
+        "sha256": "3163691efe48cb04dfcf77d5c8130cda3a18ded137c479f7ef64cba0cc1d365e"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/ambient-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 190992,
+        "sha256": "b861d4cf075f64a60bc46df8875483f831c9da6ff5c7081b8ed67a1c80599310"
+      }
+    },
+    {
+      "id": "pop",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a new subject and scene. Match its precise confident anime ink drawing, angular cel-shading, screenprinted concrete/graffiti texture, striking perspective and acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: An anime singer with short dark hair and an orange cropped bomber jacket, holding a wired microphone in a graffiti-lined pedestrian tunnel. Joyful confident expression and clear central silhouette, a cobalt cable makes a sweeping arc. Strong side light, large acid yellow panels of painted concrete, black ink clothing and orange jacket. Cropped at the waist so face and microphone are readable at card size. Distinct from the source man and the synth player. Compose as a single finished 1024x1024 illustration, crop-safe focal subject with clear thumbnail silhouette. Fine detail focused on the subject, broad supporting color shapes. This is generic genre art, not an album cover. No letters, brands, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:51:49.295Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-df7ad4e5-a631-472c-82d5-b1ebe70a8feb.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/pop.png",
+      "production": "public/images/genres/pop-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/pop.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2951682,
+        "sha256": "0476d0ad3c9e41166a4187832fb28a21f8f89ae11ada5e33ade94b33b23a10fd"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/pop-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 173986,
+        "sha256": "a05f98216683eedd1df82d3570173ba43a68fc1fc363d10df77133b008cd5a0f"
+      }
+    },
+    {
+      "id": "hip-hop",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a new subject and scene. Match its precise confident anime ink drawing, angular cel-shading, screenprinted concrete/graffiti texture, striking perspective and acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: An anime DJ wearing a cobalt bucket hat and oversized dark streetwear, scratching a black vinyl record on a cobalt turntable. Frontal waist-up view with the circular record and hand prominent in the lower center, huge ink speaker shapes and acid yellow graffiti-painted concrete wall behind. Orange headphone accents and spare orange paint marks. A self-assured person with warm brown skin and short curly hair under the hat. Sharp central silhouette; restrained background detail. Compose as a single finished 1024x1024 illustration, crop-safe focal subject with clear thumbnail silhouette. Fine detail focused on the subject, broad supporting color shapes. This is generic genre art, not an album cover. No letters, brands, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:51:49.295Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-e4e67a53-c7e9-4281-ae11-870e85b67653.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/hip-hop.png",
+      "production": "public/images/genres/hip-hop-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/hip-hop.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2949214,
+        "sha256": "77fd927f58e3eedff1615d326c9e4e1bed88015b345fa1131c5db1adb5f97457"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/hip-hop-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 167562,
+        "sha256": "01a9142dfb2e7298fc21f3d8b93a10748ad09b07ef1887993e88ecdbffeceab3"
+      }
+    },
+    {
+      "id": "default",
+      "reference": "C:/Users/mille/AppData/Local/Temp/codex-clipboard-f8cc0bad-5a98-4d48-a191-05c36a9648c2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one original square genre illustration for Lyra, an anime street-radio music app. Input image is ONLY an art-treatment and palette reference; create a new subject and scene. Match its precise confident anime ink drawing, angular cel-shading, screenprinted concrete/graffiti texture, striking perspective and acid yellow #d7ff3f / cobalt #3b4fd8 / ink #17191c / orange palette. Scene: A sculptural portable street-radio boombox viewed from a low three-quarter angle, NO PEOPLE. Two large round ink speakers, cobalt case with orange trim, acid yellow carry handle and thin antenna. The radio sits on blue-painted rough concrete with one broad orange graffiti sweep, acid yellow sky and distant simple rooftop geometry. One bold centered object, readable at 48px thumbnails; energetic graphic composition. Generic music discovery art. Compose as a single finished 1024x1024 illustration, crop-safe focal subject with clear thumbnail silhouette. Fine detail focused on the subject, broad supporting color shapes. This is generic genre art, not an album cover. No letters, brands, logos, genre names, watermark, UI, grids or collage.",
+      "startedAt": "2026-10-18T19:51:49.295Z",
+      "rawOutput": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-f8e10f8b-1d8e-4f13-aa57-b5774d87a8ca.png",
+      "output": "docs/design/lyra-radio/genres-v1/originals/default.png",
+      "production": "public/images/genres/default-genre-art.webp",
+      "inspected": true,
+      "tool": "image_gen.imagegen",
+      "sourceEvidence": {
+        "path": "docs/design/lyra-radio/genres-v1/originals/default.png",
+        "width": 1254,
+        "height": 1254,
+        "bytes": 2885474,
+        "sha256": "bd63a045c40c5ebc30664fd2d3a947954d0c7c0a7344f44bb9a12fe9725486e0"
+      },
+      "productionEvidence": {
+        "path": "public/images/genres/default-genre-art.webp",
+        "width": 768,
+        "height": 768,
+        "bytes": 159496,
+        "sha256": "dd902f12b573bcc953f8964f584ba64ed5de7b327afe072a3fc0f06c2241bf93"
+      }
+    }
+  ],
+  "referenceEvidence": {
+    "path": "docs/design/lyra-radio/genres-v1/reference.png",
+    "role": "Art treatment and color reference; subjects varied",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b"
+  }
+}

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { findAudioFiles } from '~/server/utils/scanner'
+import { findAudioFiles } from '~/server/utils/scanner/file-utils'
 import { tmpdir } from 'os'
 import { mkdtemp, writeFile, mkdir, rm } from 'fs/promises'
-import { join } from 'path'
+import { join, relative as relativePath } from 'path'
 
 function createFile(path: string) {
   return writeFile(path, '')
@@ -25,7 +25,7 @@ describe('findAudioFiles', () => {
       await createFile(join(deep, 'c.ogg'))
 
       const files = await findAudioFiles(root)
-      const relative = files.map(f => f.replace(root + '/', '')).sort()
+      const relative = files.map(f => relativePath(root, f).replaceAll('\\', '/')).sort()
       expect(relative).toEqual(['a.mp3', 'sub/b.flac', 'sub/deep/c.ogg'])
     } finally {
       await rm(root, { recursive: true, force: true })

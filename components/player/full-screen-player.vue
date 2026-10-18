@@ -1,182 +1,250 @@
 <template>
-  <div v-if="playerStore.isFullScreenPlayerVisible && playerStore.currentTrack" class="fixed inset-0 bg-neutral-900 text-white z-[100] flex flex-col p-4 pt-6 sm:pt-4 select-none">
-    <FullScreenLyrics v-if="playerStore.isFullScreenLyricsVisible" />
-    <!-- Top Bar -->
-    <div class="flex justify-between items-center mb-2">
-      <button @click="playerStore.toggleFullScreenPlayer()" class="p-2 -ml-2 -mt-8 text-xl">
-        <Icon name="material-symbols:keyboard-arrow-down-rounded" class="w-8 h-8" />
-      </button>
-      <div class="text-center">
-        <div class="text-xs uppercase text-neutral-400 tracking-wider">Playing</div>
-        <div class="text-base font-semibold truncate w-75">{{ playerStore.currentTrack.albumTitle || 'Unknown Album' }}</div>
-      </div>
-      <button class="p-2 -mr-2 -mt-8 text-xl">
-        <Icon name="material-symbols:more-vert" class="w-7 h-7" />
-      </button>
-    </div>
-
-    <!-- Album Art -->
-    <div class="flex items-center justify-center my-2 px-2 sm:px-8">
-      <img
-          v-if="playerStore.currentTrack.coverPath"
-          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
-          :alt="`${playerStore.currentTrack.title} cover`"
-          class="w-full max-w-md aspect-square rounded-lg shadow-xl object-cover h-75"
-        />
-    </div>
-
-    <!-- Track Info & Like Button -->
-    <div class="flex justify-between items-center my-2 px-1">
-      <div>
-        <h2 class="text-2xl font-bold truncate max-w-xs sm:max-w-sm md:max-w-md">{{ playerStore.currentTrack.title }}</h2>
-        
-        <!-- Artist display with formatted artists if available -->
-        <div class="text-neutral-400 truncate max-w-xs sm:max-w-sm md:max-w-md">
-          <!-- Use formatted artists if available -->
-          <template v-if="playerStore.currentTrack.formattedArtists && playerStore.currentTrack.formattedArtists.length">
-            <span v-for="(artist, index) in playerStore.currentTrack.formattedArtists" :key="artist.artistId" class="mr-1">
-              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
-                {{ artist.name }}
-              </NuxtLink>
-              <span v-if="index < playerStore.currentTrack.formattedArtists.length - 2">&</span>
-              <span v-else-if="index === playerStore.currentTrack.formattedArtists.length - 2">&</span>
-            </span>
-          </template>
-          <!-- Fallback to simple artist name if no formatted artists -->
-          <span v-else>{{ playerStore.currentTrack.artistName || 'Unknown Artist' }}</span>
-        </div>
-      </div>
-      <button v-if="false" class="btn btn-ghost btn-circle btn-xl">
-        <Icon name="material-symbols:favorite-outline-rounded" class="w-7 h-7" />
-        <!-- TODO: Use material-symbols:favorite-rounded if liked -->
-      </button>
-    </div>
-    <!-- Playback Controls -->
-    <div class="flex justify-center items-center gap-x-6 mt-4 mb-1 px-2">
-      <button 
-        class="btn btn-xl btn-ghost btn-circle"
-        :class="{'text-accent': playerStore.isShuffled}"
-        @click="playerStore.toggleShuffle"
-        title="Toggle Shuffle"
-      >
-        <Icon name="material-symbols:shuffle-rounded" class="w-7 h-7" />
-      </button>
-      <button 
-        class="btn btn-xl btn-ghost btn-circle"
-        @click="playerStore.playPrevious"
-        :disabled="!playerStore.canPlayPrevious || playerStore.isLoading"
-        title="Previous Track"
-      >
-        <Icon name="material-symbols:skip-previous-rounded" class="w-7 h-7" />
-      </button>
-      <button class="btn btn-xl btn-circle btn-primary" @click="playerStore.togglePlayPause">
-          <Icon 
-            v-if="playerStore.isLoading"
-            name="svg-spinners:180-ring-with-bg"
+  <dialog
+    ref="dialog"
+    class="full-player"
+    aria-labelledby="now-playing-title"
+    @cancel.prevent="dismiss"
+  >
+    <div class="full-player-inner">
+      <header>
+        <LyraBrand />
+        <button
+          type="button"
+          class="btn btn-ghost control-icon"
+          aria-label="Close full screen player"
+          title="Close player"
+          @click="dismiss"
+        >
+          <Icon
+            name="material-symbols:close-rounded"
+            size="24"
             class="w-6 h-6"
           />
-          <Icon 
-            v-else-if="playerStore.isPlaying" 
-            name="material-symbols:pause-rounded" 
-            class="w-6 h-6" 
-          />
-          <Icon 
-            v-else 
-            name="material-symbols:play-arrow-rounded" 
-            class="w-6 h-6" 
-          />
         </button>
-      <button 
-        class="btn btn-xl btn-circle btn-ghost"
-        @click="() => playerStore.playNext()"
-        :disabled="!playerStore.canPlayNext || playerStore.isLoading"
-        title="Next Track"
-      >
-        <Icon name="material-symbols:skip-next-rounded" class="w-12 h-12" />
-      </button>
-      <button 
-        class="btn btn-xl btn-circle btn-ghost"
-        :class="{'text-accent': playerStore.repeatMode !== 'none'}"
-        @click="playerStore.toggleRepeatMode"
-        :title="`Repeat Mode: ${playerStore.repeatMode}`"
-      >
-        <Icon v-if="playerStore.repeatMode === 'one'" name="material-symbols:repeat-one-rounded" class="w-7 h-7" />
-        <Icon v-else name="material-symbols:repeat-rounded" class="w-7 h-7" />
-      </button>
+      </header>
+      <section class="listening-workspace" aria-label="Now playing">
+        <img
+          class="full-art"
+          :class="{
+            'placeholder-art': isPlaceholderArt(
+              playerStore.currentTrack?.coverPath,
+            ),
+          }"
+          :src="
+            playerStore.currentTrack?.coverPath
+              ? getCoverArtUrl(playerStore.currentTrack.coverPath)
+              : '/images/lyra-radio/mark.webp'
+          "
+          :alt="
+            !isPlaceholderArt(playerStore.currentTrack?.coverPath)
+              ? 'Album cover'
+              : ''
+          "
+        />
+        <div class="listening-controls">
+          <div class="track-copy">
+            <h2 id="now-playing-title">
+              {{ playerStore.currentTrack?.title || "Unknown track" }}
+            </h2>
+            <p>
+              {{
+                playerStore.currentTrack?.formattedArtists
+                  ?.map((a) => a.name)
+                  .join(", ") ||
+                playerStore.currentTrack?.artistName ||
+                "Unknown artist"
+              }}
+            </p>
+            <p v-if="playerStore.currentTrack?.albumTitle" class="album-name">
+              {{ playerStore.currentTrack.albumTitle }}
+            </p>
+          </div>
+          <PlaybackControls />
+          <footer>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              :aria-expanded="playerStore.isFullScreenQueueVisible"
+              @click="playerStore.toggleFullScreenQueue"
+            >
+              <Icon
+                name="material-symbols:queue-music-rounded"
+                size="20"
+                class="w-5 h-5"
+              />Up Next
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              :aria-expanded="playerStore.isFullScreenLyricsVisible"
+              @click="playerStore.toggleFullScreenLyrics"
+            >
+              <Icon
+                name="material-symbols:lyrics-rounded"
+                size="20"
+                class="w-5 h-5"
+              />Lyrics
+            </button>
+            <VolumeControl />
+          </footer>
+        </div>
+      </section>
+      <FullScreenLyrics
+        v-if="playerStore.isFullScreenLyricsVisible"
+      /><FullscreenQueue />
     </div>
-
-        <!-- Seek Bar -->
-    <div class="my-2 px-1">
-      <input 
-        type="range" 
-        min="0" 
-        :max="playerStore.duration || 0"
-        :value="playerStore.currentTime"
-        class="range range-primary range-xs flex-1 w-full"
-        :style="{ '--track-progress': (playerStore.duration ? (playerStore.currentTime / playerStore.duration) * 100 : 0) + '%' }"
-        @mousedown="playerStore.startSeeking()"
-        @touchstart="playerStore.startSeeking()"
-        @input="handleContinuousSeekInput"
-        @mouseup="playerStore.endSeeking()"
-        @touchend="playerStore.endSeeking()"
-        :disabled="!playerStore.duration || playerStore.isLoading"
-      />
-      <div class="flex justify-between text-xs text-neutral-400 mt-2 font-mono">
-        <span>{{ formatTime(playerStore.currentTime) }}</span>
-        <span>{{ formatTime(playerStore.duration) }}</span>
-      </div>
-    </div>
-
-
-    <!-- Bottom Controls: Up Next & Lyrics -->
-    <div class="relative mt-auto mb-2 h-8 px-1"> <!-- Added h-8 for defined height and px-1 for consistency -->
-      <!-- Up Next Button (Bottom Left) -->
-      <button 
-        @click="playerStore.toggleFullScreenQueue()" 
-        class="absolute bottom-0 left-0 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2"
-      >
-        Up Next
-        <Icon name="material-symbols:menu-open-rounded" class="w-5 h-5 inline-block ml-1" /> <!-- Changed icon to menu-open -->
-      </button>
-
-      <!-- Lyrics Toggle (Bottom Center) -->
-      <button 
-        @click="playerStore.toggleFullScreenLyrics()"
-        class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs uppercase text-neutral-500 hover:text-accent tracking-wider p-2"
-        :class="{'text-accent': playerStore.isFullScreenLyricsVisible}"
-        title="Toggle Lyrics"
-      >
-        Lyrics
-        <Icon name="material-symbols:lyrics-rounded" class="w-5 h-5 inline-block ml-1" />
-      </button>
-    </div>
-    <FullscreenQueue />
-  </div>
+  </dialog>
 </template>
-
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
-import { useCoverArt } from '~/composables/use-cover-art';
-import FullscreenQueue from '~/components/layout/fullscreen-queue.vue';
-import FullScreenLyrics from '~/components/player/fullscreen-lyrics.vue';
-
+import { usePlayerStore } from "~/stores/player";
+import { useCoverArt } from "~/composables/use-cover-art";
+import PlaybackControls from "./playback-controls.vue";
+import VolumeControl from "./volume-control.vue";
+import FullScreenLyrics from "./fullscreen-lyrics.vue";
+import FullscreenQueue from "~/components/layout/fullscreen-queue.vue";
 const playerStore = usePlayerStore();
-const { getCoverArtUrl } = useCoverArt();
-
-const formatTime = (seconds: number): string => {
-  if (isNaN(seconds) || seconds === Infinity || seconds < 0) {
-    return '0:00';
+const { getCoverArtUrl, isPlaceholderArt } = useCoverArt();
+const dialog = ref<HTMLDialogElement | null>(null);
+function dismiss() {
+  if (playerStore.isFullScreenLyricsVisible) {
+    playerStore.toggleFullScreenLyrics();
+    return;
   }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-};
-
-const handleContinuousSeekInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  // playerStore.isUserSeeking should be true here if startSeeking was successful
-  // Call the store action to update the position
-  playerStore.updateSeekPosition(parseFloat(target.value));
-};
-
+  if (playerStore.isFullScreenQueueVisible) {
+    playerStore.hideFullScreenQueue();
+    return;
+  }
+  playerStore.toggleFullScreenPlayer();
+}
+onMounted(() => dialog.value?.showModal());
+onBeforeUnmount(() => dialog.value?.close());
 </script>
+<style scoped>
+.full-player {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: 0;
+  padding: clamp(1rem, 3vw, 3rem);
+  color: var(--ink);
+  background: var(--paper);
+  overflow-y: auto;
+}
+.full-player::backdrop {
+  background: var(--paper);
+}
+.full-player-inner {
+  max-width: 1180px;
+  margin: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.listening-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+  padding: clamp(2.5rem, 10vh, 7rem) 0;
+}
+.full-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--color-base-200);
+  border: 1px solid var(--rule);
+}
+.full-art.placeholder-art {
+  object-fit: contain;
+  padding: clamp(12px, 4vw, 64px);
+}
+.listening-controls {
+  min-width: 0;
+}
+.track-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin-bottom: 1.75rem;
+}
+h2 {
+  font-size: clamp(2.5rem, 4.5vw, 4.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.5rem;
+}
+p {
+  margin: 0;
+  font-size: 1rem;
+}
+.album-name {
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-base-300);
+}
+footer .btn {
+  font-size: 0.875rem;
+}
+@media (max-width: 900px) {
+  .full-player-inner {
+    max-width: 580px;
+  }
+  .listening-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+  .full-art {
+    width: min(42vw, 13rem);
+    justify-self: center;
+  }
+  .track-copy {
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+  h2 {
+    font-size: clamp(2rem, 7vw, 3rem);
+  }
+  footer {
+    margin-top: 1.25rem;
+  }
+}
+@media (max-height: 700px) and (max-width: 900px) {
+  .listening-workspace {
+    padding-top: 1.25rem;
+    gap: 1rem;
+  }
+  .full-art {
+    width: 7rem;
+  }
+  header {
+    padding-bottom: 0.75rem;
+  }
+}
+@media (max-width: 360px) {
+  footer {
+    gap: 0.25rem;
+  }
+  footer .btn {
+    padding-inline: 0.5rem;
+  }
+}
+</style>

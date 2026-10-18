@@ -1,0 +1,437 @@
+{
+  "createdAt": "2026-10-18T20:41:17.549Z",
+  "system": {
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "AMD Ryzen 9 3900X 12-Core Processor            "
+  },
+  "protocol": "Eight fixed clips. Whistle and Gemma each load once in a separate bounded process; artifact verification, cold load, warm cases and total process wall time are separate. Any optional Whisper result still uses fresh processes per case. Gemma CPU float32,4threads, official transcription-only prompt, greedy decoding, at most192 new tokens and120 generation seconds per case. No invented word times. Lexical WER is not capped at1.",
+  "limitations": [
+    "Three human speech clips share one narrator.",
+    "No verified sung-lyric corpus. Speech mixed with music is not singing.",
+    "Latency is a local single-run pipeline comparison, not a model benchmark."
+  ],
+  "decision": "Retain Whistle in production. This small diagnostic set cannot establish superiority for sung lyrics.",
+  "runtimeIdentity": {
+    "whistle": {
+      "model": "Cactus-Compute/whistle",
+      "revision": "ca5287601bef25af26dcf2e1b2bdc0843a7c19e5",
+      "weightsBytes": 16919407,
+      "weightsSha256": "b6e02f048568ac5d01a2042556c658061e699acbc0aa2a1439f52f3d461dffeb",
+      "runtime": "Needle CPU, one model instance for the batch",
+      "wordTimestamps": true
+    },
+    "gemma-4-E2B-it": {
+      "model": "google/gemma-4-E2B-it",
+      "revision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7",
+      "weightsBytes": 10246621918,
+      "weightsSha256": "2db5482b20d746879bb3ef79b5203e9075a2e2b98f54ec7c2f281c1477ddc550",
+      "runtime": "Transformers CPU float32, 4 threads, greedy decoding, 192 new tokens, 120 second generation budget",
+      "wordTimestamps": false
+    }
+  },
+  "summary": {
+    "whistle": {
+      "humanSpeechWer": 0.03571428571428571,
+      "humanReferenceWords": 56,
+      "nonspeechHallucinatedWords": 5,
+      "totalPipelineMs": 4288,
+      "warmCaseMs": 3993,
+      "artifactVerificationMs": 37,
+      "modelLoadMs": 112,
+      "allSpeechWer": 0.0625,
+      "allSpeechErrors": 5,
+      "allSpeechReferenceWords": 80
+    },
+    "gemma-4-E2B-it": {
+      "humanSpeechWer": 0.05357142857142857,
+      "humanReferenceWords": 56,
+      "nonspeechHallucinatedWords": 0,
+      "totalPipelineMs": 120495,
+      "warmCaseMs": 87997,
+      "artifactVerificationMs": 8566,
+      "modelLoadMs": 21179,
+      "allSpeechWer": 0.05,
+      "allSpeechErrors": 4,
+      "allSpeechReferenceWords": 80
+    }
+  },
+  "results": [
+    {
+      "id": "1272-128104-0000",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "2c02feda0ee1e38e31b96bbd8c9726a08f9567f1e3b41ba8981687fd7bf8be2e",
+      "durationSeconds": 5.855,
+      "pipelineMs": 515,
+      "pipelineMode": "warm-batch-case",
+      "text": "Mr. Quilder is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.560",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.960",
+          "text": "Quilder is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 499,
+      "errors": 2,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.11764705882352941
+    },
+    {
+      "id": "1272-128104-0000",
+      "kind": "human-speech",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "2c02feda0ee1e38e31b96bbd8c9726a08f9567f1e3b41ba8981687fd7bf8be2e",
+      "durationSeconds": 5.855,
+      "pipelineMs": 14040,
+      "pipelineMode": "warm-batch-case",
+      "text": "Mr Quilter is the apostle of the middle classes and we are glad to welcome his gospel",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 19,
+      "inferenceMs": 14027,
+      "errors": 1,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.058823529411764705
+    },
+    {
+      "id": "1272-135031-0005",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "627a7844566a8a99b18d7a69cfc90fab340f3e03eb9da6da4ac3e8d8bd00c88d",
+      "durationSeconds": 4.625,
+      "pipelineMs": 532,
+      "pipelineMode": "warm-batch-case",
+      "text": "I begged Ruggedo long ago to send him away, but he would not do so.",
+      "lines": [
+        {
+          "time": "00:00.400",
+          "text": "I begged Ruggedo long ago to send him"
+        },
+        {
+          "time": "00:02.640",
+          "text": "away, but he would not do so."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 517,
+      "errors": 0,
+      "referenceWords": 15,
+      "hypothesisWords": 15,
+      "wer": 0
+    },
+    {
+      "id": "1272-135031-0005",
+      "kind": "human-speech",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "627a7844566a8a99b18d7a69cfc90fab340f3e03eb9da6da4ac3e8d8bd00c88d",
+      "durationSeconds": 4.625,
+      "pipelineMs": 12378,
+      "pipelineMode": "warm-batch-case",
+      "text": "I begged Rugado a long ago to send him away but he would not do so",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 18,
+      "inferenceMs": 12369,
+      "errors": 2,
+      "referenceWords": 15,
+      "hypothesisWords": 16,
+      "wer": 0.13333333333333333
+    },
+    {
+      "id": "1272-141231-0010",
+      "kind": "human-speech",
+      "model": "whistle",
+      "fixtureSha256": "8e2de81f4535add979c310823a0f67943f8de65042fd1baf55c3b7a9b88fad56",
+      "durationSeconds": 10.76,
+      "pipelineMs": 875,
+      "pipelineMode": "warm-batch-case",
+      "text": "Particularly so, on this last night, when only two of the little cubicles were occupied, the thousands of others standing with dark empty doors.",
+      "lines": [
+        {
+          "time": "00:00.640",
+          "text": "Particularly so, on this last night, when only"
+        },
+        {
+          "time": "00:03.920",
+          "text": "two of the little cubicles were occupied, the"
+        },
+        {
+          "time": "00:06.880",
+          "text": "thousands of others standing with dark empty doors."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 838,
+      "errors": 0,
+      "referenceWords": 24,
+      "hypothesisWords": 24,
+      "wer": 0
+    },
+    {
+      "id": "1272-141231-0010",
+      "kind": "human-speech",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "8e2de81f4535add979c310823a0f67943f8de65042fd1baf55c3b7a9b88fad56",
+      "durationSeconds": 10.76,
+      "pipelineMs": 19816,
+      "pipelineMode": "warm-batch-case",
+      "text": "particularly so on this last night when only two of the little cubicles were occupied the thousands of others standing with dark empty doors",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 26,
+      "inferenceMs": 19797,
+      "errors": 0,
+      "referenceWords": 24,
+      "hypothesisWords": 24,
+      "wer": 0
+    },
+    {
+      "id": "silence",
+      "kind": "silence",
+      "model": "whistle",
+      "fixtureSha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "durationSeconds": 10,
+      "pipelineMs": 24,
+      "pipelineMode": "warm-batch-case",
+      "text": "",
+      "lines": [],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 1,
+      "errors": 0,
+      "referenceWords": 0,
+      "hypothesisWords": 0,
+      "wer": null
+    },
+    {
+      "id": "silence",
+      "kind": "silence",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "ee7bea4232762775f8fce9b3e27e4d3948c8ac6a45a87ca769f703d6eed0b448",
+      "durationSeconds": 10,
+      "pipelineMs": 6321,
+      "pipelineMode": "warm-batch-case",
+      "text": "",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 1,
+      "inferenceMs": 6305,
+      "errors": 0,
+      "referenceWords": 0,
+      "hypothesisWords": 0,
+      "wer": null
+    },
+    {
+      "id": "the-distant-sun",
+      "kind": "instrumental",
+      "model": "whistle",
+      "fixtureSha256": "4f210a637b8c4e1216d778a25ee7552b5a161d013edf6ca95716923df136411e",
+      "durationSeconds": 12,
+      "pipelineMs": 737,
+      "pipelineMode": "warm-batch-case",
+      "text": "Gracias, señora presidenta.",
+      "lines": [
+        {
+          "time": "00:06.000",
+          "text": "Gracias, señora presidenta."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 709,
+      "errors": 3,
+      "referenceWords": 0,
+      "hypothesisWords": 3,
+      "wer": null
+    },
+    {
+      "id": "the-distant-sun",
+      "kind": "instrumental",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "4f210a637b8c4e1216d778a25ee7552b5a161d013edf6ca95716923df136411e",
+      "durationSeconds": 12,
+      "pipelineMs": 7349,
+      "pipelineMode": "warm-batch-case",
+      "text": "",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 1,
+      "inferenceMs": 7327,
+      "errors": 0,
+      "referenceWords": 0,
+      "hypothesisWords": 0,
+      "wer": null
+    },
+    {
+      "id": "signal-to-noise",
+      "kind": "instrumental",
+      "model": "whistle",
+      "fixtureSha256": "94daf7fed1c406b38035fa7895ff971945d4c071f050b018216af8fd186dface",
+      "durationSeconds": 12,
+      "pipelineMs": 648,
+      "pipelineMode": "warm-batch-case",
+      "text": "Thank you.",
+      "lines": [
+        {
+          "time": "00:00.000",
+          "text": "Thank you."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 619,
+      "errors": 2,
+      "referenceWords": 0,
+      "hypothesisWords": 2,
+      "wer": null
+    },
+    {
+      "id": "signal-to-noise",
+      "kind": "instrumental",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "94daf7fed1c406b38035fa7895ff971945d4c071f050b018216af8fd186dface",
+      "durationSeconds": 12,
+      "pipelineMs": 7359,
+      "pipelineMode": "warm-batch-case",
+      "text": "",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 1,
+      "inferenceMs": 7336,
+      "errors": 0,
+      "referenceWords": 0,
+      "hypothesisWords": 0,
+      "wer": null
+    },
+    {
+      "id": "speech-with-music",
+      "kind": "speech-with-music",
+      "model": "whistle",
+      "fixtureSha256": "52739e32336aa35f8d112ec9fe1a8c03dc542a15232912928e9e2e1f17d536af",
+      "durationSeconds": 5.855,
+      "pipelineMs": 493,
+      "pipelineMode": "warm-batch-case",
+      "text": "Mr. Quilder is the apostle of the middle classes, and we are glad to welcome his gospel.",
+      "lines": [
+        {
+          "time": "00:00.560",
+          "text": "Mr."
+        },
+        {
+          "time": "00:00.960",
+          "text": "Quilder is the apostle of the middle classes,"
+        },
+        {
+          "time": "00:03.360",
+          "text": "and we are glad to welcome his gospel."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 477,
+      "errors": 2,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.11764705882352941
+    },
+    {
+      "id": "speech-with-music",
+      "kind": "speech-with-music",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "52739e32336aa35f8d112ec9fe1a8c03dc542a15232912928e9e2e1f17d536af",
+      "durationSeconds": 5.855,
+      "pipelineMs": 13784,
+      "pipelineMode": "warm-batch-case",
+      "text": "Mr Quilter is the apostle of the middle classes and we are glad to welcome his gospel",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 19,
+      "inferenceMs": 13772,
+      "errors": 1,
+      "referenceWords": 17,
+      "hypothesisWords": 17,
+      "wer": 0.058823529411764705
+    },
+    {
+      "id": "synthetic-speech",
+      "kind": "synthetic-speech",
+      "model": "whistle",
+      "fixtureSha256": "e1520daa0b84d65fa48bf6de029aeb4035ed050c2115d6bbf91dca138a83fc59",
+      "durationSeconds": 2.864,
+      "pipelineMs": 169,
+      "pipelineMode": "warm-batch-case",
+      "text": "The Music Play SOFTLY IN THE MORNING.",
+      "lines": [
+        {
+          "time": "00:00.160",
+          "text": "The Music Play SOFTLY IN THE MORNING."
+        }
+      ],
+      "wordTimestamps": true,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "inferenceMs": 162,
+      "errors": 1,
+      "referenceWords": 7,
+      "hypothesisWords": 7,
+      "wer": 0.14285714285714285
+    },
+    {
+      "id": "synthetic-speech",
+      "kind": "synthetic-speech",
+      "model": "gemma-4-E2B-it",
+      "fixtureSha256": "e1520daa0b84d65fa48bf6de029aeb4035ed050c2115d6bbf91dca138a83fc59",
+      "durationSeconds": 2.864,
+      "pipelineMs": 6950,
+      "pipelineMode": "warm-batch-case",
+      "text": "The music plays softly in the morning.",
+      "lines": null,
+      "wordTimestamps": false,
+      "hitTokenLimit": false,
+      "hitTimeLimit": false,
+      "generatedTokens": 9,
+      "inferenceMs": 6944,
+      "errors": 0,
+      "referenceWords": 7,
+      "hypothesisWords": 7,
+      "wer": 0
+    }
+  ],
+  "aggregateNote": "Combined speech metrics derived from the same captured per-case rows; includes the repeated human excerpt mixed with music. No predictions or timings changed."
+}

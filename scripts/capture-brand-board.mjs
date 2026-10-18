@@ -1,0 +1,15 @@
+import { chromium } from '@playwright/test';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+import { writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
+await page.goto(pathToFileURL(resolve('docs/design/lyra/brand-board.html')).href);
+await page.evaluate(() => document.fonts.ready);
+const fonts = await page.evaluate(() => ({bodoni:document.fonts.check('500 48px "Bodoni Moda"'),publicSans:document.fonts.check('400 16px "Public Sans"'),images:[...document.images].every(i=>i.complete&&i.naturalWidth>0)}));
+if (!fonts.bodoni || !fonts.publicSans || !fonts.images) throw new Error(JSON.stringify(fonts));
+const bytes = await page.screenshot({ path:'docs/design/lyra/brand-board.png', fullPage:true });
+await writeFile('docs/design/lyra/brand-board-evidence.json',JSON.stringify({capturedAt:new Date().toISOString(),fonts,sha256:createHash('sha256').update(bytes).digest('hex'),viewport:{width:1440,height:1100}},null,2));
+console.log(fonts);
+await browser.close();

@@ -1,0 +1,115 @@
+{
+  "retrievedDate": "2026-10-18",
+  "cssApi": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap",
+  "cssSha256": "1613da230ec5905e0afc2f5ca6a1e948e5d57d9c90751afc4e52d7185664c74e",
+  "scope": "Unmodified official WOFF2 downloads plus local URL rewriting in fonts.css. All CSS API subsets are retained for offline rendering.",
+  "families": [
+    {
+      "family": "Barlow Condensed",
+      "role": "Selected display, genuine normal 700 and 800 faces",
+      "license": "SIL Open Font License 1.1",
+      "officialSources": [
+        {
+          "file": "barlowcondensed-OFL.txt",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/OFL.txt",
+          "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+        },
+        {
+          "file": "barlowcondensed-METADATA.pb",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/METADATA.pb",
+          "sha256": "fdb9c7b3c0c2c1069bc0193f0b72fb95efef36dc155c281e307da71b7dcfc558"
+        }
+      ]
+    },
+    {
+      "family": "Space Grotesk",
+      "role": "Selected body, 400/500/600/700 from the official variable face",
+      "license": "SIL Open Font License 1.1",
+      "officialSources": [
+        {
+          "file": "spacegrotesk-OFL.txt",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/OFL.txt",
+          "sha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72"
+        },
+        {
+          "file": "spacegrotesk-METADATA.pb",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/METADATA.pb",
+          "sha256": "3713adf5c1a21affdbede103b6bb23f551d4195771fa8bc1b91ce813bd1623ee"
+        }
+      ]
+    },
+    {
+      "family": "Archivo Black",
+      "role": "Comparison only; genuine normal 400; no font file bundled",
+      "license": "SIL Open Font License 1.1",
+      "officialSources": [
+        {
+          "file": "archivoblack-OFL.txt",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivoblack/OFL.txt",
+          "sha256": "3173acd82f8c6159b5b1037b539fcbd4edff68e65c2ea8b9412b5a5ca97b08ff"
+        },
+        {
+          "file": "archivoblack-METADATA.pb",
+          "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivoblack/METADATA.pb",
+          "sha256": "def0eb81b3f0d8739a25566ce484cac9e396ad46108a02a809dd8a04c26bfdc5"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2",
+      "bytes": 22444,
+      "sha256": "3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8"
+    },
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3jWuZEC.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3jWuZEC.woff2",
+      "bytes": 14640,
+      "sha256": "9d351bd9222bfab90f943850f8039aa73cdb40e0a6cfe4127308a48bef59d5f5"
+    },
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3nWuZEC.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3nWuZEC.woff2",
+      "bytes": 7636,
+      "sha256": "6c554f2decc277ef760244c5ee6b5a85840862966e2ad4d02a1bdcdfefb9afa2"
+    },
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2",
+      "bytes": 22464,
+      "sha256": "2515494e8cc2ca07c86ea78766cfa104b796aa6ed5d66821c01d51dbb0b52bce"
+    },
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3jWuZEC.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3jWuZEC.woff2",
+      "bytes": 14548,
+      "sha256": "22539b785b3cbcee08e0722ff37fa16a18e71e4482d9078f7da79da1258e7614"
+    },
+    {
+      "file": "HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3nWuZEC.woff2",
+      "source": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3nWuZEC.woff2",
+      "bytes": 7808,
+      "sha256": "87b35049bcb491c02a45d740cb88abd709e73cda023fbe5e28eefbff6649cdfe"
+    },
+    {
+      "file": "V8mDoQDjQSkFtoMM3T6r8E7mPb54C-s0.woff2",
+      "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb54C-s0.woff2",
+      "bytes": 6712,
+      "sha256": "8895e3d49825128bfa5238e4c96e9b432d7a3dadbe5c17c6081267398305dc71"
+    },
+    {
+      "file": "V8mDoQDjQSkFtoMM3T6r8E7mPb94C-s0.woff2",
+      "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C-s0.woff2",
+      "bytes": 18940,
+      "sha256": "952dddb45d2f96f71cbf3b7f510b24379afc3c89ea02fcf89d377b45d62c0166"
+    },
+    {
+      "file": "V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2",
+      "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2",
+      "bytes": 22288,
+      "sha256": "0640890476fc1198ab4de571fb658de443c4d85b66466ec09534a8737ab1ce9d"
+    }
+  ]
+}

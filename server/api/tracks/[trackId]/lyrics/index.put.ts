@@ -19,14 +19,28 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<LyricsUpdateRequest>(event);
 
-  if (!body || !body.lyricsJson) {
+  const candidate = body?.lyricsJson;
+  let previousTime = -1;
+  const valid = Array.isArray(candidate) && candidate.every(line => {
+    if (!line || typeof line !== 'object' || Array.isArray(line) ||
+        typeof line.time !== 'string' || typeof line.text !== 'string' ||
+        !/^(?:\d+:)?\d+:[0-5]\d(?:\.\d{1,3})?$/.test(line.time)) return false;
+    const parts = line.time.split(':').map(Number);
+    if (parts.length === 3 && parts[1] > 59) return false;
+    const seconds = parts.reduce((sum, part) => sum * 60 + part, 0);
+    if (!Number.isFinite(seconds) || seconds < previousTime) return false;
+    previousTime = seconds;
+    return true;
+  });
+  if (!valid) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Lyrics content (lyricsJson) is required in the request body.',
+      statusMessage: 'Provide an array of lyric lines with string text and chronological MM:SS.mmm or HH:MM:SS.mmm timestamps.',
     });
   }
 
-  const { lyricsJson } = body;
+  // Keep only the public timestamp/text contract. An empty array explicitly clears lyrics.
+  const lyricsJson = candidate!.map(line => ({ time: line.time, text: line.text }));
 
   try {
     const newLyricsData: Partial<NewLyrics> = {

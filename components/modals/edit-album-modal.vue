@@ -1,180 +1,227 @@
 <template>
-    <dialog :class="['modal', isOpen ? 'modal-open' : '']">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg mb-4">Edit Album</h3>
-            <form @submit.prevent="updateAlbum">
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                    <div class="album-cover border border-base-300 p-4 relative cursor-pointer" @click="triggerFileInput">
-                        <Icon name="heroicons-solid:pencil" class="w-8 h-8 text-base-content absolute top-2 right-2 z-10" />
-                        <img :src="previewUrl || editableAlbum.coverPath || '/images/icons/default-album-art.webp'" width="128" height="128" alt="Album Cover" class="object-cover w-full h-full" />
-                        <input type="file" ref="fileInputRef" @change="handleFileChange" accept="image/*" class="hidden" />
-                    </div>
-                </div>
-                <div>
-                    <label for="title" class="label">
-                        <span class="label-text">Title</span>
-                    </label>
-                    <input v-model="editableAlbum.title" type="text" class="input input-bordered w-full mb-4" required />
-                </div>
-                <div>
-                    <label for="artist" class="label">
-                        <span class="label-text">Artist(s)</span>
-                    </label>
-                    <input v-model="editableAlbum.artistName" type="text" class="input input-bordered w-full mb-4" required />
-                </div>
-                <div>
-                    <label for="year" class="label">
-                        <span class="label-text">Year</span>
-                    </label>
-                    <input v-model.number="editableAlbum.year" type="number" class="input input-bordered w-full mb-4" />
-                </div>
-                <div class="modal-action">
-                    <button type="button" class="btn" @click="closeModal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </dialog>
+  <UtilityDialog
+    :open="open"
+    title="Edit Album"
+    @update:open="
+      (value) => {
+        if (!value) closeModal();
+      }
+    "
+  >
+    <form @submit.prevent="updateAlbum" :aria-busy="saving">
+      <div class="album-cover">
+        <img
+          :src="
+            previewUrl ||
+            (album.coverPath
+              ? getCoverArtUrl(album.coverPath)
+              : '/images/lyra-radio/mark.webp')
+          "
+          alt="Album cover preview"
+          width="128"
+          height="128"
+        />
+      </div>
+      <label class="label" :for="id + '-cover'">Cover image</label>
+      <input
+        :id="id + '-cover'"
+        ref="fileInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        class="file-input w-full"
+        :disabled="saving"
+        @change="selectCover"
+      />
+      <p class="field-hint">PNG, JPEG, WebP or GIF, up to 5 MB.</p>
+      <label class="label" :for="id + '-title'">Title</label
+      ><input
+        :id="id + '-title'"
+        v-model="draft.title"
+        class="input w-full"
+        autofocus
+        required
+        :disabled="saving"
+      />
+      <label class="label" :for="id + '-artists'">Artist(s)</label
+      ><input
+        :id="id + '-artists'"
+        v-model="draft.artistName"
+        class="input w-full"
+        :disabled="saving"
+      />
+      <label class="label" :for="id + '-year'">Year</label
+      ><input
+        :id="id + '-year'"
+        v-model="draft.year"
+        type="number"
+        min="1000"
+        max="3000"
+        step="1"
+        class="input w-full"
+        :disabled="saving"
+      />
+      <p v-if="error" role="alert" class="text-error mt-4">{{ error }}</p>
+      <p v-if="saving" role="status" class="mt-4">Saving album…</p>
+      <div class="modal-action">
+        <button type="button" class="btn" @click="closeModal">Cancel</button
+        ><button
+          type="submit"
+          class="btn btn-primary"
+          :disabled="saving || !draft.title.trim()"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  </UtilityDialog>
 </template>
 
 <script setup lang="ts">
-import type { Album } from '~/types/album';
+import type { Album } from "~/types/album";
+import { useCoverArt } from "~/composables/use-cover-art";
+import UtilityDialog from "~/components/utility/dialog.vue";
 
-const props = defineProps<{ album: Album, open: boolean }>();
-
-const emit = defineEmits(['close', 'albumUpdated', 'updateError']);
-
-const editableAlbum = ref<Partial<Album> & { artistName?: string }>({});
-const originalAlbum = ref<Partial<Album> & { artistName?: string }>({}); // To store the initial state
-const selectedFile = ref<File | null>(null);
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const previewUrl = ref<string | null>(null);
-const isOpen = ref(props.open);
-const isLoading = ref(false);
-// No need for manual token handling - using cookie-based authentication
-
-const getArtistNameString = (artists: import('~/types/album').AlbumArtistDetail[] | undefined): string => {
-  if (!artists || artists.length === 0) return '';
-  const primaryArtists = artists.filter(a => a.isPrimaryArtist);
-  const artistsToDisplay = primaryArtists.length > 0 ? primaryArtists : artists;
-  return artistsToDisplay.map(a => a.name).join(', ');
-};
-
-const initializeState = (album: Album) => {
-  const albumCopy = JSON.parse(JSON.stringify(toRaw(album)));
-  const artistName = getArtistNameString(albumCopy.artists);
-
-  originalAlbum.value = { ...albumCopy, artistName };
-  editableAlbum.value = { ...albumCopy, artistName };
-
+const props = defineProps<{ album: Album; open: boolean }>();
+const emit = defineEmits<{
+  close: [];
+  albumUpdated: [album: Album];
+  updateError: [message: string];
+}>();
+const { getCoverArtUrl } = useCoverArt();
+const id = useId();
+const draft = ref({ title: "", artistName: "", year: "" });
+let original = { ...draft.value };
+const selectedFile = ref<File | null>(null),
+  previewUrl = ref<string | null>(null),
+  fileInput = ref<HTMLInputElement | null>(null);
+const saving = ref(false),
+  error = ref("");
+let version = 0;
+function clearPreview() {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+  previewUrl.value = null;
   selectedFile.value = null;
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value);
-    previewUrl.value = null;
-  }
-};
-
-if (props.album) {
-  initializeState(props.album);
+  if (fileInput.value) fileInput.value.value = "";
 }
-
-watch(() => props.open, (newValue: boolean) => {
-  isOpen.value = newValue;
-  if (newValue && props.album) {
-    initializeState(props.album);
-  }
-});
-
-watch(() => props.album, (newAlbum: Album) => {
-  if (newAlbum && isOpen.value) {
-    initializeState(newAlbum);
-  }
-}, { deep: true });
-
-const triggerFileInput = () => {
-  fileInputRef.value?.click();
-};
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    selectedFile.value = target.files[0];
-    if (previewUrl.value) {
-      URL.revokeObjectURL(previewUrl.value);
-    }
-    previewUrl.value = URL.createObjectURL(selectedFile.value);
-  } else {
-    selectedFile.value = null;
-    previewUrl.value = null;
-  }
-};
-
-const closeModal = () => {
-  isOpen.value = false;
-  emit('close');
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value);
-    previewUrl.value = null;
-  }
-};
-
-const updateAlbum = async () => {
-  if (!editableAlbum.value.albumId) {
-    console.error('Album ID is missing');
-    emit('updateError', 'Album ID is missing');
+watch(
+  [() => props.open, () => props.album?.albumId],
+  ([open]) => {
+    version++;
+    clearPreview();
+    saving.value = false;
+    error.value = "";
+    if (!open || !props.album) return;
+    original = {
+      title: props.album.title || "",
+      artistName:
+        props.album.artists?.map((artist) => artist.name).join(", ") || "",
+      year: props.album.year == null ? "" : String(props.album.year),
+    };
+    draft.value = { ...original };
+  },
+  { immediate: true },
+);
+function closeModal() {
+  emit("close");
+}
+function selectCover(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+  previewUrl.value = null;
+  selectedFile.value = null;
+  error.value = "";
+  if (!file) return;
+  if (
+    !["image/png", "image/jpeg", "image/webp", "image/gif"].includes(
+      file.type,
+    ) ||
+    file.size > 5 * 1024 * 1024
+  ) {
+    error.value = "Choose a PNG, JPEG, WebP or GIF image up to 5 MB.";
+    if (fileInput.value) fileInput.value.value = "";
     return;
   }
-
-  isLoading.value = true;
-  const formData = new FormData();
-
-  // Compare and append only changed fields
-  if (editableAlbum.value.title !== originalAlbum.value.title) {
-    formData.append('title', editableAlbum.value.title || '');
+  selectedFile.value = file;
+  previewUrl.value = URL.createObjectURL(file);
+}
+async function updateAlbum() {
+  const albumId = props.album?.albumId;
+  if (!albumId || saving.value || !props.open) return;
+  if (!draft.value.title.trim()) {
+    error.value = "Enter an album title.";
+    return;
   }
-  if (editableAlbum.value.artistName !== originalAlbum.value.artistName) {
-    formData.append('artistName', editableAlbum.value.artistName || '');
+  if (
+    draft.value.artistName !== original.artistName &&
+    !draft.value.artistName.trim()
+  ) {
+    error.value = "Enter at least one artist.";
+    return;
   }
-  if (editableAlbum.value.year !== originalAlbum.value.year) {
-    formData.append('year', editableAlbum.value.year === null || editableAlbum.value.year === undefined ? '' : String(editableAlbum.value.year));
+  const year = draft.value.year === "" ? null : Number(draft.value.year);
+  if (
+    year !== null &&
+    (!Number.isSafeInteger(year) || year < 1000 || year > 3000)
+  ) {
+    error.value = "Use a whole year between 1000 and 3000, or leave it blank.";
+    return;
   }
-
-  if (selectedFile.value) {
-    formData.append('coverImage', selectedFile.value);
-  }
-
-  const formDataKeys = [...formData.keys()];
-  if (formDataKeys.length === 0) {
-    isLoading.value = false;
-    console.log('No changes detected, closing modal.');
+  const body = new FormData();
+  if (draft.value.title !== original.title)
+    body.append("title", draft.value.title.trim());
+  if (draft.value.artistName !== original.artistName)
+    body.append("artistName", draft.value.artistName.trim());
+  if (draft.value.year !== original.year)
+    body.append("year", year === null ? "" : String(year));
+  if (selectedFile.value) body.append("coverImage", selectedFile.value);
+  if (![...body.keys()].length) {
     closeModal();
     return;
   }
-
+  const request = version;
+  saving.value = true;
+  error.value = "";
   try {
-    const updatedAlbumData = await $fetch(`/api/albums/${editableAlbum.value.albumId}`, {
-      method: 'PUT',
-      body: formData,
-    });
-    emit('albumUpdated', updatedAlbumData);
+    const result = await $fetch<Album>(
+      "/api/albums/" + encodeURIComponent(albumId),
+      { method: "PUT", body, retry: 0 },
+    );
+    if (request !== version || !props.open || props.album?.albumId !== albumId)
+      return;
+    emit("albumUpdated", result);
     closeModal();
-  } catch (error: any) {
-    console.error('Failed to update album:', error);
-    emit('updateError', error.data?.message || 'Failed to update album.');
+  } catch (cause: any) {
+    if (request !== version) return;
+    error.value =
+      cause?.data?.statusMessage ||
+      cause?.data?.message ||
+      "Could not save the album. Please try again.";
+    emit("updateError", error.value);
   } finally {
-    isLoading.value = false;
+    if (request === version) saving.value = false;
   }
-};
+}
+onBeforeUnmount(() => {
+  version++;
+  clearPreview();
+});
 </script>
 
 <style scoped>
 .album-cover {
-    width: 128px;
-    height: 128px;
-    &:hover {
-        cursor: pointer;
-        border-color: oklch(var(--p)); /* Use primary color for hover border */
-        border-width: 2px;
-    }
+  width: 128px;
+  height: 128px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.album-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.field-hint {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0.5rem 0 1rem;
 }
 </style>

@@ -1,202 +1,172 @@
 <template>
-  <div 
+  <section
     v-if="playerStore.currentTrack"
-    class="fixed bottom-0 left-0 right-0 bg-base-100 text-base-content p-3 shadow-inner z-50 flex items-center gap-4 h-32"
+    class="desktop-player"
+    aria-label="Music player"
   >
-    <!-- Column 1: Track Info & Cover -->
-    <div class="flex items-center gap-3 min-w-0 flex-1">
-      <!-- Album Cover -->
-      <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-base-200">
-        <img
-          v-if="playerStore.currentTrack.coverPath"
-          :src="getCoverArtUrl(playerStore.currentTrack.coverPath)"
-          :alt="`${playerStore.currentTrack.title} cover`"
-          class="w-full h-full object-cover"
+    <div class="player-track">
+      <img
+        :src="
+          playerStore.currentTrack.coverPath
+            ? getCoverArtUrl(playerStore.currentTrack.coverPath)
+            : '/images/lyra-radio/mark.webp'
+        "
+        :alt="
+          !isPlaceholderArt(playerStore.currentTrack.coverPath)
+            ? 'Album cover'
+            : ''
+        "
+        :class="{
+          'placeholder-art': isPlaceholderArt(
+            playerStore.currentTrack.coverPath,
+          ),
+        }"
+      />
+      <div>
+        <strong>{{ playerStore.currentTrack.title || "Unknown track" }}</strong>
+        <p>
+          {{
+            playerStore.currentTrack.formattedArtists
+              ?.map((a) => a.name)
+              .join(", ") ||
+            playerStore.currentTrack.artistName ||
+            "Unknown artist"
+          }}
+        </p>
+      </div>
+    </div>
+    <PlaybackControls compact />
+    <div class="player-extras">
+      <VolumeControl />
+      <button
+        type="button"
+        class="btn btn-ghost control-icon"
+        :aria-label="`Open full screen player: ${playerStore.currentTrack.title || 'Unknown track'}`"
+        title="Full screen player"
+        @click="playerStore.toggleFullScreenPlayer"
+      >
+        <Icon
+          name="material-symbols:open-in-full-rounded"
+          size="20"
+          class="w-5 h-5"
         />
-        <div v-else class="w-full h-full flex items-center justify-center bg-base-200">
-          <Icon name="material-symbols:music-note" class="w-8 h-8 text-base-content/50" />
-        </div>
-      </div>
-
-      <!-- Track Info -->
-      <div class="flex-1 min-w-0">
-        <div class="font-semibold truncate" :title="playerStore.currentTrack.title">
-          {{ playerStore.currentTrack.title || 'Unknown Track' }}
-        </div>
-        <!-- Artist display with formatted artists if available -->
-        <div class="text-sm text-base-content/70 truncate">
-          <!-- Use formatted artists if available -->
-          <template v-if="playerStore.currentTrack.formattedArtists && playerStore.currentTrack.formattedArtists.length">
-            <span v-for="(artist, index) in playerStore.currentTrack.formattedArtists" :key="artist.artistId" class="mr-1">
-              <NuxtLink :to="artist.url" class="hover:underline" :class="{'font-semibold': artist.isPrimary}">
-                {{ artist.name }}
-              </NuxtLink>
-              <span v-if="index < playerStore.currentTrack.formattedArtists.length - 2"> &</span>
-              <span v-else-if="index === playerStore.currentTrack.formattedArtists.length - 2"> &</span>
-            </span>
-          </template>
-          <!-- Fallback to simple artist name if no formatted artists -->
-          <span v-else>
-            <NuxtLink class="hover:underline" :to="`/artists/${playerStore.currentTrack.artistId}`">
-              {{ playerStore.currentTrack.artistName || 'Unknown Artist' }}
-            </NuxtLink>
-          </span>
-        </div>
-        <div v-if="playerStore.currentTrack.albumTitle" class="text-xs text-base-content/50 truncate">
-          <NuxtLink class="hover:underline" :to="`/albums/${playerStore.currentTrack.albumId}`">
-            {{ playerStore.currentTrack.albumTitle }}
-          </NuxtLink>
-        </div>
-      </div>
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost control-icon"
+        aria-label="Up Next"
+        :title="playerStore.isQueueSidebarVisible ? 'Hide Queue' : 'Show Queue'"
+        :aria-expanded="playerStore.isQueueSidebarVisible"
+        @click="playerStore.toggleQueueSidebar"
+      >
+        <Icon
+          name="material-symbols:queue-music-rounded"
+          size="24"
+          class="w-6 h-6"
+        /></button
+      ><button
+        type="button"
+        class="btn btn-ghost control-icon"
+        aria-label="Lyrics"
+        title="Show Lyrics"
+        @click="playerStore.toggleLyricsModal"
+      >
+        <Icon
+          name="material-symbols:lyrics-rounded"
+          size="20"
+          class="w-5 h-5"
+        />
+      </button>
     </div>
-
-    <!-- Column 2: Playback Controls & Seek Bar -->
-    <div class="flex flex-col items-center justify-center gap-2 flex-[1.5] min-w-0">
-      <!-- Playback Controls -->
-      <div class="flex items-center gap-1">
-        <button 
-          class="btn btn-ghost btn-lg btn-circle"
-          @click="playerStore.playPrevious"
-          :disabled="!playerStore.canPlayPrevious || playerStore.isLoading"
-          title="Click once to restart track, double-click to play previous track"
-        >
-          <Icon name="material-symbols:skip-previous-rounded" class="w-6 h-6" />
-        </button>
-        <button 
-          class="btn btn-ghost btn-lg btn-circle"
-          :class="{'text-primary': playerStore.isShuffled}" 
-          @click="playerStore.toggleShuffle"
-          title="Toggle Shuffle"
-        >
-          <Icon name="material-symbols:shuffle-rounded" class="w-5 h-5" />
-        </button>
-        <button class="btn btn-lg btn-circle btn-primary" @click="playerStore.togglePlayPause">
-          <Icon 
-            v-if="playerStore.isLoading"
-            name="svg-spinners:180-ring-with-bg"
-            class="w-6 h-6"
-          />
-          <Icon 
-            v-else-if="playerStore.isPlaying" 
-            name="material-symbols:pause-rounded" 
-            class="w-6 h-6" 
-          />
-          <Icon 
-            v-else 
-            name="material-symbols:play-arrow-rounded" 
-            class="w-6 h-6" 
-          />
-        </button>
-        <button 
-          class="btn btn-ghost btn-lg btn-circle"
-          @click="() => playerStore.playNext()"
-          :disabled="!playerStore.canPlayNext || playerStore.isLoading"
-          title="Next Track"
-        >
-          <Icon name="material-symbols:skip-next-rounded" class="w-6 h-6" />
-        </button>
-        <button 
-          class="btn btn-ghost btn-lg btn-circle"
-          :class="{'text-primary': playerStore.repeatMode !== 'none'}" 
-          @click="playerStore.toggleRepeatMode"
-          :title="`Repeat Mode: ${playerStore.repeatMode}`"
-        >
-          <Icon v-if="playerStore.repeatMode === 'one'" name="material-symbols:repeat-one-rounded" class="w-5 h-5" />
-          <Icon v-else name="material-symbols:repeat-rounded" class="w-5 h-5" />
-        </button>
-        <button
-          class="btn btn-ghost btn-lg btn-circle"
-          :class="{'text-primary': playerStore.isQueueSidebarVisible}"
-          @click="playerStore.toggleQueueSidebar"
-          :title="playerStore.isQueueSidebarVisible ? 'Hide Queue' : 'Show Queue'"
-        >
-          <Icon name="material-symbols:queue-music-rounded" class="w-5 h-5" />
-        </button>
-        <button
-          class="btn btn-ghost btn-lg btn-circle"
-          :class="{'text-primary': playerStore.isLyricsModalVisible}"
-          @click="playerStore.toggleLyricsModal()"
-          title="Show Lyrics"
-        >
-          <Icon name="material-symbols:lyrics-rounded" class="w-5 h-5" />
-        </button>
-      </div>
-
-      <!-- Seek Bar -->
-      <div class="flex items-center gap-2 w-full max-w-xl px-2">
-         <span class="text-xs font-mono">{{ formatTime(playerStore.currentTime) }}</span>
-         <input 
-           type="range" 
-           min="0" 
-           :max="playerStore.duration || 0"
-           :value="playerStore.currentTime"
-           class="range range-primary range-xs flex-1"
-           :disabled="!playerStore.duration || playerStore.isLoading"
-           @mousedown="playerStore.startSeeking()"
-           @touchstart="playerStore.startSeeking()"
-           @input="handleContinuousSeekInput"
-           @mouseup="playerStore.endSeeking()"
-           @touchend="playerStore.endSeeking()"
-         />
-         <span class="text-xs font-mono">{{ formatTime(playerStore.duration) }}</span>
-      </div>
-    </div>
-    
-    <!-- Column 3: Volume Control -->
-    <div class="flex items-center justify-end gap-2 flex-1 min-w-0">
-      <Icon 
-        name="material-symbols:volume-up-rounded" 
-        class="w-5 h-5 text-base-content/70" 
-        v-if="playerStore.volume > 0.5" 
-      />
-       <Icon 
-        name="material-symbols:volume-down-rounded" 
-        class="w-5 h-5 text-base-content/70" 
-        v-else-if="playerStore.volume > 0"
-      />
-       <Icon 
-        name="material-symbols:volume-mute-rounded" 
-        class="w-5 h-5 text-base-content/70" 
-        v-else
-      />
-      <input 
-        type="range" 
-        min="0" 
-        max="1" 
-        step="0.01" 
-        :value="playerStore.volume"
-        class="range range-xs w-50"
-        @input="handleVolumeChange"
-      />
-    </div>
-
-  </div>
+  </section>
 </template>
-
 <script setup lang="ts">
-import { usePlayerStore } from '~/stores/player';
-import { useCoverArt } from '~/composables/use-cover-art';
-// import { useModalStore } from '~/stores/modal'; // Removed modalStore
-
+import { usePlayerStore } from "~/stores/player";
+import { useCoverArt } from "~/composables/use-cover-art";
+import PlaybackControls from "./playback-controls.vue";
+import VolumeControl from "./volume-control.vue";
 const playerStore = usePlayerStore();
-const { getCoverArtUrl } = useCoverArt();
-// const modalStore = useModalStore(); // Removed modalStore
-
-// Handle seek bar input during drag
-const handleContinuousSeekInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  playerStore.updateSeekPosition(parseFloat(target.value));
-};
-
-// Handle volume slider input
-const handleVolumeChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  playerStore.setVolume(parseFloat(target.value));
-};
-
+const { getCoverArtUrl, isPlaceholderArt } = useCoverArt();
 </script>
-
 <style scoped>
-/* Add any specific styles if needed */
-
+.desktop-player {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.6fr) minmax(
+      180px,
+      1fr
+    );
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  box-shadow: 0 -4px 18px #26252208;
+}
+.player-track {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+.player-track img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  background: var(--color-base-200);
+}
+.player-track img.placeholder-art {
+  object-fit: contain;
+  padding: 12px;
+}
+.player-track strong {
+  display: block;
+  font-size: 1rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-track > div {
+  min-width: 0;
+}
+.player-track p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-track p,
+.player-track a {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0;
+}
+.player-extras {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.player-extras .btn {
+  font-size: 0.875rem;
+}
+@media (max-width: 1200px) {
+  .desktop-player {
+    grid-template-columns: minmax(150px, 1fr) minmax(280px, 1.5fr) minmax(
+        180px,
+        1fr
+      );
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  .player-track img {
+    width: 46px;
+    height: 46px;
+  }
+  .player-track {
+    gap: 0.5rem;
+  }
+}
 </style>

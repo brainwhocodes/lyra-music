@@ -1,201 +1,84 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setup } from '@nuxt/test-utils'
-import { db } from '~/server/db'
-import { users } from '~/server/db/schema'
-import type { Mock } from 'vitest'
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import type { SQLiteSelectBase } from 'drizzle-orm/sqlite-core'
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { db } from "~/server/db";
+import { users } from "~/server/db/schema";
+import register from "~/server/api/auth/register.post";
+import { verifyPassword } from "~/server/utils/auth";
+import { migrateTestDatabase } from "../../../helpers/database";
+import { serveHandler } from "../../../helpers/http";
 
-type MockDbResult = {
-  get: Mock
-  _: any
-  [Symbol.toStringTag]: string
-  prepare: any
-  run: any
-}
+describe("registration HTTP contract", () => {
+  let server: Awaited<ReturnType<typeof serveHandler>>;
+  const valid = {
+    name: "Listener",
+    email: "new@example.test",
+    password: "securepass123",
+    accessCode: "local-access",
+  };
+  beforeAll(async () => {
+    vi.stubGlobal("useRuntimeConfig", () => ({
+      jwtSecret: "test-secret-not-for-real-accounts",
+      secretAccessCode: "local-access",
+    }));
+    migrateTestDatabase(db.$client);
+    server = await serveHandler("/api/auth/register", register);
+  });
+  afterAll(async () => {
+    await server?.close();
+    db.$client.close();
+    vi.unstubAllGlobals();
+  });
+  const request = (body: unknown) =>
+    fetch(`${server.url}/api/auth/register`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-type MockDb = {
-  select: Mock
-  insert: Mock
-}
-
-vi.mock('~/server/db', () => {
-  const mockDb: MockDb = {
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          get: vi.fn(),
-          _: {},
-          [Symbol.toStringTag]: 'SQLiteSelectBase',
-          prepare: vi.fn(),
-          run: vi.fn()
-        })
-      })
-    }),
-    insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn()
-      })
-    })
-  }
-  return { db: mockDb as unknown as BetterSQLite3Database }
-})
-
-describe('POST /api/auth/register', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should register a new user with valid input', async () => {
-    const nuxt = await setup({
-      server: true
-    })
-
-    // Mock DB responses
-    const mockUser = {
-      id: 1,
-      email: 'test@example.com',
-      createdAt: new Date()
+  it.each([{ email: "invalid" }, { password: "short" }, { name: "" }])(
+    "rejects invalid input: %j",
+    async (patch) => {
+      expect((await request({ ...valid, ...patch })).status).toBe(400);
+    },
+  );
+  it("rejects an incorrect access code", async () => {
+    expect((await request({ ...valid, accessCode: "wrong" })).status).toBe(401);
+  });
+  it("does not persist an account or issue a cookie when its signing key is missing", async () => {
+    vi.stubGlobal("useRuntimeConfig", () => ({
+      jwtSecret: "",
+      secretAccessCode: "local-access",
+    }));
+    try {
+      const response = await request({
+        ...valid,
+        email: "unconfigured@example.test",
+      });
+      expect(response.status).toBe(500);
+      expect(response.headers.get("set-cookie")).toBeNull();
+      expect(
+        db
+          .select()
+          .from(users)
+          .all()
+          .some((user) => user.email === "unconfigured@example.test"),
+      ).toBe(false);
+    } finally {
+      vi.stubGlobal("useRuntimeConfig", () => ({
+        jwtSecret: "test-secret-not-for-real-accounts",
+        secretAccessCode: "local-access",
+      }));
     }
-
-    const dbSelect = db.select().from(users).where
-    const dbInsert = db.insert(users).values
-
-    vi.mocked(dbSelect).mockReturnValueOnce({
-      get: vi.fn().mockResolvedValueOnce(null),
-      _: {},
-      [Symbol.toStringTag]: 'SQLiteSelectBase',
-      prepare: vi.fn(),
-      run: vi.fn(),
-      dialect: 'sqlite',
-      hkt: 'SQLiteSelectHKT',
-      tableName: 'users',
-      resultType: 'sync',
-      runResult: null,
-      selection: users
-    } as any)
-
-    vi.mocked(dbInsert).mockReturnValueOnce({
-      returning: vi.fn().mockResolvedValueOnce([mockUser])
-    })
-
-    // Make request to the API
-    const response = await $fetch('/api/auth/register', {
-      method: 'POST',
-      body: {
-        email: 'test@example.com',
-        password: 'securepass123'
-      }
-    })
-
-    expect(response).toEqual({
-      id: mockUser.id,
-      email: mockUser.email,
-      createdAt: mockUser.createdAt
-    })
-  })
-
-  it('should reject registration with invalid email', async () => {
-    const nuxt = await setup({
-      server: true
-    })
-
-    await expect($fetch('/api/auth/register', {
-      method: 'POST',
-      body: {
-        email: 'invalid-email',
-        password: 'securepass123'
-      }
-    })).rejects.toThrow('Invalid input')
-  })
-
-  it('should reject registration with short password', async () => {
-    const nuxt = await setup({
-      server: true
-    })
-
-    await expect($fetch('/api/auth/register', {
-      method: 'POST',
-      body: {
-        email: 'test@example.com',
-        password: '123'
-      }
-    })).rejects.toThrow('Invalid input')
-  })
-
-  it('should reject registration for existing email', async () => {
-    const nuxt = await setup({
-      server: true
-    })
-
-    const existingUser = {
-      id: 1,
-      email: 'existing@example.com',
-      createdAt: new Date()
-    }
-
-    const mockDb = db as unknown as MockDb
-    const dbSelect = mockDb.select().from(users).where
-
-    dbSelect.mockReturnValueOnce({
-      get: vi.fn().mockResolvedValueOnce(existingUser),
-      _: {},
-      [Symbol.toStringTag]: 'SQLiteSelectBase',
-      prepare: vi.fn(),
-      run: vi.fn()
-    })
-
-    await expect($fetch('/api/auth/register', {
-      method: 'POST',
-      body: {
-        email: 'existing@example.com',
-        password: 'securepass123'
-      }
-    })).rejects.toThrow('Email already registered')
-  })
-
-  it('should hash the password before storing', async () => {
-    const nuxt = await setup({
-      server: true
-    })
-
-    const mockUser = {
-      id: 1,
-      email: 'test@example.com',
-      createdAt: new Date()
-    }
-
-    const dbSelect = db.select().from(users).where
-    const dbInsert = db.insert(users).values
-
-    vi.mocked(dbSelect).mockReturnValueOnce({
-      get: vi.fn().mockResolvedValueOnce(null),
-      _: {},
-      [Symbol.toStringTag]: 'SQLiteSelectBase',
-      prepare: vi.fn(),
-      run: vi.fn(),
-      dialect: 'sqlite',
-      hkt: 'SQLiteSelectHKT',
-      tableName: 'users',
-      resultType: 'sync',
-      runResult: null,
-      selection: users
-    } as any)
-
-    vi.mocked(dbInsert).mockReturnValueOnce({
-      returning: vi.fn().mockResolvedValueOnce([mockUser])
-    })
-
-    await $fetch('/api/auth/register', {
-      method: 'POST',
-      body: {
-        email: 'test@example.com',
-        password: 'securepass123'
-      }
-    })
-
-    // Verify the password was hashed (contains salt:hash format)
-    const insertCall = vi.mocked(dbInsert).mock.calls[0][0]
-    expect(insertCall.passwordHash).toMatch(/^[a-f0-9]+:[a-f0-9]+$/)
-  })
-})
+  });
+  it("persists a password hash and issues a session, then rejects duplicates", async () => {
+    const response = await request(valid);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(await response.json()).toHaveProperty("token");
+    const user = db.select().from(users).get()!;
+    expect(user.passwordHash).not.toBe(valid.password);
+    expect(
+      (await verifyPassword(valid.password, user.passwordHash)).success,
+    ).toBe(true);
+    expect((await request(valid)).status).toBe(400);
+  });
+});

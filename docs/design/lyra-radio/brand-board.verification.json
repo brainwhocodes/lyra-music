@@ -1,0 +1,119 @@
+{
+  "capturedAt": "2026-10-18T14:51:25.006Z",
+  "url": "file:///C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.html",
+  "failures": [],
+  "fontResponses": [
+    {
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2",
+      "status": 200
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2",
+      "status": 200
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2",
+      "status": 200
+    }
+  ],
+  "fonts": [
+    {
+      "font": "700 32px \"Barlow Condensed\"",
+      "loaded": true
+    },
+    {
+      "font": "800 32px \"Barlow Condensed\"",
+      "loaded": true
+    },
+    {
+      "font": "400 32px \"Space Grotesk\"",
+      "loaded": true
+    },
+    {
+      "font": "500 32px \"Space Grotesk\"",
+      "loaded": true
+    },
+    {
+      "font": "600 32px \"Space Grotesk\"",
+      "loaded": true
+    },
+    {
+      "font": "700 32px \"Space Grotesk\"",
+      "loaded": true
+    }
+  ],
+  "images": [
+    {
+      "src": "../../../public/images/lyra-radio/mark.png",
+      "width": 1254,
+      "height": 1254,
+      "complete": true
+    },
+    {
+      "src": "../../../public/images/lyra-radio/wordmark.png",
+      "width": 1942,
+      "height": 809,
+      "complete": true
+    },
+    {
+      "src": "../../../public/images/lyra-radio/rooftop-dj.png",
+      "width": 1536,
+      "height": 1024,
+      "complete": true
+    },
+    {
+      "src": "../../../public/images/lyra-radio/mark.png",
+      "width": 1254,
+      "height": 1254,
+      "complete": true
+    }
+  ],
+  "smallText": [],
+  "interactive": [],
+  "panels": [
+    {
+      "label": "manifesto-title",
+      "width": 683,
+      "height": 586,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "artwork",
+      "width": 683,
+      "height": 586,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "type-title",
+      "width": 683,
+      "height": 432,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "palette-title",
+      "width": 683,
+      "height": 432,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "app-title",
+      "width": 683,
+      "height": 496,
+      "overflowX": false,
+      "overflowY": false
+    },
+    {
+      "label": "system-title",
+      "width": 683,
+      "height": 496,
+      "overflowX": false,
+      "overflowY": false
+    }
+  ],
+  "width": 1440,
+  "height": 1744
+}

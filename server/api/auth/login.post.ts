@@ -45,9 +45,9 @@ export default defineEventHandler(async (event) => {
     .run()
 
   // Verify password using the utility function
-  const isPasswordValid = await verifyPassword(password, user.passwordHash);
+  const verification = await verifyPassword(password, user.passwordHash);
 
-  if (!isPasswordValid) {
+  if (!verification.success) {
     throw createError({
       statusCode: 401,
       message: 'Invalid email or password'

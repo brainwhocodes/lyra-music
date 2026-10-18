@@ -5,12 +5,16 @@ This directory contains a DB-backed queue and worker for long-running background
 ## Run in development
 
 ```bash
-pnpm tsx server/jobs/worker.ts
+pnpm worker
 ```
 
 ## Production recommendation
 
 Run the worker as a separate process/container so scans cannot block Nitro request handling.
+
+The entry point loads `.env` and starts the loop explicitly on Windows, macOS and
+Linux. Use the same `DATABASE_URL` and filesystem access as the web server. Apply
+`pnpm db:migrate` before starting a new installation. Stop the process with Ctrl+C.
 
 ## Limits
 

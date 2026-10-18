@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+vi.mock('~/server/utils/scanner/db-operations', () => ({}));
+vi.mock('~/server/utils/musicbrainz', () => ({}));
 import { isSingleFolder } from '~/server/utils/scanner'
 
 describe('isSingleFolder', () => {

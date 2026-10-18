@@ -1,151 +1,155 @@
 <template>
-  <Teleport to="body">
-    <div v-if="open" class="modal modal-open" @click.self="closeModal">
-      <div class="modal-box">
-        <button
-          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-          @click="closeModal"
-        >
-          ✕
-        </button>
-        <h3 v-if="track" class="font-bold text-lg">
-          Add "{{ track.title }}" to Playlist
-        </h3>
-        <div v-if="isLoading" class="mt-4 py-4 text-center">
-          <span class="loading loading-spinner loading-md"></span>
-          <p class="mt-2">Loading playlists...</p>
-        </div>
-        <div v-else-if="error" class="mt-4 py-4 text-center text-error">
-          <p>{{ error }}</p>
-          <button class="btn btn-sm btn-outline mt-2" @click="fetchPlaylists">Retry</button>
-        </div>
-        <div v-else-if="playlists.length > 0" class="mt-4">
-          <ul class="menu bg-base-100 w-full p-0 rounded-box max-h-60 overflow-y-auto">
-            <li v-for="playlist in playlists" :key="playlist.playlistId">
-              <a @click="handleAddTrackToPlaylist(playlist.playlistId)">
-                {{ playlist.name }}
-              </a>
-            </li>
-          </ul>
-        </div>
-        <p v-else class="py-4">
-          You don't have any playlists yet.
-          <NuxtLink to="/playlists" class="link" @click="closeModal">Create one?</NuxtLink>
-        </p>
-        <div class="modal-action mt-6">
-          <button class="btn btn-ghost" @click="closeModal">Cancel</button>
-        </div>
-      </div>
+  <UtilityDialog
+    :open="open"
+    :title="`Add ${track?.title || 'track'} to Playlist`"
+    @update:open="
+      (value) => {
+        if (!value) closeModal();
+      }
+    "
+  >
+    <UiLoadingSkeleton
+      v-if="loading"
+      label="Loading playlists…"
+      variant="text"
+      :count="3"
+    />
+    <div v-else-if="loadError" role="alert" class="text-error">
+      <p>{{ loadError }}</p>
+      <button class="btn btn-outline mt-3" @click="fetchPlaylists">
+        Retry loading playlists
+      </button>
     </div>
-  </Teleport>
+    <ul v-else-if="playlists.length" class="playlist-choices">
+      <li v-for="playlist in playlists" :key="playlist.playlistId">
+        <button
+          type="button"
+          class="btn btn-outline"
+          :disabled="saving || !track"
+          @click="addToPlaylist(playlist.playlistId)"
+        >
+          {{ playlist.name }}
+        </button>
+      </li>
+    </ul>
+    <p v-else>
+      You don't have any playlists yet.
+      <NuxtLink to="/playlists" class="link" @click="closeModal"
+        >Create a playlist</NuxtLink
+      >.
+    </p>
+    <p v-if="saving" role="status" class="mt-4">Adding track…</p>
+    <p v-if="saveError" role="alert" class="text-error mt-4">{{ saveError }}</p>
+    <div class="modal-action">
+      <button type="button" class="btn" autofocus @click="closeModal">
+        Cancel
+      </button>
+    </div>
+  </UtilityDialog>
 </template>
 
 <script setup lang="ts">
-import type { Track } from '~/types/track';
-import type { Playlist } from '~/types/playlist';
+import type { Track } from "~/types/track";
+import type { Playlist } from "~/types/playlist";
+import UtilityDialog from "~/components/utility/dialog.vue";
 
-interface Props {
-  open: boolean;
-  track: Track | null;
+const props = defineProps<{ open: boolean; track: Track | null }>();
+const emit = defineEmits<{
+  "update:open": [value: boolean];
+  "add-track": [value: { trackId: string; playlistId: string }];
+}>();
+const playlists = ref<Playlist[]>([]);
+const loading = ref(false),
+  saving = ref(false),
+  loadError = ref(""),
+  saveError = ref("");
+let version = 0;
+let controller: AbortController | undefined;
+
+function closeModal() {
+  emit("update:open", false);
+}
+async function fetchPlaylists() {
+  if (!props.open) return;
+  const request = ++version;
+  controller?.abort();
+  controller = new AbortController();
+  loading.value = true;
+  loadError.value = "";
+  try {
+    const result = await $fetch<Playlist[]>("/api/playlists", {
+      signal: controller.signal,
+      retry: 0,
+    });
+    if (request === version) playlists.value = result;
+  } catch (error: any) {
+    if (request === version && error?.name !== "AbortError")
+      loadError.value = "Could not load playlists. Please try again.";
+  } finally {
+    if (request === version) loading.value = false;
+  }
 }
 
-const props = defineProps<Props>();
-
-// State for the component
-const playlists = ref<Playlist[]>([]);
-const isLoading = ref(false);
-const error = ref<string | null>(null);
-
-/**
- * Fetches the user's playlists from the API.
- */
-const fetchPlaylists = async (): Promise<void> => {
-  isLoading.value = true;
-  error.value = null;
-  
+async function addToPlaylist(playlistId: string) {
+  const trackId = props.track?.trackId;
+  if (!trackId || saving.value || !props.open) return;
+  const request = version;
+  saving.value = true;
+  saveError.value = "";
   try {
-    // Fetch playlists from API using cookie-based authentication
-    const response = await $fetch<Playlist[]>('/api/playlists');
-    
-    playlists.value = response;
-  } catch (err) {
-    console.error('Error fetching playlists:', err);
-    error.value = 'Failed to load playlists';
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-
-
-const emit = defineEmits(['update:open', 'add-track']);
-
-/**
- * Closes the modal.
- */
-const closeModal = (): void => {
-  emit('update:open', false);
-};
-
-/**
- * Handles adding the track to the selected playlist.
- * @param playlistId - The ID of the playlist to add the track to.
- */
-const handleAddTrackToPlaylist = async (playlistId: string): Promise<void> => {
-  if (props.track) {
-    try {
-      const response = await $fetch(`/api/playlists/${playlistId}/tracks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ trackId: props.track.trackId })
-      });
-      
-      // Emit event for parent components to handle if needed
-      emit('add-track', { trackId: props.track.trackId, playlistId });
-      
-      // Success - let parent component handle notification
-    } catch (err) {
-      console.error('Error adding track to playlist:', err);
-      // Error - let parent component handle notification
-    }
-  }
-  closeModal();
-};
-
-// Watch for modal open state changes
-watch(() => props.open, (isOpen: boolean) => {
-  if (isOpen) {
-    // Add keyboard event listener
-    document.addEventListener('keydown', onKeyDown);
-    
-    // Fetch playlists when modal opens
-    fetchPlaylists();
-  } else {
-    // Remove keyboard event listener when modal closes
-    document.removeEventListener('keydown', onKeyDown);
-  }
-});
-
-const onKeyDown = (event: KeyboardEvent): void => {
-  if (event.key === 'Escape') {
+    await $fetch(
+      "/api/playlists/" + encodeURIComponent(playlistId) + "/tracks",
+      {
+        method: "POST",
+        body: { action: "add", trackIds: [trackId] },
+        retry: 0,
+      },
+    );
+    if (request !== version || !props.open || props.track?.trackId !== trackId)
+      return;
+    emit("add-track", { trackId, playlistId });
     closeModal();
+  } catch (error: any) {
+    if (request === version)
+      saveError.value =
+        error?.data?.statusMessage ||
+        "Could not add the track. Choose a playlist to try again.";
+  } finally {
+    if (request === version) saving.value = false;
   }
-};
+}
 
-onUnmounted(() => {
-  document.removeEventListener('keydown', onKeyDown);
+watch(
+  [() => props.open, () => props.track?.trackId],
+  ([open]) => {
+    version++;
+    controller?.abort();
+    playlists.value = [];
+    loading.value = saving.value = false;
+    loadError.value = saveError.value = "";
+    if (open) void fetchPlaylists();
+  },
+  { immediate: true },
+);
+onBeforeUnmount(() => {
+  version++;
+  controller?.abort();
 });
 </script>
 
 <style scoped>
-.modal-open {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.playlist-choices {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  max-height: 50vh;
+  overflow: auto;
 }
-.modal-box {
-  max-height: 90vh; /* Ensure modal box doesn't get too tall */
+.playlist-choices .btn {
+  width: 100%;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
 }
 </style>
