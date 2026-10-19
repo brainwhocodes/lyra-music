@@ -15,6 +15,14 @@ export function cosineSimilarity(a: readonly number[], b: readonly number[]): nu
   return Math.max(-1, Math.min(1, left.reduce((sum, value, i) => sum + value * right[i]!, 0)));
 }
 
+/** Inputs have already been normalized once for this ranking pass. */
+function normalizedSimilarity(a: readonly number[], b: readonly number[]): number {
+  if (a.length !== b.length) throw new Error('Embedding dimensions do not match.');
+  let score = 0;
+  for (let i = 0; i < a.length; i++) score += a[i]! * b[i]!;
+  return Math.max(-1, Math.min(1, score));
+}
+
 const QUERY_STOP_WORDS = new Set('a an and are as at be by for from has have i in is it me more my of on or our some something that the their them there these this to was we were with you your help song songs music lyrics track tracks after before no not without'.split(' '));
 function searchTokens(text: string): Set<string> {
   const words = text.normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
@@ -72,21 +80,30 @@ export function classifyTags(trackVector: number[], taxonomyVectors: { tag: Taxo
   return result;
 }
 
+export const RECOMMENDATION_WINDOW_DAYS = 30;
+
+/** Only recorded, meaningful plays qualify. A scrobble is not proof of completion. */
+export function qualifiedRecommendationHistory(records: Pick<IndexedTrack, 'trackId' | 'duration'>[], history: PlayHistory[], now = Date.now()) {
+  const byId = new Map(records.map(track => [track.trackId, track]));
+  return history.filter(play => {
+    const track = byId.get(play.trackId);
+    const playedAt = Date.parse(play.playedAt);
+    if (!track || !Number.isFinite(playedAt) || playedAt > now || now - playedAt > RECOMMENDATION_WINDOW_DAYS * 86_400_000) return false;
+    const threshold = track.duration && track.duration > 0 ? Math.min(30_000, track.duration * 500) : 30_000;
+    return play.playDurationMs !== null && Number.isFinite(play.playDurationMs) && play.playDurationMs >= threshold;
+  });
+}
+
 export function recommendTracks(records: IndexedTrack[], history: PlayHistory[], options: { limit?: number; now?: number } = {}): { basis: 'history' | 'cold-start'; tracks: RankedTrack[] } {
   const limit = options.limit ?? 20;
   if (!Number.isInteger(limit) || limit < 1 || limit > 50) return { basis: 'cold-start', tracks: [] };
   const now = options.now ?? Date.now();
   const byId = new Map(records.map(track => [track.trackId, track]));
   const weights = new Map<string, number>();
-  for (const play of history) {
-    if (!byId.has(play.trackId) || !Number.isFinite(Date.parse(play.playedAt))) continue;
-    // A recorded short skip is not evidence of affinity. Older events decay over a month.
-    const duration = byId.get(play.trackId)!.duration;
-    const meaningfulListenMs = duration && duration > 0 ? Math.min(30_000, duration * 500) : 30_000;
-    if (play.playDurationMs !== null && (!Number.isFinite(play.playDurationMs) || play.playDurationMs < meaningfulListenMs)) continue;
-    const ageDays = Math.max(0, (now - Date.parse(play.playedAt)) / 86_400_000);
-    if (ageDays > 180) continue;
-    const weight = Math.exp(-ageDays / 30);
+  const qualified = qualifiedRecommendationHistory(records, history, now);
+  for (const play of qualified) {
+    const ageDays = (now - Date.parse(play.playedAt)) / 86_400_000;
+    const weight = Math.exp(-ageDays / 14);
     weights.set(play.trackId, Math.min(3, (weights.get(play.trackId) ?? 0) + weight));
   }
   const seeds = [...weights].sort((a, b) => b[1] - a[1]).slice(0, 25);
@@ -98,12 +115,19 @@ export function recommendTracks(records: IndexedTrack[], history: PlayHistory[],
   for (const [id, weight] of seeds) byId.get(id)!.similarityVector.forEach((value, i) => { profile[i]! += value * weight; });
   // Opposing preferences may cancel out. Use the strongest real seed rather than a zero vector.
   if (Math.hypot(...profile) <= 1e-12) profile.splice(0, profile.length, ...byId.get(seeds[0]![0])!.similarityVector);
-  const listened = new Set(history.filter(play => Number.isFinite(Date.parse(play.playedAt)) && now - Date.parse(play.playedAt) < 7 * 86_400_000).map(play => play.trackId));
+  const normalizedProfile = normalizeVector(profile);
+  const normalizedSeeds = seeds.map(([id]) => ({ track: byId.get(id)!, vector: normalizeVector(byId.get(id)!.similarityVector) }));
+  const listened = new Set(qualified.filter(play => now - Date.parse(play.playedAt) < 7 * 86_400_000).map(play => play.trackId));
   const candidates = records.filter(track => !listened.has(track.trackId) && !weights.has(track.trackId));
   const scored = candidates.map(track => {
-    const nearest = seeds.map(([id]) => ({ track: byId.get(id)!, similarity: cosineSimilarity(track.similarityVector, byId.get(id)!.similarityVector) }))
-      .sort((a, b) => b.similarity - a.similarity)[0]!;
-    return { track, score: cosineSimilarity(profile, track.similarityVector), seedTrackId: nearest.track.trackId,
+    const vector = normalizeVector(track.similarityVector);
+    let nearest = normalizedSeeds[0]!;
+    let nearestScore = -Infinity;
+    for (const seed of normalizedSeeds) {
+      const similarity = normalizedSimilarity(vector, seed.vector);
+      if (similarity > nearestScore) { nearest = seed; nearestScore = similarity; }
+    }
+    return { track, score: normalizedSimilarity(normalizedProfile, vector), seedTrackId: nearest.track.trackId,
       reason: `Similar metadata and lyrics to “${nearest.track.title}”, which you listened to.` };
   }).sort((a, b) => b.score - a.score || a.track.trackId.localeCompare(b.track.trackId));
   // First pass caps each album at two tracks, then fills any remaining slots.

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import { sql, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import { users } from './users';
@@ -12,7 +12,7 @@ export const userTrackPlays = sqliteTable('user_track_plays', {
   playDurationMs: integer('play_duration_ms'), // Optional: How much of the track was played
   source: text('source'), // Optional: Where the play originated (e.g., 'library', 'album_view', 'playlist_xyz', 'search')
   createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
-});
+}, table => ({ userPlayedIndex: index('user_track_plays_user_played_idx').on(table.userId, table.playedAt) }));
 
 export type UserTrackPlay = InferSelectModel<typeof userTrackPlays>;
 export type NewUserTrackPlay = InferInsertModel<typeof userTrackPlays>;

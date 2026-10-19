@@ -1,0 +1,82 @@
+[
+  {
+    "number": 1,
+    "name": "Rooftop selector",
+    "slug": "rooftop-selector",
+    "distinction": "A compact station rail keeps browsing beside a large selected-station stage.",
+    "consideration": "Balanced browsing and listening; artwork should not crowd the station rail.",
+    "image": "originals/01-rooftop-selector.png"
+  },
+  {
+    "number": 2,
+    "name": "Record shop",
+    "slug": "record-shop",
+    "distinction": "Six illustrated sleeves make station discovery feel like browsing a record store.",
+    "consideration": "Easy discovery; a large collection will need efficient scrolling and filtering.",
+    "image": "originals/02-record-shop.png"
+  },
+  {
+    "number": 3,
+    "name": "Radio zine",
+    "slug": "radio-zine",
+    "distinction": "An editorial spread pairs one featured station with a fast, scannable index.",
+    "consideration": "Strong hierarchy; the featured station should not hide the rest of the library.",
+    "image": "originals/03-radio-zine.png"
+  },
+  {
+    "number": 4,
+    "name": "Transit lines",
+    "slug": "transit-lines",
+    "distinction": "A graphic station map explores genre connections, with a clear list alternative.",
+    "consideration": "Most experimental: spatial browsing needs a fully usable list alternative.",
+    "image": "originals/04-transit-lines.png"
+  },
+  {
+    "number": 5,
+    "name": "Listening desk",
+    "slug": "listening-desk",
+    "distinction": "A steady three-pane workspace puts stations, current artwork and seeds side by side.",
+    "consideration": "Useful while listening; the third pane should collapse cleanly on smaller screens.",
+    "image": "originals/05-listening-desk.png"
+  },
+  {
+    "number": 6,
+    "name": "Poster wall",
+    "slug": "poster-wall",
+    "distinction": "Tall station posters create a bold horizontal browse experience.",
+    "consideration": "Artwork leads; keyboard and touch navigation through the ribbon will matter.",
+    "image": "originals/06-poster-wall.png"
+  },
+  {
+    "number": 7,
+    "name": "Cassette shelf",
+    "slug": "cassette-shelf",
+    "distinction": "Compact station spines open into a cassette-inlay style listening page.",
+    "consideration": "Compact and distinctive; typography must remain clear across many station names.",
+    "image": "originals/07-cassette-shelf.png"
+  },
+  {
+    "number": 8,
+    "name": "Split horizon",
+    "slug": "split-horizon",
+    "distinction": "An ink-and-art split gives the station identity the strongest visual presence.",
+    "consideration": "Strongest brand expression; station discovery gets less space than in the list-led options.",
+    "image": "originals/08-split-horizon.png"
+  },
+  {
+    "number": 9,
+    "name": "Street index",
+    "slug": "street-index",
+    "distinction": "A typography-led station list favors fast scanning and low visual clutter.",
+    "consideration": "Fastest to scan; station art plays a smaller role.",
+    "image": "originals/09-street-index.png"
+  },
+  {
+    "number": 10,
+    "name": "Gallery tunnel",
+    "slug": "gallery-tunnel",
+    "distinction": "A vertical sequence of large artwork panels makes browsing feel cinematic.",
+    "consideration": "Immersive artwork; sticky navigation must keep returning to stations easy.",
+    "image": "originals/10-gallery-tunnel.png"
+  }
+]

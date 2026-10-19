@@ -1,0 +1,51 @@
+{
+  "method": "Built-in image_gen",
+  "references": [
+    "C:/Users/mille/Documents/ChatGPT/lyra/public/images/lyra-radio/rooftop-dj.png",
+    "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+  ],
+  "records": [
+    {
+      "slug": "night-transmission",
+      "name": "Night transmission",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Night rooftop listening session. Same DJ seated on an orange-painted speaker stack, cobalt cityscape and elevated train receding behind, deep ink-blue sky with subtle acid moon glow; headphones orange, jacket cobalt with lime accents. Camera at waist level, medium-full figure rather than extreme giantshoe. Half-lit face looking off-frame, nighttime atmosphere. Clear dark left third with architecture, useful for optional live page typography. Keep face centered around x65%,y35%, full body below. Contrast poised and cinematic, not neon haze.",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-4b52511f-036a-4d00-887b-81dd8eac7cda.png",
+      "destination": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/artwork-v2/originals/night-transmission.png",
+      "generatedAt": "2026-10-18T22:55:32.089Z",
+      "nativeDimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "sha256": "7738b5ac37f13c89a15304b8b4b87b39c69769da9af98807bbb5007b6ea3dab1",
+      "bytes": 3191461
+    },
+    {
+      "slug": "platform-session",
+      "name": "Platform session",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Daytime elevated train platform after a skate session. Same DJ leans against cobalt rail, orange headphones on ears, acid windbreaker, skateboard resting safely beside feet. Strong acid sky, concrete station beams and orange train doors, graffiti marks without letters. Perspective recedes left, original urban anime world. Subject medium-full figure near x65%,y50%, face near x65%,y30%; preserve silhouette for narrow portrait crop. Motion implied only by drifting jacket hem, no artificial blur. Make the setting distinct from a rooftop.",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-41c229ce-ea86-4f84-bd38-1a309c5177bf.png",
+      "destination": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/artwork-v2/originals/platform-session.png",
+      "generatedAt": "2026-10-18T22:55:32.096Z",
+      "nativeDimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "sha256": "2528c835d9023f8a18e5710604d39370772584be4be6a2e1750ae156aac4bb35",
+      "bytes": 3328861
+    },
+    {
+      "slug": "record-room",
+      "name": "Record room",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Intimate night record room inside a converted industrial loft. Same DJ with orange headphones, dark navy shirt, lime overshirt, browsing a crate of records beside two turntables; cobalt shelves of vinyl and chunky speakers, orange desk lamp, window onto city tracks. Cozy through light and materials, not cream palette. Thoughtful contemplative pose, one hand resting on record sleeve with NO text, correctly drawn fingers. Subjectcenter-rightx65%; legible wide room scene onleft, darkink surfaces. Rich restrained screenprint texture and excellent graphic composition.",
+      "source": "C:\\Users\\mille\\.codex\\generated_images\\01a14dff-a0e9-76b1-92b0-c50f1c963b23\\exec-cf4cb700-4d7e-428d-b8f8-0de4136cb402.png",
+      "destination": "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/artwork-v2/originals/record-room.png",
+      "generatedAt": "2026-10-18T22:55:32.102Z",
+      "nativeDimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "sha256": "465217aca9ba87adfa8d6f3b216e8b66eb3184244393870f086022fdc6dcdf8f",
+      "bytes": 2953647
+    }
+  ]
+}

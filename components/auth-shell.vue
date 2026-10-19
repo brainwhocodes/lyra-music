@@ -5,11 +5,12 @@
     </header>
     <div class="auth-columns">
       <section class="auth-story">
-        <img
-          src="/images/lyra-radio/rooftop-dj.webp"
+        <ResponsiveArtwork
+          class="auth-story-art"
+          name="rooftop-dj"
           alt="An anime radio DJ on a graffiti-covered rooftop speaker"
-          width="1536"
-          height="1024"
+          sizes="(max-width: 760px) calc(100vw - 40px), 48vw"
+          priority
         />
         <h2>{{ headline }}</h2>
         <p>Your collection. Your station. Your rules.</p>
@@ -41,7 +42,7 @@ defineProps<{ headline: string }>();
   gap: 3rem;
   padding: 2.5rem 0;
 }
-.auth-story img {
+.auth-story-art {
   width: 100%;
   aspect-ratio: 1.6;
   object-fit: cover;

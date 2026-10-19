@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { audit, checkAccessibility, checkCompactControlSpacing, checkLayout, guard, login } from './helpers';
-import { expectTrackWaveform, playbackPosition, pointerSeek, seekSeconds } from './player-controls';
+import { playbackPosition, pointerSeek, seekSeconds } from './player-controls';
+import { originalStreamEvidence } from './stream-evidence';
 
 const authenticatedRoutes: Array<[string, RegExp]> = [
   ['/library', /Your library\./], ['/albums', /^Albums/], ['/albums/album-the-distant-sun', /^Monomyth$/],
@@ -15,6 +16,7 @@ const authenticatedRoutes: Array<[string, RegExp]> = [
 test('every route renders real content, accessible controls and responsive layouts', async ({ page }, info) => {
   test.setTimeout(240_000);
   const errors = guard(page);
+  const streams = originalStreamEvidence(page);
   for (const path of ['/', '/features', '/self-host', '/login', '/register']) {
     await page.goto(path);
     await page.waitForLoadState('networkidle');
@@ -73,16 +75,43 @@ test('every route renders real content, accessible controls and responsive layou
   }
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 320, height: 800 });
-    await page.goto('/');
-    await checkLayout(page);
-    await audit(page, info, 'compact320-public');
+    for (const path of ['/', '/features', '/self-host']) {
+      await page.goto(path);
+      await page.evaluate(() => document.fonts.ready);
+      await checkLayout(page);
+      const name = path === '/' ? 'home' : path.slice(1);
+      await audit(page, info, path === '/' ? 'compact320-public' : 'compact320-public-' + name);
+      await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+      expect(await page.locator('body').evaluate(body => getComputedStyle(body).fontSize)).toBe('32px');
+      await checkLayout(page);
+      if (path === '/' || path === '/features') {
+        const cardHeading = page.getByRole('heading', { name: path === '/' ? 'After hours' : 'City Drift Radio', exact: true });
+        const cardHeadingBox = await cardHeading.boundingBox();
+        expect(cardHeadingBox).not.toBeNull();
+        expect(cardHeadingBox!.width, 'Enlarged card text needs readable line width rather than one character per line').toBeGreaterThanOrEqual(120);
+      }
+      await audit(page, info, 'compact320-public-text200-' + name);
+    }
     await login(page);
     for (const [path] of authenticatedRoutes) {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
       await checkLayout(page, true);
-      if (path === '/library') await checkCompactControlSpacing(page);
+      if (path === '/library') {
+        await checkCompactControlSpacing(page);
+        const menu = page.getByRole('button', { name: 'Open navigation menu', exact: true });
+        const explore = page.getByRole('link', { name: 'Explore', exact: true });
+        const menuBox = await menu.boundingBox(), exploreBox = await explore.boundingBox();
+        expect(menuBox).not.toBeNull();
+        expect(exploreBox).not.toBeNull();
+        expect(Math.abs(menuBox!.y + menuBox!.height / 2 - exploreBox!.y - exploreBox!.height / 2), 'Compact navigation must not orphan Explore onto another row').toBeLessThanOrEqual(1);
+        await menu.click();
+        await expect(page.getByRole('dialog', { name: 'Navigation', exact: true })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog', { name: 'Navigation', exact: true })).not.toBeVisible();
+        await expect(menu).toBeFocused();
+      }
       if (path === '/albums/album-the-distant-sun') await checkCompactControlSpacing(page, 'The Distant Sun');
       await audit(page, info, 'compact320-' + path.slice(1).replaceAll('/', '-'));
     }
@@ -94,7 +123,7 @@ test('every route renders real content, accessible controls and responsive layou
     await checkLayout(page);
     await audit(page, info, 'compact320-player');
     await checkAccessibility(page, info, 'compact320-player');
-    const { waveform } = await expectTrackWaveform(player);
+    const { waveform } = await streams.complete('the-distant-sun', player);
     await pointerSeek(player, 0.5);
     await seekSeconds(player, 3);
     await expect(playbackPosition(player)).toHaveValue('3');
@@ -116,5 +145,5 @@ test('every route renders real content, accessible controls and responsive layou
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
   }
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, info.project.name === 'mobile' ? { 'the-distant-sun': 1 } : {});
 });

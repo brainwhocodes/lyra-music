@@ -1,0 +1,121 @@
+{
+  "createdAt": "2026-10-18",
+  "scope": "Substantive redesign of three public landing pages; authenticated radio exploration choice remains pending.",
+  "routes": [
+    {
+      "path": "/",
+      "purpose": "Explain local-library radio and guide listeners or server owners to the appropriate start.",
+      "primaryAction": {
+        "label": "Create an account",
+        "to": "/register"
+      },
+      "sections": [
+        "Artwork-led hero",
+        "Library promise strip",
+        "Radio and album collection preview",
+        "Search and recommendation editorial split",
+        "Three-step listening workflow",
+        "Frequently asked questions",
+        "Final start CTA"
+      ]
+    },
+    {
+      "path": "/features",
+      "purpose": "Explain actual listening, discovery and lyric tools with truthful illustrative UI previews.",
+      "primaryAction": {
+        "label": "Open your library",
+        "to": "/library"
+      },
+      "sections": [
+        "Feature hero and illustrated player",
+        "Album and radio browsing",
+        "Semantic search preview",
+        "Daily recommendations preview",
+        "Editable local lyrics preview",
+        "Tools index",
+        "Frequently asked questions",
+        "Final library CTA"
+      ]
+    },
+    {
+      "path": "/self-host",
+      "purpose": "Help a server owner understand requirements, setup and optional local model boundaries.",
+      "primaryAction": {
+        "label": "Read the setup guide",
+        "to": "https://github.com/brainwhocodes/lyra-music#quick-start"
+      },
+      "sections": [
+        "Record-room hero",
+        "Operating model",
+        "Requirements table",
+        "Four setup steps",
+        "Optional model explanation",
+        "Frequently asked questions",
+        "Final setup CTA"
+      ]
+    }
+  ],
+  "sharedNavigation": [
+    {
+      "label": "Lyra home",
+      "destination": "/",
+      "type": "designed-internal-page"
+    },
+    {
+      "label": "Features",
+      "destination": "/features",
+      "type": "designed-internal-page"
+    },
+    {
+      "label": "Self-host",
+      "destination": "/self-host",
+      "type": "designed-internal-page"
+    },
+    {
+      "label": "Log in",
+      "destination": "/login",
+      "type": "existing-internal-page"
+    },
+    {
+      "label": "Create an account",
+      "destination": "/register",
+      "type": "existing-internal-page"
+    },
+    {
+      "label": "Open your library",
+      "destination": "/library",
+      "type": "existing-internal-page"
+    },
+    {
+      "label": "GitHub",
+      "destination": "https://github.com/brainwhocodes/lyra-music",
+      "type": "external-destination"
+    }
+  ],
+  "states": [
+    "Desktop",
+    "Tablet",
+    "Mobile 320px and 390px",
+    "Expanded native FAQ",
+    "Keyboard focus",
+    "200% text reflow"
+  ],
+  "contentRules": [
+    "Illustrative station/track names explicitly labeled",
+    "No invented live listeners, streams, or schedules",
+    "Search embeds metadata and available lyrics, not acoustic analysis",
+    "Recommendation refresh every 24 hours with worker while server is running",
+    "Generated lyrics remain editable and require review"
+  ],
+  "sourceFacts": [
+    "README.md",
+    "docs/model-setup.md",
+    "server/jobs/README.md"
+  ],
+  "assets": {
+    "brandReference": "../brand-board.offline.png",
+    "homeHero": "/images/lyra-radio/rooftop-dj.png",
+    "featuresHero": "docs/design/lyra-radio/artwork-v2/originals/platform-session.png",
+    "selfHostHero": "docs/design/lyra-radio/artwork-v2/originals/record-room.png"
+  }
+}

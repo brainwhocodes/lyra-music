@@ -1,0 +1,53 @@
+{
+  "createdAt": "2026-10-19T12:51:30.920Z",
+  "comparisons": [
+    {
+      "page": "home",
+      "referenceDimensions": {
+        "width": 1920,
+        "height": 5000
+      },
+      "actualDimensions": {
+        "width": 1920,
+        "height": 5206
+      },
+      "alignment": "Same width, top aligned, cool-gray padding below shorter image. No crop or nonuniform stretching.",
+      "comparison": "after/home-comparison.webp",
+      "overlay": "after/home-overlay.webp",
+      "actualSha256": "32e867339eeb4700eb4ec4c18dfb6c0fc6fa89d17b0e1803a7cdd7b341dc8e1b",
+      "method": "Sharp side-by-side and 50% alpha overlay; ODiff executable unavailable."
+    },
+    {
+      "page": "features",
+      "referenceDimensions": {
+        "width": 1920,
+        "height": 5000
+      },
+      "actualDimensions": {
+        "width": 1920,
+        "height": 5432
+      },
+      "alignment": "Same width, top aligned, cool-gray padding below shorter image. No crop or nonuniform stretching.",
+      "comparison": "after/features-comparison.webp",
+      "overlay": "after/features-overlay.webp",
+      "actualSha256": "d46c460de49b9f5d66b07b15ec8b64aa95db15f7d6c4bd7dcd06bf2fc3c93b05",
+      "method": "Sharp side-by-side and 50% alpha overlay; ODiff executable unavailable."
+    },
+    {
+      "page": "self-host",
+      "referenceDimensions": {
+        "width": 1920,
+        "height": 5000
+      },
+      "actualDimensions": {
+        "width": 1920,
+        "height": 5156
+      },
+      "alignment": "Same width, top aligned, cool-gray padding below shorter image. No crop or nonuniform stretching.",
+      "comparison": "after/self-host-comparison.webp",
+      "overlay": "after/self-host-overlay.webp",
+      "actualSha256": "7d2ddebea9dc229a5999a1b550bc08ad952f52a46e8c698196dde62d26ab7fcc",
+      "method": "Sharp side-by-side and 50% alpha overlay; ODiff executable unavailable."
+    }
+  ]
+}

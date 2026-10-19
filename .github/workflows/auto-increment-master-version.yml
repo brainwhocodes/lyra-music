@@ -26,12 +26,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.12.1
 
       - name: Configure Git
         run: |
@@ -39,7 +39,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prod=false
 
       - name: Build Project
         run: pnpm build
@@ -101,7 +101,7 @@ jobs:
         run: |
           # This command updates pnpm-lock.yaml based on the new version in package.json
           # and any potential changes to dependency resolution if applicable.
-          pnpm install --frozen-lockfile=false
+          pnpm install --frozen-lockfile=false --prod=false
           echo "Updated pnpm-lock.yaml"
 
       - name: Check for changes

@@ -37,7 +37,7 @@ beforeAll(async () => {
   baseURL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 });
 beforeEach(() => {
-  sqlite.exec('DELETE FROM user_track_plays; DELETE FROM track_embeddings; DELETE FROM lyrics; DELETE FROM tracks; DELETE FROM albums; DELETE FROM genres; DELETE FROM users;');
+  sqlite.exec('DELETE FROM recommendation_snapshots; DELETE FROM job_queue; DELETE FROM user_track_plays; DELETE FROM track_embeddings; DELETE FROM lyrics; DELETE FROM tracks; DELETE FROM albums; DELETE FROM genres; DELETE FROM users;');
   for (const userId of ['alice', 'bob']) {
     state.db.insert(users).values({ userId, name: userId, email: `${userId}@example.test`, passwordHash: 'unused' }).run();
     state.db.insert(albums).values({ albumId: `${userId}-album`, userId, title: `${userId} album` }).run();
@@ -123,6 +123,9 @@ describe('intelligence HTTP, JWT and migrated SQLite (embedding boundary mocked)
   it('uses only this user listening history and excludes played seed tracks', async () => {
     await request('index', 'alice', {});
     state.db.insert(userTrackPlays).values({ userId: 'alice', trackId: 'alice-1', playDurationMs: 60_000 }).run();
+    expect(await (await request('recommendations')).json()).toMatchObject({ generatedAt: null, refreshState: 'queued', stale: true });
+    const { processSingleJob } = await import('../../server/jobs/worker');
+    await processSingleJob();
     const result = await (await request('recommendations')).json();
     expect(result.basis).toBe('history');
     expect(result.tracks.map((x: any) => x.trackId)).toEqual(['alice-2']);

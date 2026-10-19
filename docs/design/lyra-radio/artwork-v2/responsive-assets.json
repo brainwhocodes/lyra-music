@@ -1,0 +1,1534 @@
+{
+  "generatedAt": "2026-10-18T23:17:54.739Z",
+  "upscaled": false,
+  "assets": [
+    {
+      "name": "rooftop-dj",
+      "source": "public/images/lyra-radio/rooftop-dj.png",
+      "sourceBytes": 2468186,
+      "sourceSha256": "8d22154fe5d4d928488a0542cba3c2a2d72de4662ce5019464f541209957397b",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 3063,
+          "sha256": "38be01930d3d9a8f78bd19234e8a82042f617fa40be74b6d0f87261818c397ed"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 2662,
+          "sha256": "127b2da72f44ea13af6363d32373abd364bab8093c4a1250dbdab0e100872d34"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 7001,
+          "sha256": "3b35793f4d5c996e32bf053a9efc90a4f6c71e389c90155817454f9e47e0b9a2"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 6438,
+          "sha256": "c436ab27cde0578079119bc8840ffad94a8bbb6245880005e5a19d6f601fff22"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 19673,
+          "sha256": "58a7e9a131bfef0f2f1ad2b9b0038a2f318b06b7f9c1dc2dcf4da1230b1c1f92"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 19966,
+          "sha256": "be11dcb29c30fc340d7286df1a07e90b2a0676150010abd7bbbb230fbcfe36bc"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 36906,
+          "sha256": "49a4156ed73cfed390b15290108c623e1b1ca15fd45edcdf4d2c7339a8c9204b"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 38666,
+          "sha256": "cfc0d9c51bb41fe404a7d9e42004e8cac973c3a971ed6c6c756ce95d35269de6"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 74659,
+          "sha256": "435470fb4ba45d9107a2198639c6d172ecbdd770168ee0ce56756c2e7d27605e"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 84142,
+          "sha256": "f2d35603b18048bf58d67e57a4d892e32b4dd01c6b7af78435528bdc76887fa6"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 113427,
+          "sha256": "cca2dcbdb171993507c536fd898f9e371ff512fa863f27fda53cefb21963f529"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 136114,
+          "sha256": "f79e910bbe5ed14c114bb59925e46a43a8bc1ce15d4e9d4d9df80ae1937e7be8"
+        },
+        {
+          "width": 1536,
+          "format": "avif",
+          "bytes": 194891,
+          "sha256": "f270361bf60e116496e9cdc7c45b3681753af8312ea986fb20e4332d66658d25"
+        },
+        {
+          "width": 1536,
+          "format": "webp",
+          "bytes": 255574,
+          "sha256": "2b4d7c44385744a2fd5213f22f6a05da97ea9e0d2b4c9630f3ce0886232f495d"
+        }
+      ]
+    },
+    {
+      "name": "night-transmission",
+      "source": "docs/design/lyra-radio/artwork-v2/originals/night-transmission.png",
+      "sourceBytes": 3191461,
+      "sourceSha256": "7738b5ac37f13c89a15304b8b4b87b39c69769da9af98807bbb5007b6ea3dab1",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 3696,
+          "sha256": "7d8e23e00b590b077050393173b3c0649192a1e4056f7d8770b0e843d3cda70e"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 3180,
+          "sha256": "e0d44fe0e1f0dd75dbf6b92f4afae823e06fa1e902919c1b2b9ffcb232558fd8"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 8703,
+          "sha256": "cb4e0bc2f79a11528414ff5edc8481152c5bbed9cda045edfe6a450234b8cb29"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 8172,
+          "sha256": "2488bb4c64ce036a672902460016635d32dab71bb802fb9120419a191ed89120"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 27717,
+          "sha256": "c9fb5230d65b5c39e0b24e26b60f86b0ff0018b2ba809872d1011d86a114abf4"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 27282,
+          "sha256": "a13818504007980487cda2c04db7d1229f9a58438927fe6ed35557c7e2cf1a02"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 56325,
+          "sha256": "951fec3481e8507f17644f5a147d7e00af119264f5b8ca53e442085480d26f38"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 56948,
+          "sha256": "e41db40e47d869c9e640a93d47dc77db7fa453cc628e1dbfeb21cf782f6efb2f"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 124623,
+          "sha256": "1b1ec94d69afa1c4e7c41c0467d8337c6cd79a33cc2d0a445a200f6bbe90605b"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 134338,
+          "sha256": "6d9a01c64e1636a0f3ebf21f94f8bdb8edc13dd09f48399fe093222ed85eb3a1"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 197949,
+          "sha256": "ad711309e010552ab6fdb47662346dda2584c5ea53e98765a6cf4a9787afb725"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 227972,
+          "sha256": "921929461db27e37b9c3181ec6a5f1cb4c3410f38e7c3c7c733c482dd75ae6dd"
+        },
+        {
+          "width": 1536,
+          "format": "avif",
+          "bytes": 355419,
+          "sha256": "f1f81c92a6db1b9befa45364e7ae206459f2917a6bc03625fb845e334a886dbd"
+        },
+        {
+          "width": 1536,
+          "format": "webp",
+          "bytes": 433298,
+          "sha256": "29b33faab88c12a8bb1560eca4cb1cb4235265f1dad3be53b4dcbd8ae15568f5"
+        }
+      ]
+    },
+    {
+      "name": "platform-session",
+      "source": "docs/design/lyra-radio/artwork-v2/originals/platform-session.png",
+      "sourceBytes": 3328861,
+      "sourceSha256": "2528c835d9023f8a18e5710604d39370772584be4be6a2e1750ae156aac4bb35",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 4194,
+          "sha256": "ac95a08757693dc760946452083ee8b5f6c088a6c8e3b2076184a74ed780fa97"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 3528,
+          "sha256": "ffe334b88d6447c353f45e84de523bbe5fd81f7791cd97fae899ecc2566eda35"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 9991,
+          "sha256": "5aa76b9a3cc8f744b125c362bd4aac580b3108220f69d5421abddd8fa7c4d416"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 8956,
+          "sha256": "6fac97bef415ef217fe47528db8d80eafb4c529307e11b746a646f0193c70023"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 31987,
+          "sha256": "00eb7df39b82923159364fe4f116c3b60e3d9a620521e8d23302a6aa365ee626"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 30946,
+          "sha256": "2c34fa19aa9d611c6443bf3fbff95fbc3b304ee4fd84956eeac524026657842f"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 64101,
+          "sha256": "18cfe4d178980b9b1b3e9ef853f94d1225d5ef3f4cf5879eaef09de9d10e2f33"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 63030,
+          "sha256": "11d2717951809f7c9683b61e446ec833216f79155d5943426331a7bd6bf39d87"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 141661,
+          "sha256": "b4a2d54e11e7935571ec5420dcac3262966ca1336a0a245f0fd7ecb6a8cab89d"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 146502,
+          "sha256": "fe56c57c6e1f9a19997f721e27041ce187f6ee6ab1f0ffa85c8d5197f5578f46"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 221672,
+          "sha256": "75d1894b2c73bb0d9563b093b5fbb2562af957989a272d59858e83485642cbc6"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 245080,
+          "sha256": "bd065c2c6a5ac77e8224a56bc21896ba7fc6e15d100eb911b0d9b36712cbf93d"
+        },
+        {
+          "width": 1536,
+          "format": "avif",
+          "bytes": 392421,
+          "sha256": "619357d58e4d8c64544c47d37465daeb3d933d42f736752f1e6d67a4f34095eb"
+        },
+        {
+          "width": 1536,
+          "format": "webp",
+          "bytes": 462904,
+          "sha256": "a6b8e7573634b3fb68cec119bba9419ba9733c57ce455390c686cb9c4bcf045d"
+        }
+      ]
+    },
+    {
+      "name": "record-room",
+      "source": "docs/design/lyra-radio/artwork-v2/originals/record-room.png",
+      "sourceBytes": 2953647,
+      "sourceSha256": "465217aca9ba87adfa8d6f3b216e8b66eb3184244393870f086022fdc6dcdf8f",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 3904,
+          "sha256": "a9c89de19e660f40427a1bca38369a6443512d8a72ef147843a0a6cf97770f1c"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 3568,
+          "sha256": "a972c2e70d7e291c64cbfb3ac7b5974bfdb1ff241ce634512d27f0c26002bbf4"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 9263,
+          "sha256": "ef24b1bf90632633e894d8505c0e44e3bd9935dc582b9a4b6d5754b4de672cd5"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 8948,
+          "sha256": "053aa2fe3603be876c36e08665422af0d61feb7ef53cb9c849eba6866e136169"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 28085,
+          "sha256": "d47888680fc00c147e83ee72c9af7d585358f52fa7b00b3bfbb1ec960afc46d4"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 29486,
+          "sha256": "c7b69af396809e51c44448b4b1e130413c41c560e1628cb859ce74cada3f242e"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 54527,
+          "sha256": "797d2824c6d2c5731db0985561756ac358fbd73c6daf12ccbe454795dc167c0e"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 58358,
+          "sha256": "d3469e360aa7d77fafd892e2071b6b1b593cad8389ddf9a6744c9b99f2f28c86"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 113168,
+          "sha256": "65ae2717aa9fc04ce625b2abc4f9ae2c4f95f3f4db1e3401df00da02a1f787fe"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 130464,
+          "sha256": "e9e107ca373bb617c964d42ce58794c47e45fe0fedf9fa7042359fa02a3ded90"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 173508,
+          "sha256": "1b4985f8757ec8aece28ac4a1807f069573e64118f64faeccc1952439e53615d"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 207800,
+          "sha256": "cc16a78a4ca50b25641acc237215bd58c63ba9ae905c1d14481f15a118018886"
+        },
+        {
+          "width": 1536,
+          "format": "avif",
+          "bytes": 301723,
+          "sha256": "7229c0a47fd2d00234a6289e40d8c38b266abb600f64645d87c9f610e00ec497"
+        },
+        {
+          "width": 1536,
+          "format": "webp",
+          "bytes": 389702,
+          "sha256": "41ff7e9a3ff2d03b6af1319c7ed9bc34ed7bf09af77a39cd6435baf0b940fef5"
+        }
+      ]
+    },
+    {
+      "name": "genre-electronic",
+      "source": "docs/design/lyra-radio/genres-v1/originals/electronic.png",
+      "sourceBytes": 2980261,
+      "sourceSha256": "f71020486bd5187c90e2425a9c3684c0da3c96dac50f872cfac1e362e8be2d6d",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5411,
+          "sha256": "edc387dc1b34f03523a29d85fa5b046946493e786e5dbed86321da2c430638dc"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4918,
+          "sha256": "34033c3ff74649cfcfcf888beda95e91053d440ea72be6ab10e8c34b791687ce"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 12245,
+          "sha256": "2055acc477f733a29be0d28a77c8975cc8be882c62f162e958f8682959d262f6"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 11702,
+          "sha256": "8afbff9fcb631900399c42c965b9834dfd354ea6a9b2c0d48633f798e11f68e8"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 37918,
+          "sha256": "9f26be5b6a3e91fb642993dab00b661438fd1042c5f34da6e4215d0c89ca6f08"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 38514,
+          "sha256": "977d72baff4aeb38b7f443a0edd0b29389c73e3d5215aa29839a3cc02d3c72ab"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 72703,
+          "sha256": "ad62453a94700c3b9f625950081306890b4db4976d3d39703313e9b8cb48388f"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 76108,
+          "sha256": "08447347accdabc9d9a1cf57a47fe5ca57299f32e0ee65e3d248eea8b3766032"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 148510,
+          "sha256": "e1ce756fd651578fc2d35e66968b403af1bd6fe56b4978a056612a216dfb784f"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 169088,
+          "sha256": "67212e4ab7052eff73ea642c78da8a72ff943d92836702aba11682c34c57d1e3"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 223003,
+          "sha256": "4b6f772ec0730ccb42a999cc1c9464f94c713732f41558644ad28a000b2c39e8"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 266480,
+          "sha256": "76b3d5ca4eaf8137719ab741ef9cf305639980bb48d5228fe5bcf37c1043e75e"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 288785,
+          "sha256": "34f810ba8db2cff9702f71e9766ef3af6c0c11a6a5e7775ddf2c768618070827"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 364912,
+          "sha256": "70ffa7c56ffffd62e5e0e474fefa4ceda5c387458912020720552350d5b3f63e"
+        }
+      ]
+    },
+    {
+      "name": "genre-rock",
+      "source": "docs/design/lyra-radio/genres-v1/originals/rock.png",
+      "sourceBytes": 3075261,
+      "sourceSha256": "e8d2cf3f7039eb898550c4cdd0c8da9fc8e3354f0fd3d75013bab89721374906",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5135,
+          "sha256": "d2357a5b4c9be6cd5955a26d8816e5786595c5dbe21ae843ad75251f48df3116"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4600,
+          "sha256": "b70eaedd1eb03a062f851c250ddf70e9f7b96e1ea8bb20719d65085bc53364c1"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 11781,
+          "sha256": "6df4653da979a20711fcf3c1b34c6041faed6cd3354c5d2104bd94c87fc77b93"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 11068,
+          "sha256": "4cf2661859c748136a8216522e385145ff92ec523e71ee9c844f800a174aaa1c"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 37008,
+          "sha256": "74a55afd3562b480c1b03ffccf1bf4d2badf03a07bfa5ea2d807fc09e1e57e05"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 37080,
+          "sha256": "642ed66b39b50c99efe66e9be3c8f7ea23c734b990d0e1282601cb822112e773"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 71468,
+          "sha256": "7611701a96ae514cbce9b4d280ca5f2671eee2926e3454fbef467c8af3ff3ee5"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 74988,
+          "sha256": "aa40a7a55fedc0632b171942c9931f019f161b2a3b35f1a7c60c40ef733e7d0d"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 152764,
+          "sha256": "a816eb0ac6f759b36c8a7a665cee5564acbcc715afd6960148d7a3066ec25207"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 171738,
+          "sha256": "3236911bd58c0796e5c835d9c7531a9ab8a6b5181f086bfcd0e423883556ad88"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 230670,
+          "sha256": "3473c0d7f405f2cf888156047021423d59d7b23ab36ca13562f9b9ffb3ff4d2c"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 271524,
+          "sha256": "2e6bf534216b4e50da27bba65edadee949dee775035c5b99ec7376b49f486b50"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 301135,
+          "sha256": "3a2ef7efebffb96b46a6c2f99799c36eccdbd094c54b9d181981efbf7debb876"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 373016,
+          "sha256": "ff4c0b73d9082d8ac15c86176752b5a4644ac454be4193c695f0deb175c6262f"
+        }
+      ]
+    },
+    {
+      "name": "genre-jazz",
+      "source": "docs/design/lyra-radio/genres-v1/originals/jazz.png",
+      "sourceBytes": 3107483,
+      "sourceSha256": "2f01c0350c917d13aba5a986a5440726de631ee2fce8602a1b9861189d7e0755",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5481,
+          "sha256": "877199abab1634c71e703ccba2799659b88f710bee98fbaba217bb08d5ca21e5"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4952,
+          "sha256": "cf13434fd78c0d836cb88f7a9a6b80cd33a5f1b81e2865504b9d162f45af7bbc"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 12545,
+          "sha256": "529f61113ace5b255d950ec3e8da341509f52fef0509ac9de2ac37fc6d9cae6c"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 11904,
+          "sha256": "17fc2f91b443605bfe8047a9cbff00b9e93035ec7b8a15f1809c0f2296fe5c76"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 39664,
+          "sha256": "b4401ac44722ed87ee7d34c85b2eb4c8203bd17fdd9e8b15c0d16ecf2aa6c398"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 39744,
+          "sha256": "a9696643852d1dc913ed798a61fb4a05b755ea79dbc2ed898d73239ae3ccfd6b"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 76771,
+          "sha256": "52d125a6396561ea584d2e1000edd39097bd31c6aacca07551636742222a8c68"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 80310,
+          "sha256": "e1b70840554e1109277ded3b8e21c96a5a2d5edb8d403120ee0277bb7186edd4"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 159570,
+          "sha256": "f6c314408e963dcb98dd2f221e9f1526217000f190e5c94adfaf9ff185136537"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 183578,
+          "sha256": "5a69fd291a3447206adee9e87fe34fce68b424ae3ab57f3764da69e7d9e22ab6"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 240387,
+          "sha256": "fa3345cd549a52dc5a477185511148d9008f8d7e26be32272010ff50e3e6ea96"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 289760,
+          "sha256": "dc680ad2557b8a5b6bc888fa3137de9abed7e55334c716a263df6e2aba2a6fca"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 312991,
+          "sha256": "d6466dd2fca0806fc1f785618dee1f83615e5a48da0dcfa46edeab065bf44d72"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 393270,
+          "sha256": "018d515f15ce0c592eee1e6d1935ef9537a59143fe03f92038eeb87a5da6004d"
+        }
+      ]
+    },
+    {
+      "name": "genre-pop",
+      "source": "docs/design/lyra-radio/genres-v1/originals/pop.png",
+      "sourceBytes": 2951682,
+      "sourceSha256": "0476d0ad3c9e41166a4187832fb28a21f8f89ae11ada5e33ade94b33b23a10fd",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5514,
+          "sha256": "5cfb89252e04bf64c0191f38640c88407eec291631cf1ce82bd385de47341a8d"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 5198,
+          "sha256": "4156560974353b0375e847902981b5708513701fedb82fd5b52d845ca0739021"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 12530,
+          "sha256": "99359510ef89246f2883f849041700f0beb31141ecabf33fdc39785e9f1fc60b"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 12290,
+          "sha256": "6db5abd37f1a4ff5a4e1b08b2615222cce46868906ec5d00b2f1431bdbd207aa"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 38654,
+          "sha256": "1cade99f9eed99d4f87aa34c32f313e24661dda5e74bafaa0e5c5e09d4913aa4"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 40562,
+          "sha256": "4c39d13df63299b41d6f090dc9f07818ed9a9a20c42961d30f31e56d92fc5ea1"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 71963,
+          "sha256": "a27fc4be232f60ca4d07451758bd530b6b126dad99c8562d533818e556ac9e83"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 79254,
+          "sha256": "5cd5052e64abe76426cc367a4f15ab90d5d7cf28c9c623958b3a58ca536fc647"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 147110,
+          "sha256": "eeaaa10b098d7f040e9de9d3b3bd07aaf79abb7a7956e397fb22e55ca26ee2e4"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 170906,
+          "sha256": "aec203707c46b1c27e991876fe06d87ae50b605e3d845205b6e33f2c5e671266"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 220259,
+          "sha256": "7eabb65dd17f294ccaae8488c7c4fb45c36253e1c24f2e5b4d7450659ff815ad"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 270368,
+          "sha256": "d4275b43e868dd344bd1ff672f0c9ac2999fc51417a33c0d4c2173d29df6aa53"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 285454,
+          "sha256": "2d9944ac6923e0f9a069cc787411589af7b1e62117c6fca0b60544a426c17ed5"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 367612,
+          "sha256": "d53fb02b7ebeec455a3baaecff673288ca6ad54c15274eb36f2f62c4251892ec"
+        }
+      ]
+    },
+    {
+      "name": "genre-hip-hop",
+      "source": "docs/design/lyra-radio/genres-v1/originals/hip-hop.png",
+      "sourceBytes": 2949214,
+      "sourceSha256": "77fd927f58e3eedff1615d326c9e4e1bed88015b345fa1131c5db1adb5f97457",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5254,
+          "sha256": "456b2ebd8ab96c99bd15b645d7ef9d985c45bb1e6c2fa57ba60799e80f7f9b9d"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4930,
+          "sha256": "3feb8f90718063fc4ef0e14554786e82a12d879e8f3ae04e1faa70cc40902a04"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 11647,
+          "sha256": "3003a48da912fdbe4da09c95bcd78f29198844e94ae86994ee609d8f3a91615d"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 11542,
+          "sha256": "a8502ddf58967cc8118512058417ae4fe8a711cae8bb62e54327abfd9d8795a4"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 35676,
+          "sha256": "1fe161c7d0ec37a88a7ab82fd7b2e8c0c5af08b85a5955c8f063f8f56a063b2f"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 37650,
+          "sha256": "45494cc7ec7eaf84dcc6aaf1c916d33d1da2732876f9ea3479710e121ffdbf9e"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 68094,
+          "sha256": "1b79b864fded521962e885a3cd699ae4a49b4b842138147020ed5b4ead6b930a"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 75102,
+          "sha256": "3bb6b41d4095de9eaae99663125c4d507756a68db10d285ad119e06daba9f89f"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 139793,
+          "sha256": "c3f23dacf9a680f0a9b089b62758486e38c3b998012acee773a6fe5e0c299476"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 164894,
+          "sha256": "ef487b6ec5bd745bea423d6d65f32c2ffbdd759f94ab75501f3ab5ddc88a37c5"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 209325,
+          "sha256": "de7544cdb7bb79fced9650f99edb29fe2c682878c8aadbaba011469f48d6d488"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 261084,
+          "sha256": "770d47cbc7968097fd4c2896fa079d449de3f579693b7664819d5f83ca94aae1"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 272326,
+          "sha256": "a66ce4abee0239f02a32bd717c881b9bc4046a77568b8234c62e37d0af234c66"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 356718,
+          "sha256": "8ed9f386c1b16d03d64d4a88de01898fbd87b040ca2e43230e32f56f5143a9c7"
+        }
+      ]
+    },
+    {
+      "name": "genre-ambient",
+      "source": "docs/design/lyra-radio/genres-v1/originals/ambient.png",
+      "sourceBytes": 3315033,
+      "sourceSha256": "3163691efe48cb04dfcf77d5c8130cda3a18ded137c479f7ef64cba0cc1d365e",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 4981,
+          "sha256": "13da7e26c42e9e44adc59f9c57def23c8b44f806caedae090fc282074ac86519"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4600,
+          "sha256": "52674048e1cbddc2b845f2f1159497131aa58d874c78757d61ebd227a0e84d69"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 11712,
+          "sha256": "0e1b1741cc1e9a45b6bd8682f0c5757506ba9d8e311a2c4f21e76dc9833a0798"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 11180,
+          "sha256": "73468587a53d4d8f45e02024c9e85286dc202a99fe5268eb28983e81d2f98f97"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 38833,
+          "sha256": "82858f74a40d85ebca44e1409bdff1e446eb0dac58d9422de0be0faea35f3682"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 38572,
+          "sha256": "3c48d6dcb2be30ba9bf9fa266e293920de9199cf1ca17074c628fe10c66e8d7e"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 76308,
+          "sha256": "108e22a630e9fdb04b523685e9aeeadf580ee39d0ab4e662e4e58d84f5f65a5f"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 79976,
+          "sha256": "532a4936fc36c09eab1961a14f6e69a50869f6e6a63c7d99b1f52446adf670ba"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 164078,
+          "sha256": "88ca1de6ee833ac3e99ac4311be68d11dfde79de8b360dc0752e5c85e7ef7415"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 186030,
+          "sha256": "83bdc9f23c7ec599d56282f68e2aa883fe4f5a3dbb0ae53260be4e726ba7f188"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 254951,
+          "sha256": "cdda5608f67f4721563c08f36ae57374fd2fc3c9c61851320ff7ae28b98559f9"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 298852,
+          "sha256": "2e85392733729d374ef81b1746251b601f1e818ff2122f14207da84f814d532d"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 338943,
+          "sha256": "4da833b2a07fc68dbf9e4fa70b4b7e8403b2b3d376812879c518dc9c45bd8233"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 419914,
+          "sha256": "9608c8fc7c857f7c13a4469c0b6b2e480e77b79c792e1daddd74c10846f64d42"
+        }
+      ]
+    },
+    {
+      "name": "genre-default",
+      "source": "docs/design/lyra-radio/genres-v1/originals/default.png",
+      "sourceBytes": 2885474,
+      "sourceSha256": "bd63a045c40c5ebc30664fd2d3a947954d0c7c0a7344f44bb9a12fe9725486e0",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5047,
+          "sha256": "a311551505acab0fd91449e80e1b020c17368332224b0dca9ba83c8d56b2645d"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4214,
+          "sha256": "7df931b939a9dfe3a2ffa0d05e8e25990299349ee7b951468e5ab87c1ff25a11"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 11352,
+          "sha256": "303762e9e760318ba44e054f2c20c89a6d07c438ca7cd3eec219cb864576928b"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 10000,
+          "sha256": "b112d872538c2b506c9672ba9d6200aac5cec3a285b1d529b7a02666b168e799"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 35779,
+          "sha256": "e5798e970bb06dd7bb1179016cca875310dac4bf8094bf1cc945e04c31be883a"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 32890,
+          "sha256": "90333109a587c2d8895be20abf363546bce63e63e2d31f495278c91ecb485abb"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 72935,
+          "sha256": "8366dd566ed8527024f847a723f9a8834db69c0c99ca26e81c3e04d200800c51"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 67818,
+          "sha256": "fb715d7c3eb6f3488cc8ab5085bcaa17d7141fc5cd089bc085bb2c2c0e131c8e"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 152215,
+          "sha256": "9df35532df5e7ca53c3db93e311bfdf3fa0bee3b8c2f48a213f7526a537bad54"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 156476,
+          "sha256": "b27c72cec047ef53cae16dd597a9e2118c141409bb63deaff0a8f326554dcdb2"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 225669,
+          "sha256": "ffeac373c7ec2fd1a3938800868855390e32ea461b240074e8f23e37d61cd457"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 250176,
+          "sha256": "0fe820831b4e9e61320115752ece41fd0dd49fd534c9597a0e8195e82155a073"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 290676,
+          "sha256": "39a4a94328966a43e124ce0da983aeeb8ab4196484a2c37442c53d09b7a326dd"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 340438,
+          "sha256": "fe4dbc846196ccb0eb014dea944cb9397df3647facdefa3c06d930c9ae9e0929"
+        }
+      ]
+    },
+    {
+      "name": "landing-after-hours",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/after-hours.png",
+      "sourceBytes": 2850381,
+      "sourceSha256": "ef0d94def93e803fd52c43b89834ff4eae0dc41f543b4f86512d15aceaac1774",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 7491,
+          "sha256": "64f2ce4a50cc118d094cedb1075f673eb7200a0585f03a2cc1c617bbef04c405"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 6656,
+          "sha256": "106673263828f20fa6c2d985b87c58c9cc5e22a50d54a09660e33fec2de4d951"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 18299,
+          "sha256": "acc7ad489b12caaa70615cb81f6e2506e4029a77e0da8653f3091a2d4250940f"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 16258,
+          "sha256": "4b767e966e3fc9a87d3648c806295ebc4500aeb16550740bc2e10e9cd934d275"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 59374,
+          "sha256": "72adc136acf13aeb2e9e4c1a58e3622bd432c2f3c8bd3f52ae4525741f4ba1dd"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 55518,
+          "sha256": "b4a05f3a35abcd7d1581802bfd647059a09d9655920e5f9f3a318636dd4bcd4c"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 112204,
+          "sha256": "3cad07174e9df78df48c4a7c36a59c6f8965a4be1d4914614274677c751008d1"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 113458,
+          "sha256": "7de7ac92f1026cb8783aac18a06968dcf9b8a5e5a3e5e5678f37686134037925"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 219174,
+          "sha256": "2d88404e497973ca161d1ba955d3eb114a77c998a902b75318d670b5a88e2b3d"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 243738,
+          "sha256": "fbdcf28e1949ecd63cdf7be370d4c24c5eab7fa003b6236196bbd77c7b8a4c7e"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 324718,
+          "sha256": "8b3f73e06ad6a8dab5ab189aad8e6cd6ee33c68d7c73edea167b1a61e0a5ad5b"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 384042,
+          "sha256": "cbd8934584a75577fa0bf08726f992478872ce0c4b2e3ba444d490d83fb63d2e"
+        }
+      ]
+    },
+    {
+      "name": "landing-concrete-rhythm",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/concrete-rhythm.png",
+      "sourceBytes": 2751455,
+      "sourceSha256": "a0b3175dca1b709d557328463b09a352fee27324f8635b4e248c73d5f2f6be02",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5044,
+          "sha256": "6c0b633ddfc749724c0687bdfe56acea3700cfe862e4e578f261c5352853c8ba"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 5112,
+          "sha256": "6893b77bc5c8940138cd01779056c60e9bb74631a9e7b46b4cf2878fe9020415"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 12365,
+          "sha256": "76cbbe7654e28abebde3bb3dbb84dfa1d882e332495f0aedd136fd5112d71fa9"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 12814,
+          "sha256": "a7b8ead8aba2cda06c2ed3f408a20b198674129eb3040ab2e181aaaac500d02b"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 43094,
+          "sha256": "1a0c918a8385888127aa96024975c622817b6b919b004082aaa43b610ec549d1"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 45894,
+          "sha256": "2f5ccf240acceb1c6b27b277deac222c801fd4c292f75db4dac535c98b555242"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 83757,
+          "sha256": "7b3d09983937e2c7ec3363486e7eb9c4069b1a2816eab35803a5c30bd3a5a74e"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 93568,
+          "sha256": "c69814b731a841e8ddb603b41090aad1040ec1641777e11092d5bb016b6b7cf6"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 170970,
+          "sha256": "15eac3acb4c9bf1a7437554ce1294d57882f992d0cc72777d6135164be24e749"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 210488,
+          "sha256": "f78a74ea9a0df26c10df7881985573e88b59e3fb5dcce9ffaae9047e02af7568"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 259916,
+          "sha256": "7c7cd2b1e0a7171aae918f460d2131de5933e361c8a83605aa27b430e146a5e4"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 333658,
+          "sha256": "74536440eaf23e751249e2710a2f6781581172db26a27827fb5a3eb4d4425ade"
+        }
+      ]
+    },
+    {
+      "name": "landing-open-sky",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/open-sky.png",
+      "sourceBytes": 2606015,
+      "sourceSha256": "dd4772bb0018644d39041f8c11c67126f4b3da83696106af618e69bc6bf56f53",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 6371,
+          "sha256": "5b98507d24dde1ccffa85ecee151055296e9fa75a1234798282263afba30cce9"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 6392,
+          "sha256": "00ec18d4ad716538e9d6daa46e116ee831495612f2e3ebac797a24494f61403f"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 14809,
+          "sha256": "ad251d882f880d5267809ecbf0eb4da743c861faa64239f6670928301c623532"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 15144,
+          "sha256": "b802588fc99713cc95e441159f7d85a6ecae3ca03252620a03c1a87a6ea98290"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 45221,
+          "sha256": "fd646e0de62a9218a88db605597c0b2efa4e1875c4a9091942af54d8263acd39"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 48412,
+          "sha256": "dac9a6e98a5013cf8768512721357210630d4f6bc408d10400cee6df20f9dde0"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 82044,
+          "sha256": "79d40967aae39258f86854b9f331dc2512273b934aed59f4973e7e76e3d93e5b"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 93012,
+          "sha256": "3615706fe31d5da11de116dd6e2086daf81373393560737b1fbcb817af5b2194"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 155926,
+          "sha256": "ca7453cd4c8dc52126745082ca4c31abff99faa7e4029967cf764b082459e7eb"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 194686,
+          "sha256": "cfaa1e74303e5f8d0b08c02e8f74be40cfc0a7d50fdac4e7e16d662edb6ab321"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 228873,
+          "sha256": "cddb4d4464d6be7f8141870b27a02a81e235b4a037564fccc04287fc67ed66aa"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 303844,
+          "sha256": "0f443b21bda6e33a70ccd3f84abeb7dc2324b27b82211852f94f130e447be83c"
+        }
+      ]
+    },
+    {
+      "name": "landing-midnight-signals",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/midnight-signals.png",
+      "sourceBytes": 2614399,
+      "sourceSha256": "034fda79bc5fad60f5b4ebcf52fcea4b3eb6fb298610a7c0b55e622136b3c621",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 3182,
+          "sha256": "8e49d24efe80f8e9989790d1882d66423e3dc8e01da31f05057f386f12713d15"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 3150,
+          "sha256": "eb118e6c7ed376f4a1c3dfc63eafcdf70f08a89ed131f4567b00b6601c21681b"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 7557,
+          "sha256": "cbc6e433d5859e8769c7dc5b4ea107b34b18420e60a099360cbf49e47f056f6a"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 7914,
+          "sha256": "cd3c12bb1ff24f55d9ae580bea32ae7a55094908aa19fffbfd4fcf54ead32ccc"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 25829,
+          "sha256": "79049579b6c0d694cfd224aa64af8feb832fe060b0fd7c5cb6f41362f70a1b1d"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 27020,
+          "sha256": "33cdbc63c15b9073f00966755763accbde946cc492eced5938119548d75dd492"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 51112,
+          "sha256": "c893996265a8e81cdfcf6d1654df78c7566b0d547ab6475243349714f3a2cea4"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 55370,
+          "sha256": "d50af47e7035c1859d45b99485156fb8cf53cba8070e8d1a1018327ae31d2e6b"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 107471,
+          "sha256": "6f4580582f6d9fc0b3cd0578bd4a2b1e345246d3fb70eff4480ff586592e5020"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 125422,
+          "sha256": "120b44fb99fc6f6adf622778fe52c737b83e533a9ba73633817cedefe081786b"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 163436,
+          "sha256": "51f18ac83d20e79b1891783001de6018aa3350066ca04389145fa1fd6b3534b1"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 201452,
+          "sha256": "7c6f03eb50a15c5cf2ebe171bb46e4b6933feb073a80ec8d51b535c0fd891e77"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 213107,
+          "sha256": "f149fe2257906740d18b854b3c1883d79175b2f317a99266871316f72596aaf5"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 275586,
+          "sha256": "1e1d98980de1a68c80bd033ef03ae2042d068e1c26877aad1976adbe2faee51a"
+        }
+      ]
+    },
+    {
+      "name": "landing-silhouettes",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/silhouettes.png",
+      "sourceBytes": 3268187,
+      "sourceSha256": "906e4ddc989b9ed38e415cc96c0c045206e317e83435c2765c493191300a1ab6",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 5237,
+          "sha256": "4cbc5e00d85a4f37ca2ae2eb362feacc2408d7d232b34ff97a7b55673589a148"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4440,
+          "sha256": "841be527d1beeaf39857011e87d7d915fd0e292725893d35d12579ccf1ec5fa4"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 12150,
+          "sha256": "b02472bf0026df1406c7eae563113a79e7ee9e8b8f918649dfdd265862e90943"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 10892,
+          "sha256": "979ab023d838128b325dd1ec6a942b672838f18d94ea4c7bf49f98b6d87145ab"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 40587,
+          "sha256": "7f1cf89f4f238c4a0f46c4d7a51b4af2c48f7d933562e88d6ee56fffc2d77461"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 36864,
+          "sha256": "ced8e3f63362103bec9978bef53904dce2b9ab5267180c8163602080f3c7136c"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 81395,
+          "sha256": "d87c6aa14cb536125b718f5a10dcb8a07c4a8aee93e2fb139e7eba93a687a110"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 77412,
+          "sha256": "e7c168ed6cf8bc64cd8542ba3f9799bd9c824e116f4562d0c1f9cc3ffde8cb86"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 179406,
+          "sha256": "df414bae0e9c9b6dfe86197dc22efc7da0b9c9688109fc519c8924c01969019a"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 187308,
+          "sha256": "cd125f9c9f3e41672c8e3d98bc75661d5fc6e654ca23812bfce44e9e7cf4d017"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 277474,
+          "sha256": "42b366e909f2212ae882743613e1115895f25c7a1e85b6f0e2bafa18567df86b"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 310782,
+          "sha256": "7585408977c620bab18228cf1e7b2c2071ccd5b9e2a9f4e9a652e95dc7932268"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 366561,
+          "sha256": "826e0cf7c9d6e5c94d2cffe512fe72829c8d87ea71d13547dc7506704a2002b2"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 427270,
+          "sha256": "30b5f7ede362c8f448e64574ef1df548b2f7a717aeb291db45515a5da1b2c11a"
+        }
+      ]
+    },
+    {
+      "name": "landing-stray-light",
+      "source": "docs/design/lyra-radio/landing-v2/assets/originals/stray-light.png",
+      "sourceBytes": 2161399,
+      "sourceSha256": "a135e2dccb59b34926bc56aa7efa6bc55defae2e1da29d5489368a267053ea24",
+      "variants": [
+        {
+          "width": 96,
+          "format": "avif",
+          "bytes": 3752,
+          "sha256": "18a52487011104d800bd87acbb38a9be97bb3af77708c993257f3feff19421f5"
+        },
+        {
+          "width": 96,
+          "format": "webp",
+          "bytes": 4176,
+          "sha256": "380a229564aafef1f072e9c383effe9fc8d98f1ceb76183bf5f7bdc2bbc246fc"
+        },
+        {
+          "width": 160,
+          "format": "avif",
+          "bytes": 8498,
+          "sha256": "e0330df63398cffdbe9654fd061d33233dadcc68f6a2d5ec1f4145b66d299ac9"
+        },
+        {
+          "width": 160,
+          "format": "webp",
+          "bytes": 10142,
+          "sha256": "e47baa5ac8f74fba7c341d22858cdfe4f68c20883c46c20318456e0355f4fcc5"
+        },
+        {
+          "width": 320,
+          "format": "avif",
+          "bytes": 25958,
+          "sha256": "eb41cacfe42e061f4953ea7fb0a4f8de0d8b60f42045637ea1cf81fe87bc54fd"
+        },
+        {
+          "width": 320,
+          "format": "webp",
+          "bytes": 31414,
+          "sha256": "d62ede4c7ca852bfc7e1706d32bbe685cdd4120b4881a5e86047290e1d2f60e8"
+        },
+        {
+          "width": 480,
+          "format": "avif",
+          "bytes": 48785,
+          "sha256": "6e9db00a80ef68073246e39362e14798fbf9a089a53519c7679daa9558663c1f"
+        },
+        {
+          "width": 480,
+          "format": "webp",
+          "bytes": 59980,
+          "sha256": "c86f1ed74451c32562db5e5ce8c6ee9f3ff3cadb85616e205b2449cc4de5a45d"
+        },
+        {
+          "width": 768,
+          "format": "avif",
+          "bytes": 96335,
+          "sha256": "6fcd4d86dc3b55f8d73ebc22e229c05a4c220a6221bb2f254a1765be64b55061"
+        },
+        {
+          "width": 768,
+          "format": "webp",
+          "bytes": 126722,
+          "sha256": "d02612a9fdc326b51a41fcbbb779368efcdc8d5916f5a2a289b7b809b5e5a9d8"
+        },
+        {
+          "width": 1024,
+          "format": "avif",
+          "bytes": 140595,
+          "sha256": "f13edb97c584b5d489de57205a6c31a45212f76ec5caf755c2c658061d7dbcc4"
+        },
+        {
+          "width": 1024,
+          "format": "webp",
+          "bytes": 192970,
+          "sha256": "f48dec2128e114296ccd7883496d1c4b9f1cdf9227560acd3f56e02b61ec2955"
+        },
+        {
+          "width": 1254,
+          "format": "avif",
+          "bytes": 182703,
+          "sha256": "5d1bdc14f61d870aab34cae12b676cb8f2e2cc87e27af316a2c0edca35cd04ef"
+        },
+        {
+          "width": 1254,
+          "format": "webp",
+          "bytes": 256506,
+          "sha256": "0eef6491506bf194a8f3d9fa90502885bc78b98e5cc9b5383aec65160c3c0d41"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 
 export async function checkRadioBrandHeading(page: Page) {
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Own your frequency.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Own your\s*frequency\./);
 }
 
 export async function checkRadioBrandFonts(page: Page) {

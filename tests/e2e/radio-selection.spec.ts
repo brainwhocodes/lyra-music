@@ -10,6 +10,41 @@ async function queueTitles(queue: Locator) {
     .evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')!.replace(/^(Play|Pause) /, '')));
 }
 
+test('station artwork can pause independently of audio and respects reduced motion', async ({ page }, info) => {
+  const errors = guard(page);
+  const streams = originalStreamEvidence(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await login(page);
+  await page.goto('/radio/quiet-hours');
+  await page.getByRole('button', { name: 'Play station', exact: true }).click();
+  const pauseMotion = page.getByRole('button', { name: 'Pause artwork animation', exact: true });
+  await expect(pauseMotion).toBeVisible();
+  await pauseMotion.scrollIntoViewIfNeeded();
+  const artwork = page.locator('.radio-desk-art .radio-artwork-image');
+  await expect.poll(() => artwork.evaluate(element => getComputedStyle(element).animationPlayState)).toBe('running');
+  const player = page.getByRole('region', { name: 'Music player', exact: true });
+  const progress = playbackPosition(player);
+  await expect.poll(() => positionValue(progress)).toBeGreaterThan(0.25);
+  await pauseMotion.click();
+  const positionWhileArtworkPaused = await positionValue(progress);
+  await expect.poll(() => artwork.evaluate(element => getComputedStyle(element).animationPlayState)).toBe('paused');
+  await expect.poll(() => positionValue(progress)).toBeGreaterThan(positionWhileArtworkPaused + 0.25);
+  await expect(player.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Resume artwork animation', exact: true }).click();
+  await expect.poll(() => artwork.evaluate(element => getComputedStyle(element).animationPlayState)).toBe('running');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(pauseMotion).toHaveCount(0);
+  await expect.poll(() => artwork.evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+  await expect(player.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
+  await player.getByRole('button', { name: 'Pause playback', exact: true }).click();
+  const title = await player.getByRole('button', { name: /^Open full screen player:/ }).getAttribute('aria-label');
+  const trackId = title?.includes('The Distant Sun') ? 'the-distant-sun' : 'signal-to-noise';
+  await streams.complete(trackId, player);
+  await audit(page, info, 'radio-artwork-reduced-motion');
+  await checkAccessibility(page, info, 'radio-artwork-reduced-motion');
+  streams.assertClean(errors, { [trackId]: 1 });
+});
+
 test('choosing the current station cancels a pending station without replacing its queue or playback position', async ({ page }, info) => {
   const allowedAbortPaths: string[] = [];
   const errors = guard(page, [], allowedAbortPaths);

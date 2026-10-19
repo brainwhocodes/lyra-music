@@ -1,0 +1,404 @@
+{
+  "url": "file:///C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/radio-explorations-v1/index.html",
+  "timestamp": "2026-10-18T21:31:45.979Z",
+  "sourceSha256": "d82cee2ab48807edb698509592cf188ce5602c61e76f6dd38d23c9b5715526af",
+  "assets": [
+    {
+      "number": 1,
+      "image": "originals/01-rooftop-selector.png",
+      "bytes": 2015079,
+      "sha256": "d9517235ca5444d54f50442a113b463abff2b3b45048e0816774c1d0c654d4a2"
+    },
+    {
+      "number": 2,
+      "image": "originals/02-record-shop.png",
+      "bytes": 2034694,
+      "sha256": "fa7d3acca61ed744d51787b818d4117d09f0e267ee50e61fc2628d67a7a1822e"
+    },
+    {
+      "number": 3,
+      "image": "originals/03-radio-zine.png",
+      "bytes": 2042512,
+      "sha256": "725fc9ae26d45f0e4af81c356af7e236362907529bbe5dfc615808f56580436b"
+    },
+    {
+      "number": 4,
+      "image": "originals/04-transit-lines.png",
+      "bytes": 1878136,
+      "sha256": "2d5a78dbcddea7fb8964c656fd3ba4db95258ad1828fc37f0251485f30a75863"
+    },
+    {
+      "number": 5,
+      "image": "originals/05-listening-desk.png",
+      "bytes": 1999474,
+      "sha256": "45bdcb663b2939e11b2397c7730625b5a60fa72fa59b463a76c554886be4c6c3"
+    },
+    {
+      "number": 6,
+      "image": "originals/06-poster-wall.png",
+      "bytes": 1982839,
+      "sha256": "793c67140ccc2a082337479214299b9422f57b4a626839e0ca55212f9364d3d8"
+    },
+    {
+      "number": 7,
+      "image": "originals/07-cassette-shelf.png",
+      "bytes": 1806541,
+      "sha256": "68f30b66bc3274684b278cfe9fc47b24b833c2dd0ae7e7849d7b41b613750d40"
+    },
+    {
+      "number": 8,
+      "image": "originals/08-split-horizon.png",
+      "bytes": 2114281,
+      "sha256": "30d713706026a5d9d0975674412667447535b2f2bf48c83f5b08919cb9beb88a"
+    },
+    {
+      "number": 9,
+      "image": "originals/09-street-index.png",
+      "bytes": 1892931,
+      "sha256": "81653a34a7d113c79c4e20c97662a88e1ddef1518a4b1ff04158c606e24af642"
+    },
+    {
+      "number": 10,
+      "image": "originals/10-gallery-tunnel.png",
+      "bytes": 2107170,
+      "sha256": "0b9ade6540291fcae5a21fa9a65c5e8d55e9361b95dd1298f15f23db2b8cd201"
+    }
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "screenshot": "desktop.png",
+      "fontChecks": {
+        "display": true,
+        "reading": true
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "screenshot": "mobile-390.png",
+      "dialogScreenshot": "viewer-390.png",
+      "horizontalOverflow": false
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "screenshot": "mobile-320.png",
+      "dialogScreenshot": "viewer-320.png",
+      "horizontalOverflow": false
+    }
+  ],
+  "journeys": [
+    "Open 01 Rooftop selector; title matches; close focus; Escape; focus returns",
+    "Open 02 Record shop; title matches; close focus; Escape; focus returns",
+    "Open 03 Radio zine; title matches; close focus; Escape; focus returns",
+    "Open 04 Transit lines; title matches; close focus; Escape; focus returns",
+    "Open 05 Listening desk; title matches; close focus; Escape; focus returns",
+    "Open 06 Poster wall; title matches; close focus; Escape; focus returns",
+    "Open 07 Cassette shelf; title matches; close focus; Escape; focus returns",
+    "Open 08 Split horizon; title matches; close focus; Escape; focus returns",
+    "Open 09 Street index; title matches; close focus; Escape; focus returns",
+    "Open 10 Gallery tunnel; title matches; close focus; Escape; focus returns",
+    "Native modal traps keyboard focus inside viewer",
+    "Next/previous buttons and arrows change concept; zoom expands image; keyboard scrolls zoomed image; fit restores; original opens decoded local image; close restores focus",
+    "Overview link switches compact mode; detailed link restores full captions; back to top scrolls to start"
+  ],
+  "inventory": [
+    {
+      "label": "Desktop gallery",
+      "controls": [
+        {
+          "tag": "A",
+          "name": "Compact overview ↗",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 01 Rooftop selector",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 02 Record shop",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 03 Radio zine",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 04 Transit lines",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 05 Listening desk",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 06 Poster wall",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 07 Cassette shelf",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 08 Split horizon",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 09 Street index",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 10 Gallery tunnel",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "name": "Back to top ↑",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "Concept viewer",
+      "controls": [
+        {
+          "tag": "A",
+          "name": "Compact overview ↗",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 01 Rooftop selector",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 02 Record shop",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 03 Radio zine",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 04 Transit lines",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 05 Listening desk",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 06 Poster wall",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 07 Cassette shelf",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 08 Split horizon",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 09 Street index",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 10 Gallery tunnel",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "name": "Back to top ↑",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Zoom in +",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "name": "Open original 01 Rooftop selector in a new tab",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Close ✕",
+          "disabled": false
+        },
+        {
+          "tag": "DIV",
+          "name": "Concept image; scroll to explore when zoomed",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Previous concept",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Next concept",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "Mobile 390",
+      "controls": [
+        {
+          "tag": "A",
+          "name": "Compact overview ↗",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 01 Rooftop selector",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 02 Record shop",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 03 Radio zine",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 04 Transit lines",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 05 Listening desk",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 06 Poster wall",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 07 Cassette shelf",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 08 Split horizon",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 09 Street index",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 10 Gallery tunnel",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "name": "Back to top ↑",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "Mobile 320",
+      "controls": [
+        {
+          "tag": "A",
+          "name": "Compact overview ↗",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 01 Rooftop selector",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 02 Record shop",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 03 Radio zine",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 04 Transit lines",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 05 Listening desk",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 06 Poster wall",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 07 Cassette shelf",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 08 Split horizon",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 09 Street index",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "name": "View 10 Gallery tunnel",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "name": "Back to top ↑",
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "negativeControl": "Missing open handler detected by visible-dialog assertion; only disposable browser DOM altered",
+  "passed": true
+}

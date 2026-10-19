@@ -5,12 +5,12 @@
         <h1>Find your frequency.</h1>
         <p class="radio-lead">A mix from your own collection.</p>
       </div>
-      <img
+      <RadioArtwork
         class="radio-poster-art"
-        src="/images/lyra-radio/rooftop-dj.webp"
-        alt=""
-        width="1536"
-        height="1024"
+        name="platform-session"
+        :active="player.currentQueueContext.type === 'radio' && player.isPlaying && !player.isLoading"
+        sizes="(max-width: 440px) 1px, (max-width: 700px) 25vw, 24vw"
+        priority
       />
     </header>
     <section aria-labelledby="your-stations">

@@ -23,11 +23,11 @@
         </section>
       </div>
       <section class="library-feature" aria-labelledby="library-feature-title">
-        <img
-          src="/images/lyra-radio/rooftop-dj.webp"
+        <ResponsiveArtwork
+          class="library-feature-art"
+          name="record-room"
           alt=""
-          width="1536"
-          height="1024"
+          sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1000px) calc(50vw - 32px), calc(38vw - 130px)"
         />
         <div>
           <h2 id="library-feature-title">Find your next favourite.</h2>
@@ -222,7 +222,7 @@ async function albumUpdated() {
   margin-bottom: 1.5rem;
   line-height: 1.65;
 }
-.library-feature img {
+.library-feature-art {
   width: 100%;
   height: 100%;
   height: 21rem;
@@ -317,7 +317,7 @@ async function albumUpdated() {
   .library-feature {
     grid-template-columns: 1fr;
   }
-  .library-feature img {
+  .library-feature-art {
     height: 160px;
     min-height: 0;
   }

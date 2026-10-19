@@ -4,6 +4,15 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { audit, checkAccessibility, checkLayout, guard, login, navigate } from './helpers';
 import { playbackPosition, pointerSeek, positionValue, seekSeconds } from './player-controls';
+import { originalStreamEvidence } from './stream-evidence';
+
+async function currentFixtureTrack(page: Page) {
+  const trigger = page.getByRole('region', { name: 'Music player', exact: true })
+    .getByRole('button', { name: /^Open full screen player:/ });
+  await expect(trigger).toHaveAttribute('aria-label', /^Open full screen player: (The Distant Sun|Signal to Noise)( Scott Buckley)?$/);
+  return (await trigger.getAttribute('aria-label'))!.includes('The Distant Sun')
+    ? 'the-distant-sun' as const : 'signal-to-noise' as const;
+}
 
 async function expectRadioAudioProgress(page: Page) {
   const trigger = page.getByRole('button', { name: /^Open full screen player:/ });
@@ -21,6 +30,7 @@ async function expectRadioAudioProgress(page: Page) {
 
 test('a playlist can add, reorder, rename, remove and persist tracks without dragging', async ({ page }, info) => {
   const errors = guard(page);
+  const streams = originalStreamEvidence(page);
   await login(page);
   await navigate(page, 'Playlists');
   await page.getByRole('button', { name: 'New Playlist', exact: true }).click();
@@ -56,6 +66,7 @@ test('a playlist can add, reorder, rename, remove and persist tracks without dra
   await page.getByRole('button', { name: 'Play all', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
+  await streams.complete('signal-to-noise', page.getByRole('region', { name: 'Music player', exact: true }));
   await page.getByRole('row', { name: /Signal to Noise/ }).getByRole('button', { name: 'Open options menu', exact: true }).click();
   await page.getByRole('button', { name: 'Remove from Playlist', exact: true }).click();
   const remove = page.getByRole('dialog', { name: 'Remove track', exact: true });
@@ -78,7 +89,7 @@ test('a playlist can add, reorder, rename, remove and persist tracks without dra
   await deletion.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(page).toHaveURL(/\/playlists$/);
   await expect(page.getByRole('link', { name: name + ' edited', exact: true })).toHaveCount(0);
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, { 'signal-to-noise': 1 });
 });
 
 test('podcast RSS subscription, feed refresh, audio playback and unsubscribe use a real local publisher', async ({ page }, info) => {
@@ -144,6 +155,8 @@ test('podcast RSS subscription, feed refresh, audio playback and unsubscribe use
 
 test('radio stations can be created, played, edited and deleted with artist and genre seeds', async ({ page }, info) => {
   const errors = guard(page);
+  const streams = originalStreamEvidence(page);
+  const streamAttempts = { 'the-distant-sun': 0, 'signal-to-noise': 0 };
   await login(page);
   await navigate(page, 'Radio Stations');
   await page.getByRole('button', { name: 'Add Radio Station', exact: true }).click();
@@ -165,6 +178,8 @@ test('radio stations can be created, played, edited and deleted with artist and 
   await expect(page.getByRole('button', { name: 'Pause station', exact: true })).toBeVisible();
   await expectRadioAudioProgress(page);
   await page.getByRole('button', { name: 'Pause station', exact: true }).click();
+  const firstTrack = await currentFixtureTrack(page);
+  await streams.complete(firstTrack, page.getByRole('region', { name: 'Music player', exact: true }), streamAttempts[firstTrack]++);
   await audit(page, info, 'radio-playing');
   await page.getByRole('link', { name: 'Edit station', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Edit station.', exact: true })).toBeVisible();
@@ -221,6 +236,10 @@ test('radio stations can be created, played, edited and deleted with artist and 
   expect((await cardAudio).headers()['content-type']).toContain('audio/');
   await expectRadioAudioProgress(page);
   await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
+  // Reloading the editor above clears the in-memory waveform cache, so this
+  // playback must prove a new complete request even if it picks the same song.
+  const secondTrack = await currentFixtureTrack(page);
+  await streams.complete(secondTrack, page.getByRole('region', { name: 'Music player', exact: true }), streamAttempts[secondTrack]++);
   await audit(page, info, 'radio-filtered');
   await checkLayout(page);
   await navigate(page, 'Radio Stations');
@@ -264,11 +283,12 @@ test('radio stations can be created, played, edited and deleted with artist and 
   await page.getByRole('button', { name: 'Delete ' + emptyName, exact: true }).click();
   await page.getByRole('dialog', { name: 'Delete Radio Station', exact: true }).getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(page.getByRole('link', { name: emptyName, exact: true })).toHaveCount(0);
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, streamAttempts);
 });
 
 test('discovery collections filter, play and save as an editable playlist', async ({ page }, info) => {
   const errors = guard(page);
+  const streams = originalStreamEvidence(page);
   await login(page);
   await navigate(page, 'Discover');
   const search = page.getByRole('searchbox', { name: 'Search discovery playlists', exact: true });
@@ -278,6 +298,7 @@ test('discovery collections filter, play and save as an editable playlist', asyn
   await page.getByRole('button', { name: 'Play Quiet discoveries', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
+  await streams.complete('the-distant-sun', page.getByRole('region', { name: 'Music player', exact: true }));
   await audit(page, info, 'discovery-filtered');
   await page.getByRole('link', { name: 'Quiet discoveries', exact: true }).click();
   await expect(page.getByRole('row')).toHaveCount(2);
@@ -297,7 +318,7 @@ test('discovery collections filter, play and save as an editable playlist', asyn
   await page.getByRole('button', { name: 'Delete playlist', exact: true }).click();
   await page.getByRole('dialog', { name: 'Delete Playlist', exact: true }).getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(page).toHaveURL(/\/playlists$/);
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, { 'the-distant-sun': 1 });
 });
 
 test('settings can browse, add, scan and remove an isolated empty music folder', async ({ page }, info) => {

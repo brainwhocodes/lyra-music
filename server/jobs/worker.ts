@@ -4,11 +4,13 @@ import { getJob, heartbeatLease, leaseNextJob, markJobCancelled, markJobFailed, 
 import type { JobType } from './types';
 import { parsePayloadByType } from './types';
 import { isJobCancelled, runScanDirectoryJob, syncScanStateFromJob } from '~/server/services/scanner/scan';
+import { enqueueDueRecommendations, runRecommendationRefreshJob } from '~/server/services/intelligence/recommendations';
 
 type JobHandler = (jobId: string, payload: any, isCancelled: () => Promise<boolean>) => Promise<Record<string, unknown>>;
 
 const handlers: Record<JobType, JobHandler> = {
   'scan.directory': runScanDirectoryJob,
+  'recommendations.refresh': runRecommendationRefreshJob,
 };
 
 export class InflightLimiter {
@@ -72,9 +74,15 @@ export async function processSingleJob(leaseOwner = `worker-test-${randomUUID()}
 export async function runWorkerLoop() {
   const leaseOwner = `worker-${randomUUID()}`;
   const limiter = new InflightLimiter();
+  let nextRecommendationCheck = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    if (Date.now() >= nextRecommendationCheck) {
+      nextRecommendationCheck = Date.now() + 60_000;
+      try { enqueueDueRecommendations(); }
+      catch (error) { console.error('Unable to schedule daily recommendations:', error instanceof Error ? error.name : 'Unknown error'); }
+    }
     if (limiter.count >= limits.queueMaxInflight) {
       await new Promise((resolve) => setTimeout(resolve, limits.pollIntervalMs));
       continue;

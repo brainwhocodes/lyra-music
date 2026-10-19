@@ -94,9 +94,12 @@ function selectOption(id: string) {
 <style scoped>
 .record-card {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 .record-link {
   display: block;
+  flex: 1;
   color: inherit;
   text-decoration: none;
 }

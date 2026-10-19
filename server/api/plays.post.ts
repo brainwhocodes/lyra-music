@@ -1,51 +1,43 @@
 import { defineEventHandler, readBody, createError } from 'h3';
 import { db } from '~/server/db';
-import { userTrackPlays } from '~/server/db/schema';
-import { DateTime } from 'luxon';
+import { albums, tracks, userTrackPlays } from '~/server/db/schema';
+import { and, eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { getUserFromEvent } from '~/server/utils/auth';
 
-interface PlayRequestBody {
-  trackId: string;
-  playDurationMs?: number;
-  source?: string;
-}
+const playSchema = z.object({
+  trackId: z.string().trim().min(1).max(200),
+  playDurationMs: z.number().int().nonnegative().max(86_400_000).optional(),
+  source: z.string().trim().min(1).max(100).default('web'),
+});
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody<PlayRequestBody>(event);
-  const { trackId, playDurationMs, source = 'web' } = body;
-
   const user = await getUserFromEvent(event);
   const userId = user?.userId;
 
   if (!userId) {
-    return createError({
+    throw createError({
       statusCode: 401,
       statusMessage: 'Unauthorized: User ID not found.',
     });
   }
 
-  if (!trackId) {
-    return createError({
+  const parsed = playSchema.safeParse(await readBody(event));
+  if (!parsed.success) {
+    throw createError({
       statusCode: 400,
-      statusMessage: 'Bad Request: trackId is required.',
+      statusMessage: 'Invalid recorded play.',
     });
   }
 
-  try {
-    await db.insert(userTrackPlays).values({
-      userId,
-      trackId,
-      playedAt: DateTime.utc().toISO(), // Store as ISO string in UTC
-      playDurationMs: playDurationMs ?? null,
-      source,
-    });
-
-    return { success: true, message: 'Play recorded.' };
-  } catch (error: any) {
-    console.error('Error recording play:', error);
-    return createError({
-      statusCode: 500,
-      statusMessage: `Internal Server Error: Could not record play. ${error.message}`,
-    });
-  }
+  const { trackId, playDurationMs, source } = parsed.data;
+  // Ownership and insertion share a write transaction so a transfer cannot race the check.
+  db.transaction(() => {
+    const owned = db.select({ trackId: tracks.trackId }).from(tracks)
+      .innerJoin(albums, eq(tracks.albumId, albums.albumId))
+      .where(and(eq(tracks.trackId, trackId), eq(albums.userId, userId))).get();
+    if (!owned) throw createError({ statusCode: 404, statusMessage: 'Track not found.' });
+    db.insert(userTrackPlays).values({ userId, trackId, playedAt: new Date().toISOString(), playDurationMs: playDurationMs ?? null, source }).run();
+  }, { behavior: 'immediate' });
+  return { success: true, message: 'Play recorded.' };
 });

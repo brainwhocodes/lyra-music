@@ -25,6 +25,7 @@ export * from './discovery-playlist-tracks';
 export * from './podcasts';
 export * from './podcast-subscriptions';
 export * from './job-queue';
+export * from './recommendation-snapshots';
 
 // Import table objects specifically for defining relations
 import { users } from './users';

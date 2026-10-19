@@ -1,0 +1,26 @@
+[
+  {
+    "name": "landing-after-hours",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/after-hours.png"
+  },
+  {
+    "name": "landing-concrete-rhythm",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/concrete-rhythm.png"
+  },
+  {
+    "name": "landing-open-sky",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/open-sky.png"
+  },
+  {
+    "name": "landing-midnight-signals",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/midnight-signals.png"
+  },
+  {
+    "name": "landing-silhouettes",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/silhouettes.png"
+  },
+  {
+    "name": "landing-stray-light",
+    "source": "docs/design/lyra-radio/landing-v2/assets/originals/stray-light.png"
+  }
+]

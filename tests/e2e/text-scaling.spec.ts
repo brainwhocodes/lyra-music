@@ -1,10 +1,12 @@
 import { test, expect, type Locator } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { audit, checkAccessibility, checkLayout, guard, login, navigate } from './helpers';
-import { expectTrackWaveform, playbackPosition, pointerSeek, seekSeconds } from './player-controls';
+import { playbackPosition, pointerSeek, seekSeconds } from './player-controls';
+import { originalStreamEvidence } from './stream-evidence';
 
 test('public, library, player and dialog controls remain usable with text doubled', async ({ page }, info) => {
   const errors = guard(page, [{ path: '/api/auth/me', status: 401 }]);
+  const streams = originalStreamEvidence(page);
   async function doubleText() {
     // Equivalent user stylesheet for text/rem scaling, not browser-chrome zoom.
     // It changes presentation only and never hides controls or bypasses behavior.
@@ -33,7 +35,7 @@ test('public, library, player and dialog controls remain usable with text double
   await checkLayout(page);
   await audit(page, info, 'text200-public');
   const guestSession = page.waitForResponse(response => response.url().endsWith('/api/auth/me') && response.status() === 401);
-  await page.getByRole('link', { name: 'Open your library', exact: true }).click();
+  await page.getByRole('link', { name: 'Try a search', exact: true }).click();
   await guestSession;
   await expect(page).toHaveURL(/\/login/);
   await login(page);
@@ -52,7 +54,7 @@ test('public, library, player and dialog controls remain usable with text double
   await seekSeconds(player, 3);
   await checkLayout(page);
   await audit(page, info, 'text200-player');
-  const { waveform } = await expectTrackWaveform(player);
+  const { waveform } = await streams.complete('the-distant-sun', player);
   const position = playbackPosition(player);
   await position.scrollIntoViewIfNeeded();
   await assertUnobscured(position, 'Waveform seek bar at doubled text');
@@ -224,5 +226,5 @@ test('public, library, player and dialog controls remain usable with text double
   }
   await info.attach('text200-radio-seed-hit-targets', { body: JSON.stringify(seedTargets, null, 2), contentType: 'application/json' });
   await writeFile(info.outputPath('text200-radio-seed-hit-targets.json'), JSON.stringify(seedTargets, null, 2));
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, { 'the-distant-sun': 1 });
 });

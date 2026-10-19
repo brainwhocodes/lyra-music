@@ -72,7 +72,10 @@ export async function audit(page: Page, info: TestInfo, name: string) {
 export async function checkLayout(page: Page, soft = false) {
   // Geometry is a read-only diagnostic for responsive overflow.
   const dimensions = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth }));
-  (soft ? expect.soft : expect)(dimensions.document, JSON.stringify(dimensions)).toBeLessThanOrEqual(dimensions.viewport + 1);
+  // Mobile browsers can expand innerWidth to fit overflowing content. Compare
+  // against the configured device viewport so that shrink-to-fit cannot hide it.
+  const viewport = page.viewportSize()?.width ?? dimensions.viewport;
+  (soft ? expect.soft : expect)(dimensions.document, JSON.stringify({ ...dimensions, deviceViewport: viewport })).toBeLessThanOrEqual(viewport + 1);
 }
 export async function checkCompactControlSpacing(page: Page, trackTitle?: string) {
   const search = page.getByRole('textbox', { name: 'Search library', exact: true });

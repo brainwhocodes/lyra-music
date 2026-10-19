@@ -1,0 +1,122 @@
+[
+  {
+    "name": "landing-after-hours",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:49.449Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Tight portrait of a young original anime woman with short navy-blue hair, large orange headphones and cobalt jacket, in a rainy neon Japanese-inspired city at night. Profile face looking left, foreground lower half, orange and electric cobalt signs behind, moody dark ink with acid yellow details. No readable signs/text. Match the first station poster After hours in the attached mockup. Portrait 2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/home.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/after-hours.png",
+    "dimensions": {
+      "width": 1024,
+      "height": 1536
+    },
+    "sha256": "ef0d94def93e803fd52c43b89834ff4eae0dc41f543b4f86512d15aceaac1774",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  },
+  {
+    "name": "landing-concrete-rhythm",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:49.868Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: No people. Original anime urban illustration of an elevated train viaduct and industrial concrete street at sunset, vivid flat orange sky, dark ink overhead cables, angular bridge structure crossing middle, gritty blue city below. Match the second station poster Concrete rhythm in the attached mockup. Portrait2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/home.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/concrete-rhythm.png",
+    "dimensions": {
+      "width": 1024,
+      "height": 1536
+    },
+    "sha256": "a0b3175dca1b709d557328463b09a352fee27324f8635b4e248c73d5f2f6be02",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  },
+  {
+    "name": "landing-open-sky",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:50.244Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Original anime young woman long black hair in white shirt and blue headphones, looking up toward upperright with relaxed hopefulexpression; huge saturated cobalt sky and crisp white summerclouds, city building atbottom. Match third stationposter Open sky in attachedmockup. Portrait2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/home.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/open-sky.png",
+    "dimensions": {
+      "width": 1024,
+      "height": 1536
+    },
+    "sha256": "dd4772bb0018644d39041f8c11c67126f4b3da83696106af618e69bc6bf56f53",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  },
+  {
+    "name": "landing-midnight-signals",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:50.641Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: No people. Original anime albumcover of urban railway tracks receding into pinkmagenta dusk horizon, railwayelectricpoles asblackline silhouettes on bothsides, dark bluecity buildings, coralpinksky, subtlegrain. Match first square albumcover Midnight Signals in attached featuresmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/features.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/midnight-signals.png",
+    "dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "sha256": "034fda79bc5fad60f5b4ebcf52fcea4b3eb6fb298610a7c0b55e622136b3c621",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  },
+  {
+    "name": "landing-silhouettes",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:50.994Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Original stylized illustratedalbumcover, overheadview of two graceful orangeandwhitekoifish swimming among darkcobalt lily leaves andone smallwhitewaterlily atupperleft. Inkydeepblue background, boldprinttexture, restrainedorangeandwhitehighlights. Match second squarealbumcover Silhouettes in attachedfeaturesmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/features.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/silhouettes.png",
+    "dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "sha256": "906e4ddc989b9ed38e415cc96c0c045206e317e83435c2765c493191300a1ab6",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  },
+  {
+    "name": "landing-stray-light",
+    "tool": "built-in image_gen",
+    "generatedAt": "2026-10-18T23:02:51.338Z",
+    "args": {
+      "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Abstractoriginalalbumcover: huge luminous whiteroughpaintedcircularswirl oninkyblackfield, itsopenbottomleft erupting in sharp orangeink splatters, fineorbitlike scratchlines, minimalgraffiti energy, exactblackwhiteorangegraphicpalette. Match thirdsquarealbumcover Stray Light attachedfeaturesmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+      "referenced_image_paths": [
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/landing-v2/originals/features.png",
+        "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+      ],
+      "transparent_background": false
+    },
+    "original": "docs/design/lyra-radio/landing-v2/assets/originals/stray-light.png",
+    "dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "sha256": "a135e2dccb59b34926bc56aa7efa6bc55defae2e1da29d5489368a267053ea24",
+    "review": "Inspected full generated output; matches selected cover subject, silhouette and color treatment. No grading applied."
+  }
+]

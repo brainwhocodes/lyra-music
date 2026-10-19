@@ -97,12 +97,11 @@
         continues as usual.
       </p>
     </div>
-    <img
+    <ResponsiveArtwork
       class="analysis-art"
-      src="/images/lyra-radio/rooftop-dj.webp"
+      name="platform-session"
       alt=""
-      width="1536"
-      height="1024"
+      sizes="(max-width: 700px) calc(100vw - 48px), 32vw"
     />
   </section>
 </template>

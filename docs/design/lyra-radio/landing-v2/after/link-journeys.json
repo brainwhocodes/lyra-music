@@ -1,0 +1,338 @@
+{
+  "executedAt": "2026-10-19T12:51:38.475Z",
+  "browser": "Chromium",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "authenticated": false,
+  "notes": "All unique link/name groups are clicked; equivalent repetitions are counted. Protected routes exercise their real login redirect. Authenticated CTA destinations and every FAQ disclosure are separately exercised by tests/e2e/brand-journeys.spec.ts.",
+  "results": [
+    {
+      "source": "/",
+      "element": "Skip to content",
+      "href": "#marketing-content",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Focus and Enter",
+      "assertion": "URL is http://127.0.0.1:3000/#marketing-content and main receives focus",
+      "observedURL": "http://127.0.0.1:3000/#marketing-content"
+    },
+    {
+      "source": "/",
+      "element": "Lyra home",
+      "href": "/",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/",
+      "observedURL": "http://127.0.0.1:3000/"
+    },
+    {
+      "source": "/",
+      "element": "Features",
+      "href": "/features",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/features",
+      "observedURL": "http://127.0.0.1:3000/features"
+    },
+    {
+      "source": "/",
+      "element": "Self-host",
+      "href": "/self-host",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/self-host",
+      "observedURL": "http://127.0.0.1:3000/self-host"
+    },
+    {
+      "source": "/",
+      "element": "Log in",
+      "href": "/login",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login",
+      "observedURL": "http://127.0.0.1:3000/login"
+    },
+    {
+      "source": "/",
+      "element": "Create an account",
+      "href": "/register",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/register",
+      "observedURL": "http://127.0.0.1:3000/register"
+    },
+    {
+      "source": "/",
+      "element": "See how it works",
+      "href": "#how-it-works",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/#how-it-works",
+      "observedURL": "http://127.0.0.1:3000/#how-it-works"
+    },
+    {
+      "source": "/",
+      "element": "Explore the features",
+      "href": "/features",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/features",
+      "observedURL": "http://127.0.0.1:3000/features"
+    },
+    {
+      "source": "/",
+      "element": "Try a search",
+      "href": "/explore",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login?invalid=true",
+      "observedURL": "http://127.0.0.1:3000/login?invalid=true"
+    },
+    {
+      "source": "/",
+      "element": "A closer look at lyrics",
+      "href": "/features#lyrics",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/features#lyrics",
+      "observedURL": "http://127.0.0.1:3000/features#lyrics"
+    },
+    {
+      "source": "/",
+      "element": "Self-host setup guide",
+      "href": "/self-host",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/self-host",
+      "observedURL": "http://127.0.0.1:3000/self-host"
+    },
+    {
+      "source": "/",
+      "element": "GitHub",
+      "href": "https://github.com/brainwhocodes/lyra-music",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music",
+      "externalStatus": 200
+    },
+    {
+      "source": "/features",
+      "element": "Skip to content",
+      "href": "#marketing-content",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Focus and Enter",
+      "assertion": "URL is http://127.0.0.1:3000/features#marketing-content and main receives focus",
+      "observedURL": "http://127.0.0.1:3000/features#marketing-content"
+    },
+    {
+      "source": "/features",
+      "element": "Lyra home",
+      "href": "/",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/",
+      "observedURL": "http://127.0.0.1:3000/"
+    },
+    {
+      "source": "/features",
+      "element": "Features",
+      "href": "/features",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/features",
+      "observedURL": "http://127.0.0.1:3000/features"
+    },
+    {
+      "source": "/features",
+      "element": "Self-host",
+      "href": "/self-host",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/self-host",
+      "observedURL": "http://127.0.0.1:3000/self-host"
+    },
+    {
+      "source": "/features",
+      "element": "Log in",
+      "href": "/login",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login",
+      "observedURL": "http://127.0.0.1:3000/login"
+    },
+    {
+      "source": "/features",
+      "element": "Open your library",
+      "href": "/library",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login?invalid=true",
+      "observedURL": "http://127.0.0.1:3000/login?invalid=true"
+    },
+    {
+      "source": "/features",
+      "element": "Find your station",
+      "href": "/radio",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login?invalid=true",
+      "observedURL": "http://127.0.0.1:3000/login?invalid=true"
+    },
+    {
+      "source": "/features",
+      "element": "Explore your collection",
+      "href": "/explore",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login?invalid=true",
+      "observedURL": "http://127.0.0.1:3000/login?invalid=true"
+    },
+    {
+      "source": "/features",
+      "element": "Choose a track",
+      "href": "/tracks",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login?invalid=true",
+      "observedURL": "http://127.0.0.1:3000/login?invalid=true"
+    },
+    {
+      "source": "/features",
+      "element": "GitHub",
+      "href": "https://github.com/brainwhocodes/lyra-music",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music",
+      "externalStatus": 200
+    },
+    {
+      "source": "/self-host",
+      "element": "Skip to content",
+      "href": "#marketing-content",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Focus and Enter",
+      "assertion": "URL is http://127.0.0.1:3000/self-host#marketing-content and main receives focus",
+      "observedURL": "http://127.0.0.1:3000/self-host#marketing-content"
+    },
+    {
+      "source": "/self-host",
+      "element": "Lyra home",
+      "href": "/",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/",
+      "observedURL": "http://127.0.0.1:3000/"
+    },
+    {
+      "source": "/self-host",
+      "element": "Features",
+      "href": "/features",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/features",
+      "observedURL": "http://127.0.0.1:3000/features"
+    },
+    {
+      "source": "/self-host",
+      "element": "Self-host",
+      "href": "/self-host",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/self-host",
+      "observedURL": "http://127.0.0.1:3000/self-host"
+    },
+    {
+      "source": "/self-host",
+      "element": "Log in",
+      "href": "/login",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login",
+      "observedURL": "http://127.0.0.1:3000/login"
+    },
+    {
+      "source": "/self-host",
+      "element": "Read the setup guide",
+      "href": "https://github.com/brainwhocodes/lyra-music#quick-start",
+      "equivalentCount": 2,
+      "status": "grouped-covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music#quick-start and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music#quick-start",
+      "externalStatus": 200
+    },
+    {
+      "source": "/self-host",
+      "element": "Log in to this server",
+      "href": "/login",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is http://127.0.0.1:3000/login",
+      "observedURL": "http://127.0.0.1:3000/login"
+    },
+    {
+      "source": "/self-host",
+      "element": "Follow the complete setup guide",
+      "href": "https://github.com/brainwhocodes/lyra-music#quick-start",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music#quick-start and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music#quick-start",
+      "externalStatus": 200
+    },
+    {
+      "source": "/self-host",
+      "element": "Read the local model guide",
+      "href": "https://github.com/brainwhocodes/lyra-music/blob/codex/whistle-transcription-tests/docs/model-setup.md",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music/blob/codex/whistle-transcription-tests/docs/model-setup.md and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music/blob/codex/whistle-transcription-tests/docs/model-setup.md",
+      "externalStatus": 200
+    },
+    {
+      "source": "/self-host",
+      "element": "GitHub",
+      "href": "https://github.com/brainwhocodes/lyra-music",
+      "equivalentCount": 1,
+      "status": "covered",
+      "action": "Click accessible-name link",
+      "assertion": "URL is https://github.com/brainwhocodes/lyra-music and external document returns HTTP 200",
+      "observedURL": "https://github.com/brainwhocodes/lyra-music",
+      "externalStatus": 200
+    }
+  ]
+}

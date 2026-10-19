@@ -1,6 +1,6 @@
 <template>
   <NuxtLink :to="`/genres/${genre.genreId}`" class="library-item genre-link">
-    <AlbumArt :src="getGenreImageUrl(genre.name)" />
+    <AlbumArt :src="getGenreImageUrl(genre.name)" sizes="72px" />
     <span
       ><strong>{{ genre.name }}</strong
       ><small>Browse albums</small></span

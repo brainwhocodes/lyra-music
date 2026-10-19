@@ -17,10 +17,18 @@ export const scanDirectoryJobPayloadSchema = z.object({
 
 export const jobPayloadByTypeSchema = {
   'scan.directory': scanDirectoryJobPayloadSchema,
+  'recommendations.refresh': z.object({
+    userId: z.string().min(1),
+    embeddingModel: z.string().min(1),
+    embeddingRevision: z.string().min(1),
+    embeddingDimensions: z.number().int(),
+    embeddingMaxTracks: z.number().int().positive(),
+  }),
 } as const;
 
 export type JobType = keyof typeof jobPayloadByTypeSchema;
 export type ScanDirectoryJobPayload = z.infer<typeof scanDirectoryJobPayloadSchema>;
+export type RecommendationJobPayload = z.infer<(typeof jobPayloadByTypeSchema)['recommendations.refresh']>;
 
 export type JobState = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 

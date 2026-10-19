@@ -28,9 +28,11 @@ async function expectGenreArtwork(link: Locator) {
   // image only after reaching that link through its accessible name.
   const image = link.locator("img");
   await expect(image).toHaveCount(1);
-  await expect(image).toHaveAttribute("src", /\/images\/genres\/[a-z-]+-genre-art\.webp$/);
   await expect.poll(() => image.evaluate((node: HTMLImageElement) =>
-    node.complete && node.naturalWidth > 100 && node.naturalHeight > 100,
+    new URL(node.currentSrc || node.src).pathname,
+  )).toMatch(/\/images\/responsive\/genre-[a-z-]+-\d+\.(avif|webp)$/);
+  await expect.poll(() => image.evaluate((node: HTMLImageElement) =>
+    node.complete && node.naturalWidth >= 72 && node.naturalHeight >= 72,
   )).toBe(true);
 }
 

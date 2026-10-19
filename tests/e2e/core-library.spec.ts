@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { audit, checkAccessibility, checkLayout, guard, login, navigate } from './helpers';
+import { originalStreamEvidence } from './stream-evidence';
 
 test('album views, sorting, menu keyboard behavior and playlist selection stay usable', async ({ page }, info) => {
   const errors = guard(page);
@@ -60,6 +61,7 @@ test('album views, sorting, menu keyboard behavior and playlist selection stay u
 
 test('artist, genre and track discovery filters navigate and play real local tracks', async ({ page }, info) => {
   const errors = guard(page);
+  const streams = originalStreamEvidence(page);
   await login(page);
   await navigate(page, 'Artists');
   const artistSearch = page.getByRole('searchbox', { name: 'Search artists' });
@@ -79,6 +81,8 @@ test('artist, genre and track discovery filters navigate and play real local tra
   expect((await audio).headers()['content-type']).toContain('audio/');
   await expect(page.getByRole('button', { name: 'Pause The Distant Sun', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pause The Distant Sun', exact: true }).click();
+  const player = page.getByRole('region', { name: 'Music player', exact: true });
+  await streams.complete('the-distant-sun', player);
   await expect(play).toBeVisible();
   await audit(page, info, 'artist-detail');
   await navigate(page, 'Genres');
@@ -93,6 +97,9 @@ test('artist, genre and track discovery filters navigate and play real local tra
   await page.getByRole('button', { name: 'Play all', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pause playback', exact: true }).click();
+  const playingTitle = await player.getByRole('button', { name: /^Open full screen player:/ }).getAttribute('aria-label');
+  const genreTrackId = playingTitle?.includes('The Distant Sun') ? 'the-distant-sun' : 'signal-to-noise';
+  await streams.complete(genreTrackId, player);
   await checkLayout(page);
   await audit(page, info, 'genre-detail');
   await navigate(page, 'Tracks');
@@ -106,7 +113,7 @@ test('artist, genre and track discovery filters navigate and play real local tra
   await audit(page, info, 'tracks-filtered');
   await checkAccessibility(page, info, 'tracks-filtered');
   await checkLayout(page);
-  expect(errors).toEqual([]);
+  streams.assertClean(errors, { 'the-distant-sun': 1, ...(genreTrackId === 'signal-to-noise' ? { 'signal-to-noise': 1 } : {}) });
 });
 
 test('registration validates confirmation, creates a local account and signs out', async ({ page }, info) => {

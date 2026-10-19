@@ -1,0 +1,220 @@
+{
+  "rooftop-dj": {
+    "width": 1536,
+    "height": 1024,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1536
+    ]
+  },
+  "night-transmission": {
+    "width": 1536,
+    "height": 1024,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1536
+    ]
+  },
+  "platform-session": {
+    "width": 1536,
+    "height": 1024,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1536
+    ]
+  },
+  "record-room": {
+    "width": 1536,
+    "height": 1024,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1536
+    ]
+  },
+  "genre-electronic": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-rock": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-jazz": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-pop": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-hip-hop": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-ambient": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "genre-default": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "landing-after-hours": {
+    "width": 1024,
+    "height": 1536,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024
+    ]
+  },
+  "landing-concrete-rhythm": {
+    "width": 1024,
+    "height": 1536,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024
+    ]
+  },
+  "landing-open-sky": {
+    "width": 1024,
+    "height": 1536,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024
+    ]
+  },
+  "landing-midnight-signals": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "landing-silhouettes": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  },
+  "landing-stray-light": {
+    "width": 1254,
+    "height": 1254,
+    "widths": [
+      96,
+      160,
+      320,
+      480,
+      768,
+      1024,
+      1254
+    ]
+  }
+}

@@ -289,7 +289,9 @@ small,
 }
 .page-toolbar > label {
   flex: 1 1 14rem;
+  min-width: 0;
 }
+.page-toolbar > .btn { min-height: 3.25rem; }
 .page-toolbar .input {
   width: 100%;
 }
@@ -594,6 +596,14 @@ small,
   .collection-grid {
     gap: 1.25rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 380px) {
+  .app-topbar > .btn {
+    padding-inline: 0.5rem;
+  }
+  .app-topbar .mobile-brand img {
+    width: min(7rem, 30vw);
   }
 }
 @media (max-width: 350px) {

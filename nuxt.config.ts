@@ -63,14 +63,15 @@ export default defineNuxtConfig({
     whistleMaxDurationSeconds:
       process.env.WHISTLE_MAX_DURATION_SECONDS || "1200",
     scannerDisableGenius: process.env.SCANNER_DISABLE_GENIUS,
-    embeddingPython: process.env.EMBEDDING_PYTHON || "python",
-    embeddingModel: process.env.EMBEDDING_MODEL || "google/embeddinggemma-2",
-    embeddingRevision:
-      process.env.EMBEDDING_REVISION ||
-      "914f7f89142e33e77833254d9c9b90c3cef7303b",
-    embeddingTimeoutMs: process.env.EMBEDDING_TIMEOUT_MS || "300000",
-    embeddingMaxTracks: process.env.EMBEDDING_MAX_TRACKS || "2000",
-    embeddingDimensions: process.env.EMBEDDING_DIMENSIONS || "256",
+    // Matching NUXT_EMBEDDING_* variables override these at runtime in both
+    // Nitro and the separate recommendation worker. Do not bake build-host
+    // EMBEDDING_* values into a server that may use a different runtime model.
+    embeddingPython: "python",
+    embeddingModel: "google/embeddinggemma-2",
+    embeddingRevision: "914f7f89142e33e77833254d9c9b90c3cef7303b",
+    embeddingTimeoutMs: "300000",
+    embeddingMaxTracks: "2000",
+    embeddingDimensions: "256",
   },
   vite: {
     plugins: [tailwindcss()],

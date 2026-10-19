@@ -1,350 +1,98 @@
 <template>
   <MarketingShell>
-    <section class="radio-landing-hero">
-      <picture class="radio-landing-art">
-        <source srcset="/images/lyra-radio/rooftop-dj.webp" type="image/webp" />
-        <img
-          src="/images/lyra-radio/rooftop-dj.png"
-          alt="An anime radio DJ on a graffiti-covered rooftop speaker"
-          width="1536"
-          height="1024"
-          fetchpriority="high"
-        />
-      </picture>
-      <div class="radio-landing-copy">
-        <h1>Own your <br />frequency.</h1>
-        <p>
-          Your collection. Your station. Your rules. Turn the music you keep
-          into a mix that moves with you.
-        </p>
-        <div class="radio-landing-actions">
-          <NuxtLink to="/radio" class="btn radio-ink-button"
-            >Tune into radio
-            <Icon name="material-symbols:arrow-forward" aria-hidden="true"
-          /></NuxtLink>
-          <NuxtLink to="/library">Open your library</NuxtLink>
+    <section class="lp-hero lp-hero--home lp-acid lp-gutter">
+      <div class="lp-hero-copy">
+        <h1>Own your<br />frequency.</h1>
+        <p>Your collection. Your station.<br />A new way to get lost in the music you keep.</p>
+        <div class="lp-actions">
+          <NuxtLink to="/register" class="lp-button">Create an account <Icon name="material-symbols:arrow-outward" aria-hidden="true" /></NuxtLink>
+          <a href="#how-it-works" class="lp-text-link">See how it works</a>
         </div>
       </div>
-      <p class="radio-sticker" aria-hidden="true">Sound on.<br />World off.</p>
+      <ResponsiveArtwork class="lp-hero-art" name="rooftop-dj" alt="An original anime DJ in orange headphones sitting on a graffiti-covered rooftop speaker" sizes="(max-width: 700px) 100vw, (min-width: 1920px) 1920px, 100vw" priority />
     </section>
-    <section class="radio-promise-strip" aria-label="What Lyra offers">
-      <p>
-        <strong>Your music</strong><span>Play what you keep. Your way.</span>
-      </p>
-      <p>
-        <strong>Local discovery</strong
-        ><span>Find another side of your collection.</span>
-      </p>
-      <p>
-        <strong>Self-hosted</strong
-        ><span>Your library, on your own server.</span>
-      </p>
+    <section class="home-promise lp-dark lp-gutter" aria-label="A home for your music">
+      <div><Icon name="material-symbols:album-outline" aria-hidden="true" /><p><strong>Your music</strong><span>Albums, artists and playlists.</span></p></div>
+      <div><Icon name="material-symbols:equalizer" aria-hidden="true" /><p><strong>Your station</strong><span>Built from your library.</span></p></div>
+      <div><Icon name="material-symbols:explore-outline" aria-hidden="true" /><p><strong>Your next discovery</strong><span>Follow a new connection.</span></p></div>
     </section>
-    <section class="radio-landing-features" aria-label="Make Lyra yours">
-      <article>
-        <h2>Build your <br />station.</h2>
-        <p>
-          Pick artists and genres from your library. Let Lyra turn them into a
-          fresh queue for the next part of your day.
-        </p>
-        <NuxtLink to="/settings/radio">Build a station</NuxtLink>
-      </article>
-      <article>
-        <h2>Find your next <br />obsession.</h2>
-        <p>
-          Search your indexed music by meaning. Rediscover forgotten tracks and
-          explore recommendations from your listening history.
-        </p>
-        <NuxtLink to="/explore">Explore your music</NuxtLink>
-      </article>
-      <article>
-        <h2>Keep your <br />collection.</h2>
-        <p>
-          Albums, artists, playlists, and the tracks you keep coming back to.
-          Give everything you love a home of its own.
-        </p>
-        <NuxtLink to="/library">Browse your library</NuxtLink>
-      </article>
-    </section>
-    <section class="radio-landing-cta">
-      <h2>Good music. <br />Your rules.</h2>
-      <div>
-        <p>Bring your collection. Find your frequency.</p>
-        <NuxtLink to="/register" class="btn radio-ink-button"
-          >Create an account
-          <Icon name="material-symbols:arrow-forward" aria-hidden="true"
-        /></NuxtLink>
+    <section class="lp-section lp-split lp-gutter home-collection">
+      <div class="lp-copy">
+        <h2>The records you kept.<br />The station you make.</h2>
+        <p>Turn the music you already own into personal radio. Start from artists and genres, and let Lyra build a queue that fits.</p>
+        <NuxtLink to="/features" class="lp-text-link">Explore the features <Icon name="material-symbols:arrow-forward" aria-hidden="true" /></NuxtLink>
       </div>
+      <MarketingCollectionPreview stations />
+    </section>
+    <section class="lp-section lp-split lp-gutter lp-dark">
+      <div class="lp-copy">
+        <h2>Find the track<br />you can’t name.</h2>
+        <p>Search your library in your own words. Local EmbeddingGemma connects your description with track metadata and, when available, lyrics.</p>
+        <NuxtLink to="/explore" class="lp-text-link">Try a search <Icon name="material-symbols:arrow-forward" aria-hidden="true" /></NuxtLink>
+      </div>
+      <MarketingSearchPreview />
+    </section>
+    <section class="lp-section lp-split lp-gutter lp-orange">
+      <div class="lp-copy">
+        <h2>Keep the<br />words close.</h2>
+        <p>Generate timed lyrics on your own machine with Whistle. Follow along, correct a word, or adjust a line until it feels right.</p>
+        <NuxtLink to="/features#lyrics" class="lp-text-link">A closer look at lyrics <Icon name="material-symbols:arrow-forward" aria-hidden="true" /></NuxtLink>
+      </div>
+      <MarketingPlayerPreview />
+    </section>
+    <section class="home-daily lp-blue lp-gutter">
+      <div class="home-daily-icon" aria-hidden="true"><Icon name="material-symbols:history" /></div>
+      <h2>A fresh route through<br />your collection, every day.</h2>
+      <p>Recommendations refresh every 24 hours while the worker runs, using recent recorded plays and connections in your indexed library.</p>
+    </section>
+    <section id="how-it-works" class="home-steps lp-section lp-gutter">
+      <div><h2>From folder<br />to first play.</h2><p>A home for your music, running on your own server.</p><NuxtLink to="/self-host" class="lp-text-link">Self-host setup guide <Icon name="material-symbols:arrow-forward" aria-hidden="true" /></NuxtLink></div>
+      <ol>
+        <li><span>01</span><h3>Connect<br />your music</h3><p>Add a music folder on the server and run a scan. Lyra reads your files and builds your library.</p></li>
+        <li><span>02</span><h3>Make it<br />your own</h3><p>Collect albums into playlists. Seed a station with your favorite artists and genres.</p></li>
+        <li><span>03</span><h3>Press play</h3><p>Settle into a record, follow the queue, or find a new connection in the music you keep.</p></li>
+      </ol>
+    </section>
+    <MarketingFaq id="home-questions" :items="questions" />
+    <section class="home-cta lp-acid lp-gutter lp-section">
+      <h2>Good music.<br />Your rules.</h2><p>Bring your collection.<br />Find your frequency.</p>
+      <NuxtLink to="/register" class="lp-button">Create an account <Icon name="material-symbols:arrow-outward" aria-hidden="true" /></NuxtLink>
     </section>
   </MarketingShell>
 </template>
 <script setup lang="ts">
-useSeoMeta({
-  title: "Lyra Radio — Own your frequency",
-  description:
-    "Your collection. Your station. Your rules. Personal radio, local music discovery and a home for the music you keep.",
-});
+definePageMeta({ layout: false });
+useSeoMeta({ title: 'Lyra Radio — Own your frequency', description: 'A personal music library with street-radio energy. Browse your albums, build stations, explore local search and keep the words close.' });
+const questions = [
+ { question: 'Is this an online radio broadcast?', answer: 'Lyra builds personal radio queues from music in your library. Your stations play matching tracks on this server; they are not FM or public internet broadcasts.' },
+ { question: 'Do I need an API key?', answer: 'Core library playback and the optional local Whistle and EmbeddingGemma models do not need an API key. Download the models once before using local lyrics and semantic search. Optional external integrations have their own requirements.' },
+ { question: 'Can I use music I already own?', answer: 'Yes. Add a folder of music files that you have the right to use. The scan worker reads metadata and builds the library. Lyra does not include a commercial streaming catalogue.' },
+];
 </script>
 <style scoped>
-.radio-landing-hero {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  align-items: center;
-  min-height: 40rem;
-  border: 3px solid var(--ink);
-  background: var(--acid);
-  margin-top: 1.5rem;
-}
-.radio-landing-art {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-.radio-landing-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-}
-.radio-landing-copy {
-  width: 48%;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--acid);
-  padding: 2rem 0 2rem clamp(1.25rem, 3vw, 3rem);
-}
-.radio-landing-copy h1 {
-  font-size: clamp(4rem, 7.7vw, 7rem);
-  line-height: 0.92;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: -0.025em;
-  margin: 0;
-  padding: 0.2em 0.08em 0.22em 0;
-  background: var(--acid);
-}
-.radio-landing-copy p {
-  margin: 0;
-  padding: 0 1rem 1.5rem 0;
-  font-size: 1.125rem;
-  line-height: 1.55;
-  max-width: 40ch;
-  background: var(--acid);
-}
-.radio-landing-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
-  width: fit-content;
-  padding: 0.5rem 1rem 0.6rem 0;
-  background: var(--acid);
-}
-.radio-ink-button {
-  background: var(--ink);
-  color: var(--paper);
-  border: 2px solid var(--ink);
-  border-radius: 0;
-  min-height: 3.5rem;
-  padding: 0.75rem 1.25rem;
-  gap: 1.5rem;
-  box-shadow: 5px 5px 0 var(--orange);
-}
-.radio-ink-button:hover {
-  background: #303438;
-  color: white;
-}
-.radio-ink-button:focus-visible {
-  outline: 3px solid var(--blue);
-  outline-offset: 6px;
-}
-.radio-landing-actions > a:not(.btn) {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  font-weight: 600;
-  text-decoration: underline;
-}
-.radio-sticker {
-  position: absolute;
-  right: 1.75rem;
-  bottom: 1.25rem;
-  margin: 0;
-  transform: rotate(-6deg);
-  background: var(--orange);
-  color: var(--ink);
-  border: 3px solid var(--ink);
-  outline: 4px solid var(--paper);
-  padding: 0.6rem 1rem;
-  font: 800 2rem/1 var(--font-display);
-  text-transform: uppercase;
-}
-.radio-promise-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  background: var(--ink);
-  color: var(--paper);
-  padding: 1.75rem 0.75rem;
-  gap: 1rem;
-}
-.radio-promise-strip p {
-  margin: 0;
-  padding: 0 1rem;
-  text-align: center;
-}
-.radio-promise-strip p + p {
-  border-left: 1px solid #b7b9af;
-}
-.radio-promise-strip strong {
-  display: block;
-  font: 700 1.8rem/1.1 var(--font-display);
-  color: var(--acid);
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-}
-.radio-promise-strip span {
-  font-size: 0.9375rem;
-}
-.radio-landing-features {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  padding: 3rem 0;
-  gap: 2rem;
-}
-.radio-landing-features article {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-}
-.radio-landing-features article + article {
-  border-left: 2px solid var(--ink);
-  padding-left: 2rem;
-}
-.radio-landing-features h2 {
-  text-transform: uppercase;
-  font-size: clamp(2.4rem, 3.2vw, 3.5rem);
-  line-height: 1;
-  margin: 0;
-}
-.radio-landing-features p {
-  margin: 1rem 0 1.25rem;
-}
-.radio-landing-features a {
-  display: flex;
-  align-items: center;
-  min-height: 2.75rem;
-  margin-top: auto;
-  font-weight: 600;
-  text-decoration: underline;
-}
-.radio-landing-cta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: center;
-  background: var(--orange);
-  border: 3px solid var(--ink);
-  padding: clamp(1.25rem, 3vw, 3rem);
-}
-.radio-landing-cta h2 {
-  font-size: clamp(3rem, 6vw, 5.5rem);
-  line-height: 0.95;
-  text-transform: uppercase;
-  margin: 0;
-}
-.radio-landing-cta p {
-  margin: 0 0 1rem;
-}
-.radio-landing-cta .radio-ink-button {
-  box-shadow: 5px 5px 0 var(--paper);
-}
-@media (max-width: 1100px) {
-  .radio-landing-hero {
-    min-height: 34rem;
-  }
-  .radio-landing-copy h1 {
-    font-size: clamp(3.2rem, 7.2vw, 6rem);
-  }
-  .radio-landing-copy p {
-    font-size: 1rem;
-  }
-}
-@media (max-width: 800px) {
-  .radio-landing-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    min-height: 0;
-  }
-  .radio-landing-copy {
-    width: 100%;
-    padding: 1.5rem;
-  }
-  .radio-landing-copy h1 {
-    font-size: clamp(3rem, 10vw, 5.5rem);
-  }
-  .radio-landing-copy p {
-    max-width: 50ch;
-  }
-  .radio-landing-art {
-    position: relative;
-    order: 2;
-    z-index: 0;
-    display: block;
-    height: 23rem;
-  }
-  .radio-landing-art img {
-    object-position: 70% top;
-  }
-  .radio-sticker {
-    z-index: 1;
-    font-size: 1.6rem;
-    right: 1rem;
-    bottom: 1rem;
-  }
-  .radio-landing-features {
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-    padding: 2rem 0;
-  }
-  .radio-landing-features article + article {
-    border-left: 0;
-    border-top: 2px solid var(--ink);
-    padding: 1.75rem 0 0;
-  }
-  .radio-landing-features h2 br {
-    display: none;
-  }
-  .radio-landing-features h2 {
-    line-height: 1.05;
-  }
-  .radio-landing-cta {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 520px) {
-  .radio-landing-copy {
-    padding: 1.25rem;
-  }
-  .radio-landing-art {
-    height: 20rem;
-  }
-  .radio-promise-strip {
-    grid-template-columns: 1fr;
-    padding: 1.25rem;
-    gap: 1.25rem;
-  }
-  .radio-promise-strip p + p {
-    border-left: 0;
-    border-top: 1px solid #b7b9af;
-    padding-top: 1.25rem;
-  }
-  .radio-ink-button {
-    gap: 0.75rem;
-  }
-}
+.home-promise { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); padding-block: clamp(1.5rem, 3vw, 3.5rem); }
+.home-promise > div { display: flex; gap: 1.5rem; align-items: center; min-width: 0; }
+.home-promise > div + div { border-left: 1px solid #686d74; padding-left: 2rem; }
+.home-promise .iconify { width: 3.5rem; height: 3.5rem; flex-shrink: 0; color: var(--acid); }
+.home-promise p { margin: 0; }
+.home-promise strong { color: var(--acid); font-family: var(--font-display); font-size: clamp(1.6rem, 2vw, 2.4rem); line-height: 1.1; }
+.home-promise p > span { display: block; font-size: clamp(.875rem, 1vw, 1.1875rem); margin-top: .5rem; }
+.home-collection { grid-template-columns: minmax(0,.7fr) minmax(0,1.3fr); }
+.home-daily { display: grid; grid-template-columns: .25fr 1fr 1fr; align-items: center; gap: 2rem; padding-block: 2.5rem; }
+.home-daily-icon .iconify { width: 7rem; height: 7rem; }
+.home-daily h2 { font-size: clamp(2rem, 3vw, 3.6rem); }
+.home-daily p { border-left: 1px solid #9da8fa; padding-left: 2rem; margin: 0; }
+.home-steps { display: grid; grid-template-columns: .85fr 2.15fr; gap: 3rem; }
+.home-steps > div p { max-width: 25ch; }
+.home-steps h2 { font-size: clamp(2.5rem, 3.8vw, 4.5rem); }
+.home-steps ol { list-style: none; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 0; padding: 0; }
+.home-steps li { border-left: 1px solid var(--ink); padding-inline: 1.75rem; }
+.home-steps li:last-child { padding-right: 0; }
+.home-steps li > span { display: block; font: 700 clamp(2rem, 3vw, 3.5rem)/1 var(--font-display); margin-bottom: 1rem; }
+.home-steps li p { font-size: clamp(.9375rem, 1.05vw, 1.25rem); }
+.home-cta { display: grid; grid-template-columns: 1.2fr 1fr auto; align-items: center; gap: 3rem; }
+.home-cta h2 { font-weight: 800; text-transform: uppercase; font-size: clamp(3rem,5vw,6rem); }
+.home-cta p { margin: 0; border-left: 1px solid var(--ink); padding-left: 2.5rem; }
+@media(max-width: 1100px) { .home-promise .iconify { width: 2.5rem; height: 2.5rem; } .home-promise > div { gap: .75rem; } .home-promise > div + div { padding-left: 1rem; } .home-steps { grid-template-columns: minmax(0,1fr); } .home-steps ol li:first-child { padding-left: 0; border-left: 0; } .home-cta { grid-template-columns: 1fr 1fr; } .home-cta .lp-button { grid-column: 2; } .home-daily { grid-template-columns: 1fr 1fr; } .home-daily-icon { display: none; } }
+@media(max-width: 700px) { .home-promise { grid-template-columns: minmax(0,1fr); gap: 1.25rem; } .home-promise > div + div { padding: 1.25rem 0 0; border-left: 0; border-top: 1px solid #686d74; } .home-promise .iconify { width: 2.5rem; height: 2.5rem; } .home-collection, .home-daily { grid-template-columns: minmax(0,1fr); } .home-daily p { padding: 0; border: 0; } .home-steps ol { grid-template-columns: minmax(0,1fr); gap: 2rem; } .home-steps li, .home-steps ol li:first-child { padding: 1.5rem 0 0; border-left: 0; border-top: 1px solid var(--rule); } .home-steps li h3 br { display: none; } .home-steps li > span { float: left; margin-right: 1rem; } .home-steps li p { clear: both; } .home-cta { grid-template-columns: minmax(0,1fr); gap: 1.5rem; } .home-cta p { padding: 0; border: 0; } .home-cta .lp-button { grid-column: auto; } }
 </style>

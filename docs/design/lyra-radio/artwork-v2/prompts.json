@@ -1,0 +1,25 @@
+{
+  "method": "Built-in image_gen",
+  "createdAt": "2026-10-18T22:52:16.223Z",
+  "references": [
+    "C:/Users/mille/Documents/ChatGPT/lyra/public/images/lyra-radio/rooftop-dj.png",
+    "C:/Users/mille/Documents/ChatGPT/lyra/docs/design/lyra-radio/brand-board.offline.png"
+  ],
+  "artworks": [
+    {
+      "slug": "night-transmission",
+      "name": "Night transmission",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Night rooftop listening session. Same DJ seated on an orange-painted speaker stack, cobalt cityscape and elevated train receding behind, deep ink-blue sky with subtle acid moon glow; headphones orange, jacket cobalt with lime accents. Camera at waist level, medium-full figure rather than extreme giantshoe. Half-lit face looking off-frame, nighttime atmosphere. Clear dark left third with architecture, useful for optional live page typography. Keep face centered around x65%,y35%, full body below. Contrast poised and cinematic, not neon haze."
+    },
+    {
+      "slug": "platform-session",
+      "name": "Platform session",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Daytime elevated train platform after a skate session. Same DJ leans against cobalt rail, orange headphones on ears, acid windbreaker, skateboard resting safely beside feet. Strong acid sky, concrete station beams and orange train doors, graffiti marks without letters. Perspective recedes left, original urban anime world. Subject medium-full figure near x65%,y50%, face near x65%,y30%; preserve silhouette for narrow portrait crop. Motion implied only by drifting jacket hem, no artificial blur. Make the setting distinct from a rooftop."
+    },
+    {
+      "slug": "record-room",
+      "name": "Record room",
+      "prompt": "Create one production illustration for Lyra anime street-radio. Image 1 is the original character/style reference: retain the recognizable original young adult DJ with spiky navy hair, orange over-ear headphones, loose streetwear and confident relaxed attitude. Image 2 is brand visual treatment only: ink black, saturated cobalt, acid lime and warm orange, cel shading, textured screenprint, expressive architectural perspective. No game characters, no logos, no readable letters or UI. No borders, no caption, no app/device mockup. Landscape 3:2, high resolution. Beautifully composed, original scene, anatomically credible hands, sharp intentional ink contours, restrained atmospheric grain. Hero subject occupies center-right and remains recognizable in a narrow portrait crop; wide layout still tells a story. Intimate night record room inside a converted industrial loft. Same DJ with orange headphones, dark navy shirt, lime overshirt, browsing a crate of records beside two turntables; cobalt shelves of vinyl and chunky speakers, orange desk lamp, window onto city tracks. Cozy through light and materials, not cream palette. Thoughtful contemplative pose, one hand resting on record sleeve with NO text, correctly drawn fingers. Subjectcenter-rightx65%; legible wide room scene onleft, darkink surfaces. Rich restrained screenprint texture and excellent graphic composition."
+    }
+  ]
+}

@@ -87,9 +87,8 @@ const player = usePlayerStore();
   table-layout: auto;
 }
 .record-table th {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.8rem;
+  letter-spacing: 0;
+  font-size: 0.875rem;
 }
 .record-table td {
   overflow-wrap: anywhere;

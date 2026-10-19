@@ -1,5 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3';
-import { recommendLibrary } from '../../services/intelligence/engine';
+import { readDailyRecommendations } from '../../services/intelligence/recommendations';
 import { queryLimit, withIntelligence } from '../../services/intelligence/http';
 
-export default defineEventHandler(event => withIntelligence(event, (userId, options) => recommendLibrary(userId, queryLimit(getQuery(event).limit), options)));
+export default defineEventHandler(event => withIntelligence(event, (userId, options) => readDailyRecommendations(userId, queryLimit(getQuery(event).limit), options)));

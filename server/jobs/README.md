@@ -16,6 +16,11 @@ The entry point loads `.env` and starts the loop explicitly on Windows, macOS an
 Linux. Use the same `DATABASE_URL` and filesystem access as the web server. Apply
 `pnpm db:migrate` before starting a new installation. Stop the process with Ctrl+C.
 
+The worker also schedules persisted personal recommendations on startup and every
+minute, refreshing each account's snapshot every 24 hours. See
+[`docs/daily-recommendations.md`](../../docs/daily-recommendations.md) for signals,
+API freshness fields, cold starts, retries and local setup.
+
 ## Limits
 
 The worker is guarded by environment-based limits in `server/jobs/limits.ts`:

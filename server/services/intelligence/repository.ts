@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import { db } from '../../db';
 import { albumGenres, albums, artists, artistsTracks, genres, lyrics, tracks, trackEmbeddings, userTrackPlays } from '../../db/schema';
 import { IntelligenceError, type IndexedTrack, type LibraryTrack } from './types';
@@ -88,8 +88,11 @@ export function saveEmbeddings(userId: string, config: Config, rows: EmbeddingRo
   });
 }
 
-export function readHistory(userId: string) {
+export function readHistory(userId: string, now = Date.now()) {
   return db.select({ trackId: userTrackPlays.trackId, playedAt: userTrackPlays.playedAt, playDurationMs: userTrackPlays.playDurationMs })
     .from(userTrackPlays).innerJoin(tracks, eq(tracks.trackId, userTrackPlays.trackId)).innerJoin(albums, eq(albums.albumId, tracks.albumId))
-    .where(and(eq(userTrackPlays.userId, userId), eq(albums.userId, userId))).orderBy(desc(userTrackPlays.playedAt)).limit(500).all();
+    .where(and(eq(userTrackPlays.userId, userId), eq(albums.userId, userId),
+      gte(userTrackPlays.playedAt, new Date(now - 30 * 86_400_000).toISOString()),
+      lte(userTrackPlays.playedAt, new Date(now).toISOString())))
+    .orderBy(desc(userTrackPlays.playedAt)).limit(10_000).all();
 }

@@ -3,6 +3,7 @@ import { classifyTags, rankTracks, recommendTracks } from './math';
 import { readHistory, readLibrary, saveEmbeddings, trackContent, trackContentHash } from './repository';
 import { TAG_TAXONOMY, TAXONOMY_VERSION } from './taxonomy';
 import { IntelligenceError, type EmbeddingOptions, type RankedTrack } from './types';
+import { invalidateRecommendationSnapshot } from './recommendations';
 
 const validateLimit = (limit: number, max = 50) => {
   if (!Number.isInteger(limit) || limit < 1 || limit > max) throw new IntelligenceError(`Limit must be an integer from 1 to ${max}.`, 400);
@@ -40,6 +41,7 @@ export async function indexLibrary(userId: string, limit = 16, options: Embeddin
       trackId: track.trackId, contentHash: trackContentHash(track), model: config.model, revision: config.revision, dimensions: config.dimensions,
       retrievalVector: vectors[i * 3]!, classificationVector: vectors[i * 3 + 1]!, similarityVector: vectors[i * 3 + 2]!, indexedAt: new Date().toISOString(),
     })));
+    if (indexedThisBatch) invalidateRecommendationSnapshot(userId);
     return { ...counts(readLibrary(userId, config)), indexedThisBatch };
   } finally { indexing = false; }
 }

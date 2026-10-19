@@ -82,12 +82,12 @@
             </p>
           </section>
         </div>
-        <img
+        <RadioArtwork
           class="radio-desk-art"
-          src="/images/lyra-radio/rooftop-dj.webp"
-          alt=""
-          width="1536"
-          height="1024"
+          name="night-transmission"
+          :active="isPlaying && !player.isLoading"
+          sizes="(max-width: 1050px) calc(100vw - 48px), max(27vw, 45rem)"
+          priority
         />
       </div>
       <p v-if="playError" role="alert" class="radio-status">{{ playError }}</p>

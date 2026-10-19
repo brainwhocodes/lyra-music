@@ -1,0 +1,38 @@
+[
+  {
+    "name": "landing-after-hours",
+    "file": "after-hours",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Tight portrait of a young original anime woman with short navy-blue hair, large orange headphones and cobalt jacket, in a rainy neon Japanese-inspired city at night. Profile face looking left, foreground lower half, orange and electric cobalt signs behind, moody dark ink with acid yellow details. No readable signs/text. Match the first station poster After hours in the attached mockup. Portrait 2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "home"
+  },
+  {
+    "name": "landing-concrete-rhythm",
+    "file": "concrete-rhythm",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: No people. Original anime urban illustration of an elevated train viaduct and industrial concrete street at sunset, vivid flat orange sky, dark ink overhead cables, angular bridge structure crossing middle, gritty blue city below. Match the second station poster Concrete rhythm in the attached mockup. Portrait2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "home"
+  },
+  {
+    "name": "landing-open-sky",
+    "file": "open-sky",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Original anime young woman long black hair in white shirt and blue headphones, looking up toward upperright with relaxed hopefulexpression; huge saturated cobalt sky and crisp white summerclouds, city building atbottom. Match third stationposter Open sky in attachedmockup. Portrait2:3 Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "home"
+  },
+  {
+    "name": "landing-midnight-signals",
+    "file": "midnight-signals",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: No people. Original anime albumcover of urban railway tracks receding into pinkmagenta dusk horizon, railwayelectricpoles asblackline silhouettes on bothsides, dark bluecity buildings, coralpinksky, subtlegrain. Match first square albumcover Midnight Signals in attached featuresmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "features"
+  },
+  {
+    "name": "landing-silhouettes",
+    "file": "silhouettes",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Original stylized illustratedalbumcover, overheadview of two graceful orangeandwhitekoifish swimming among darkcobalt lily leaves andone smallwhitewaterlily atupperleft. Inkydeepblue background, boldprinttexture, restrainedorangeandwhitehighlights. Match second squarealbumcover Silhouettes in attachedfeaturesmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "features"
+  },
+  {
+    "name": "landing-stray-light",
+    "file": "stray-light",
+    "prompt": "Generate one standalone production cover artwork, NOT a UI mockup or screenshot. The attached page mockup is composition and subject reference for the specific small cover described below; the attached brandboard is visual treatment reference. Recreate that cover as a generous full canvas original artwork. No lettering, logos, labels, border, watermark, player controls, or surrounding webpage. Scene: Abstractoriginalalbumcover: huge luminous whiteroughpaintedcircularswirl oninkyblackfield, itsopenbottomleft erupting in sharp orangeink splatters, fineorbitlike scratchlines, minimalgraffiti energy, exactblackwhiteorangegraphicpalette. Match thirdsquarealbumcover Stray Light attachedfeaturesmockup. Square1:1. Strong detailed anime street-graffiti print style with purposeful bold silhouettes, rich color, tactile ink rather than photorealism. Fill the entire canvas with the requested artwork.",
+    "ref": "features"
+  }
+]

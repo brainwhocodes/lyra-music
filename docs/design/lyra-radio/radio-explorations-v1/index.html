@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Ten directions for Lyra Radio</title>
+  <style>
+    @font-face{font-family:Barlow Condensed;font-style:normal;font-weight:700;font-display:swap;src:url('fonts/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2') format('woff2')}
+    @font-face{font-family:Barlow Condensed;font-style:normal;font-weight:800;font-display:swap;src:url('fonts/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2') format('woff2')}
+    @font-face{font-family:Space Grotesk;font-style:normal;font-weight:400 700;font-display:swap;src:url('fonts/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2') format('woff2')}
+    :root{--ink:#17191c;--paper:#f3f4f6;--muted:#b1b7c0;--acid:#d7ff3f;--line:#3d434c;--panel:#20242a;font-family:Space Grotesk,system-ui,sans-serif;color:var(--paper);background:var(--ink);font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit}a{color:inherit}button,a{touch-action:manipulation}button:focus-visible,a:focus-visible{outline:3px solid var(--acid);outline-offset:5px}button{color:inherit}button:not(:disabled){cursor:pointer}
+    .wrap{max-width:1800px;margin:auto;padding:36px clamp(20px,4vw,72px) 60px}.masthead{display:flex;justify-content:space-between;gap:24px;align-items:center;padding-bottom:22px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;font:700 28px/1 Barlow Condensed,sans-serif}.brand img{display:block;width:100px;height:42px;object-fit:contain}.edition{font-size:13px;color:var(--muted)}.intro{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:end;gap:40px;padding:38px 0 30px}h1{font:800 clamp(48px,5.4vw,82px)/.98 Barlow Condensed,sans-serif;max-width:730px;letter-spacing:-.02em;margin:0}h1 span{color:var(--acid)}.intro-copy{max-width:560px;font-size:15px;line-height:1.65;color:var(--muted)}.intro-copy p{margin:0 0 10px}.intro-copy strong{color:var(--paper);font-weight:600}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}.instruction{font-size:14px;color:var(--muted);margin:0}.instruction strong{color:var(--paper)}.view-switch,.action{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;font-size:14px;line-height:1.25;border:1px solid #68717d;background:transparent;text-decoration:none;border-radius:4px}.view-switch:hover,.action:hover{background:#30363f}.view-switch{white-space:nowrap}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:38px 28px}.concept{min-width:0;scroll-margin-top:24px}.preview{display:block;position:relative;width:100%;padding:0;border:1px solid #48505a;background:#20242a;border-radius:3px;overflow:hidden}.preview img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;background:#e7e9ed;transition:filter .15s ease}.preview:hover img{filter:brightness(1.06)}.expand-hint{position:absolute;bottom:12px;right:12px;padding:8px 11px;background:var(--ink);color:var(--paper);border:1px solid #5c6672;border-radius:3px;font-size:12px;pointer-events:none}.preview-error{display:none;min-height:200px;align-items:center;justify-content:center;color:var(--muted);padding:24px}.preview.has-error .preview-error{display:flex}.preview.has-error img{display:none}.card-heading{display:flex;align-items:baseline;gap:12px;margin:16px 0 9px}.number{font:700 32px/1 Barlow Condensed,sans-serif;color:var(--acid);min-width:30px}.card-heading h2{font:700 clamp(26px,2.25vw,36px)/1.05 Barlow Condensed,sans-serif;letter-spacing:-.01em;margin:0}.distinction{font-size:14px;line-height:1.55;margin:0 0 8px;color:var(--paper);max-width:620px}.consideration{font-size:12px;line-height:1.55;color:var(--muted);margin:0;max-width:620px}.consideration::before{content:'Consider: ';color:#d4d8df}.footer{display:flex;justify-content:space-between;gap:24px;margin-top:48px;padding-top:24px;border-top:1px solid var(--line);font-size:13px;line-height:1.6;color:var(--muted)}.footer strong{color:var(--acid);font-weight:500}.footer a{text-underline-offset:4px}.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    dialog{color:var(--paper);background:var(--ink);border:1px solid #56606d;border-radius:6px;padding:0;width:calc(100vw - 32px);max-width:1900px;max-height:calc(100dvh - 32px);margin:auto;overflow:hidden}dialog::backdrop{background:rgb(5 7 10 / .88)}.viewer{display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:calc(100dvh - 34px)}.viewer-header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line)}.viewer-title{font:700 28px/1 Barlow Condensed,sans-serif;margin:0}.viewer-title span{color:var(--acid);margin-right:10px}.viewer-actions{display:flex;align-items:center;gap:8px}.action.close{border-color:var(--acid);color:var(--acid)}.image-stage{overflow:auto;min-height:0;padding:12px;display:block;background:#0e1013;overscroll-behavior:contain}.image-stage img{display:block;width:auto;max-width:100%;max-height:calc(100dvh - 215px);height:auto;margin:0 auto;object-fit:contain}.image-stage.is-zoomed img{width:max(1600px,180%);max-width:none;max-height:none;margin:0}.image-stage:focus-visible{outline:3px solid var(--acid);outline-offset:-4px}.viewer-footer{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:20px;padding:14px 20px;border-top:1px solid var(--line)}.viewer-caption{font-size:13px;line-height:1.5;color:var(--muted);margin:0;text-align:center}.viewer-count{display:block;color:var(--paper);margin-bottom:2px;font-size:12px}.action:disabled{opacity:.35;cursor:default}.viewer-error{display:none;padding:40px 20px;text-align:center;color:var(--muted)}.image-stage.has-error .viewer-error{display:block}.image-stage.has-error img{display:none}
+    body.overview .wrap{max-width:1600px;padding:24px 32px 30px}body.overview .masthead{padding-bottom:14px}body.overview .intro{padding:22px 0 20px;gap:24px}body.overview h1{font-size:48px;max-width:none}body.overview .intro-copy{font-size:12px;line-height:1.5}body.overview .intro-copy p{margin-bottom:4px}body.overview .toolbar{margin-bottom:18px}body.overview .grid{gap:22px}body.overview .card-heading{margin:10px 0 5px;gap:9px}body.overview .card-heading h2{font-size:28px}body.overview .number{font-size:28px}body.overview .distinction{font-size:12px;line-height:1.4;margin:0}body.overview .consideration,body.overview .expand-hint{display:none}body.overview .footer{margin-top:24px;padding-top:16px}
+    @media(max-width:740px){.wrap{padding:22px 18px 36px}.edition{font-size:11px}.intro{grid-template-columns:1fr;gap:20px;padding:28px 0 22px}.intro-copy{font-size:14px;line-height:1.6}.toolbar{align-items:flex-start;gap:12px}.instruction{font-size:12px;max-width:210px}.view-switch{font-size:12px;padding:9px 11px}.grid{grid-template-columns:1fr;gap:30px}.card-heading h2{font-size:32px}.distinction{font-size:14px}.footer{display:block;margin-top:36px}.footer p{margin:0 0 10px}.expand-hint{font-size:11px;padding:6px 9px;bottom:9px;right:9px}dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.viewer{max-height:calc(100dvh - 18px)}.viewer-header{padding:12px;display:block}.viewer-title{font-size:27px;margin:0 0 12px}.viewer-actions{justify-content:space-between;gap:6px}.viewer-actions .action{font-size:12px;padding:9px 10px}.viewer-footer{gap:8px;padding:12px}.viewer-footer .action{font-size:12px;padding:9px}.viewer-caption{font-size:11px}.viewer-count{font-size:11px}.image-stage{padding:6px}.image-stage img{max-height:calc(100dvh - 250px)}.image-stage.is-zoomed img{width:1100px}body.overview .wrap{padding:22px 18px 36px}body.overview .intro{gap:16px}body.overview h1{font-size:48px}body.overview .intro-copy{font-size:13px}body.overview .grid{gap:26px}body.overview .distinction{font-size:13px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap" id="top">
+    <header class="masthead"><div class="brand"><img src="assets/wordmark.webp" alt="Lyra" width="100" height="42"><span>Radio</span></div><span class="edition">Radio page explorations · 01—10</span></header>
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">Ten ways to find<br><span>your frequency.</span></h1>
+      <div class="intro-copy"><p>Ten image-generated directions for your radio pages, each pairing desktop and mobile ideas.</p><p>These are concept studies. Sample stations and tracks are illustrative. <strong>No direction has been implemented yet.</strong></p></div>
+    </section>
+    <div class="toolbar"><p class="instruction">Open a board to inspect it.<br><strong>Reply with its number in the chat to choose.</strong></p><a class="view-switch" id="view-switch" href="?overview=1">Compact overview ↗</a></div>
+    <section class="grid" id="concepts" aria-label="Ten radio design directions"></section>
+    <noscript><p>Enable JavaScript to view the comparison gallery. The original concept boards are in the <a href="originals/">originals folder</a>.</p></noscript>
+    <footer class="footer"><p><strong>Pick one direction, or name the parts you want to combine.</strong><br>Your choice will guide the next design pass.</p><p><a href="#top">Back to top ↑</a></p></footer>
+  </main>
+  <dialog id="viewer" aria-labelledby="viewer-title" aria-describedby="viewer-description">
+    <div class="viewer">
+      <div class="viewer-header"><h2 class="viewer-title" id="viewer-title"></h2><div class="viewer-actions"><button class="action" id="zoom" type="button" aria-pressed="false" aria-controls="image-stage">Zoom in +</button><a class="action" id="original" href="#" target="_blank" rel="noopener">Open original ↗</a><button class="action close" id="close" type="button" autofocus>Close ✕</button></div></div>
+      <div class="image-stage" id="image-stage" tabindex="0" aria-label="Concept image; scroll to explore when zoomed"><img id="viewer-image" alt=""><p class="viewer-error" role="status">This preview could not load. Close the viewer and try again.</p></div>
+      <div class="viewer-footer"><button class="action" id="previous" type="button" aria-label="Previous concept">← Previous</button><p class="viewer-caption" id="viewer-description"><span class="viewer-count" id="viewer-count"></span><span id="viewer-distinction"></span></p><button class="action" id="next" type="button" aria-label="Next concept">Next →</button></div>
+    </div>
+  </dialog>
+  <script id="concept-data" type="application/json">[
+    {"number":1,"name":"Rooftop selector","slug":"rooftop-selector","distinction":"A compact station rail keeps browsing beside a large selected-station stage.","consideration":"Balanced browsing and listening; artwork should not crowd the station rail.","image":"originals/01-rooftop-selector.png"},
+    {"number":2,"name":"Record shop","slug":"record-shop","distinction":"Six illustrated sleeves make station discovery feel like browsing a record store.","consideration":"Easy discovery; a large collection will need efficient scrolling and filtering.","image":"originals/02-record-shop.png"},
+    {"number":3,"name":"Radio zine","slug":"radio-zine","distinction":"An editorial spread pairs one featured station with a fast, scannable index.","consideration":"Strong hierarchy; the featured station should not hide the rest of the library.","image":"originals/03-radio-zine.png"},
+    {"number":4,"name":"Transit lines","slug":"transit-lines","distinction":"A graphic station map explores genre connections, with a clear list alternative.","consideration":"Most experimental: spatial browsing needs a fully usable list alternative.","image":"originals/04-transit-lines.png"},
+    {"number":5,"name":"Listening desk","slug":"listening-desk","distinction":"A steady three-pane workspace puts stations, current artwork and seeds side by side.","consideration":"Useful while listening; the third pane should collapse cleanly on smaller screens.","image":"originals/05-listening-desk.png"},
+    {"number":6,"name":"Poster wall","slug":"poster-wall","distinction":"Tall station posters create a bold horizontal browse experience.","consideration":"Artwork leads; keyboard and touch navigation through the ribbon will matter.","image":"originals/06-poster-wall.png"},
+    {"number":7,"name":"Cassette shelf","slug":"cassette-shelf","distinction":"Compact station spines open into a cassette-inlay style listening page.","consideration":"Compact and distinctive; typography must remain clear across many station names.","image":"originals/07-cassette-shelf.png"},
+    {"number":8,"name":"Split horizon","slug":"split-horizon","distinction":"An ink-and-art split gives the station identity the strongest visual presence.","consideration":"Strongest brand expression; station discovery gets less space than in the list-led options.","image":"originals/08-split-horizon.png"},
+    {"number":9,"name":"Street index","slug":"street-index","distinction":"A typography-led station list favors fast scanning and low visual clutter.","consideration":"Fastest to scan; station art plays a smaller role.","image":"originals/09-street-index.png"},
+    {"number":10,"name":"Gallery tunnel","slug":"gallery-tunnel","distinction":"A vertical sequence of large artwork panels makes browsing feel cinematic.","consideration":"Immersive artwork; sticky navigation must keep returning to stations easy.","image":"originals/10-gallery-tunnel.png"}
+  ]</script>
+  <script>
+    const concepts = JSON.parse(document.getElementById('concept-data').textContent);
+    const number = value => String(value).padStart(2, '0');
+    const gallery = document.getElementById('concepts');
+    const dialog = document.getElementById('viewer');
+    const viewerImage = document.getElementById('viewer-image');
+    const stage = document.getElementById('image-stage');
+    const zoom = document.getElementById('zoom');
+    const previous = document.getElementById('previous');
+    const next = document.getElementById('next');
+    const close = document.getElementById('close');
+    let activeIndex = 0;
+    let returnFocus = null;
+    let priorOverflow = '';
+    function element(tag, className, text) {const node = document.createElement(tag); if (className) node.className = className; if (text) node.textContent = text; return node;}
+    concepts.forEach((concept, index) => {
+      const card = element('article', 'concept'); card.id = concept.slug;
+      const trigger = element('button', 'preview'); trigger.type = 'button'; trigger.setAttribute('aria-label', `View ${number(concept.number)} ${concept.name}`); trigger.setAttribute('aria-haspopup', 'dialog');
+      const image = element('img'); image.src = concept.image; image.alt = ''; image.decoding = 'async';
+      image.addEventListener('error', () => trigger.classList.add('has-error'));
+      image.addEventListener('load', () => trigger.classList.remove('has-error'));
+      trigger.append(image, element('span', 'preview-error', 'Preview unavailable. Open to retry.'), element('span', 'expand-hint', 'Explore concept ↗'));
+      trigger.addEventListener('click', () => openConcept(index, trigger));
+      const heading = element('div', 'card-heading'); heading.append(element('span', 'number', number(concept.number)), element('h2', '', concept.name));
+      card.append(trigger, heading, element('p', 'distinction', concept.distinction), element('p', 'consideration', concept.consideration)); gallery.append(card);
+    });
+    function fitImage() {stage.classList.remove('is-zoomed'); zoom.setAttribute('aria-pressed', 'false'); zoom.textContent = 'Zoom in +'; stage.scrollTo(0, 0);}
+    function showConcept(index) {
+      activeIndex = index; const concept = concepts[index]; fitImage(); stage.classList.remove('has-error');
+      const title = document.getElementById('viewer-title'); title.replaceChildren(element('span', '', number(concept.number)), document.createTextNode(` ${concept.name}`));
+      viewerImage.alt = `${concept.name}: desktop and mobile radio page design study`; viewerImage.src = concept.image;
+      document.getElementById('original').href = concept.image; document.getElementById('original').setAttribute('aria-label', `Open original ${number(concept.number)} ${concept.name} in a new tab`);
+      document.getElementById('viewer-count').textContent = `${number(concept.number)} of ${concepts.length}`;
+      document.getElementById('viewer-distinction').textContent = concept.distinction;
+      previous.disabled = index === 0; next.disabled = index === concepts.length - 1;
+    }
+    function openConcept(index, trigger) {returnFocus = trigger; priorOverflow = document.body.style.overflow; showConcept(index); dialog.showModal(); document.body.style.overflow = 'hidden'; close.focus();}
+    function move(direction) {const target = activeIndex + direction; if (target >= 0 && target < concepts.length) {const focused = document.activeElement; showConcept(target); if (focused.disabled) close.focus();}}
+    viewerImage.addEventListener('error', () => stage.classList.add('has-error'));
+    viewerImage.addEventListener('load', () => stage.classList.remove('has-error'));
+    close.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {document.body.style.overflow = priorOverflow; fitImage(); returnFocus?.focus({preventScroll:true});});
+    dialog.addEventListener('click', event => {if (event.target === dialog) {const bounds = dialog.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();}});
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Tab') {
+        const controls = [...dialog.querySelectorAll('button:not(:disabled), a[href], [tabindex="0"]')].filter(node => node.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {event.preventDefault(); last.focus();}
+        else if (!event.shiftKey && document.activeElement === last) {event.preventDefault(); first.focus();}
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || stage.classList.contains('is-zoomed')) return;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1);}
+    });
+    zoom.addEventListener('click', () => {const expanded = stage.classList.toggle('is-zoomed'); zoom.setAttribute('aria-pressed', String(expanded)); zoom.textContent = expanded ? 'Fit to screen −' : 'Zoom in +'; stage.scrollTo(0, 0);});
+    previous.addEventListener('click', () => move(-1)); next.addEventListener('click', () => move(1));
+    const overview = new URLSearchParams(location.search).get('overview') === '1';
+    if (overview) {document.body.classList.add('overview'); const switcher = document.getElementById('view-switch'); switcher.textContent = 'Detailed gallery ↗'; switcher.href = location.pathname;}
+  </script>
+</body>
+</html>

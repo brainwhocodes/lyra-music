@@ -52,6 +52,16 @@ describe('semantic ranking mathematics (synthetic vectors, not model quality)', 
     expect(result.tracks[0]?.seedTrackId).toBe('seed');
     expect(result.tracks[0]?.reason).toContain('seed');
   });
+  it('preserves cosine scores and nearest seed explanations when reusing normalized vectors', () => {
+    const records = [track('seed-a', [3, 4]), track('seed-b', [-4, 3]), track('candidate-a', [3, 1]), track('candidate-b', [-3, 1])];
+    const result = recommendTracks(records, ['seed-a', 'seed-b'].map(trackId => play(trackId, { playedAt: new Date(now).toISOString() })), { now });
+    for (const item of result.tracks) {
+      expect(item.score).toBeCloseTo(cosineSimilarity([-1, 7], item.track.similarityVector), 12);
+      const expectedSeed = records.slice(0, 2).sort((a, b) => cosineSimilarity(b.similarityVector, item.track.similarityVector) - cosineSimilarity(a.similarityVector, item.track.similarityVector))[0]!;
+      expect(item.seedTrackId).toBe(expectedSeed.trackId);
+    }
+    expect(result.tracks.map(item => item.track.trackId)).toEqual(['candidate-b', 'candidate-a']);
+  });
   it('ignores foreign history, short skips, invalid dates and ancient history', () => {
     const records = [track('a', [1, 0]), track('b', [0, 1])];
     const result = recommendTracks(records, [play('secret'), play('a', { playDurationMs: 1000 }), play('b', { playedAt: 'bad' }), play('a', { playedAt: '2020-01-01' })], { now });
@@ -72,6 +82,16 @@ describe('semantic ranking mathematics (synthetic vectors, not model quality)', 
     const records = [{ ...track('short', [1, 0]), duration: 12 }, track('similar', [1, 0])];
     expect(recommendTracks(records, [play('short', { playDurationMs: 11_000 })], { now }).basis).toBe('history');
     expect(recommendTracks(records, [play('short', { playDurationMs: NaN })], { now }).basis).toBe('cold-start');
+  });
+  it('limits affinity to the last 30 days and refuses future or unknown-duration events', () => {
+    const records = [track('seed', [1, 0]), track('other', [0, 1])];
+    const events = [
+      play('seed', { playedAt: new Date(now - 31 * 86_400_000).toISOString() }),
+      play('seed', { playedAt: new Date(now + 1000).toISOString() }),
+      play('seed', { playDurationMs: null }),
+    ];
+    expect(recommendTracks(records, events, { now }).basis).toBe('cold-start');
+    expect(recommendTracks(records, [play('seed', { playedAt: new Date(now - 30 * 86_400_000).toISOString() })], { now }).basis).toBe('history');
   });
 });
 

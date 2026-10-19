@@ -1,0 +1,393 @@
+{
+  "capturedAt": "2026-10-18T22:56:22.420Z",
+  "records": [
+    {
+      "name": "home",
+      "route": "/",
+      "device": "desktop",
+      "width": 1920,
+      "height": 1080,
+      "url": "http://127.0.0.1:3000/",
+      "title": "Lyra Radio — Own your frequency",
+      "headings": [
+        "Own your frequency.",
+        "Build your station.",
+        "Find your next obsession.",
+        "Keep your collection.",
+        "Good music. Your rules."
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Tune into radio",
+          "href": "/radio"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "Build a station",
+          "href": "/settings/radio"
+        },
+        {
+          "name": "Explore your music",
+          "href": "/explore"
+        },
+        {
+          "name": "Browse your library",
+          "href": "/library"
+        },
+        {
+          "name": "Create an account",
+          "href": "/register"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "home",
+      "route": "/",
+      "device": "mobile",
+      "width": 390,
+      "height": 844,
+      "url": "http://127.0.0.1:3000/",
+      "title": "Lyra Radio — Own your frequency",
+      "headings": [
+        "Own your frequency.",
+        "Build your station.",
+        "Find your next obsession.",
+        "Keep your collection.",
+        "Good music. Your rules."
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Tune into radio",
+          "href": "/radio"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "Build a station",
+          "href": "/settings/radio"
+        },
+        {
+          "name": "Explore your music",
+          "href": "/explore"
+        },
+        {
+          "name": "Browse your library",
+          "href": "/library"
+        },
+        {
+          "name": "Create an account",
+          "href": "/register"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "features",
+      "route": "/features",
+      "device": "desktop",
+      "width": 1920,
+      "height": 1080,
+      "url": "http://127.0.0.1:3000/features",
+      "title": "Features — Lyra",
+      "headings": [
+        "More ways to get lostin your music.",
+        "Album-firstlistening.",
+        "Search bywhat you mean.",
+        "Find a newconnection.",
+        "Keep thewords close.",
+        "Your music. Your way."
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "features",
+      "route": "/features",
+      "device": "mobile",
+      "width": 390,
+      "height": 844,
+      "url": "http://127.0.0.1:3000/features",
+      "title": "Features — Lyra",
+      "headings": [
+        "More ways to get lostin your music.",
+        "Album-firstlistening.",
+        "Search bywhat you mean.",
+        "Find a newconnection.",
+        "Keep thewords close.",
+        "Your music. Your way."
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "Open your library",
+          "href": "/library"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "self-host",
+      "route": "/self-host",
+      "device": "desktop",
+      "width": 1920,
+      "height": 1080,
+      "url": "http://127.0.0.1:3000/self-host",
+      "title": "Self-host — Lyra",
+      "headings": [
+        "Your collection.On your terms.",
+        "Get the project.",
+        "Connect a music folder.",
+        "Enable local discovery.",
+        "What you need"
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Read setup on GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music#readme"
+        },
+        {
+          "name": "Log in to this server",
+          "href": "/login"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "self-host",
+      "route": "/self-host",
+      "device": "mobile",
+      "width": 390,
+      "height": 844,
+      "url": "http://127.0.0.1:3000/self-host",
+      "title": "Self-host — Lyra",
+      "headings": [
+        "Your collection.On your terms.",
+        "Get the project.",
+        "Connect a music folder.",
+        "Enable local discovery.",
+        "What you need"
+      ],
+      "links": [
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "Log in",
+          "href": "/login"
+        },
+        {
+          "name": "Read setup on GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music#readme"
+        },
+        {
+          "name": "Log in to this server",
+          "href": "/login"
+        },
+        {
+          "name": "",
+          "href": "/"
+        },
+        {
+          "name": "Features",
+          "href": "/features"
+        },
+        {
+          "name": "Self-host",
+          "href": "/self-host"
+        },
+        {
+          "name": "GitHub",
+          "href": "https://github.com/brainwhocodes/lyra-music"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

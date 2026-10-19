@@ -181,6 +181,18 @@
             >Open library settings</NuxtLink
           >
         </div>
+        <div v-if="view === 'recommendations' && recommendations" class="recommendation-update">
+          <p role="status">{{ recommendationStatus }}</p>
+          <p v-if="recommendationRefreshError" role="status">{{ recommendationRefreshError }} Your current mix is still available.</p>
+          <details>
+            <summary>How this mix works</summary>
+            <p>Recent recorded plays, how often you return to a track, and similarities in track information and available lyrics shape this mix. Lyra refreshes it every 24 hours.</p>
+            <p v-if="recommendations.metrics?.qualifiedPlays">Based on {{ recommendations.metrics.qualifiedPlays }} recorded plays across {{ recommendations.metrics.distinctTracks }} tracks in the last {{ recommendations.metrics.windowDays }} days.</p>
+            <p v-else>Until your listening history grows, this starts with music recently added to your library.</p>
+            <p v-if="recommendations.nextRefreshAt">Next update after {{ formatRecommendationDate(recommendations.nextRefreshAt) }}.</p>
+          </details>
+          <button v-if="recommendations.stale" class="quiet-button" :disabled="loadingRecommendations" @click="loadRecommendations()">Check for update</button>
+        </div>
         <article
           v-for="track in visibleTracks"
           :key="track.trackId"
@@ -316,6 +328,11 @@ interface ResultTrack {
 interface Results extends Counts {
   tracks: ResultTrack[];
   basis?: "history" | "cold-start";
+  generatedAt?: string | null;
+  nextRefreshAt?: string | null;
+  stale?: boolean;
+  refreshState?: 'idle' | 'queued' | 'running' | 'waiting' | 'failed';
+  metrics?: { windowDays: number; qualifiedPlays: number; distinctTracks: number; signals: string[] };
 }
 interface TagResult {
   tags: { id: string; label: string; score: number; evidence: string[] }[];
@@ -344,6 +361,22 @@ const tags = ref<Record<string, TagResult>>({}),
   tagErrors = ref<Record<string, string>>({}),
   openTags = ref<Record<string, boolean>>({});
 let alive = true;
+let recommendationTimer: ReturnType<typeof setTimeout> | undefined;
+let recommendationPolls = 0;
+let recommendationRequest = 0;
+const recommendationRefreshError = ref('');
+function formatRecommendationDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+}
+const recommendationStatus = computed(() => {
+  const result = recommendations.value;
+  if (!result) return '';
+  if (result.refreshState === 'failed') return result.generatedAt ? 'Your daily update could not finish. Your previous mix is still available.' : 'Your daily mix could not finish. You can still explore your collection.';
+  if (result.refreshState === 'queued' || result.refreshState === 'running') return result.generatedAt ? 'Updating your daily mix. Keep listening while it is prepared.' : 'Preparing your first daily mix. Start with these tracks while it is prepared.';
+  if (result.stale) return 'Your next daily mix is waiting to be prepared.';
+  return result.generatedAt ? `Updated ${formatRecommendationDate(result.generatedAt)} · Refreshes daily` : 'A mix from your collection, refreshed daily.';
+});
+watch(view, () => { clearTimeout(recommendationTimer); recommendationPolls = 0; });
 const modelBusy = computed(
   () => indexing.value || searching.value || pendingTag.value !== null,
 );
@@ -411,6 +444,9 @@ async function refreshStatus() {
 }
 async function updateIndex() {
   if (modelBusy.value || !status.value?.pendingTracks) return;
+  recommendationRequest++;
+  clearTimeout(recommendationTimer);
+  loadingRecommendations.value = false;
   indexing.value = true;
   cancelRequested.value = false;
   indexError.value = "";
@@ -470,25 +506,37 @@ async function search() {
 }
 async function showRecommendations() {
   view.value = "recommendations";
-  if (!recommendations.value) await loadRecommendations();
+  await loadRecommendations();
 }
-async function loadRecommendations() {
+async function loadRecommendations(background = false) {
   if (loadingRecommendations.value || indexing.value) return;
-  loadingRecommendations.value = true;
+  const request = ++recommendationRequest;
+  clearTimeout(recommendationTimer);
+  if (!background) { loadingRecommendations.value = true; recommendationPolls = 0; }
   recommendationsError.value = "";
+  recommendationRefreshError.value = '';
   try {
     const response = await $fetch<Results>(
       "/api/intelligence/recommendations",
       { retry: 0 },
     );
-    if (alive) {
+    if (alive && request === recommendationRequest) {
       recommendations.value = response;
       updateCounts(response);
+      if (view.value === 'recommendations' && ['queued', 'running'].includes(response.refreshState || '') && recommendationPolls < 15) {
+        recommendationPolls++;
+        recommendationTimer = setTimeout(() => {
+          if (alive && view.value === 'recommendations' && document.visibilityState === 'visible') void loadRecommendations(true);
+        }, 4000);
+      }
     }
   } catch (error) {
-    if (alive) recommendationsError.value = message(error);
+    if (alive && request === recommendationRequest) {
+      if (background && recommendations.value) recommendationRefreshError.value = 'Unable to check for an update.';
+      else recommendationsError.value = message(error);
+    }
   } finally {
-    if (alive) loadingRecommendations.value = false;
+    if (alive && request === recommendationRequest) loadingRecommendations.value = false;
   }
 }
 async function toggleTags(trackId: string) {
@@ -553,6 +601,7 @@ watch(
 );
 onBeforeUnmount(() => {
   alive = false;
+  clearTimeout(recommendationTimer);
   cancelRequested.value = true;
 });
 </script>
@@ -602,7 +651,7 @@ onBeforeUnmount(() => {
   margin: 0 0 5px;
 }
 .index-panel p {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   line-height: 1.55;
   color: var(--explore-muted);
   max-width: 70ch;
@@ -688,7 +737,7 @@ a:focus-visible {
 }
 .search-hint {
   color: var(--explore-muted);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   margin: 10px 0 27px;
 }
 .result-views {
@@ -714,6 +763,11 @@ a:focus-visible {
   color: var(--explore-muted);
   line-height: 1.6;
 }
+.recommendation-update { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1.5rem; padding: 1rem 0; font-size: .875rem; color: var(--explore-muted); }
+.recommendation-update > p { margin: 0; }
+.recommendation-update details { max-width: 64ch; }
+.recommendation-update summary { display: list-item; min-height: 2.75rem; align-content: center; cursor: pointer; color: var(--explore-ink); text-decoration: underline; text-underline-offset: .2em; }
+.recommendation-update details p { margin: .5rem 0; line-height: 1.6; }
 .result-track {
   display: grid;
   grid-template-columns: 112px minmax(170px, 1.2fr) minmax(150px, 1fr) auto;
@@ -769,7 +823,7 @@ a:focus-visible {
   display: flex;
   gap: 12px;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   cursor: pointer;
   padding: 6px 0;
   text-align: left;
@@ -780,7 +834,7 @@ a:focus-visible {
 }
 .tag-details {
   padding: 3px 0 4px 28px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 .tag-list {
   list-style: none;
@@ -796,7 +850,7 @@ a:focus-visible {
   border-radius: 20px;
 }
 .tag-provenance {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--explore-muted);
 }
@@ -859,9 +913,6 @@ a:focus-visible {
   .explore-page {
     padding: 26px 20px 40px;
   }
-  .eyebrow {
-    font-size: 0.65rem;
-  }
   .explore-heading h1 {
     font-size: 2.85rem;
   }
@@ -889,7 +940,7 @@ a:focus-visible {
     height: 20px;
   }
   .search-field input {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   .explore-search .primary-button {
     padding-inline: 15px;

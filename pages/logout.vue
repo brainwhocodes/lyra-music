@@ -7,11 +7,11 @@
       <button v-if="error" class="btn btn-primary" @click="signOut">
         Try again</button
       ><span v-else class="loading loading-spinner" aria-hidden="true"></span
-      ><img
-        src="/images/lyra-radio/rooftop-dj.webp"
+      ><ResponsiveArtwork
+        class="logout-art"
+        name="rooftop-dj"
         alt=""
-        width="1536"
-        height="1024"
+        sizes="(max-width: 700px) calc(100vw - 64px), 650px"
       />
     </section>
   </div>
@@ -51,7 +51,7 @@ useSeoMeta({ title: "Signing out — Lyra" });
 .logout-page h1 {
   margin-bottom: 1rem;
 }
-.logout-page img {
+.logout-art {
   display: block;
   width: min(650px, 100%);
   margin: 2rem auto;

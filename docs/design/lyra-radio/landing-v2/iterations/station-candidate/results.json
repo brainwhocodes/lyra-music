@@ -1,0 +1,250 @@
+{
+  "executedAt": "2026-10-18T23:36:30.654Z",
+  "candidate": true,
+  "negativeControl": false,
+  "results": [
+    {
+      "name": "home",
+      "route": "/",
+      "width": 390,
+      "textScale": 1,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "After hours",
+          "width": 142.125,
+          "fontSize": 31.2,
+          "widthInEm": 4.555288461538462,
+          "readable": true
+        },
+        {
+          "text": "Concrete rhythm",
+          "width": 187.5,
+          "fontSize": 31.2,
+          "widthInEm": 6.009615384615385,
+          "readable": true
+        },
+        {
+          "text": "Open sky",
+          "width": 102.9375,
+          "fontSize": 31.2,
+          "widthInEm": 3.2992788461538463,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -87.8344)",
+        "rect": {
+          "x": 16,
+          "y": -71.8343734741211,
+          "width": 152.359375,
+          "height": 48.796875,
+          "top": -71.8343734741211,
+          "right": 168.359375,
+          "bottom": -23.037498474121094,
+          "left": 16
+        }
+      }
+    },
+    {
+      "name": "home",
+      "route": "/",
+      "width": 320,
+      "textScale": 1,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "After hours",
+          "width": 116.609375,
+          "fontSize": 25.6,
+          "widthInEm": 4.5550537109375,
+          "readable": true
+        },
+        {
+          "text": "Concrete rhythm",
+          "width": 152.5,
+          "fontSize": 25.6,
+          "widthInEm": 5.95703125,
+          "readable": true
+        },
+        {
+          "text": "Open sky",
+          "width": 84.46875,
+          "fontSize": 25.6,
+          "widthInEm": 3.299560546875,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -87.8344)",
+        "rect": {
+          "x": 16,
+          "y": -71.8343734741211,
+          "width": 152.359375,
+          "height": 48.796875,
+          "top": -71.8343734741211,
+          "right": 168.359375,
+          "bottom": -23.037498474121094,
+          "left": 16
+        }
+      }
+    },
+    {
+      "name": "home",
+      "route": "/",
+      "width": 320,
+      "textScale": 2,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "After hours",
+          "width": 201,
+          "fontSize": 51.2,
+          "widthInEm": 3.92578125,
+          "readable": true
+        },
+        {
+          "text": "Concrete rhythm",
+          "width": 201,
+          "fontSize": 51.2,
+          "widthInEm": 3.92578125,
+          "readable": true
+        },
+        {
+          "text": "Open sky",
+          "width": 168.921875,
+          "fontSize": 51.2,
+          "widthInEm": 3.29925537109375,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -264.938)",
+        "rect": {
+          "x": 32,
+          "y": -232.9375,
+          "width": 273,
+          "height": 147.1875,
+          "top": -232.9375,
+          "right": 305,
+          "bottom": -85.75,
+          "left": 32
+        }
+      }
+    },
+    {
+      "name": "features",
+      "route": "/features",
+      "width": 390,
+      "textScale": 1,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "City Drift Radio",
+          "width": 235.5,
+          "fontSize": 24,
+          "widthInEm": 9.8125,
+          "readable": true
+        },
+        {
+          "text": "Indie favourites",
+          "width": 235.5,
+          "fontSize": 24,
+          "widthInEm": 9.8125,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -87.8344)",
+        "rect": {
+          "x": 16,
+          "y": -71.8343734741211,
+          "width": 152.359375,
+          "height": 48.796875,
+          "top": -71.8343734741211,
+          "right": 168.359375,
+          "bottom": -23.037498474121094,
+          "left": 16
+        }
+      }
+    },
+    {
+      "name": "features",
+      "route": "/features",
+      "width": 320,
+      "textScale": 1,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "City Drift Radio",
+          "width": 169,
+          "fontSize": 24,
+          "widthInEm": 7.041666666666667,
+          "readable": true
+        },
+        {
+          "text": "Indie favourites",
+          "width": 169,
+          "fontSize": 24,
+          "widthInEm": 7.041666666666667,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -87.8344)",
+        "rect": {
+          "x": 16,
+          "y": -71.8343734741211,
+          "width": 152.359375,
+          "height": 48.796875,
+          "top": -71.8343734741211,
+          "right": 168.359375,
+          "bottom": -23.037498474121094,
+          "left": 16
+        }
+      }
+    },
+    {
+      "name": "features",
+      "route": "/features",
+      "width": 320,
+      "textScale": 2,
+      "injectedCandidateCss": true,
+      "headings": [
+        {
+          "text": "City Drift Radio",
+          "width": 189,
+          "fontSize": 48,
+          "widthInEm": 3.9375,
+          "readable": true
+        },
+        {
+          "text": "Indie favourites",
+          "width": 189,
+          "fontSize": 48,
+          "widthInEm": 3.9375,
+          "readable": true
+        }
+      ],
+      "skipLink": {
+        "focused": false,
+        "transform": "matrix(1, 0, 0, 1, 0, -264.938)",
+        "rect": {
+          "x": 32,
+          "y": -232.9375,
+          "width": 273,
+          "height": 147.1875,
+          "top": -232.9375,
+          "right": 305,
+          "bottom": -85.75,
+          "left": 32
+        }
+      }
+    }
+  ]
+}

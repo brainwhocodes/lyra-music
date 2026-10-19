@@ -33,7 +33,7 @@ test('imports every private file with real metadata, artwork, codec decoding, an
     for (const name of splitArtistString(item.metadata.common.artist || '')) artistNames.add(name);
     for (const name of splitArtistString(item.metadata.common.albumartist || '')) artistNames.add(name);
   }
-  const sqlFiles = await Promise.all(['0000_sloppy_mole_man.sql', '0002_colossal_christian_walker.sql', '0003_track_embeddings.sql']
+  const sqlFiles = await Promise.all(['0000_sloppy_mole_man.sql', '0002_colossal_christian_walker.sql', '0003_track_embeddings.sql', '0004_daily_recommendations.sql']
     .map(file => readFile(join(repository, 'server/db/migrations', file), 'utf8')));
   // Atomically reserve this run's new database. A concurrent or redirected
   // preexisting filename causes EEXIST before SQLite can touch it.
